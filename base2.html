@@ -1,0 +1,2424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal Municipal - Algarrobo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    
+    <style>
+        #map { height: 500px; z-index: 1; }
+        .project-marker { 
+            background: #3B82F6; 
+            border: 2px solid white; 
+            border-radius: 50%; 
+            width: 12px; 
+            height: 12px; 
+        }
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        /* Fixed modal styles for better layering */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .modal-large {
+            max-width: 1200px;
+        }
+        
+        /* Improved popup styles for map */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .leaflet-popup-content {
+            margin: 0;
+            min-width: 250px;
+        }
+        
+        .popup-content {
+            padding: 12px;
+        }
+        
+        .popup-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+        
+        .popup-info {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .popup-button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .popup-button:hover {
+            background-color: #2563eb;
+        }
+        
+        /* Side panel for project details */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 9998;
+            transition: right 0.3s ease-in-out;
+            overflow-y: auto;
+        }
+        
+        .side-panel.open {
+            right: 0;
+        }
+        
+        .side-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 9997;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .side-panel-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* Ensure body doesn't scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+        
+        /* External link button styles */
+        .external-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: #10b981;
+            color: white;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .external-link-btn:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .external-link-btn i {
+            font-size: 0.75rem;
+        }
+        
+        /* Document item styles */
+        .document-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .document-item:hover {
+            background-color: #f3f4f6;
+            transform: translateX(2px);
+        }
+        
+        .document-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+        
+        .document-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .document-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .document-link:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+        
+        .external-site-link {
+            color: #10b981;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .external-site-link:hover {
+            color: #059669;
+            text-decoration: underline;
+        }
+        
+        /* Calendar styles */
+        #calendar {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .fc-event {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 12px;
+        }
+        
+        .fc-event.vialidad {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .fc-event.saneamiento {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+        
+        .fc-event.espacios {
+            background-color: #f59e0b;
+            border-color: #f59e0b;
+        }
+        
+        .fc-event.educacion {
+            background-color: #8b5cf6;
+            border-color: #8b5cf6;
+        }
+        
+        .fc-event.salud {
+            background-color: #ef4444;
+            border-color: #ef4444;
+        }
+        
+        .fc-event.municipal {
+            background-color: #6b7280;
+            border-color: #6b7280;
+        }
+        
+        /* Report styles */
+        .report-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .report-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .report-filters {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-lg relative z-40">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-city text-2xl"></i>
+                    <div>
+                        <h1 class="text-xl font-bold">Geoportal Municipal</h1>
+                        <p class="text-xs text-blue-100">Ilustre Municipalidad de Algarrobo</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button onclick="toggleUserMenu()" class="flex items-center space-x-2 hover:bg-blue-700 px-3 py-2 rounded">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="currentRole">Administrador</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                            <a href="#" onclick="changeRole('admin')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-user-shield mr-2"></i> Administrador
+                            </a>
+                            <a href="#" onclick="changeRole('alcalde')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-user-tie mr-2"></i> Alcalde
+                            </a>
+                            <a href="#" onclick="changeRole('secplac')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-users mr-2"></i> SECPLAC
+                            </a>
+                            <a href="#" onclick="changeRole('public')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-eye mr-2"></i> Vista Pública
+                            </a>
+                            <hr class="my-1">
+                            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-cog mr-2"></i> Configuración
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Salir
+                            </a>
+                        </div>
+                    </div>
+                    <button onclick="toggleNotifications()" class="relative hover:bg-blue-700 p-2 rounded">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white shadow-lg h-screen sticky top-0 sidebar-transition z-30">
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" onclick="showView('dashboard')" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showView('projects')" class="nav-item flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                            <i class="fas fa-project-diagram w-5"></i>
+                            <span>Proyectos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showView('map')" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-map-marked-alt w-5"></i>
+                            <span>Mapa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showView('reports')" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Informes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showView('calendar')" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-calendar-alt w-5"></i>
+                            <span>Calendario</span>
+                        </a>
+                    </li>
+                    <li class="pt-4 mt-4 border-t">
+                        <p class="text-xs text-gray-500 uppercase font-semibold px-3">Módulos</p>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-road w-5"></i>
+                            <span>Vialidad</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tint w-5"></i>
+                            <span>Saneamiento</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tree w-5"></i>
+                            <span>Espacios Públicos</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Projects View -->
+            <div id="projectsView" class="view-content">
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Proyectos</h2>
+                    <p class="text-gray-600">Cartera de proyectos SECPLAC - Actualizado: 01/09/2025</p>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                            <select id="areaFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todas</option>
+                                <option value="Saneamiento">Saneamiento</option>
+                                <option value="Vialidad">Vialidad</option>
+                                <option value="Espacios Públicos">Espacios Públicos</option>
+                                <option value="Educación">Educación</option>
+                                <option value="Salud">Salud</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="statusFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos</option>
+                                <option value="Diseño">Diseño</option>
+                                <option value="Ejecución">Ejecución</option>
+                                <option value="Licitación">Licitación</option>
+                                <option value="En preparación">En preparación</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Financiamiento</label>
+                            <select id="fundingFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos</option>
+                                <option value="FNDR">FNDR</option>
+                                <option value="PMU">PMU</option>
+                                <option value="FRIL">FRIL</option>
+                                <option value="Municipal">Municipal</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+                            <div class="relative">
+                                <input type="text" id="searchInput" onkeyup="filterProjects()" placeholder="Nombre del proyecto..." class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Proyectos</p>
+                                <p class="text-2xl font-bold text-gray-800">92</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-folder text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">En Ejecución</p>
+                                <p class="text-2xl font-bold text-green-600">12</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-play-circle text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Monto Total</p>
+                                <p class="text-2xl font-bold text-gray-800">$25.3B</p>
+                            </div>
+                            <div class="bg-yellow-100 p-3 rounded-full">
+                                <i class="fas fa-dollar-sign text-yellow-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Avance Promedio</p>
+                                <p class="text-2xl font-bold text-purple-600">58%</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <i class="fas fa-chart-line text-purple-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-800">Lista de Proyectos</h3>
+                        <div class="space-x-2">
+                            <button onclick="exportData()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                                <i class="fas fa-download mr-2"></i>Exportar
+                            </button>
+                            <button onclick="showAddProjectModal()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                                <i class="fas fa-plus mr-2"></i>Nuevo Proyecto
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N°</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Financiamiento</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avance</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Projects will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map View -->
+            <div id="mapView" class="view-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Mapa de Proyectos</h2>
+                    <p class="text-gray-600">Visualización geográfica de todos los proyectos municipales</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        <button onclick="filterMapByArea('all')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Todos</button>
+                        <button onclick="filterMapByArea('Saneamiento')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Saneamiento</button>
+                        <button onclick="filterMapByArea('Vialidad')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Vialidad</button>
+                        <button onclick="filterMapByArea('Espacios Públicos')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Espacios Públicos</button>
+                    </div>
+                    <div id="map"></div>
+                </div>
+            </div>
+
+            <!-- Reports View -->
+            <div id="reportsView" class="view-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Informes Municipales</h2>
+                    <p class="text-gray-600">Análisis detallados y reportes de gestión de proyectos</p>
+                </div>
+
+                <!-- Report Filters -->
+                <div class="report-filters rounded-lg shadow p-6 mb-6 text-white">
+                    <h3 class="text-lg font-semibold mb-4">Filtros de Informe</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Tipo de Informe</label>
+                            <select id="reportType" onchange="updateReportPreview()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                                <option value="executive">Ejecutivo</option>
+                                <option value="detailed">Detallado</option>
+                                <option value="financial">Financiero</option>
+                                <option value="progress">Avance</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Período</label>
+                            <select id="reportPeriod" onchange="updateReportPreview()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                                <option value="monthly">Mensual</option>
+                                <option value="quarterly">Trimestral</option>
+                                <option value="semester">Semestral</option>
+                                <option value="yearly">Anual</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Área</label>
+                            <select id="reportArea" onchange="updateReportPreview()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                                <option value="all">Todas</option>
+                                <option value="Saneamiento">Saneamiento</option>
+                                <option value="Vialidad">Vialidad</option>
+                                <option value="Espacios Públicos">Espacios Públicos</option>
+                                <option value="Educación">Educación</option>
+                                <option value="Salud">Salud</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Formato</label>
+                            <select id="reportFormat" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                                <option value="powerpoint">PowerPoint</option>
+                                <option value="web">Web</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex gap-3">
+                        <button onclick="generateReport()" class="px-6 py-2 bg-white text-purple-700 rounded-md hover:bg-gray-100 font-medium transition">
+                            <i class="fas fa-file-alt mr-2"></i>Generar Informe
+                        </button>
+                        <button onclick="scheduleReport()" class="px-6 py-2 bg-purple-800 text-white rounded-md hover:bg-purple-900 font-medium transition">
+                            <i class="fas fa-clock mr-2"></i>Programar
+                        </button>
+                        <button onclick="saveReportTemplate()" class="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium transition">
+                            <i class="fas fa-save mr-2"></i>Guardar Plantilla
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="metric-card text-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm">Inversión Total</p>
+                                <p class="text-3xl font-bold">$25.3B</p>
+                                <p class="text-sm text-purple-100 mt-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>8% vs período anterior
+                                </p>
+                            </div>
+                            <i class="fas fa-dollar-sign text-4xl text-purple-200"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card text-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm">Proyectos Activos</p>
+                                <p class="text-3xl font-bold">92</p>
+                                <p class="text-sm text-purple-100 mt-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>12% vs período anterior
+                                </p>
+                            </div>
+                            <i class="fas fa-project-diagram text-4xl text-purple-200"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card text-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm">Tasa Ejecución</p>
+                                <p class="text-3xl font-bold">87%</p>
+                                <p class="text-sm text-purple-100 mt-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>5% vs período anterior
+                                </p>
+                            </div>
+                            <i class="fas fa-chart-line text-4xl text-purple-200"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card text-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm">Beneficiarios</p>
+                                <p class="text-3xl font-bold">15.2K</p>
+                                <p class="text-sm text-purple-100 mt-2">
+                                    <i class="fas fa-users mr-1"></i>Estimado
+                                </p>
+                            </div>
+                            <i class="fas fa-user-friends text-4xl text-purple-200"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Types -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="report-card bg-white rounded-lg shadow p-6 cursor-pointer" onclick="selectReportType('executive')">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-chart-pie text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Informe Ejecutivo</h3>
+                                <p class="text-sm text-gray-600">Resumen para autoridades</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm">Informe resumido con KPIs principales, estado general de proyectos y métricas clave para toma de decisiones estratégicas.</p>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Última generación: 2 días atrás</span>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-card bg-white rounded-lg shadow p-6 cursor-pointer" onclick="selectReportType('detailed')">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-file-alt text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Informe Detallado</h3>
+                                <p class="text-sm text-gray-600">Análisis completo</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm">Reporte exhaustivo con detalles de cada proyecto, avances, presupuestos, plazos y responsables asignados.</p>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Última generación: 1 semana atrás</span>
+                            <button class="text-green-600 hover:text-green-800">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-card bg-white rounded-lg shadow p-6 cursor-pointer" onclick="selectReportType('financial')">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-coins text-yellow-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Informe Financiero</h3>
+                                <p class="text-sm text-gray-600">Estado presupuestario</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 text-sm">Análisis financiero detallado con ejecución presupuestaria, flujo de caja, costos proyectados y desviaciones.</p>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-xs text-gray-500">Última generación: 3 días atrás</span>
+                            <button class="text-yellow-600 hover:text-yellow-800">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Evolución de Proyectos</h3>
+                        <div class="chart-container">
+                            <canvas id="projectEvolutionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Distribución Presupuestaria</h3>
+                        <div class="chart-container">
+                            <canvas id="budgetDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Reports -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Informes Recientes</h3>
+                        <button onclick="viewAllReports()" class="text-blue-600 hover:text-blue-800 text-sm">
+                            Ver todos <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <div class="flex items-center space-x-4">
+                                <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                <div>
+                                    <p class="font-medium">Informe Ejecutivo - Septiembre 2025</p>
+                                    <p class="text-sm text-gray-600">Generado por: Admin | 2 días atrás</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="downloadReport('executive_sept_2025')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button onclick="viewReport('executive_sept_2025')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="shareReport('executive_sept_2025')" class="text-gray-600 hover:text-gray-800">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <div class="flex items-center space-x-4">
+                                <i class="fas fa-file-excel text-green-500 text-xl"></i>
+                                <div>
+                                    <p class="font-medium">Reporte Financiero Q3-2025</p>
+                                    <p class="text-sm text-gray-600">Generado por: Finanzas | 1 semana atrás</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="downloadReport('financial_q3_2025')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button onclick="viewReport('financial_q3_2025')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="shareReport('financial_q3_2025')" class="text-gray-600 hover:text-gray-800">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                            <div class="flex items-center space-x-4">
+                                <i class="fas fa-file-powerpoint text-orange-500 text-xl"></i>
+                                <div>
+                                    <p class="font-medium">Presentación Avance Proyectos</p>
+                                    <p class="text-sm text-gray-600">Generado por: SECPLAC | 2 semanas atrás</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="downloadReport('progress_sept_2025')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button onclick="viewReport('progress_sept_2025')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="shareReport('progress_sept_2025')" class="text-gray-600 hover:text-gray-800">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="calendarView" class="view-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Calendario Municipal</h2>
+                    <p class="text-gray-600">Gestión de eventos, hitos y plazos de proyectos</p>
+                </div>
+
+                <!-- Calendar Actions -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <div class="flex flex-wrap justify-between items-center gap-4">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="addCalendarEvent()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                                <i class="fas fa-plus mr-2"></i>Nuevo Evento
+                            </button>
+                            <button onclick="syncCalendar()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                                <i class="fas fa-sync mr-2"></i>Sincronizar
+                            </button>
+                            <button onclick="exportCalendar()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">
+                                <i class="fas fa-download mr-2"></i>Exportar
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                                <span class="text-sm">Vialidad</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                                <span class="text-sm">Saneamiento</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
+                                <span class="text-sm">Espacios Públicos</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
+                                <span class="text-sm">Educación</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                                <span class="text-sm">Salud</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div id="calendar"></div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Próximos Hitos</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                                <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">15</div>
+                                <div class="flex-1">
+                                    <p class="font-medium">Inicio Licitación - Pavimentación Av. Santa Teresa</p>
+                                    <p class="text-sm text-gray-600">15 de Septiembre, 2025</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Vialidad</span>
+                                        <span class="text-xs text-gray-500 ml-2">FNDR 2025</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                                <div class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">22</div>
+                                <div class="flex-1">
+                                    <p class="font-medium">Entrega Informe Final - Alcantarillado La Puntilla I</p>
+                                    <p class="text-sm text-gray-600">22 de Septiembre, 2025</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Saneamiento</span>
+                                        <span class="text-xs text-gray-500 ml-2">FNDR</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
+                                <div class="bg-yellow-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">30</div>
+                                <div class="flex-1">
+                                    <p class="font-medium">Reunión Comité de Seguimiento - Proyectos Educativos</p>
+                                    <p class="text-sm text-gray-600">30 de Septiembre, 2025</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Educación</span>
+                                        <span class="text-xs text-gray-500 ml-2">Municipal</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Eventos Municipales</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <div class="bg-gray-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">10</div>
+                                <div class="flex-1">
+                                    <p class="font-medium">Sesión Ordinaria Concejo Municipal</p>
+                                    <p class="text-sm text-gray-600">10 de Septiembre, 2025 - 10:00 AM</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Municipal</span>
+                                        <span class="text-xs text-gray-500 ml-2">Sala Concejo</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <div class="bg-gray-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">18</div>
+                                <div class="flex-1">
+                                    <p class="font-medium">Ceremonia Inicio Obra - Sede Vecinal El Litre</p>
+                                    <p class="text-sm text-gray-600">18 de Septiembre, 2025 - 11:00 AM</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Espacios Públicos</span>
+                                        <span class="text-xs text-gray-500 ml-2">FRIL 2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <div class="bg-gray-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">25</div>
+                                <div class="flex-1">
+                                    <p class="font-medium">Día del Patrimonio Municipal</p>
+                                    <p class="text-sm text-gray-600">25 de Septiembre, 2025 - Todo el día</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Municipal</span>
+                                        <span class="text-xs text-gray-500 ml-2">Centro Cívico</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Dashboard Principal</h2>
+                    <p class="text-gray-600">Resumen ejecutivo de la gestión municipal</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-100">Proyectos Activos</p>
+                                <p class="text-3xl font-bold">92</p>
+                                <p class="text-sm text-blue-100 mt-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>12% vs mes anterior
+                                </p>
+                            </div>
+                            <i class="fas fa-chart-pie text-4xl text-blue-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-green-100">Inversión Total</p>
+                                <p class="text-3xl font-bold">$25.3B</p>
+                                <p class="text-sm text-green-100 mt-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>8% vs año anterior
+                                </p>
+                            </div>
+                            <i class="fas fa-dollar-sign text-4xl text-green-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100">Tasa de Avance</p>
+                                <p class="text-3xl font-bold">58%</p>
+                                <p class="text-sm text-purple-100 mt-2">
+                                    <i class="fas fa-arrow-up mr-1"></i>5% vs mes anterior
+                                </p>
+                            </div>
+                            <i class="fas fa-tasks text-4xl text-purple-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-orange-100">Beneficiarios</p>
+                                <p class="text-3xl font-bold">15.2K</p>
+                                <p class="text-sm text-orange-100 mt-2">
+                                    <i class="fas fa-users mr-1"></i>Estimado
+                                </p>
+                            </div>
+                            <i class="fas fa-user-friends text-4xl text-orange-200"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Proyectos por Área</h3>
+                        <canvas id="areaChart"></canvas>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold mb-4">Estado de Proyectos</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">Proyectos Recientes</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-blue-100 p-3 rounded-full">
+                                    <i class="fas fa-road text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Pavimentación Avda. Santa Teresa</p>
+                                    <p class="text-sm text-gray-600">Vialidad - $2,000M</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="status-badge bg-yellow-100 text-yellow-800">En Licitación</span>
+                                <p class="text-sm text-gray-500 mt-1">Actualizado hace 2 días</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-green-100 p-3 rounded-full">
+                                    <i class="fas fa-school text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Mejoramiento Escuela San José</p>
+                                    <p class="text-sm text-gray-600">Educación - $130M</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="status-badge bg-green-100 text-green-800">En Ejecución</span>
+                                <p class="text-sm text-gray-500 mt-1">Actualizado hace 1 semana</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div id="projectModal" class="modal-overlay">
+        <div class="modal-content modal-large">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold">Detalles del Proyecto</h3>
+                <button onclick="closeProjectModal()" class="text-gray-500 hover:text-gray-700 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="projectModalContent" class="p-6 overflow-y-auto" style="max-height: calc(90vh - 80px);">
+                <!-- Project details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Panel Alternative -->
+    <div id="sidePanelOverlay" class="side-panel-overlay" onclick="closeSidePanel()"></div>
+    <div id="sidePanel" class="side-panel">
+        <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+            <h3 class="text-xl font-bold">Detalles del Proyecto</h3>
+            <button onclick="closeSidePanel()" class="text-gray-500 hover:text-gray-700 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="sidePanelContent" class="p-6">
+            <!-- Project details will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="addProjectModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold">Nuevo Proyecto</h3>
+                <button onclick="closeAddProjectModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form class="p-6 space-y-4" onsubmit="handleAddProject(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Proyecto</label>
+                        <input type="text" id="newProjectName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                        <select id="newProjectArea" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Seleccionar...</option>
+                            <option value="Saneamiento">Saneamiento</option>
+                            <option value="Vialidad">Vialidad</option>
+                            <option value="Espacios Públicos">Espacios Públicos</option>
+                            <option value="Educación">Educación</option>
+                            <option value="Salud">Salud</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Financiamiento</label>
+                        <select id="newProjectFunding" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Seleccionar...</option>
+                            <option value="FNDR">FNDR</option>
+                            <option value="PMU">PMU</option>
+                            <option value="FRIL">FRIL</option>
+                            <option value="Municipal">Municipal</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                        <input type="number" id="newProjectAmount" required min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <textarea id="newProjectDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeAddProjectModal()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Guardar Proyecto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Calendar Event Modal -->
+    <div id="calendarEventModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold">Nuevo Evento</h3>
+                <button onclick="closeCalendarEventModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form class="p-6 space-y-4" onsubmit="handleCalendarEvent(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título del Evento</label>
+                    <input type="text" id="eventTitle" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
+                        <input type="datetime-local" id="eventStart" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin</label>
+                        <input type="datetime-local" id="eventEnd" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                    <select id="eventType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Seleccionar...</option>
+                        <option value="vialidad">Vialidad</option>
+                        <option value="saneamiento">Saneamiento</option>
+                        <option value="espacios">Espacios Públicos</option>
+                        <option value="educacion">Educación</option>
+                        <option value="salud">Salud</option>
+                        <option value="municipal">Municipal</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <textarea id="eventDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación</label>
+                    <input type="text" id="eventLocation" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeCalendarEventModal()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Guardar Evento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js'></script>
+    
+    <script>
+        // Mock data based on Excel sheet
+        const projects = [
+            {
+                id: 1,
+                nombre: "Construcción agua potable y alcantarillado Escuela Rural el Yeco",
+                area: "Saneamiento",
+                financiamiento: "PMB 2025",
+                monto: 341000000,
+                estado: "Diseño",
+                avance: 100,
+                lat: -33.317810,
+                lng: -71.645680,
+                anioEjecucion: 2027,
+                responsable: "Arriola",
+                descripcion: "Construcción de sistema de agua potable y alcantarillado para la Escuela Rural de El Yeco, beneficiando a 200 estudiantes y 50 familias del sector.",
+                topografia: 100,
+                planimetria: 100,
+                ingenieria: 100,
+                documentos: 100,
+                website: "https://www.munialgarrobo.cl",
+                documentos: [
+                    { nombre: "Perfil Técnico - Económico.pdf", tipo: "PDF", url: "#" },
+                    { nombre: "Planos.pdf", tipo: "PDF", url: "#" },
+                    { nombre: "Especificaciones Técnicas", tipo: "Sitio Web", url: "https://www.munialgarrobo.cl/proyectos" }
+                ]
+            },
+            {
+                id: 2,
+                nombre: "Construcción alcantarillado la Puntilla I",
+                area: "Saneamiento",
+                financiamiento: "FNDR",
+                monto: 262000000,
+                estado: "Reevaluación",
+                avance: 95,
+                lat: -33.371101,
+                lng: -71.678859,
+                anioEjecucion: 2026,
+                responsable: "Catalán, Oportus",
+                descripcion: "Implementación de sistema de alcantarillado en el sector La Puntilla I, mejorando la calidad de vida de 300 habitantes.",
+                topografia: 100,
+                planimetria: 100,
+                ingenieria: 80,
+                documentos: 95,
+                website: "https://www.munialgarrobo.cl",
+                documentos: [
+                    { nombre: "Estudio de Impacto Ambiental", tipo: "PDF", url: "#" },
+                    { nombre: "Memoria de Cálculo", tipo: "PDF", url: "#" },
+                    { nombre: "Portal del Proyecto", tipo: "Sitio Web", url: "https://www.munialgarrobo.cl/puntilla" }
+                ]
+            },
+            {
+                id: 3,
+                nombre: "Pavimentacion circuito de Pescadores Oriente y Los Castaños",
+                area: "Vialidad",
+                financiamiento: "FNDR 2025",
+                monto: 987551000,
+                estado: "Preparando bases de licitación",
+                avance: 100,
+                lat: -33.366357,
+                lng: -71.672523,
+                anioEjecucion: 2026,
+                responsable: "Catalán",
+                descripcion: "Pavimentación de 2.5 km de calles en el circuito de Pescadores Oriente y Los Castaños, mejorando la conectividad vial.",
+                topografia: 100,
+                planimetria: 100,
+                ingenieria: 100,
+                documentos: 100,
+                website: "https://www.munialgarrobo.cl",
+                documentos: [
+                    { nombre: "Bases de Licitación", tipo: "PDF", url: "#" },
+                    { nombre: "Planos Viales", tipo: "PDF", url: "#" },
+                    { nombre: "Sistema de Seguimiento", tipo: "Sitio Web", url: "https://www.munialgarrobo.cl/pescadores" }
+                ]
+            },
+            {
+                id: 4,
+                nombre: "Construcción sede vecinal JJVV El Litre",
+                area: "Espacios Públicos",
+                financiamiento: "FRIL 2024",
+                monto: 108455950,
+                estado: "Adjudicado",
+                avance: 100,
+                lat: -33.372586,
+                lng: -71.664226,
+                anioEjecucion: 2025,
+                responsable: "Barrera, Gómez",
+                descripcion: "Construcción de nueva sede vecinal para la Junta de Vecinos El Litre, con capacidad para 100 personas.",
+                topografia: 100,
+                planimetria: 100,
+                ingenieria: 100,
+                documentos: 100,
+                website: "https://www.munialgarrobo.cl",
+                documentos: [
+                    { nombre: "Planos Arquitectónicos", tipo: "PDF", url: "#" },
+                    { nombre: "Especificaciones", tipo: "PDF", url: "#" },
+                    { nombre: "Galería del Proyecto", tipo: "Sitio Web", url: "https://www.munialgarrobo.cl/llitre" }
+                ]
+            },
+            {
+                id: 5,
+                nombre: "Construcción sala nivel medio Jardín los Claveles",
+                area: "Educación",
+                financiamiento: "Educación / Municipal",
+                monto: 70000000,
+                estado: "Diseño",
+                avance: 100,
+                lat: -33.369685,
+                lng: -71.662562,
+                anioEjecucion: 2026,
+                responsable: "Quezada, Galaz",
+                descripcion: "Construcción de sala de nivel medio para el Jardín Infantil Los Claveles, ampliando la capacidad a 60 niños.",
+                topografia: 100,
+                planimetria: 100,
+                ingenieria: 100,
+                documentos: 100,
+                website: "https://www.munialgarrobo.cl",
+                documentos: [
+                    { nombre: "Proyecto Educativo", tipo: "PDF", url: "#" },
+                    { nombre: "Planos Pedagógicos", tipo: "PDF", url: "#" },
+                    { nombre: "Portal Educativo", tipo: "Sitio Web", url: "https://www.munialgarrobo.cl/claveles" }
+                ]
+            }
+        ];
+
+        let map;
+        let markers = [];
+        let currentRole = 'admin';
+        let currentView = 'projects';
+        let calendar;
+        let reportCharts = {};
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            hideAllModals();
+            loadProjects();
+            initializeMap();
+            initializeCharts();
+            initializeCalendar();
+            initializeReportCharts();
+        });
+
+        // Hide all modals on page load
+        function hideAllModals() {
+            document.getElementById('projectModal').classList.remove('show');
+            document.getElementById('addProjectModal').classList.remove('show');
+            document.getElementById('calendarEventModal').classList.remove('show');
+            document.getElementById('sidePanel').classList.remove('open');
+            document.getElementById('sidePanelOverlay').classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+
+        // Function to open external websites safely
+        function openWebsite(url, projectTitle = '') {
+            if (!url || url === '#') {
+                alert('No hay sitio web disponible para este proyecto');
+                return;
+            }
+            
+            const confirmed = confirm(`¿Desea abrir el sitio web externo?\n\n${projectTitle ? 'Proyecto: ' + projectTitle : ''}\nURL: ${url}\n\nSe abrirá en una nueva pestaña.`);
+            
+            if (confirmed) {
+                const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+                
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    window.location.href = url;
+                }
+            }
+        }
+
+        // Function to download documents
+        function downloadDocument(url, filename) {
+            if (!url || url === '#') {
+                alert('El documento no está disponible para descarga');
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert(`Descargando: ${filename}`);
+        }
+
+        // Load projects into table
+        function loadProjects() {
+            const tbody = document.getElementById('projectsTableBody');
+            tbody.innerHTML = '';
+            
+            projects.forEach(project => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${project.nombre}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.area}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.financiamiento}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatNumber(project.monto)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge ${getStatusColor(project.estado)}">${project.estado}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-600 h-2 rounded-full progress-bar" style="width: ${project.avance}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">${project.avance}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="showProjectDetails(${project.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="editProject(${project.id})" class="text-green-600 hover:text-green-900 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Initialize map
+        function initializeMap() {
+            map = L.map('map').setView([-33.366677, -71.673103], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            projects.forEach(project => {
+                if (project.lat && project.lng) {
+                    const popupContent = `
+                        <div class="popup-content">
+                            <div class="popup-title">${project.nombre}</div>
+                            <div class="popup-info"><strong>Área:</strong> ${project.area}</div>
+                            <div class="popup-info"><strong>Estado:</strong> ${project.estado}</div>
+                            <div class="popup-info"><strong>Avance:</strong> ${project.avance}%</div>
+                            <div class="popup-info"><strong>Monto:</strong> $${formatNumber(project.monto)}</div>
+                            <button class="popup-button" onclick="showProjectDetailsFromMap(${project.id})">
+                                <i class="fas fa-info-circle mr-1"></i> Ver detalles completos
+                            </button>
+                        </div>
+                    `;
+                    
+                    const marker = L.marker([project.lat, project.lng])
+                        .addTo(map)
+                        .bindPopup(popupContent, {
+                            maxWidth: 300,
+                            className: 'custom-popup'
+                        });
+                    
+                    markers.push(marker);
+                }
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Area chart
+            const areaCtx = document.getElementById('areaChart');
+            if (areaCtx) {
+                new Chart(areaCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Vialidad', 'Espacios Públicos', 'Saneamiento', 'Educación', 'Salud'],
+                        datasets: [{
+                            data: [33, 38, 8, 8, 5],
+                            backgroundColor: [
+                                '#3B82F6',
+                                '#10B981',
+                                '#F59E0B',
+                                '#8B5CF6',
+                                '#EF4444'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Status chart
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                new Chart(statusCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Diseño', 'Ejecución', 'Licitación', 'En preparación', 'Aprobado'],
+                        datasets: [{
+                            label: 'Proyectos',
+                            data: [25, 12, 8, 30, 17],
+                            backgroundColor: '#3B82F6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize calendar
+        function initializeCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl) {
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'es',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    },
+                    events: [
+                        {
+                            title: 'Inicio Licitación - Pavimentación Av. Santa Teresa',
+                            start: '2025-09-15',
+                            className: 'vialidad',
+                            description: 'Proyecto FNDR 2025'
+                        },
+                        {
+                            title: 'Entrega Informe Final - Alcantarillado La Puntilla I',
+                            start: '2025-09-22',
+                            className: 'saneamiento',
+                            description: 'Proyecto FNDR'
+                        },
+                        {
+                            title: 'Reunión Comité de Seguimiento - Proyectos Educativos',
+                            start: '2025-09-30T10:00:00',
+                            className: 'educacion',
+                            description: 'Municipal'
+                        },
+                        {
+                            title: 'Sesión Ordinaria Concejo Municipal',
+                            start: '2025-09-10T10:00:00',
+                            className: 'municipal',
+                            description: 'Sala Concejo'
+                        },
+                        {
+                            title: 'Ceremonia Inicio Obra - Sede Vecinal El Litre',
+                            start: '2025-09-18T11:00:00',
+                            className: 'espacios',
+                            description: 'FRIL 2024'
+                        },
+                        {
+                            title: 'Día del Patrimonio Municipal',
+                            start: '2025-09-25',
+                            className: 'municipal',
+                            description: 'Centro Cívico'
+                        }
+                    ],
+                    eventClick: function(info) {
+                        alert('Evento: ' + info.event.title + '\nDescripción: ' + info.event.extendedProps.description);
+                    },
+                    dateClick: function(info) {
+                        const dateStr = info.dateStr;
+                        alert('Fecha seleccionada: ' + dateStr + '\nPuedes agregar un nuevo evento aquí.');
+                    }
+                });
+                calendar.render();
+            }
+        }
+
+        // Initialize report charts
+        function initializeReportCharts() {
+            // Project Evolution Chart
+            const evolutionCtx = document.getElementById('projectEvolutionChart');
+            if (evolutionCtx) {
+                reportCharts.evolution = new Chart(evolutionCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'],
+                        datasets: [{
+                            label: 'Proyectos Iniciados',
+                            data: [5, 8, 12, 15, 18, 22, 25, 28, 32],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Proyectos Completados',
+                            data: [2, 3, 5, 7, 9, 11, 13, 15, 18],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Budget Distribution Chart
+            const budgetCtx = document.getElementById('budgetDistributionChart');
+            if (budgetCtx) {
+                reportCharts.budget = new Chart(budgetCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Vialidad', 'Espacios Públicos', 'Saneamiento', 'Educación', 'Salud', 'Otros'],
+                        datasets: [{
+                            data: [8500, 6200, 3100, 2800, 1500, 3200],
+                            backgroundColor: [
+                                '#3B82F6',
+                                '#10B981',
+                                '#F59E0B',
+                                '#8B5CF6',
+                                '#EF4444',
+                                '#6B7280'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return label + ': $' + formatNumber(value) + 'M (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Calendar functions
+        function addCalendarEvent() {
+            document.getElementById('calendarEventModal').classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeCalendarEventModal() {
+            document.getElementById('calendarEventModal').classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+
+        function handleCalendarEvent(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('eventTitle').value;
+            const start = document.getElementById('eventStart').value;
+            const end = document.getElementById('eventEnd').value;
+            const type = document.getElementById('eventType').value;
+            const description = document.getElementById('eventDescription').value;
+            const location = document.getElementById('eventLocation').value;
+            
+            const newEvent = {
+                title: title,
+                start: start,
+                end: end,
+                className: type,
+                description: description,
+                location: location
+            };
+            
+            calendar.addEvent(newEvent);
+            closeCalendarEventModal();
+            
+            // Clear form
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventStart').value = '';
+            document.getElementById('eventEnd').value = '';
+            document.getElementById('eventType').value = '';
+            document.getElementById('eventDescription').value = '';
+            document.getElementById('eventLocation').value = '';
+            
+            alert('Evento agregado exitosamente');
+        }
+
+        function syncCalendar() {
+            alert('Sincronizando calendario con sistemas externos...\nEsta función se conectará con Google Calendar, Outlook, etc.');
+        }
+
+        function exportCalendar() {
+            alert('Exportando calendario...\nSe generará un archivo .ics compatible con la mayoría de calendarios.');
+        }
+
+        // Report functions
+        function generateReport() {
+            const type = document.getElementById('reportType').value;
+            const period = document.getElementById('reportPeriod').value;
+            const area = document.getElementById('reportArea').value;
+            const format = document.getElementById('reportFormat').value;
+            
+            alert(`Generando informe:\nTipo: ${type}\nPeríodo: ${period}\nÁrea: ${area}\nFormato: ${format}\n\nEl informe se está procesando y estará disponible en breve.`);
+        }
+
+        function scheduleReport() {
+            alert('Programando informe automático...\nPodrás configurar la frecuencia y destinatarios del informe.');
+        }
+
+        function saveReportTemplate() {
+            alert('Guardando configuración como plantilla...\nPodrás reutilizar esta configuración para informes futuros.');
+        }
+
+        function updateReportPreview() {
+            const type = document.getElementById('reportType').value;
+            const period = document.getElementById('reportPeriod').value;
+            const area = document.getElementById('reportArea').value;
+            
+            console.log('Actualizando vista previa:', { type, period, area });
+            // Here you would update the preview based on the selected filters
+        }
+
+        function selectReportType(type) {
+            alert(`Seleccionando tipo de informe: ${type}\nSe cargarán las plantillas y configuraciones específicas para este tipo.`);
+        }
+
+        function downloadReport(reportId) {
+            alert(`Descargando informe: ${reportId}\nEl informe se descargará en el formato seleccionado.`);
+        }
+
+        function viewReport(reportId) {
+            alert(`Visualizando informe: ${reportId}\nSe abrirá el informe en una nueva ventana.`);
+        }
+
+        function shareReport(reportId) {
+            alert(`Compartiendo informe: ${reportId}\nPodrás compartir por email o generar enlace público.`);
+        }
+
+        function viewAllReports() {
+            alert('Mostrando todos los informes históricos...\nSe abrirá una vista completa con todos los informes generados.');
+        }
+
+        // Show project details from map
+        function showProjectDetailsFromMap(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            map.closePopup();
+            
+            if (currentView === 'map') {
+                showProjectDetailsInSidePanel(project);
+            } else {
+                showProjectDetails(projectId);
+            }
+        }
+
+        // Show project details in side panel
+        function showProjectDetailsInSidePanel(project) {
+            const content = document.getElementById('sidePanelContent');
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">${project.nombre}</h2>
+                        <div class="mt-2 flex items-center space-x-4">
+                            <span class="status-badge ${getStatusColor(project.estado)}">${project.estado}</span>
+                            <span class="text-sm text-gray-600">Código: #${project.id}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Información General</h3>
+                        <dl class="space-y-2">
+                            <div class="flex justify-between">
+                                <dt class="text-gray-600">Área:</dt>
+                                <dd class="font-medium">${project.area}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-600">Financiamiento:</dt>
+                                <dd class="font-medium">${project.financiamiento}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-600">Monto:</dt>
+                                <dd class="font-medium">$${formatNumber(project.monto)}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-600">Año Ejecución:</dt>
+                                <dd class="font-medium">${project.anioEjecucion}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-gray-600">Responsable:</dt>
+                                <dd class="font-medium">${project.responsable}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Descripción</h3>
+                        <p class="text-gray-700">${project.descripcion}</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Avance del Proyecto</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm text-gray-600">Avance Total</span>
+                                    <span class="text-sm font-medium">${project.avance}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="bg-blue-600 h-3 rounded-full" style="width: ${project.avance}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-4">
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <p class="text-xs text-gray-600">Topografía</p>
+                                    <p class="font-semibold">${project.topografia}%</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <p class="text-xs text-gray-600">Planimetrías</p>
+                                    <p class="font-semibold">${project.planimetria}%</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <p class="text-xs text-gray-600">Ingeniería</p>
+                                    <p class="font-semibold">${project.ingenieria}%</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <p class="text-xs text-gray-600">Documentos</p>
+                                    <p class="font-semibold">${project.documentos}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Ubicación</h3>
+                        <div id="miniMap" style="height: 200px;" class="rounded-lg overflow-hidden"></div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Documentos Relacionados</h3>
+                        <div class="space-y-2">
+                            ${project.documentos.map(doc => `
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <i class="fas fa-${doc.tipo === 'PDF' ? 'file-pdf text-red-500' : 'globe text-green-500'}"></i>
+                                        <span class="text-sm font-medium">${doc.nombre}</span>
+                                    </div>
+                                    <div class="document-actions">
+                                        ${doc.tipo === 'PDF' ? 
+                                            `<button onclick="downloadDocument('${doc.url}', '${doc.nombre}')" class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-download"></i>
+                                            </button>` :
+                                            `<button onclick="openWebsite('${doc.url}', '${project.nombre}')" class="external-site-link">
+                                                <i class="fas fa-external-link-alt"></i>
+                                                Sitio Web
+                                            </button>`
+                                        }
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    ${project.website ? `
+                        <div class="pt-4 border-t">
+                            <button onclick="openWebsite('${project.website}', '${project.nombre}')" class="external-link-btn w-full justify-center">
+                                <i class="fas fa-globe"></i>
+                                Abrir Sitio Web del Proyecto
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('sidePanel').classList.add('open');
+            document.getElementById('sidePanelOverlay').classList.add('show');
+            document.body.classList.add('modal-open');
+            
+            setTimeout(() => {
+                const miniMap = L.map('miniMap').setView([project.lat, project.lng], 16);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(miniMap);
+                L.marker([project.lat, project.lng]).addTo(miniMap);
+            }, 100);
+        }
+
+        // Close side panel
+        function closeSidePanel() {
+            document.getElementById('sidePanel').classList.remove('open');
+            document.getElementById('sidePanelOverlay').classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+
+        // Show project details (modal)
+        function showProjectDetails(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            const modalContent = document.getElementById('projectModalContent');
+            modalContent.innerHTML = `
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">${project.nombre}</h2>
+                        <div class="mt-2 flex items-center space-x-4">
+                            <span class="status-badge ${getStatusColor(project.estado)}">${project.estado}</span>
+                            <span class="text-sm text-gray-600">Código: #${project.id}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-lg font-semibold mb-3">Información General</h3>
+                            <dl class="space-y-2">
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-600">Área:</dt>
+                                    <dd class="font-medium">${project.area}</dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-600">Financiamiento:</dt>
+                                    <dd class="font-medium">${project.financiamiento}</dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-600">Monto:</dt>
+                                    <dd class="font-medium">$${formatNumber(project.monto)}</dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-600">Año Ejecución:</dt>
+                                    <dd class="font-medium">${project.anioEjecucion}</dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt class="text-gray-600">Responsable:</dt>
+                                    <dd class="font-medium">${project.responsable}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold mb-3">Avance del Proyecto</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm text-gray-600">Avance Total</span>
+                                        <span class="text-sm font-medium">${project.avance}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-3">
+                                        <div class="bg-blue-600 h-3 rounded-full" style="width: ${project.avance}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4 mt-4">
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <p class="text-xs text-gray-600">Topografía</p>
+                                        <p class="font-semibold">${project.topografia}%</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <p class="text-xs text-gray-600">Planimetrías</p>
+                                        <p class="font-semibold">${project.planimetria}%</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <p class="text-xs text-gray-600">Ingeniería</p>
+                                        <p class="font-semibold">${project.ingenieria}%</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded">
+                                        <p class="text-xs text-gray-600">Documentos</p>
+                                        <p class="font-semibold">${project.documentos}%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Descripción</h3>
+                        <p class="text-gray-700">${project.descripcion}</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Ubicación</h3>
+                        <div id="projectMap" style="height: 300px;" class="rounded-lg overflow-hidden"></div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Documentos Relacionados</h3>
+                        <div class="space-y-2">
+                            ${project.documentos.map(doc => `
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <i class="fas fa-${doc.tipo === 'PDF' ? 'file-pdf text-red-500' : 'globe text-green-500'}"></i>
+                                        <span class="text-sm font-medium">${doc.nombre}</span>
+                                    </div>
+                                    <div class="document-actions">
+                                        ${doc.tipo === 'PDF' ? 
+                                            `<button onclick="downloadDocument('${doc.url}', '${doc.nombre}')" class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-download"></i>
+                                            </button>` :
+                                            `<button onclick="openWebsite('${doc.url}', '${project.nombre}')" class="external-site-link">
+                                                <i class="fas fa-external-link-alt"></i>
+                                                Sitio Web
+                                            </button>`
+                                        }
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    ${project.website ? `
+                        <div class="pt-4 border-t">
+                            <button onclick="openWebsite('${project.website}', '${project.nombre}')" class="external-link-btn w-full justify-center">
+                                <i class="fas fa-globe"></i>
+                                Abrir Sitio Web del Proyecto
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('projectModal').classList.add('show');
+            document.body.classList.add('modal-open');
+            
+            setTimeout(() => {
+                const projectMap = L.map('projectMap').setView([project.lat, project.lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(projectMap);
+                L.marker([project.lat, project.lng]).addTo(projectMap);
+            }, 100);
+        }
+
+        // Close project modal
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+
+        // Show add project modal
+        function showAddProjectModal() {
+            document.getElementById('addProjectModal').classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+
+        // Close add project modal
+        function closeAddProjectModal() {
+            document.getElementById('addProjectModal').classList.remove('show');
+            document.body.classList.remove('modal-open');
+            document.getElementById('newProjectName').value = '';
+            document.getElementById('newProjectArea').value = '';
+            document.getElementById('newProjectFunding').value = '';
+            document.getElementById('newProjectAmount').value = '';
+            document.getElementById('newProjectDescription').value = '';
+        }
+
+        // Handle add project form submission
+        function handleAddProject(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('newProjectName').value;
+            const area = document.getElementById('newProjectArea').value;
+            const funding = document.getElementById('newProjectFunding').value;
+            const amount = parseInt(document.getElementById('newProjectAmount').value);
+            const description = document.getElementById('newProjectDescription').value;
+            
+            const newProject = {
+                id: projects.length + 1,
+                nombre: name,
+                area: area,
+                financiamiento: funding,
+                monto: amount,
+                estado: "En preparación",
+                avance: 0,
+                lat: -33.366677 + (Math.random() - 0.5) * 0.1,
+                lng: -71.673103 + (Math.random() - 0.5) * 0.1,
+                anioEjecucion: new Date().getFullYear() + 1,
+                responsable: "Por asignar",
+                descripcion: description || "Sin descripción proporcionada",
+                topografia: 0,
+                planimetria: 0,
+                ingenieria: 0,
+                documentos: 0,
+                website: "https://www.munialgarrobo.cl",
+                documentos: [
+                    { nombre: "Documento de ejemplo.pdf", tipo: "PDF", url: "#" }
+                ]
+            };
+            
+            projects.push(newProject);
+            loadProjects();
+            
+            if (map) {
+                const popupContent = `
+                    <div class="popup-content">
+                        <div class="popup-title">${newProject.nombre}</div>
+                        <div class="popup-info"><strong>Área:</strong> ${newProject.area}</div>
+                        <div class="popup-info"><strong>Estado:</strong> ${newProject.estado}</div>
+                        <div class="popup-info"><strong>Avance:</strong> ${newProject.avance}%</div>
+                        <div class="popup-info"><strong>Monto:</strong> $${formatNumber(newProject.monto)}</div>
+                        <button class="popup-button" onclick="showProjectDetailsFromMap(${newProject.id})">
+                            <i class="fas fa-info-circle mr-1"></i> Ver detalles completos
+                        </button>
+                    </div>
+                `;
+                
+                const marker = L.marker([newProject.lat, newProject.lng])
+                    .addTo(map)
+                    .bindPopup(popupContent, {
+                        maxWidth: 300,
+                        className: 'custom-popup'
+                    });
+                
+                markers.push(marker);
+            }
+            
+            closeAddProjectModal();
+            alert('Proyecto agregado exitosamente');
+        }
+
+        // View management
+        function showView(viewName) {
+            currentView = viewName;
+            
+            document.querySelectorAll('.view-content').forEach(view => {
+                view.classList.add('hidden');
+            });
+            
+            document.getElementById(viewName + 'View').classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-blue-50', 'text-blue-600');
+                item.classList.add('text-gray-700');
+            });
+            
+            event.target.closest('.nav-item').classList.add('bg-blue-50', 'text-blue-600');
+            event.target.closest('.nav-item').classList.remove('text-gray-700');
+            
+            if (viewName === 'map') {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            }
+            
+            if (viewName === 'calendar') {
+                setTimeout(() => {
+                    if (calendar) {
+                        calendar.render();
+                    }
+                }, 100);
+            }
+        }
+
+        // User menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Change role
+        function changeRole(role) {
+            currentRole = role;
+            const roleNames = {
+                'admin': 'Administrador',
+                'alcalde': 'Alcalde',
+                'secplac': 'SECPLAC',
+                'public': 'Vista Pública'
+            };
+            document.getElementById('currentRole').textContent = roleNames[role];
+            document.getElementById('userMenu').classList.add('hidden');
+            
+            if (role === 'public') {
+                alert('Modo público activado - Se ocultará información sensible');
+            }
+        }
+
+        // Toggle notifications
+        function toggleNotifications() {
+            alert('Panel de notificaciones - En desarrollo');
+        }
+
+        // Export data
+        function exportData() {
+            alert('Exportando datos a Excel...');
+        }
+
+        // Filter map by area
+        function filterMapByArea(area) {
+            event.target.classList.add('bg-blue-600', 'text-white');
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            
+            const buttons = event.target.parentElement.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn !== event.target) {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700');
+                }
+            });
+            
+            markers.forEach((marker, index) => {
+                if (area === 'all' || projects[index].area === area) {
+                    marker.addTo(map);
+                } else {
+                    marker.remove();
+                }
+            });
+        }
+
+        // Filter projects
+        function filterProjects() {
+            const area = document.getElementById('areaFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const funding = document.getElementById('fundingFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredProjects = projects.filter(project => {
+                return (!area || project.area === area) &&
+                       (!status || project.estado === status) &&
+                       (!funding || project.financiamiento === funding) &&
+                       (!search || project.nombre.toLowerCase().includes(search));
+            });
+            
+            const tbody = document.getElementById('projectsTableBody');
+            tbody.innerHTML = '';
+            
+            filteredProjects.forEach(project => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${project.nombre}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.area}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.financiamiento}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatNumber(project.monto)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge ${getStatusColor(project.estado)}">${project.estado}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-600 h-2 rounded-full progress-bar" style="width: ${project.avance}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">${project.avance}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="showProjectDetails(${project.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="editProject(${project.id})" class="text-green-600 hover:text-green-900 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Helper functions
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'Diseño': 'bg-blue-100 text-blue-800',
+                'Ejecución': 'bg-green-100 text-green-800',
+                'Licitación': 'bg-yellow-100 text-yellow-800',
+                'En preparación': 'bg-gray-100 text-gray-800',
+                'Aprobado': 'bg-purple-100 text-purple-800',
+                'Adjudicado': 'bg-indigo-100 text-indigo-800',
+                'Reevaluación': 'bg-orange-100 text-orange-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function editProject(id) {
+            alert(`Editando proyecto ${id} - Funcionalidad en desarrollo`);
+        }
+
+        function deleteProject(id) {
+            if (confirm('¿Está seguro de eliminar este proyecto?')) {
+                const index = projects.findIndex(p => p.id === id);
+                if (index > -1) {
+                    projects.splice(index, 1);
+                    loadProjects();
+                    alert(`Proyecto ${id} eliminado`);
+                }
+            }
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('userMenu');
+            const userButton = event.target.closest('button[onclick="toggleUserMenu()"]');
+            
+            if (!userButton && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const projectModal = document.getElementById('projectModal');
+            const addProjectModal = document.getElementById('addProjectModal');
+            const calendarEventModal = document.getElementById('calendarEventModal');
+            
+            if (event.target === projectModal) {
+                closeProjectModal();
+            }
+            if (event.target === addProjectModal) {
+                closeAddProjectModal();
+            }
+            if (event.target === calendarEventModal) {
+                closeCalendarEventModal();
+            }
+        });
+
+        // Handle ESC key to close modals
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeProjectModal();
+                closeAddProjectModal();
+                closeCalendarEventModal();
+                closeSidePanel();
+            }
+        });
+    </script>
+</body>
+</html>

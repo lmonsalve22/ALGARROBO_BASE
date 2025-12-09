@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        // Función para verificar el estado de login
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            console.log(isLoggedIn)
+            
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                // Redirigir a la página de login si no está logueado
+                window.location.href = '../../index.html';
+            }
+        }
+        //checkLoginStatus() 
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal Municipal - Algarrobo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Estilos para el mapa */
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+        
+        /* Estilos para los popups personalizados */
+        .custom-popup {
+            font-family: 'Arial', sans-serif;
+        }
+        .popup-content {
+            padding: 10px;
+            min-width: 250px;
+        }
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #1e40af;
+        }
+        .popup-info {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .popup-button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .popup-button:hover {
+            background-color: #2563eb;
+        }
+        
+        /* Estilos para los filtros del mapa */
+        .filter-button {
+            transition: all 0.2s;
+        }
+        .filter-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .filter-button:not(.active) {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .filter-button:hover {
+            transform: translateY(-1px);
+        }
+        
+        /* Estilos para la leyenda */
+        .legend {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-lg relative z-40">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-city text-2xl"></i>
+                    <div>
+                        <h1 class="text-xl font-bold">Geoportal Municipal</h1>
+                        <p class="text-xs text-blue-100">Ilustre Municipalidad de Algarrobo</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button onclick="toggleUserMenu()" class="flex items-center space-x-2 hover:bg-blue-700 px-3 py-2 rounded">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="currentRole">Administrador</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                            <a href="#" onclick="changeRole('admin')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-user-shield mr-2"></i> Administrador
+                            </a>
+                            <a href="#" onclick="changeRole('alcalde')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-user-tie mr-2"></i> Alcalde
+                            </a>
+                            <a href="#" onclick="changeRole('secplac')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-users mr-2"></i> SECPLAC
+                            </a>
+                            <a href="#" onclick="changeRole('public')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-eye mr-2"></i> Vista Pública
+                            </a>
+                            <hr class="my-1">
+                            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-cog mr-2"></i> Configuración
+                            </a>
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Salir
+                            </a>
+                        </div>
+                    </div>
+                    <button onclick="toggleNotifications()" class="relative hover:bg-blue-700 p-2 rounded">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white shadow-lg h-screen sticky top-0 sidebar-transition z-30">
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="dashboard.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="proyecto.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-map-marked-alt w-5"></i>
+                            <span>Proyectos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mapa.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                            <i class="fas fa-map-marked-alt w-5"></i>
+                            <span>Mapa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="informe.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Informes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="calendario.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-calendar-alt w-5"></i>
+                            <span>Calendario</span>
+                        </a>
+                    </li>
+
+                    <li class="pt-4 mt-4 border-t">
+                        <p class="text-xs text-gray-500 uppercase font-semibold px-3">Módulos</p>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-road w-5"></i>
+                            <span>Vialidad</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tint w-5"></i>
+                            <span>Saneamiento</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tree w-5"></i>
+                            <span>Espacios Públicos</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Map View -->
+            <div id="mapView" class="view-content">
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Mapa de Proyectos</h2>
+                    <p class="text-gray-600">Visualización geográfica de todos los proyectos municipales</p>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Proyectos</p>
+                                <p class="text-2xl font-bold text-gray-800">92</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-map-marker-alt text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Vialidad</p>
+                                <p class="text-2xl font-bold text-gray-800">38</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-road text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Saneamiento</p>
+                                <p class="text-2xl font-bold text-gray-800">18</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-tint text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Espacios Públicos</p>
+                                <p class="text-2xl font-bold text-gray-800">24</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-tree text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map Container -->
+                <div class="bg-white rounded-lg shadow p-4">
+                    <!-- Map Filters -->
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        <button onclick="filterMapByArea('all')" class="filter-button active px-4 py-2 rounded">Todos</button>
+                        <button onclick="filterMapByArea('Saneamiento')" class="filter-button px-4 py-2 rounded">Saneamiento</button>
+                        <button onclick="filterMapByArea('Vialidad')" class="filter-button px-4 py-2 rounded">Vialidad</button>
+                        <button onclick="filterMapByArea('Espacios Públicos')" class="filter-button px-4 py-2 rounded">Espacios Públicos</button>
+                        <button onclick="filterMapByArea('Educación')" class="filter-button px-4 py-2 rounded">Educación</button>
+                        <button onclick="filterMapByArea('Salud')" class="filter-button px-4 py-2 rounded">Salud</button>
+                        
+                        <div class="ml-auto flex gap-2">
+                            <button onclick="resetMapView()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                <i class="fas fa-sync-alt mr-1"></i> Restablecer Vista
+                            </button>
+                            <button onclick="toggleMapFullscreen()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                                <i class="fas fa-expand mr-1"></i> Pantalla Completa
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Map -->
+                    <div id="map"></div>
+                </div>
+                
+                <!-- Projects List -->
+                <div class="mt-6 bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">Proyectos en Mapa</h3>
+                    <div id="mapProjectsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Projects will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Verificar si el usuario está logueado al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            //checkLoginStatus();
+            initializeMap();
+            loadMapProjectsList();
+        });
+
+        // Datos de ejemplo para proyectos con coordenadas
+        const projects = [
+            { id: 1, nombre: "Pavimentación Avda. Santa Teresa", area: "Vialidad", estado: "En Licitación", avance: 25, monto: 2000000000, lat: -33.366677, lng: -71.673103 },
+            { id: 2, nombre: "Mejoramiento Escuela San José", area: "Educación", estado: "En Ejecución", avance: 60, monto: 130000000, lat: -33.355677, lng: -71.665103 },
+            { id: 3, nombre: "Reparación Red de Agua Potable", area: "Saneamiento", estado: "En preparación", avance: 10, monto: 500000000, lat: -33.370677, lng: -71.680103 },
+            { id: 4, nombre: "Parque Central", area: "Espacios Públicos", estado: "Diseño", avance: 5, monto: 300000000, lat: -33.365677, lng: -71.670103 },
+            { id: 5, nombre: "Pavimentación Calle Las Flores", area: "Vialidad", estado: "En Ejecución", avance: 40, monto: 800000000, lat: -33.360677, lng: -71.675103 },
+            { id: 6, nombre: "Centro de Salud Familiar", area: "Salud", estado: "Diseño", avance: 15, monto: 1200000000, lat: -33.362677, lng: -71.678103 },
+            { id: 7, nombre: "Plaza de Armas Remodelación", area: "Espacios Públicos", estado: "En Ejecución", avance: 70, monto: 150000000, lat: -33.368677, lng: -71.673103 },
+            { id: 8, nombre: "Alcantarillado Sector Sur", area: "Saneamiento", estado: "En Licitación", avance: 20, monto: 1500000000, lat: -33.372677, lng: -71.676103 },
+            { id: 9, nombre: "Mejoramiento Camino Rural", area: "Vialidad", estado: "En preparación", avance: 5, monto: 600000000, lat: -33.375677, lng: -71.670103 },
+            { id: 10, nombre: "Jardín Infantil Los Pinos", area: "Educación", estado: "En Ejecución", avance: 50, monto: 400000000, lat: -33.358677, lng: -71.668103 }
+        ];
+
+        // Variables globales para el mapa
+        let map;
+        let markers = [];
+        let currentFilter = 'all';
+
+        // Colores para cada área
+        const areaColors = {
+            'Vialidad': '#3B82F6',
+            'Saneamiento': '#06B6D4',
+            'Espacios Públicos': '#10B981',
+            'Educación': '#8B5CF6',
+            'Salud': '#EF4444'
+        };
+
+        // Inicializar mapa
+        function initializeMap() {
+            // Crear mapa centrado en Algarrobo
+            map = L.map('map').setView([-33.366677, -71.673103], 13);
+            
+            // Añadir capa de tiles de OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Añadir marcadores de proyectos con popups mejorados
+            projects.forEach(project => {
+                if (project.lat && project.lng) {
+                    const popupContent = `
+                        <div class="popup-content">
+                            <div class="popup-title">${project.nombre}</div>
+                            <div class="popup-info"><strong>Área:</strong> ${project.area}</div>
+                            <div class="popup-info"><strong>Estado:</strong> ${project.estado}</div>
+                            <div class="popup-info"><strong>Avance:</strong> ${project.avance}%</div>
+                            <div class="popup-info"><strong>Monto:</strong> $${formatNumber(project.monto)}</div>
+                            <button class="popup-button" onclick="showProjectDetailsFromMap(${project.id})">
+                                <i class="fas fa-info-circle mr-1"></i> Ver detalles completos
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Crear icono personalizado según el área
+                    const iconColor = areaColors[project.area] || '#3B82F6';
+                    const customIcon = L.divIcon({
+                        html: `<div style="background-color: ${iconColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10],
+                        popupAnchor: [0, -10],
+                        className: 'custom-div-icon'
+                    });
+                    
+                    const marker = L.marker([project.lat, project.lng], { icon: customIcon })
+                        .addTo(map)
+                        .bindPopup(popupContent, {
+                            maxWidth: 300,
+                            className: 'custom-popup'
+                        });
+                    
+                    // Guardar referencia al área del proyecto para filtrado
+                    marker.area = project.area;
+                    markers.push(marker);
+                }
+            });
+
+            // Añadir leyenda al mapa
+            addLegend();
+        }
+
+        // Añadir leyenda al mapa
+        function addLegend() {
+            const legend = L.control({ position: 'bottomright' });
+            
+            legend.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'legend');
+                div.innerHTML = '<div class="legend-title">Áreas de Proyecto</div>';
+                
+                for (const [area, color] of Object.entries(areaColors)) {
+                    div.innerHTML += `
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: ${color}"></div>
+                            <span>${area}</span>
+                        </div>
+                    `;
+                }
+                
+                return div;
+            };
+            
+            legend.addTo(map);
+        }
+
+        // Filtrar marcadores por área
+        function filterMapByArea(area) {
+            // Actualizar botones de filtro
+            document.querySelectorAll('.filter-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Ocultar todos los marcadores
+            markers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            
+            // Mostrar solo los marcadores del área seleccionada
+            if (area === 'all') {
+                markers.forEach(marker => {
+                    marker.addTo(map);
+                });
+            } else {
+                markers.forEach(marker => {
+                    if (marker.area === area) {
+                        marker.addTo(map);
+                    }
+                });
+            }
+            
+            // Actualizar lista de proyectos
+            loadMapProjectsList(area);
+        }
+
+        // Restablecer vista del mapa
+        function resetMapView() {
+            map.setView([-33.366677, -71.673103], 13);
+            
+            // Restablecer filtros
+            document.querySelectorAll('.filter-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelector('.filter-button').classList.add('active');
+            
+            // Mostrar todos los marcadores
+            markers.forEach(marker => {
+                marker.addTo(map);
+            });
+            
+            // Actualizar lista de proyectos
+            loadMapProjectsList('all');
+        }
+
+        // Toggle pantalla completa
+        function toggleMapFullscreen() {
+            const mapContainer = document.getElementById('map');
+            
+            if (!document.fullscreenElement) {
+                mapContainer.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Cargar lista de proyectos en el mapa
+        function loadMapProjectsList(filterArea = 'all') {
+            const listContainer = document.getElementById('mapProjectsList');
+            listContainer.innerHTML = '';
+            
+            let filteredProjects = projects;
+            if (filterArea !== 'all') {
+                filteredProjects = projects.filter(project => project.area === filterArea);
+            }
+            
+            filteredProjects.forEach(project => {
+                const projectCard = document.createElement('div');
+                projectCard.className = 'bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition';
+                projectCard.onclick = () => focusProjectOnMap(project.id);
+                
+                const areaColor = areaColors[project.area] || '#3B82F6';
+                
+                projectCard.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div style="background-color: ${areaColor}; width: 12px; height: 12px; border-radius: 50%; margin-top: 5px;"></div>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">${project.nombre}</h4>
+                            <p class="text-sm text-gray-600">${project.area}</p>
+                            <div class="mt-2 flex justify-between items-center">
+                                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">${project.estado}</span>
+                                <span class="text-xs text-gray-500">${project.avance}% avance</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                listContainer.appendChild(projectCard);
+            });
+        }
+
+        // Enfocar un proyecto en el mapa
+        function focusProjectOnMap(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (project && project.lat && project.lng) {
+                map.setView([project.lat, project.lng], 16);
+                
+                // Encontrar y abrir el popup del marcador
+                markers.forEach(marker => {
+                    const latlng = marker.getLatLng();
+                    if (latlng.lat === project.lat && latlng.lng === project.lng) {
+                        marker.openPopup();
+                    }
+                });
+            }
+        }
+
+        // Mostrar detalles del proyecto desde el mapa
+        function showProjectDetailsFromMap(projectId) {
+            alert(`Mostrando detalles completos del proyecto ${projectId}`);
+            // Aquí se podría redirigir a una página de detalles o abrir un modal
+        }
+
+        // Formatear número con separadores de miles
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Función para logout
+        function logout() {
+            // Eliminar la sesión del usuario
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userRole');
+            
+            // Redirigir a la página de login
+            window.location.href = '../../index.html';
+        }
+
+        // User menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Change role
+        function changeRole(role) {
+            currentRole = role;
+            const roleNames = {
+                'admin': 'Administrador',
+                'alcalde': 'Alcalde',
+                'secplac': 'SECPLAC',
+                'public': 'Vista Pública'
+            };
+            document.getElementById('currentRole').textContent = roleNames[role];
+            document.getElementById('userMenu').classList.add('hidden');
+            console.log(localStorage)
+            // Guardar el rol en localStorage
+            localStorage.setItem('userRole', role);
+            
+            // Aquí se implementaría la lógica para cambiar la vista según el rol
+            if (role === 'public') {
+                alert('Modo público activado - Se ocultará información sensible');
+            }
+        }
+
+        // Toggle notifications
+        function toggleNotifications() {
+            // Implement notification panel
+            alert('Panel de notificaciones - En desarrollo');
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('userMenu');
+            const userButton = event.target.closest('button[onclick="toggleUserMenu()"]');
+            
+            if (!userButton && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

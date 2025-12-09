@@ -13,7 +13,7 @@
             }
             
         }
-        checkLoginStatus() 
+        //checkLoginStatus() 
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,11 +97,36 @@
             <nav class="p-4">
                 <ul class="space-y-2">
                     <li>
-                        <a href="#" onclick="showView('dashboard')" class="nav-item flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                        <a href="dashboard.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
                             <i class="fas fa-tachometer-alt w-5"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="proyecto.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-map-marked-alt w-5"></i>
+                            <span>Proyectos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mapa.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-map-marked-alt w-5"></i>
+                            <span>Mapa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="informe.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Informes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="calendario.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-calendar-alt w-5"></i>
+                            <span>Calendario</span>
+                        </a>
+                    </li>
+
                     <li class="pt-4 mt-4 border-t">
                         <p class="text-xs text-gray-500 uppercase font-semibold px-3">Módulos</p>
                     </li>
@@ -240,7 +265,7 @@
     <script>
         // Verificar si el usuario está logueado al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            checkLoginStatus();
+            //checkLoginStatus();
             initializeCharts();
         });
 

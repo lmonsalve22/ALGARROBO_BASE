@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        // Función para verificar el estado de login
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            console.log(isLoggedIn)
+            
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                // Redirigir a la página de login si no está logueado
+                window.location.href = '../../index.html';
+            }
+        }
+        //checkLoginStatus() 
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal Municipal - Algarrobo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-lg relative z-40">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-city text-2xl"></i>
+                    <div>
+                        <h1 class="text-xl font-bold">Geoportal Municipal</h1>
+                        <p class="text-xs text-blue-100">Ilustre Municipalidad de Algarrobo</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button onclick="toggleUserMenu()" class="flex items-center space-x-2 hover:bg-blue-700 px-3 py-2 rounded">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="currentRole">Administrador</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                            <a href="#" onclick="changeRole('admin')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-user-shield mr-2"></i> Administrador
+                            </a>
+                            <a href="#" onclick="changeRole('alcalde')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-user-tie mr-2"></i> Alcalde
+                            </a>
+                            <a href="#" onclick="changeRole('secplac')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-users mr-2"></i> SECPLAC
+                            </a>
+                            <a href="#" onclick="changeRole('public')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-eye mr-2"></i> Vista Pública
+                            </a>
+                            <hr class="my-1">
+                            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-cog mr-2"></i> Configuración
+                            </a>
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Salir
+                            </a>
+                        </div>
+                    </div>
+                    <button onclick="toggleNotifications()" class="relative hover:bg-blue-700 p-2 rounded">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white shadow-lg h-screen sticky top-0 sidebar-transition z-30">
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="dashboard.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="proyecto.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                            <i class="fas fa-map-marked-alt w-5"></i>
+                            <span>Proyectos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mapa.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-map-marked-alt w-5"></i>
+                            <span>Mapa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="informe.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-chart-bar w-5"></i>
+                            <span>Informes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="calendario.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-calendar-alt w-5"></i>
+                            <span>Calendario</span>
+                        </a>
+                    </li>
+
+                    <li class="pt-4 mt-4 border-t">
+                        <p class="text-xs text-gray-500 uppercase font-semibold px-3">Módulos</p>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-road w-5"></i>
+                            <span>Vialidad</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tint w-5"></i>
+                            <span>Saneamiento</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
+                            <i class="fas fa-tree w-5"></i>
+                            <span>Espacios Públicos</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Projects View -->
+            <div id="projectsView" class="view-content">
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Proyectos</h2>
+                    <p class="text-gray-600">Cartera de proyectos SECPLAC - Actualizado: 01/09/2025</p>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                            <select id="areaFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todas</option>
+                                <option value="Saneamiento">Saneamiento</option>
+                                <option value="Vialidad">Vialidad</option>
+                                <option value="Espacios Públicos">Espacios Públicos</option>
+                                <option value="Educación">Educación</option>
+                                <option value="Salud">Salud</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="statusFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos</option>
+                                <option value="Diseño">Diseño</option>
+                                <option value="Ejecución">Ejecución</option>
+                                <option value="Licitación">Licitación</option>
+                                <option value="En preparación">En preparación</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Financiamiento</label>
+                            <select id="fundingFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos</option>
+                                <option value="FNDR">FNDR</option>
+                                <option value="PMU">PMU</option>
+                                <option value="FRIL">FRIL</option>
+                                <option value="Municipal">Municipal</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+                            <div class="relative">
+                                <input type="text" id="searchInput" onkeyup="filterProjects()" placeholder="Nombre del proyecto..." class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Proyectos</p>
+                                <p class="text-2xl font-bold text-gray-800">92</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-folder text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">En Ejecución</p>
+                                <p class="text-2xl font-bold text-green-600">12</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-play-circle text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Monto Total</p>
+                                <p class="text-2xl font-bold text-gray-800">$25.3B</p>
+                            </div>
+                            <div class="bg-yellow-100 p-3 rounded-full">
+                                <i class="fas fa-dollar-sign text-yellow-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Avance Promedio</p>
+                                <p class="text-2xl font-bold text-purple-600">58%</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <i class="fas fa-chart-line text-purple-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-800">Lista de Proyectos</h3>
+                        <div class="space-x-2">
+                            <button onclick="exportData()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                                <i class="fas fa-download mr-2"></i>Exportar
+                            </button>
+                            <button onclick="showAddProjectModal()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                                <i class="fas fa-plus mr-2"></i>Nuevo Proyecto
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N°</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Financiamiento</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avance</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Projects will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Verificar si el usuario está logueado al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            //checkLoginStatus();
+            loadProjects();
+        });
+
+        // Datos de ejemplo para proyectos
+        const projectsData = [
+            { id: 1, name: "Pavimentación Avda. Santa Teresa", area: "Vialidad", funding: "FNDR", amount: "2,000M", status: "En Licitación", progress: 25 },
+            { id: 2, name: "Mejoramiento Escuela San José", area: "Educación", funding: "PMU", amount: "130M", status: "En Ejecución", progress: 60 },
+            { id: 3, name: "Reparación Red de Agua Potable", area: "Saneamiento", funding: "FRIL", amount: "500M", status: "En preparación", progress: 10 },
+            { id: 4, name: "Parque Central", area: "Espacios Públicos", funding: "Municipal", amount: "300M", status: "Diseño", progress: 5 },
+            { id: 5, name: "Pavimentación Calle Las Flores", area: "Vialidad", funding: "FNDR", amount: "800M", status: "En Ejecución", progress: 40 },
+            { id: 6, name: "Centro de Salud Familiar", area: "Salud", funding: "PMU", amount: "1,200M", status: "Diseño", progress: 15 },
+            { id: 7, name: "Plaza de Armas Remodelación", area: "Espacios Públicos", funding: "Municipal", amount: "150M", status: "En Ejecución", progress: 70 },
+            { id: 8, name: "Alcantarillado Sector Sur", area: "Saneamiento", funding: "FRIL", amount: "1,500M", status: "En Licitación", progress: 20 },
+            { id: 9, name: "Mejoramiento Camino Rural", area: "Vialidad", funding: "FNDR", amount: "600M", status: "En preparación", progress: 5 },
+            { id: 10, name: "Jardín Infantil Los Pinos", area: "Educación", funding: "PMU", amount: "400M", status: "En Ejecución", progress: 50 }
+        ];
+
+        // Cargar proyectos en la tabla
+        function loadProjects() {
+            const tableBody = document.getElementById('projectsTableBody');
+            tableBody.innerHTML = '';
+            
+            projectsData.forEach(project => {
+                const row = document.createElement('tr');
+                
+                // Determinar el color de la etiqueta de estado
+                let statusClass = '';
+                if (project.status === 'En Ejecución') statusClass = 'bg-green-100 text-green-800';
+                else if (project.status === 'En Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
+                else if (project.status === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
+                else statusClass = 'bg-gray-100 text-gray-800';
+                
+                // Determinar el color de la barra de progreso
+                let progressClass = '';
+                if (project.progress < 25) progressClass = 'bg-red-500';
+                else if (project.progress < 50) progressClass = 'bg-yellow-500';
+                else if (project.progress < 75) progressClass = 'bg-blue-500';
+                else progressClass = 'bg-green-500';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${project.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.area}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.funding}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${project.amount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${project.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div class="${progressClass} h-2.5 rounded-full" style="width: ${project.progress}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-500">${project.progress}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewProject(${project.id})" class="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
+                        <button onclick="editProject(${project.id})" class="text-green-600 hover:text-green-900 mr-3">Editar</button>
+                        <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Filtrar proyectos
+        function filterProjects() {
+            const areaFilter = document.getElementById('areaFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const fundingFilter = document.getElementById('fundingFilter').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filteredProjects = projectsData.filter(project => {
+                const matchesArea = !areaFilter || project.area === areaFilter;
+                const matchesStatus = !statusFilter || project.status === statusFilter;
+                const matchesFunding = !fundingFilter || project.funding === fundingFilter;
+                const matchesSearch = !searchInput || project.name.toLowerCase().includes(searchInput);
+                
+                return matchesArea && matchesStatus && matchesFunding && matchesSearch;
+            });
+            
+            const tableBody = document.getElementById('projectsTableBody');
+            tableBody.innerHTML = '';
+            
+            filteredProjects.forEach(project => {
+                const row = document.createElement('tr');
+                
+                // Determinar el color de la etiqueta de estado
+                let statusClass = '';
+                if (project.status === 'En Ejecución') statusClass = 'bg-green-100 text-green-800';
+                else if (project.status === 'En Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
+                else if (project.status === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
+                else statusClass = 'bg-gray-100 text-gray-800';
+                
+                // Determinar el color de la barra de progreso
+                let progressClass = '';
+                if (project.progress < 25) progressClass = 'bg-red-500';
+                else if (project.progress < 50) progressClass = 'bg-yellow-500';
+                else if (project.progress < 75) progressClass = 'bg-blue-500';
+                else progressClass = 'bg-green-500';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${project.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.area}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.funding}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${project.amount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                            ${project.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div class="${progressClass} h-2.5 rounded-full" style="width: ${project.progress}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-500">${project.progress}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewProject(${project.id})" class="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
+                        <button onclick="editProject(${project.id})" class="text-green-600 hover:text-green-900 mr-3">Editar</button>
+                        <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Funciones para acciones de proyectos
+        function viewProject(id) {
+            alert(`Ver detalles del proyecto ${id}`);
+        }
+
+        function editProject(id) {
+            alert(`Editar proyecto ${id}`);
+        }
+
+        function deleteProject(id) {
+            if (confirm(`¿Está seguro de que desea eliminar el proyecto ${id}?`)) {
+                alert(`Proyecto ${id} eliminado`);
+            }
+        }
+
+        function exportData() {
+            alert('Exportando datos de proyectos...');
+        }
+
+        function showAddProjectModal() {
+            alert('Mostrar formulario para agregar nuevo proyecto');
+        }
+
+        // Función para logout
+        function logout() {
+            // Eliminar la sesión del usuario
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userRole');
+            
+            // Redirigir a la página de login
+            window.location.href = '../../index.html';
+        }
+
+        // User menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Change role
+        function changeRole(role) {
+            currentRole = role;
+            const roleNames = {
+                'admin': 'Administrador',
+                'alcalde': 'Alcalde',
+                'secplac': 'SECPLAC',
+                'public': 'Vista Pública'
+            };
+            document.getElementById('currentRole').textContent = roleNames[role];
+            document.getElementById('userMenu').classList.add('hidden');
+            console.log(localStorage)
+            // Guardar el rol en localStorage
+            localStorage.setItem('userRole', role);
+            
+            // Aquí se implementaría la lógica para cambiar la vista según el rol
+            if (role === 'public') {
+                alert('Modo público activado - Se ocultará información sensible');
+            }
+        }
+
+        // Toggle notifications
+        function toggleNotifications() {
+            // Implement notification panel
+            alert('Panel de notificaciones - En desarrollo');
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('userMenu');
+            const userButton = event.target.closest('button[onclick="toggleUserMenu()"]');
+            
+            if (!userButton && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
