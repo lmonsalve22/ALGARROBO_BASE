@@ -912,3 +912,56 @@ Todo funcione sin errores de consola
 Formato de Entrega
 Genera el código completo del html
 Genera solo 10 proyectos de ejemplo solamente
+
+
+
+--------------------------------------------------------------
+tengo un endpoint https://186.67.61.251:8000/proyectos
+
+que me entrega un array de este tipo de objetos:
+
+{
+"anno_ejecucion": 2026,
+"anno_elaboracion": 2021,
+"aprobacion_dom": "-",
+"aprobacion_serviu": null,
+"area": "Planificación",
+"avance_total_decimal": "0.8333",
+"avance_total_porcentaje": "0.83",
+"codigo": null,
+"documentos": "0.5",
+"dupla_profesionales": "No aplica",
+"es_prioridad": "SI",
+"estado_postulacion": "Postulado",
+"estado_proyecto": "Diseño",
+"etapa_proyecto": "Perfil",
+"fecha_actualizacion": "Mon, 01 Sep 2025 00:00:00 GMT",
+"fecha_postulacion": null,
+"financiamiento": "FNDR",
+"financiamiento_municipal": "NO",
+"id": 101,
+"ingenieria": "No aplica",
+"latitud": null,
+"lineamiento_estrategico": "Ordenamiento Territorial",
+"longitud": null,
+"monto": "121262065",
+"n_registro": 101,
+"nombre": "Actualización del Plan Regulador Comunal",
+"observaciones": "En proceso de actualización TTR, ppto",
+"perfil_tecnico_economico": "No aplica",
+"planimetrias": "1",
+"profesional_1": null,
+"profesional_2": null,
+"profesional_3": null,
+"profesional_4": null,
+"profesional_5": null,
+"sector": null,
+"topografia": "1",
+"unidad_vecinal": null
+},
+
+requests.get(f"{BASE}/proyectos", headers={"Authorization": token})
+
+
+
+Necesito que esa api alimente esto:
