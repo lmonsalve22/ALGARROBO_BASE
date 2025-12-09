@@ -1,92 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script>
-        // Función para verificar el estado de login
-        function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            console.log(isLoggedIn)
-            
-            if (!isLoggedIn || isLoggedIn !== 'true') {
-                // Redirigir a la página de login si no está logueado
-                window.location.href = '../../index.html';
-            }
-        }
-        checkLoginStatus() 
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geoportal Municipal - Algarrobo</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- jsPDF para generar PDFs -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- SheetJS para generar Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <style>
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
-        }
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        /* Estilos para las tarjetas de métricas */
-        .metric-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        /* Estilos para las tarjetas de informes */
-        .report-card {
-            transition: all 0.3s ease;
-        }
-        .report-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        
-        /* Estilos para los filtros de informe */
-        .report-filters {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        /* Estilos para los contenedores de gráficos */
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-        
-        /* Estilo para el spinner de carga */
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid white;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </head>
 <body class="bg-gray-50">
     <!-- Header -->
@@ -247,11 +161,13 @@
                             <select id="reportFormat" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
                                 <option value="pdf">PDF</option>
                                 <option value="excel">Excel</option>
+                                <option value="powerpoint">PowerPoint</option>
+                                <option value="web">Web</option>
                             </select>
                         </div>
                     </div>
                     <div class="mt-4 flex gap-3">
-                        <button id="generateBtn" onclick="generateReport()" class="px-6 py-2 bg-white text-purple-700 rounded-md hover:bg-gray-100 font-medium transition">
+                        <button onclick="generateReport()" class="px-6 py-2 bg-white text-purple-700 rounded-md hover:bg-gray-100 font-medium transition">
                             <i class="fas fa-file-alt mr-2"></i>Generar Informe
                         </button>
                         <button onclick="scheduleReport()" class="px-6 py-2 bg-purple-800 text-white rounded-md hover:bg-purple-900 font-medium transition">
@@ -442,9 +358,9 @@
                         </div>
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                             <div class="flex items-center space-x-4">
-                                <i class="fas fa-file-excel text-green-500 text-xl"></i>
+                                <i class="fas fa-file-powerpoint text-orange-500 text-xl"></i>
                                 <div>
-                                    <p class="font-medium">Reporte de Avance de Proyectos</p>
+                                    <p class="font-medium">Presentación Avance Proyectos</p>
                                     <p class="text-sm text-gray-600">Generado por: SECPLAC | 2 semanas atrás</p>
                                 </div>
                             </div>
@@ -546,42 +462,6 @@
             }
         }
 
-        // Datos de ejemplo para los informes
-        const reportData = {
-            executive: {
-                title: 'Informe Ejecutivo',
-                sections: [
-                    { title: 'Resumen Ejecutivo', content: 'Este informe presenta un resumen de los proyectos municipales en curso.' },
-                    { title: 'Métricas Clave', content: 'Inversión total: $25.3B, Proyectos activos: 92, Tasa de ejecución: 87%' },
-                    { title: 'Recomendaciones', content: 'Se recomienda priorizar los proyectos de saneamiento para el próximo trimestre.' }
-                ]
-            },
-            detailed: {
-                title: 'Informe Detallado',
-                sections: [
-                    { title: 'Introducción', content: 'Análisis detallado del estado actual de todos los proyectos municipales.' },
-                    { title: 'Proyectos por Área', content: 'Vialidad: 35 proyectos, Espacios Públicos: 22 proyectos, Saneamiento: 18 proyectos...' },
-                    { title: 'Análisis de Riesgos', content: 'Se identificaron 5 proyectos con riesgo de retraso debido a factores climáticos.' }
-                ]
-            },
-            financial: {
-                title: 'Informe Financiero',
-                sections: [
-                    { title: 'Ejecución Presupuestaria', content: 'Presupuesto asignado: $30B, Ejecutado: $26.1B (87%)' },
-                    { title: 'Análisis de Costos', content: 'Costos directos: $20B, Costos indirectos: $6.1B' },
-                    { title: 'Proyecciones', content: 'Se proyecta una desviación del 3% para el próximo trimestre.' }
-                ]
-            },
-            progress: {
-                title: 'Informe de Avance',
-                sections: [
-                    { title: 'Avance General', content: 'Progreso promedio de todos los proyectos: 68%' },
-                    { title: 'Proyectos Destacados', content: 'Mejora de Plaza Central: 95%, Nuevo Acueducto: 78%' },
-                    { title: 'Próximos Hitos', content: 'Inauguración Parque Norte: 15 Oct, Inicio Repavimentación Av. Principal: 22 Oct' }
-                ]
-            }
-        };
-
         // Funciones para informes
         function generateReport() {
             const reportType = document.getElementById('reportType').value;
@@ -589,132 +469,16 @@
             const reportArea = document.getElementById('reportArea').value;
             const reportFormat = document.getElementById('reportFormat').value;
             
-            // Mostrar spinner en el botón
-            const generateBtn = document.getElementById('generateBtn');
-            const originalContent = generateBtn.innerHTML;
-            generateBtn.innerHTML = '<span class="spinner"></span>Generando...';
-            generateBtn.disabled = true;
-            
             // Mostrar mensaje de generación
             showNotification(`Generando informe ${reportType} para período ${reportPeriod}...`, 'info');
             
             // Simular generación de informe
             setTimeout(() => {
-                // Restaurar botón
-                generateBtn.innerHTML = originalContent;
-                generateBtn.disabled = false;
-                
-                // Generar y descargar el informe según el formato
-                if (reportFormat === 'pdf') {
-                    generatePDFReport(reportType, reportPeriod, reportArea);
-                } else if (reportFormat === 'excel') {
-                    generateExcelReport(reportType, reportPeriod, reportArea);
-                }
+                showNotification(`Informe ${reportType} generado correctamente`, 'success');
                 
                 // Añadir a la lista de informes recientes
                 addRecentReport(reportType, reportPeriod, reportFormat);
-                
-                showNotification(`Informe ${reportType} generado correctamente`, 'success');
             }, 2000);
-        }
-
-        function generatePDFReport(reportType, reportPeriod, reportArea) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Obtener datos del informe
-            const data = reportData[reportType] || reportData.executive;
-            
-            // Configurar fuentes (usar fuentes que soportan caracteres especiales)
-            doc.setFont('helvetica');
-            
-            // Título
-            doc.setFontSize(18);
-            doc.text(data.title, 20, 20);
-            
-            // Metadatos
-            doc.setFontSize(12);
-            doc.text(`Tipo: ${reportType}`, 20, 30);
-            doc.text(`Período: ${reportPeriod}`, 20, 37);
-            doc.text(`Área: ${reportArea}`, 20, 44);
-            doc.text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 20, 51);
-            
-            // Contenido
-            let yPosition = 65;
-            data.sections.forEach(section => {
-                doc.setFontSize(14);
-                doc.text(section.title, 20, yPosition);
-                yPosition += 10;
-                
-                doc.setFontSize(11);
-                const lines = doc.splitTextToSize(section.content, 170);
-                doc.text(lines, 20, yPosition);
-                yPosition += lines.length * 5 + 10;
-            });
-            
-            // Pie de página
-            doc.setFontSize(10);
-            doc.text('Geoportal Municipal - Ilustre Municipalidad de Algarrobo', 20, 280);
-            
-            // Guardar el PDF
-            const fileName = `informe_${reportType}_${reportPeriod}_${Date.now()}.pdf`;
-            doc.save(fileName);
-            
-            return fileName;
-        }
-
-        function generateExcelReport(reportType, reportPeriod, reportArea) {
-            // Obtener datos del informe
-            const data = reportData[reportType] || reportData.executive;
-            
-            // Crear libro de trabajo
-            const wb = XLSX.utils.book_new();
-            
-            // Crear hoja de cálculo
-            const wsData = [
-                ['Geoportal Municipal - Ilustre Municipalidad de Algarrobo'],
-                [''],
-                ['Tipo de Informe:', reportType],
-                ['Período:', reportPeriod],
-                ['Área:', reportArea],
-                ['Fecha de Generación:', new Date().toLocaleDateString('es-ES')],
-                [''],
-                [data.title],
-                ['']
-            ];
-            
-            // Añadir secciones
-            data.sections.forEach(section => {
-                wsData.push([section.title]);
-                wsData.push([section.content]);
-                wsData.push(['']);
-            });
-            
-            // Añadir métricas adicionales
-            wsData.push(['Métricas Clave']);
-            wsData.push(['Inversión Total', '$25.3B']);
-            wsData.push(['Proyectos Activos', '92']);
-            wsData.push(['Tasa de Ejecución', '87%']);
-            wsData.push(['Beneficiarios', '15.2K']);
-            
-            // Crear hoja de cálculo a partir de los datos
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            
-            // Ajustar anchos de columna
-            const colWidths = [
-                { wch: 30 }, // Columna A
-                { wch: 40 }  // Columna B
-            ];
-            ws['!cols'] = colWidths;
-            
-            // Añadir hoja al libro
-            XLSX.utils.book_append_sheet(wb, ws, 'Informe');
-            
-            // Generar y descargar el archivo Excel
-            const fileName = `informe_${reportType}_${reportPeriod}_${Date.now()}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-            
-            return fileName;
         }
 
         function scheduleReport() {
@@ -758,58 +522,19 @@
         }
 
         function downloadReport(reportId) {
-            // Determinar el tipo de informe según el ID
-            let reportType = 'executive';
-            let reportFormat = 'pdf';
-            
-            if (reportId.includes('financial')) {
-                reportType = 'financial';
-                reportFormat = 'excel';
-            } else if (reportId.includes('progress')) {
-                reportType = 'progress';
-                reportFormat = 'excel';
-            }
-            
-            // Mostrar notificación
             showNotification(`Descargando informe ${reportId}...`, 'info');
             
-            // Generar y descargar el informe
             setTimeout(() => {
-                if (reportFormat === 'pdf') {
-                    generatePDFReport(reportType, 'monthly', 'all');
-                } else if (reportFormat === 'excel') {
-                    generateExcelReport(reportType, 'monthly', 'all');
-                }
-                
                 showNotification('Informe descargado correctamente', 'success');
-            }, 1000);
+            }, 1500);
         }
 
         function viewReport(reportId) {
-            // Determinar el tipo de informe según el ID
-            let reportType = 'executive';
-            let reportFormat = 'pdf';
-            
-            if (reportId.includes('financial')) {
-                reportType = 'financial';
-                reportFormat = 'excel';
-            } else if (reportId.includes('progress')) {
-                reportType = 'progress';
-                reportFormat = 'excel';
-            }
-            
             showNotification(`Abriendo informe ${reportId}...`, 'info');
             
-            // Generar y abrir el informe
             setTimeout(() => {
-                if (reportFormat === 'pdf') {
-                    generatePDFReport(reportType, 'monthly', 'all');
-                } else if (reportFormat === 'excel') {
-                    generateExcelReport(reportType, 'monthly', 'all');
-                }
-                
                 showNotification('Informe abierto correctamente', 'success');
-            }, 1000);
+            }, 1500);
         }
 
         function shareReport(reportId) {
@@ -920,3 +645,270 @@
     </script>
 </body>
 </html>
+
+
+Contexto
+Tengo una aplicación web de un Geoportal Municipal (informe.html) que actualmente tiene la interfaz visual completa pero las funcionalidades están simuladas con setTimeout() y mensajes de notificación básicos. Necesito implementar todas las funcionalidades reales para que el sistema sea completamente funcional.
+Requisitos Técnicos
+
+Usar almacenamiento en memoria con JavaScript
+Implementar generación real de informes en diferentes formatos (PDF, Excel, PowerPoint, Web)
+Usar Chart.js que ya está importado
+Mantener el diseño y estructura HTML actual
+Crear datos de muestra realistas para proyectos municipales
+
+Funcionalidades a Implementar
+1. Sistema de Generación de Informes
+
+Función generateReport(): Debe generar informes reales basados en:
+
+Tipo: ejecutivo, detallado, financiero, avance, personalizado
+Período: mensual, trimestral, semestral, anual
+Área: todas, saneamiento, vialidad, espacios públicos, educación, salud
+Formato: PDF, Excel, PowerPoint, Web
+
+
+Cada tipo de informe debe contener:
+
+Ejecutivo: Resumen con KPIs, gráficos principales, conclusiones
+Detallado: Listado completo de proyectos con detalles
+Financiero: Análisis presupuestario, ejecución, desviaciones
+Avance: Estado de proyectos, hitos, plazos
+Personalizado: Combinación de elementos
+
+
+
+2. Generación de Archivos Descargables
+
+PDF: Usar jsPDF con formato profesional, logos, tablas y gráficos
+Excel: Usar SheetJS (XLSX) con múltiples hojas, formatos y fórmulas
+PowerPoint: Generar archivo PPTX con diapositivas estructuradas
+Web: Abrir nueva ventana con informe HTML formateado para impresión
+
+3. Sistema de Plantillas
+
+Función saveReportTemplate(): Guardar configuración de filtros como plantilla
+Función loadReportTemplate(): Cargar plantillas guardadas
+Almacenar en memoria: nombre, tipo, período, área, formato, fecha creación
+
+4. Programación de Informes
+
+Función scheduleReport(): Crear modal para programar informes automáticos
+Configurar: frecuencia (diaria, semanal, mensual), hora, destinatarios
+Simular lista de informes programados
+
+5. Gestión de Informes Recientes
+
+Función addRecentReport(): Añadir informes a la lista
+Función downloadReport(reportId): Descargar informe existente
+Función viewReport(reportId): Visualizar en modal o nueva ventana
+Función shareReport(reportId): Generar enlace compartible y copiar al portapapeles
+Mantener historial de últimos 10 informes generados
+
+6. Actualización Dinámica de Gráficos
+
+Función updateReportPreview(): Actualizar gráficos según filtros
+Modificar datos de Chart.js según área y período seleccionado
+Animar transiciones entre datasets
+
+7. Datos de Muestra
+Crear estructura de datos realista con:
+
+Array de proyectos municipales (mínimo 50 proyectos)
+Información por proyecto: nombre, área, presupuesto, avance, fechas, responsable, estado
+Datos históricos mensuales para gráficos
+Métricas calculadas: inversión total, tasa ejecución, beneficiarios
+
+8. Modal de Vista Previa
+Crear modal que muestre:
+
+Preview del informe antes de generar
+Resumen de datos incluidos
+Opciones de personalización adicionales
+Botones: Generar, Cancelar, Editar
+
+9. Sistema de Exportación
+Implementar funciones helper:
+
+exportToPDF(data, config)
+exportToExcel(data, config)
+exportToPowerPoint(data, config)
+exportToHTML(data, config)
+
+10. Mejoras UX
+
+Progress bar durante generación
+Confirmaciones antes de acciones importantes
+Validación de filtros antes de generar
+Mensajes de error descriptivos
+Loading states en botones
+
+Librerías Requeridas (añadir al HTML)
+html<!-- jsPDF para generación de PDFs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<!-- SheetJS para Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Para gráficos en PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+Estructura de Datos Esperada
+javascriptconst proyectos = [
+  {
+    id: 1,
+    nombre: "Pavimentación Calle Principal",
+    area: "Vialidad",
+    presupuesto: 150000000,
+    ejecutado: 120000000,
+    avance: 80,
+    fechaInicio: "2025-01-15",
+    fechaTermino: "2025-12-31",
+    estado: "En Curso",
+    responsable: "Juan Pérez",
+    beneficiarios: 1500
+  },
+  // ... más proyectos
+];
+Resultado Esperado
+Una aplicación completamente funcional donde:
+
+Los usuarios puedan generar informes reales
+Los archivos se descarguen correctamente en el formato seleccionado
+Las plantillas se guarden y reutilicen
+Los gráficos se actualicen dinámicamente
+El historial de informes sea navegable y funcional
+Todo funcione sin errores de consola
+
+Formato de Entrega
+Genera el código completo del html
+Genera solo 10 proyectos de ejemplo solamente
+
+
+
+
+
+
+
+--------------------------------------------------------------
+
+
+Contexto
+Tengo una aplicación web de un Geoportal Municipal (informe.html) que actualmente tiene la interfaz visual completa pero las funcionalidades están simuladas con setTimeout() y mensajes de notificación básicos. Necesito implementar todas las funcionalidades reales para que el sistema sea completamente funcional.
+Requisitos Técnicos
+
+Usar almacenamiento en memoria con JavaScript
+Implementar generación real de informes en diferentes formatos (PDF, Excel, PowerPoint, Web)
+Usar Chart.js que ya está importado
+Mantener el diseño y estructura HTML actual
+Crear datos de muestra realistas para proyectos municipales
+
+Funcionalidades a Implementar
+1. Sistema de Generación de Informes
+
+Función generateReport(): Debe generar informes reales basados en:
+
+Tipo: ejecutivo, detallado, financiero, avance, personalizado
+Período: mensual, trimestral, semestral, anual
+Área: todas, saneamiento, vialidad, espacios públicos, educación, salud
+Formato: PDF, Excel, PowerPoint, Web
+
+
+Cada tipo de informe debe contener:
+
+Ejecutivo: Resumen con KPIs, gráficos principales, conclusiones
+Detallado: Listado completo de proyectos con detalles
+Financiero: Análisis presupuestario, ejecución, desviaciones
+Avance: Estado de proyectos, hitos, plazos
+Personalizado: Combinación de elementos
+
+
+
+2. Generación de Archivos Descargables
+
+PDF: Usar jsPDF con formato profesional, logos, tablas y gráficos
+Excel: Usar SheetJS (XLSX) con múltiples hojas, formatos y fórmulas
+PowerPoint: Generar archivo PPTX con diapositivas estructuradas
+Web: Abrir nueva ventana con informe HTML formateado para impresión
+
+3. Sistema de Plantillas
+
+Función saveReportTemplate(): Guardar configuración de filtros como plantilla
+Función loadReportTemplate(): Cargar plantillas guardadas
+Almacenar en memoria: nombre, tipo, período, área, formato, fecha creación
+
+4. Programación de Informes
+
+Función scheduleReport(): Crear modal para programar informes automáticos
+Configurar: frecuencia (diaria, semanal, mensual), hora, destinatarios
+Simular lista de informes programados
+
+5. Gestión de Informes Recientes
+
+Función addRecentReport(): Añadir informes a la lista
+Función downloadReport(reportId): Descargar informe existente
+Función viewReport(reportId): Visualizar en modal o nueva ventana
+Función shareReport(reportId): Generar enlace compartible y copiar al portapapeles
+Mantener historial de últimos 10 informes generados
+
+6. Actualización Dinámica de Gráficos
+
+Función updateReportPreview(): Actualizar gráficos según filtros
+Modificar datos de Chart.js según área y período seleccionado
+Animar transiciones entre datasets
+
+7. Datos de Muestra
+Crear estructura de datos realista con:
+
+Array de proyectos municipales (mínimo 10 proyectos)
+Información por proyecto: nombre, área, presupuesto, avance, fechas, responsable, estado
+Datos históricos mensuales para gráficos
+Métricas calculadas: inversión total, tasa ejecución, beneficiarios
+
+8. Modal de Vista Previa
+Crear modal que muestre:
+
+Preview del informe antes de generar
+Resumen de datos incluidos
+Opciones de personalización adicionales
+Botones: Generar, Cancelar, Editar
+
+9. Sistema de Exportación
+Implementar funciones helper:
+
+exportToPDF(data, config)
+exportToExcel(data, config)
+
+
+
+
+Estructura de Datos Esperada
+javascriptconst proyectos = [
+  {
+    id: 1,
+    nombre: "Pavimentación Calle Principal",
+    area: "Vialidad",
+    presupuesto: 150000000,
+    ejecutado: 120000000,
+    avance: 80,
+    fechaInicio: "2025-01-15",
+    fechaTermino: "2025-12-31",
+    estado: "En Curso",
+    responsable: "Juan Pérez",
+    beneficiarios: 1500
+  },
+  // ... más proyectos
+];
+Resultado Esperado
+Una aplicación completamente funcional donde:
+
+Los usuarios puedan generar informes reales
+Los archivos se descarguen correctamente en el formato seleccionado
+Las plantillas se guarden y reutilicen
+Los gráficos se actualicen dinámicamente
+El historial de informes sea navegable y funcional
+Todo funcione sin errores de consola
+
+Formato de Entrega
+Genera el código completo del html
+Genera solo 10 proyectos de ejemplo solamente

@@ -13,7 +13,11 @@
             }
             
         }
-        //checkLoginStatus() 
+        checkLoginStatus() 
+        const userDataString = localStorage.getItem('userData'); // trae el string
+        const userData = JSON.parse(userDataString); // lo convierte a objeto
+
+        console.log(userData);
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -265,7 +269,7 @@
     <script>
         // Verificar si el usuario está logueado al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            //checkLoginStatus();
+            checkLoginStatus();
             initializeCharts();
         });
 
