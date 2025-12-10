@@ -176,8 +176,8 @@ def home():
 
 
 # AUTH
-@app.route("/auth/login", methods=["POST"])
-def login():
+@app.route("/auth/login2", methods=["POST"])
+def login2():
     try:
         data = request.get_json()
         if not data or "email" not in data or "password" not in data:
@@ -230,6 +230,119 @@ def login():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"message": "Error interno", "detail": str(e)}), 500
+    
+
+@app.route("/auth/login", methods=["POST"])
+def login():
+    try:
+        data = request.get_json()
+        if not data or "email" not in data or "password" not in data:
+            return jsonify({"message": "Credenciales incompletas"}), 400
+
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({"message": "Error de conexión a la BD"}), 500
+
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+        # ---------------------------------------
+        # 1. OBTENER USUARIO + DIVISIÓN
+        # ---------------------------------------
+        cur.execute("""
+            SELECT 
+                u.user_id,
+                u.password_hash,
+                u.nombre,
+                u.nivel_acceso,
+                u.activo,
+                u.division_id,
+                d.nombre AS division_nombre
+            FROM users u
+            LEFT JOIN divisiones d ON d.division_id = u.division_id
+            WHERE u.email = %s
+        """, (data["email"],))
+
+        user = cur.fetchone()
+
+        if not user:
+            cur.close()
+            conn.close()
+            return jsonify({"message": "Usuario no encontrado"}), 404
+
+        if not user["activo"]:
+            cur.close()
+            conn.close()
+            return jsonify({"message": "Usuario inactivo"}), 403
+
+        # ---------------------------------------
+        # 2. VALIDAR CONTRASEÑA
+        # ---------------------------------------
+        stored_hash = user["password_hash"]
+        if isinstance(stored_hash, str):
+            stored_hash = stored_hash.encode()
+
+        if not bcrypt.checkpw(data["password"].encode(), stored_hash):
+            cur.close()
+            conn.close()
+            return jsonify({"message": "Contraseña incorrecta"}), 401
+
+        # ---------------------------------------
+        # 3. OBTENER ROLES
+        # ---------------------------------------
+        cur.execute("""
+            SELECT r.role_id, r.nombre
+            FROM roles r
+            INNER JOIN user_roles ur ON ur.role_id = r.role_id
+            WHERE ur.user_id = %s
+        """, (user["user_id"],))
+
+        roles = [
+            {"role_id": row["role_id"], "nombre": row["nombre"]}
+            for row in cur.fetchall()
+        ]
+
+        # ---------------------------------------
+        # 4. ACTUALIZAR FECHA DE ÚLTIMO LOGIN
+        # ---------------------------------------
+        cur.execute("""
+            UPDATE users
+            SET fecha_ultimo_login = NOW()
+            WHERE user_id = %s
+        """, (user["user_id"],))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+
+        # ---------------------------------------
+        # 5. CREAR TOKEN EN MEMORIA
+        # ---------------------------------------
+        token = secrets.token_hex(32)
+        active_sessions[token] = user["user_id"]
+
+        log_auditoria(user["user_id"], "login", f"Inicio de sesión desde {request.remote_addr}")
+
+        # ---------------------------------------
+        # 6. RESPUESTA
+        # ---------------------------------------
+        return jsonify({
+            "token": token,
+            "user": {
+                "id": user["user_id"],
+                "nombre": user["nombre"],
+                "nivel_acceso": user["nivel_acceso"],
+                "division": {
+                    "division_id": user["division_id"],
+                    "nombre": user["division_nombre"]
+                },
+                "roles": roles
+            }
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
+
 
 
 @app.route("/auth/logout", methods=["POST"])

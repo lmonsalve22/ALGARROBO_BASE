@@ -1,23 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script>
-        // Función para verificar el estado de login
-        function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            console.log(isLoggedIn)
-            
-            if (!isLoggedIn || isLoggedIn !== 'true') {
-                // Redirigir a la página de login si no está logueado
-                window.location.href = '../../index.html';
-            }
-            
-        }
-        checkLoginStatus() 
-        const userDataString = localStorage.getItem('userData'); // trae el string
-        const userData = JSON.parse(userDataString); // lo convierte a objeto
-        const token = localStorage.getItem('authToken'); // trae el string
-    </script>
+    <script src="../../script/router.js"></script>    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Algarrobo</title>

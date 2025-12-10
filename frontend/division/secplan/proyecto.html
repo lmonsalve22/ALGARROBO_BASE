@@ -38,6 +38,220 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #1e293b;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        fieldset {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        legend {
+            padding: 0 0.5rem;
+            font-weight: 600;
+            color: #4f46e5;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #1e293b;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .priority-badge { background: #fbbf24; color: #78350f; }
+
+        /* Estilos para ocultar/mostrar columnas */
+        .toggle-column {
+            display: none;
+        }
+        .toggle-column-visible {
+            display: revert; /* O 'table-cell' para ser más específico */
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -158,51 +372,7 @@
                 <!-- Page Header -->
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Proyectos</h2>
-                    <p class="text-gray-600">Cartera de proyectos SECPLAC - Actualizado: 01/09/2025</p>
-                </div>
-
-                <!-- Filters -->
-                <div class="bg-white rounded-lg shadow p-4 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Área</label>
-                            <select id="areaFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Todas</option>
-                                <option value="Saneamiento">Saneamiento</option>
-                                <option value="Vialidad">Vialidad</option>
-                                <option value="Espacios Públicos">Espacios Públicos</option>
-                                <option value="Educación">Educación</option>
-                                <option value="Salud">Salud</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                            <select id="statusFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Todos</option>
-                                <option value="Diseño">Diseño</option>
-                                <option value="Ejecución">Ejecución</option>
-                                <option value="Licitación">Licitación</option>
-                                <option value="En preparación">En preparación</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Financiamiento</label>
-                            <select id="fundingFilter" onchange="filterProjects()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Todos</option>
-                                <option value="FNDR">FNDR</option>
-                                <option value="PMU">PMU</option>
-                                <option value="FRIL">FRIL</option>
-                                <option value="Municipal">Municipal</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
-                            <div class="relative">
-                                <input type="text" id="searchInput" onkeyup="filterProjects()" placeholder="Nombre del proyecto..." class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="text-gray-600">Cartera de proyectos SECPLAC - Actualizado: <span id="lastUpdate">01/09/2025</span></p>
                 </div>
 
                 <!-- KPI Cards -->
@@ -211,7 +381,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-gray-500 text-sm">Total Proyectos</p>
-                                <p class="text-2xl font-bold text-gray-800">92</p>
+                                <p class="text-2xl font-bold text-gray-800" id="totalProjects">0</p>
                             </div>
                             <div class="bg-blue-100 p-3 rounded-full">
                                 <i class="fas fa-folder text-blue-600"></i>
@@ -222,7 +392,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-gray-500 text-sm">En Ejecución</p>
-                                <p class="text-2xl font-bold text-green-600">12</p>
+                                <p class="text-2xl font-bold text-green-600" id="executionProjects">0</p>
                             </div>
                             <div class="bg-green-100 p-3 rounded-full">
                                 <i class="fas fa-play-circle text-green-600"></i>
@@ -233,7 +403,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-gray-500 text-sm">Monto Total</p>
-                                <p class="text-2xl font-bold text-gray-800">$25.3B</p>
+                                <p class="text-2xl font-bold text-gray-800" id="totalAmount">$0</p>
                             </div>
                             <div class="bg-yellow-100 p-3 rounded-full">
                                 <i class="fas fa-dollar-sign text-yellow-600"></i>
@@ -244,7 +414,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-gray-500 text-sm">Avance Promedio</p>
-                                <p class="text-2xl font-bold text-purple-600">58%</p>
+                                <p class="text-2xl font-bold text-purple-600" id="averageProgress">0%</p>
                             </div>
                             <div class="bg-purple-100 p-3 rounded-full">
                                 <i class="fas fa-chart-line text-purple-600"></i>
@@ -255,9 +425,13 @@
 
                 <!-- Projects Table -->
                 <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                    <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
                         <h3 class="text-lg font-semibold text-gray-800">Lista de Proyectos</h3>
-                        <div class="space-x-2">
+                        <div class="flex items-center space-x-2">
+                            <span id="proyectoCount" class="text-sm text-gray-500"></span>
+                            <button id="toggleColumnsBtn" onclick="toggleColumns()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+                                <i class="fas fa-eye mr-2"></i>Mostrar más
+                            </button>
                             <button onclick="exportData()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
                                 <i class="fas fa-download mr-2"></i>Exportar
                             </button>
@@ -270,13 +444,13 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N°</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider toggle-column">N°</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Financiamiento</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avance</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider toggle-column">Área</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider toggle-column">Financiamiento</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider toggle-column">Monto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider toggle-column">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider toggle-column">Avance</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
@@ -290,166 +464,647 @@
         </main>
     </div>
     
+    <!-- Modal para crear/editar proyectos -->
+    <div id="proyectoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Nuevo Proyecto</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="proyectoForm">
+                <fieldset>
+                    <legend>Información General</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nombre">Nombre del Proyecto *</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="codigo">Código</label>
+                            <input type="text" id="codigo" name="codigo">
+                        </div>
+                        <div class="form-group">
+                            <label for="n_registro">N° Registro</label>
+                            <input type="number" id="n_registro" name="n_registro">
+                        </div>
+                        <div class="form-group">
+                            <label for="area">Área</label>
+                            <input type="text" id="area" name="area">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Estado y Avance</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="estado_proyecto">Estado Proyecto</label>
+                            <select id="estado_proyecto" name="estado_proyecto">
+                                <option value="Diseño">Diseño</option>
+                                <option value="Ejecución">Ejecución</option>
+                                <option value="Terminado">Terminado</option>
+                                <option value="Suspendido">Suspendido</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="etapa_proyecto">Etapa Proyecto</label>
+                            <select id="etapa_proyecto" name="etapa_proyecto">
+                                <option value="Perfil">Perfil</option>
+                                <option value="Pre-factibilidad">Pre-factibilidad</option>
+                                <option value="Factibilidad">Factibilidad</option>
+                                <option value="Diseño Final">Diseño Final</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="estado_postulacion">Estado Postulación</label>
+                            <select id="estado_postulacion" name="estado_postulacion">
+                                <option value="Postulado">Postulado</option>
+                                <option value="Aprobado">Aprobado</option>
+                                <option value="Rechazado">Rechazado</option>
+                                <option value="Pendiente">Pendiente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="avance_total_porcentaje">Avance Total (%)</label>
+                            <input type="number" id="avance_total_porcentaje" name="avance_total_porcentaje" step="0.01" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="es_prioridad" name="es_prioridad" value="SI">
+                                <label for="es_prioridad" style="margin-bottom: 0;">¿Es Prioridad?</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Financiamiento</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="financiamiento">Financiamiento</label>
+                            <select id="financiamiento" name="financiamiento">
+                                <option value="FNDR">FNDR</option>
+                                <option value="Municipal">Municipal</option>
+                                <option value="Regional">Regional</option>
+                                <option value="Privado">Privado</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="monto">Monto ($) </label>
+                            <input type="number" id="monto" name="monto" step="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="financiamiento_municipal" name="financiamiento_municipal" value="SI">
+                                <label for="financiamiento_municipal" style="margin-bottom: 0;">¿Financiamiento Municipal?</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Fechas y Plazos</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="anno_elaboracion">Año Elaboración</label>
+                            <input type="number" id="anno_elaboracion" name="anno_elaboracion" min="2000" max="2100">
+                        </div>
+                        <div class="form-group">
+                            <label for="anno_ejecucion">Año Ejecución</label>
+                            <input type="number" id="anno_ejecucion" name="anno_ejecucion" min="2000" max="2100">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_postulacion">Fecha Postulación</label>
+                            <input type="date" id="fecha_postulacion" name="fecha_postulacion">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha_actualizacion">Fecha Actualización</label>
+                            <input type="date" id="fecha_actualizacion" name="fecha_actualizacion">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Ubicación y Territorio</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="lineamiento_estrategico">Lineamiento Estratégico</label>
+                            <input type="text" id="lineamiento_estrategico" name="lineamiento_estrategico">
+                        </div>
+                        <div class="form-group">
+                            <label for="sector">Sector</label>
+                            <input type="text" id="sector" name="sector">
+                        </div>
+                        <div class="form-group">
+                            <label for="unidad_vecinal">Unidad Vecinal</label>
+                            <input type="text" id="unidad_vecinal" name="unidad_vecinal">
+                        </div>
+                        <div class="form-group">
+                            <label for="latitud">Latitud</label>
+                            <input type="number" id="latitud" name="latitud" step="any">
+                        </div>
+                        <div class="form-group">
+                            <label for="longitud">Longitud</label>
+                            <input type="number" id="longitud" name="longitud" step="any">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Profesionales a Cargo</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="profesional_1">Profesional 1</label>
+                            <input type="text" id="profesional_1" name="profesional_1">
+                        </div>
+                        <div class="form-group">
+                            <label for="profesional_2">Profesional 2</label>
+                            <input type="text" id="profesional_2" name="profesional_2">
+                        </div>
+                        <div class="form-group">
+                            <label for="dupla_profesionales">Dupla Profesionales</label>
+                            <input type="text" id="dupla_profesionales" name="dupla_profesionales">
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Documentación y Técnica</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="documentos">Documentos (Estado)</label>
+                            <input type="text" id="documentos" name="documentos">
+                        </div>
+                        <div class="form-group">
+                            <label for="planimetrias">Planimetrías (Estado)</label>
+                            <input type="text" id="planimetrias" name="planimetrias">
+                        </div>
+                        <div class="form-group">
+                            <label for="topografia">Topografía (Estado)</label>
+                            <input type="text" id="topografia" name="topografia">
+                        </div>
+                        <div class="form-group">
+                            <label for="ingenieria">Ingeniería</label>
+                            <input type="text" id="ingenieria" name="ingenieria">
+                        </div>
+                        <div class="form-group">
+                            <label for="perfil_tecnico_economico">Perfil Técnico Económico</label>
+                            <input type="text" id="perfil_tecnico_economico" name="perfil_tecnico_economico">
+                        </div>
+                        <div class="form-group">
+                            <label for="aprobacion_dom">Aprobación DOM</label>
+                            <input type="text" id="aprobacion_dom" name="aprobacion_dom">
+                        </div>
+                        <div class="form-group">
+                            <label for="aprobacion_serviu">Aprobación SERVIU</label>
+                            <input type="text" id="aprobacion_serviu" name="aprobacion_serviu">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Observaciones</legend>
+                    <div class="form-group">
+                        <label for="observaciones">Observaciones Generales</label>
+                        <textarea id="observaciones" name="observaciones" rows="4"></textarea>
+                    </div>
+                </fieldset>
+
+                <div class="modal-footer">
+                    <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" id="submitBtn">
+                        <span id="submitText">Guardar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para ver detalles del proyecto -->
+    <div id="viewProjectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Detalles del Proyecto</h2>
+                <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div id="viewProjectDetails" class="space-y-3">
+                <!-- Los detalles del proyecto se cargarán aquí dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition" onclick="closeViewModal()">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast para notificaciones -->
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+    
     <script>
+        // Configuración
+        const API_BASE = 'https://186.67.61.251:8000';
+        let proyectos = [];
+        let editingId = null;
+        let columnsVisible = false; // Estado para las columnas visibles
+
+        // Función auxiliar para obtener los encabezados de autenticación
+        function getAuthHeaders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.error("No se encontró el token de autenticación.");
+                showToast("No estás autenticado.", "warning");
+                return null;
+            }
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
         // Verificar si el usuario está logueado al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
             loadProjects();
+            document.getElementById('proyectoForm').addEventListener('submit', handleSubmit);
         });
 
-        // Datos de ejemplo para proyectos
-        const projectsData = [
-            { id: 1, name: "Pavimentación Avda. Santa Teresa", area: "Vialidad", funding: "FNDR", amount: "2,000M", status: "En Licitación", progress: 25 },
-            { id: 2, name: "Mejoramiento Escuela San José", area: "Educación", funding: "PMU", amount: "130M", status: "En Ejecución", progress: 60 },
-            { id: 3, name: "Reparación Red de Agua Potable", area: "Saneamiento", funding: "FRIL", amount: "500M", status: "En preparación", progress: 10 },
-            { id: 4, name: "Parque Central", area: "Espacios Públicos", funding: "Municipal", amount: "300M", status: "Diseño", progress: 5 },
-            { id: 5, name: "Pavimentación Calle Las Flores", area: "Vialidad", funding: "FNDR", amount: "800M", status: "En Ejecución", progress: 40 },
-            { id: 6, name: "Centro de Salud Familiar", area: "Salud", funding: "PMU", amount: "1,200M", status: "Diseño", progress: 15 },
-            { id: 7, name: "Plaza de Armas Remodelación", area: "Espacios Públicos", funding: "Municipal", amount: "150M", status: "En Ejecución", progress: 70 },
-            { id: 8, name: "Alcantarillado Sector Sur", area: "Saneamiento", funding: "FRIL", amount: "1,500M", status: "En Licitación", progress: 20 },
-            { id: 9, name: "Mejoramiento Camino Rural", area: "Vialidad", funding: "FNDR", amount: "600M", status: "En preparación", progress: 5 },
-            { id: 10, name: "Jardín Infantil Los Pinos", area: "Educación", funding: "PMU", amount: "400M", status: "En Ejecución", progress: 50 }
-        ];
+        // Cargar todos los proyectos
+        async function loadProjects() {
+            const headers = getAuthHeaders();
+            if (!headers) return;
 
-        // Cargar proyectos en la tabla
-        function loadProjects() {
-            const tableBody = document.getElementById('projectsTableBody');
-            tableBody.innerHTML = '';
-            
-            projectsData.forEach(project => {
-                const row = document.createElement('tr');
+            try {
+                showLoading(true, 'Cargando proyectos...');
+                const response = await fetch(`${API_BASE}/proyectos`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('authToken');
+                        showToast("Sesión expirada. Por favor, inicia sesión de nuevo.", "warning");
+                    } else {
+                        throw new Error('Error al cargar proyectos');
+                    }
+                    return;
+                }
+
+                proyectos = await response.json();
+                renderProyectos(proyectos);
+                updateKPIs(proyectos);
+                updateCount(proyectos.length);
                 
+                // Actualizar fecha de última actualización
+                const today = new Date();
+                const formattedDate = today.toLocaleDateString('es-ES', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                });
+                document.getElementById('lastUpdate').textContent = formattedDate;
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error al cargar los proyectos', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Renderizar proyectos en la tabla
+        function renderProyectos(proyectosToRender) {
+            const tableBody = document.getElementById('projectsTableBody');
+            
+            if (proyectosToRender.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                            No se encontraron proyectos
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = proyectosToRender.map(proyecto => {
                 // Determinar el color de la etiqueta de estado
                 let statusClass = '';
-                if (project.status === 'En Ejecución') statusClass = 'bg-green-100 text-green-800';
-                else if (project.status === 'En Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
-                else if (project.status === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
+                if (proyecto.estado_proyecto === 'Ejecución') statusClass = 'bg-green-100 text-green-800';
+                else if (proyecto.estado_proyecto === 'Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
+                else if (proyecto.estado_proyecto === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
                 else statusClass = 'bg-gray-100 text-gray-800';
                 
                 // Determinar el color de la barra de progreso
                 let progressClass = '';
-                if (project.progress < 25) progressClass = 'bg-red-500';
-                else if (project.progress < 50) progressClass = 'bg-yellow-500';
-                else if (project.progress < 75) progressClass = 'bg-blue-500';
+                const progress = proyecto.avance_total_porcentaje ? parseFloat(proyecto.avance_total_porcentaje) * 100 : 0;
+                if (progress < 25) progressClass = 'bg-red-500';
+                else if (progress < 50) progressClass = 'bg-yellow-500';
+                else if (progress < 75) progressClass = 'bg-blue-500';
                 else progressClass = 'bg-green-500';
                 
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${project.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.area}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.funding}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${project.amount}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                            ${project.status}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div class="${progressClass} h-2.5 rounded-full" style="width: ${project.progress}%"></div>
+                return `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 toggle-column">${proyecto.id || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${proyecto.nombre || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.area || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.financiamiento || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${formatCurrency(proyecto.monto)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap toggle-column">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                ${proyecto.estado_proyecto || ''}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap toggle-column">
+                            <div class="flex items-center">
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                    <div class="${progressClass} h-2.5 rounded-full" style="width: ${progress}%"></div>
+                                </div>
+                                <span class="text-sm text-gray-500">${progress.toFixed(1)}%</span>
                             </div>
-                            <span class="text-sm text-gray-500">${project.progress}%</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="viewProject(${project.id})" class="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
-                        <button onclick="editProject(${project.id})" class="text-green-600 hover:text-green-900 mr-3">Editar</button>
-                        <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
-                    </td>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="viewProject(${proyecto.id})" class="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
+                            <button onclick="editProject(${proyecto.id})" class="text-green-600 hover:text-green-900 mr-3">Editar</button>
+                            <button onclick="deleteProject(${proyecto.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                    </tr>
                 `;
-                
-                tableBody.appendChild(row);
-            });
+            }).join('');
         }
 
-        // Filtrar proyectos
-        function filterProjects() {
-            const areaFilter = document.getElementById('areaFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            const fundingFilter = document.getElementById('fundingFilter').value;
-            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        // Actualizar KPIs
+        function updateKPIs(proyectosData) {
+            // Total de proyectos
+            document.getElementById('totalProjects').textContent = proyectosData.length;
             
-            const filteredProjects = projectsData.filter(project => {
-                const matchesArea = !areaFilter || project.area === areaFilter;
-                const matchesStatus = !statusFilter || project.status === statusFilter;
-                const matchesFunding = !fundingFilter || project.funding === fundingFilter;
-                const matchesSearch = !searchInput || project.name.toLowerCase().includes(searchInput);
-                
-                return matchesArea && matchesStatus && matchesFunding && matchesSearch;
-            });
+            // Proyectos en ejecución
+            const executionCount = proyectosData.filter(p => p.estado_proyecto === 'Ejecución').length;
+            document.getElementById('executionProjects').textContent = executionCount;
             
-            const tableBody = document.getElementById('projectsTableBody');
-            tableBody.innerHTML = '';
+            // Monto total
+            const totalAmount = proyectosData.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
             
-            filteredProjects.forEach(project => {
-                const row = document.createElement('tr');
-                
-                // Determinar el color de la etiqueta de estado
-                let statusClass = '';
-                if (project.status === 'En Ejecución') statusClass = 'bg-green-100 text-green-800';
-                else if (project.status === 'En Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
-                else if (project.status === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
-                else statusClass = 'bg-gray-100 text-gray-800';
-                
-                // Determinar el color de la barra de progreso
-                let progressClass = '';
-                if (project.progress < 25) progressClass = 'bg-red-500';
-                else if (project.progress < 50) progressClass = 'bg-yellow-500';
-                else if (project.progress < 75) progressClass = 'bg-blue-500';
-                else progressClass = 'bg-green-500';
-                
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${project.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${project.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.area}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${project.funding}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${project.amount}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                            ${project.status}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div class="${progressClass} h-2.5 rounded-full" style="width: ${project.progress}%"></div>
-                            </div>
-                            <span class="text-sm text-gray-500">${project.progress}%</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button onclick="viewProject(${project.id})" class="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
-                        <button onclick="editProject(${project.id})" class="text-green-600 hover:text-green-900 mr-3">Editar</button>
-                        <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
-                    </td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
+            // Avance promedio
+            const avgProgress = proyectosData.length > 0 
+                ? proyectosData.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / proyectosData.length 
+                : 0;
+            document.getElementById('averageProgress').textContent = (avgProgress * 100).toFixed(1) + '%';
         }
 
-        // Funciones para acciones de proyectos
+        // Función para alternar la visibilidad de las columnas
+        function toggleColumns() {
+            const toggleElements = document.querySelectorAll('.toggle-column');
+            const toggleBtn = document.getElementById('toggleColumnsBtn');
+            columnsVisible = !columnsVisible;
+
+            toggleElements.forEach(el => {
+                el.classList.toggle('toggle-column-visible', columnsVisible);
+            });
+
+            if (columnsVisible) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash mr-2"></i>Mostrar menos';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-eye mr-2"></i>Mostrar más';
+            }
+        }
+
+        // Actualizar contador
+        function updateCount(count) {
+            const countElement = document.getElementById('proyectoCount');
+            if (countElement) {
+                countElement.textContent = `${count} proyecto${count !== 1 ? 's' : ''}`;
+            }
+        }
+
+        // Función para ver los detalles de un proyecto
         function viewProject(id) {
-            alert(`Ver detalles del proyecto ${id}`);
+            const proyecto = proyectos.find(p => p.id === id);
+            if (!proyecto) {
+                showToast('Proyecto no encontrado', 'error');
+                return;
+            }
+            
+            const detailsContainer = document.getElementById('viewProjectDetails');
+            detailsContainer.innerHTML = ''; // Limpiar contenido anterior
+
+            const labels = {
+                id: "ID",
+                nombre: "Nombre del Proyecto",
+                codigo: "Código",
+                n_registro: "N° de Registro",
+                area: "Área",
+                estado_proyecto: "Estado del Proyecto",
+                etapa_proyecto: "Etapa del Proyecto",
+                estado_postulacion: "Estado de Postulación",
+                avance_total_decimal: "Avance Total (Decimal)",
+                avance_total_porcentaje: "Avance Total (%)",
+                es_prioridad: "¿Es Prioridad?",
+                financiamiento: "Financiamiento",
+                financiamiento_municipal: "¿Financiamiento Municipal?",
+                monto: "Monto",
+                anno_elaboracion: "Año de Elaboración",
+                anno_ejecucion: "Año de Ejecución",
+                fecha_postulacion: "Fecha de Postulación",
+                fecha_actualizacion: "Fecha de Actualización",
+                lineamiento_estrategico: "Lineamiento Estratégico",
+                sector: "Sector",
+                unidad_vecinal: "Unidad Vecinal",
+                latitud: "Latitud",
+                longitud: "Longitud",
+                profesional_1: "Profesional 1",
+                profesional_2: "Profesional 2",
+                dupla_profesionales: "Dupla de Profesionales",
+                documentos: "Documentos (Estado)",
+                planimetrias: "Planimetrías (Estado)",
+                topografia: "Topografía (Estado)",
+                ingenieria: "Ingeniería",
+                perfil_tecnico_economico: "Perfil Técnico Económico",
+                aprobacion_dom: "Aprobación DOM",
+                aprobacion_serviu: "Aprobación SERVIU",
+                observaciones: "Observaciones Generales"
+            };
+
+            for (const key in labels) {
+                let value = proyecto[key];
+
+                // Formatear valores especiales
+                if (key === 'monto') {
+                    value = formatCurrency(value);
+                } else if (key.includes('fecha') && value) {
+                    value = new Date(value).toLocaleDateString('es-CL');
+                } else if (key === 'avance_total_porcentaje' && value) {
+                    value = `${(parseFloat(value) * 100).toFixed(2)}%`;
+                }
+                
+                // Manejar valores nulos o vacíos
+                const displayValue = (value === null || value === undefined || value === '') ? '-' : value;
+
+                const rowHtml = `
+                    <div class="flex justify-between py-2 border-b border-gray-100">
+                        <span class="font-semibold text-gray-700 w-1/3">${labels[key]}:</span>
+                        <span class="text-gray-900 text-right w-2/3 break-words">${displayValue}</span>
+                    </div>
+                `;
+                detailsContainer.innerHTML += rowHtml;
+            }
+
+            document.getElementById('viewProjectModal').classList.add('active');
         }
 
         function editProject(id) {
-            alert(`Editar proyecto ${id}`);
+            const proyecto = proyectos.find(p => p.id === id);
+            if (proyecto) {
+                openModal(proyecto);
+            }
         }
 
-        function deleteProject(id) {
-            if (confirm(`¿Está seguro de que desea eliminar el proyecto ${id}?`)) {
-                alert(`Proyecto ${id} eliminado`);
+        async function deleteProject(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este proyecto? Esta acción no se puede deshacer.')) {
+                return;
+            }
+
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            try {
+                showLoading(true, 'Eliminando...');
+                const response = await fetch(`${API_BASE}/proyectos/${id}`, {
+                    method: 'DELETE',
+                    headers: headers
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error al eliminar el proyecto');
+                }
+
+                const result = await response.json();
+                showToast(result.message || 'Proyecto eliminado exitosamente', 'success');
+                loadProjects();
+            } catch (error) {
+                console.error('Error:', error);
+                showToast(error.message || 'Error al eliminar el proyecto', 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
         function exportData() {
-            alert('Exportando datos de proyectos...');
+            // Implementar función de exportación
+            showToast('Función de exportación en desarrollo', 'warning');
         }
 
         function showAddProjectModal() {
-            alert('Mostrar formulario para agregar nuevo proyecto');
+            openModal();
+        }
+
+        // Funciones para el modal de crear/editar
+        function openModal(proyecto = null) {
+            const modal = document.getElementById('proyectoModal');
+            const form = document.getElementById('proyectoForm');
+            const title = document.getElementById('modalTitle');
+
+            if (proyecto) {
+                title.textContent = 'Editar Proyecto';
+                editingId = proyecto.id;
+                
+                // Llenar el formulario con los datos del proyecto
+                Object.keys(proyecto).forEach(key => {
+                    const input = form.elements[key];
+                    if (input) {
+                        if (input.type === 'checkbox') {
+                             // Manejo específico para checkboxes
+                            input.checked = (proyecto[key] === 'SI' || proyecto[key] === true);
+                        } else {
+                            input.value = proyecto[key] || '';
+                        }
+                    }
+                });
+            } else {
+                title.textContent = 'Nuevo Proyecto';
+                editingId = null;
+                form.reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('proyectoModal');
+            modal.classList.remove('active');
+            document.getElementById('proyectoForm').reset();
+            editingId = null;
+        }
+        
+        // Función para cerrar el modal de ver detalles
+        function closeViewModal() {
+            const modal = document.getElementById('viewProjectModal');
+            modal.classList.remove('active');
+        }
+
+        // Manejar envío del formulario
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {};
+            // Convertir FormData a un objeto simple y manejar checkboxes
+            for (let [key, value] of formData.entries()) {
+                if (e.target.elements[key].type === 'checkbox') {
+                    data[key] = e.target.elements[key].checked ? 'SI' : 'NO';
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            // Eliminar campos vacíos para no enviarlos innecesariamente
+            Object.keys(data).forEach(key => {
+                if (data[key] === '' || data[key] === null) {
+                    delete data[key];
+                }
+            });
+
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            try {
+                showLoading(true, 'Guardando...');
+                
+                let response;
+                if (editingId) {
+                    response = await fetch(`${API_BASE}/proyectos/${editingId}`, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    response = await fetch(`${API_BASE}/proyectos`, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error al guardar el proyecto');
+                }
+
+                const result = await response.json();
+                showToast(result.message || 'Proyecto guardado exitosamente', 'success');
+                closeModal();
+                loadProjects();
+            } catch (error) {
+                console.error('Error:', error);
+                showToast(error.message || 'Error al guardar el proyecto', 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         // Función para logout
@@ -457,6 +1112,7 @@
             // Eliminar la sesión del usuario
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userRole');
+            localStorage.removeItem('authToken');
             
             // Redirigir a la página de login
             window.location.href = '../../index.html';
@@ -470,7 +1126,6 @@
 
         // Change role
         function changeRole(role) {
-            currentRole = role;
             const roleNames = {
                 'admin': 'Administrador',
                 'alcalde': 'Alcalde',
@@ -479,20 +1134,20 @@
             };
             document.getElementById('currentRole').textContent = roleNames[role];
             document.getElementById('userMenu').classList.add('hidden');
-            console.log(localStorage)
+            
             // Guardar el rol en localStorage
             localStorage.setItem('userRole', role);
             
             // Aquí se implementaría la lógica para cambiar la vista según el rol
             if (role === 'public') {
-                alert('Modo público activado - Se ocultará información sensible');
+                showToast('Modo público activado - Se ocultará información sensible', 'warning');
             }
         }
 
         // Toggle notifications
         function toggleNotifications() {
             // Implement notification panel
-            alert('Panel de notificaciones - En desarrollo');
+            showToast('Panel de notificaciones - En desarrollo', 'warning');
         }
 
         // Close menus when clicking outside
@@ -502,6 +1157,60 @@
             
             if (!userButton && !userMenu.contains(event.target)) {
                 userMenu.classList.add('hidden');
+            }
+        });
+
+        // Mostrar notificación toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toast.className = `toast ${type}`;
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Mostrar/ocultar indicador de carga
+        function showLoading(show, message = 'Guardando...') {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            
+            if (show) {
+                submitBtn.disabled = true;
+                submitText.innerHTML = `<span class="loading"></span> ${message}`;
+            } else {
+                submitBtn.disabled = false;
+                submitText.textContent = 'Guardar';
+            }
+        }
+
+        // Formatear moneda
+        function formatCurrency(value) {
+            if (!value) return '$0';
+            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            const editModal = document.getElementById('proyectoModal');
+            const viewModal = document.getElementById('viewProjectModal');
+            if (event.target === editModal) {
+                closeModal();
+            }
+            if (event.target === viewModal) {
+                closeViewModal();
+            }
+        }
+
+        // Manejar tecla Escape para cerrar modales
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                closeViewModal();
             }
         });
     </script>

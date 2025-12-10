@@ -226,7 +226,7 @@
                         // Save token to localStorage
                         localStorage.setItem('authToken', data.token);
                         localStorage.setItem('isLoggedIn', 'true');
-                        
+                        console.log("data",data)
                         // Save user data for future reference
                         if (data.user) {
                             localStorage.setItem('userData', JSON.stringify(data.user));
@@ -237,9 +237,13 @@
                         } else {
                             localStorage.removeItem('rememberUser');
                         }
+                        const division = data.user.division.nombre;
                         
+                        const ruta = `/ALGARROBO_BASE/frontend/division/${division}/dashboard.html`
+                        console.log(ruta)
                         // Redirect to dashboard instead of index.html
-                        window.location.href = '/ALGARROBO_BASE/frontend/division/secplan/dashboard.html';
+                        window.location.href = ruta;
+                        //window.location.href = '/ALGARROBO_BASE/frontend/division/secplan/dashboard.html';
                     } else {
                         throw new Error('Respuesta inválida del servidor');
                     }
