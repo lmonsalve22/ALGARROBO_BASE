@@ -237,9 +237,9 @@
                         } else {
                             localStorage.removeItem('rememberUser');
                         }
-                        const division = data.user.division.nombre;
-                        
-                        const ruta = `/ALGARROBO_BASE/frontend/division/${division}/dashboard.html`
+                        const division = data.user.division.nombre.toLowerCase();
+                        const rol = data.user.roles[0].nombre.toLowerCase();
+                        const ruta = `/ALGARROBO_BASE/frontend/division/${division}/${rol}/dashboard.html`
                         console.log(ruta)
                         // Redirect to dashboard instead of index.html
                         window.location.href = ruta;
