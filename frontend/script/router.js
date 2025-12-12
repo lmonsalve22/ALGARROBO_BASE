@@ -1,11 +1,13 @@
 
 // Función para verificar el estado de login
+const BASE = "/ALGARROBO_BASE"
+//const BASE = ""
 const diccionarioRutas = {
-    10: ["/frontend/division/secplan/admin_general/dashboard.html",
-        "/frontend/division/secplan/admin_general/proyecto.html",
-        "/frontend/division/secplan/admin_general/mapa.html",
-        "/frontend/division/secplan/admin_general/informe.html",
-        "/frontend/division/secplan/admin_general/calendario.html"
+    10: [`${BASE}/frontend/division/secplan/admin_general/dashboard.html`,
+        `${BASE}/frontend/division/secplan/admin_general/proyecto.html`,
+        `${BASE}/frontend/division/secplan/admin_general/mapa.html`,
+        `${BASE}/frontend/division/secplan/admin_general/informe.html`,
+        `${BASE}/frontend/division/secplan/admin_general/calendario.html`
     ]
 };
 
@@ -37,7 +39,7 @@ function checkLoginStatus() {
     return [token,userData];
 }
  
-//const salida = checkLoginStatus(); 
-//const token = salida[0]
-//const userData = salida[1]
-//console.log(token,userData)
+const salida = checkLoginStatus(); 
+const token = salida[0]
+const userData = salida[1]
+console.log(token,userData)
