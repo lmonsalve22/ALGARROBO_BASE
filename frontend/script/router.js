@@ -1,6 +1,5 @@
 
 // Función para verificar el estado de login
-
 const diccionarioRutas = {
     10: ["/frontend/division/secplan/admin_general/dashboard.html",
         "/frontend/division/secplan/admin_general/proyecto.html",
