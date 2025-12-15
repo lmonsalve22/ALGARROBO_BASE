@@ -1,7 +1,7 @@
 
 // Función para verificar el estado de login
-//const BASE = "/ALGARROBO_BASE"
-const BASE = ""
+const BASE = "/ALGARROBO_BASE"
+//const BASE = ""
 const diccionarioRutas = {
     10: [`${BASE}/frontend/division/secplan/admin_general/dashboard.html`,
         `${BASE}/frontend/division/secplan/admin_general/proyecto.html`,
