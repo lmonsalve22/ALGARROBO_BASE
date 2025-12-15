@@ -12,7 +12,7 @@
                 window.location.href = '../../index.html';
             }
         }
-        //checkLoginStatus() 
+        checkLoginStatus() 
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -103,6 +103,56 @@
         .event-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Estilos para notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(120%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background-color: #10B981;
+        }
+        
+        .notification.error {
+            background-color: #EF4444;
+        }
+        
+        .notification.info {
+            background-color: #3B82F6;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -358,11 +408,11 @@
     <div id="eventModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeEventModal()">&times;</span>
-            <h2 class="text-xl font-bold mb-4">Agregar Evento</h2>
+            <h2 id="modalTitle" class="text-xl font-bold mb-4">Agregar Evento</h2>
             <form id="eventForm">
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="eventTitle">
-                        Título del Evento
+                        Título del Evento *
                     </label>
                     <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="eventTitle" type="text" placeholder="Título del evento">
                 </div>
@@ -375,7 +425,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="eventStartDate">
-                            Fecha de Inicio
+                            Fecha de Inicio *
                         </label>
                         <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="eventStartDate" type="date">
                     </div>
@@ -407,10 +457,26 @@
                         <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="eventLocation" type="text" placeholder="Ubicación del evento">
                     </div>
                 </div>
-                <div class="flex justify-end">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onclick="saveEvent()">
-                        Guardar Evento
-                    </button>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="eventFinancing">
+                        Financiamiento
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="eventFinancing" type="text" placeholder="Fuente de financiamiento">
+                </div>
+                <div class="flex justify-between">
+                    <div id="deleteEventContainer" class="hidden">
+                        <button type="button" onclick="deleteEvent()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            <i class="fas fa-trash mr-2"></i>Eliminar Evento
+                        </button>
+                    </div>
+                    <div class="flex justify-end gap-2 ml-auto">
+                        <button type="button" onclick="closeEventModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Cancelar
+                        </button>
+                        <button type="button" onclick="saveEvent()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Guardar Evento
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -423,13 +489,14 @@
     <script>
         // Verificar si el usuario está logueado al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            //checkLoginStatus();
+            checkLoginStatus();
             initializeCalendar();
         });
 
         // Variables globales
         let calendar;
         let currentEventId = null;
+        let eventsData = [];
 
         // Colores para cada área
         const areaColors = {
@@ -442,7 +509,7 @@
         };
 
         // Datos de ejemplo para eventos
-        const eventsData = [
+        const initialEventsData = [
             {
                 id: 1,
                 title: 'Inicio Licitación - Pavimentación Av. Santa Teresa',
@@ -501,6 +568,9 @@
 
         // Inicializar calendario
         function initializeCalendar() {
+            // Copiar los datos iniciales a nuestra variable de eventos
+            eventsData = [...initialEventsData];
+            
             const calendarEl = document.getElementById('calendar');
             
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -515,6 +585,7 @@
                     id: event.id,
                     title: event.title,
                     start: event.start,
+                    end: event.end,
                     backgroundColor: areaColors[event.area],
                     borderColor: areaColors[event.area],
                     extendedProps: {
@@ -538,24 +609,29 @@
         // Mostrar detalles de un evento
         function showEventDetails(event) {
             const title = event.title;
-            const startDate = event.start.toLocaleDateString('es-ES');
+            const startDate = event.start.toISOString().split('T')[0];
+            const endDate = event.end ? event.end.toISOString().split('T')[0] : '';
             const area = event.extendedProps.area;
-            const description = event.extendedProps.description;
-            const location = event.extendedProps.location;
-            const financing = event.extendedProps.financing;
+            const description = event.extendedProps.description || '';
+            const location = event.extendedProps.location || '';
+            const financing = event.extendedProps.financing || '';
             
             const modal = document.getElementById('eventModal');
-            const modalTitle = modal.querySelector('h2');
+            const modalTitle = document.getElementById('modalTitle');
             
             modalTitle.textContent = 'Detalles del Evento';
             document.getElementById('eventTitle').value = title;
             document.getElementById('eventDescription').value = description;
-            document.getElementById('eventStartDate').value = event.start.toISOString().split('T')[0];
-            document.getElementById('eventEndDate').value = event.end ? event.end.toISOString().split('T')[0] : event.start.toISOString().split('T')[0];
+            document.getElementById('eventStartDate').value = startDate;
+            document.getElementById('eventEndDate').value = endDate;
             document.getElementById('eventArea').value = area;
             document.getElementById('eventLocation').value = location;
+            document.getElementById('eventFinancing').value = financing;
             
             currentEventId = event.id;
+            
+            // Mostrar botón de eliminar
+            document.getElementById('deleteEventContainer').classList.remove('hidden');
             
             modal.style.display = 'block';
         }
@@ -563,7 +639,7 @@
         // Abrir modal para agregar evento en una fecha específica
         function openEventModalForDate(date) {
             const modal = document.getElementById('eventModal');
-            const modalTitle = modal.querySelector('h2');
+            const modalTitle = document.getElementById('modalTitle');
             
             modalTitle.textContent = 'Agregar Evento';
             document.getElementById('eventTitle').value = '';
@@ -572,8 +648,12 @@
             document.getElementById('eventEndDate').value = date;
             document.getElementById('eventArea').value = 'Vialidad';
             document.getElementById('eventLocation').value = '';
+            document.getElementById('eventFinancing').value = '';
             
             currentEventId = null;
+            
+            // Ocultar botón de eliminar
+            document.getElementById('deleteEventContainer').classList.add('hidden');
             
             modal.style.display = 'block';
         }
@@ -581,7 +661,7 @@
         // Agregar nuevo evento
         function addCalendarEvent() {
             const modal = document.getElementById('eventModal');
-            const modalTitle = modal.querySelector('h2');
+            const modalTitle = document.getElementById('modalTitle');
             
             modalTitle.textContent = 'Agregar Evento';
             document.getElementById('eventTitle').value = '';
@@ -590,8 +670,12 @@
             document.getElementById('eventEndDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('eventArea').value = 'Vialidad';
             document.getElementById('eventLocation').value = '';
+            document.getElementById('eventFinancing').value = '';
             
             currentEventId = null;
+            
+            // Ocultar botón de eliminar
+            document.getElementById('deleteEventContainer').classList.add('hidden');
             
             modal.style.display = 'block';
         }
@@ -604,7 +688,9 @@
             const endDate = document.getElementById('eventEndDate').value;
             const area = document.getElementById('eventArea').value;
             const location = document.getElementById('eventLocation').value;
+            const financing = document.getElementById('eventFinancing').value;
             
+            // Validar campos obligatorios
             if (!title || !startDate) {
                 showNotification('Por favor, complete los campos obligatorios', 'error');
                 return;
@@ -616,18 +702,35 @@
                 if (existingEvent) {
                     existingEvent.setProp('title', title);
                     existingEvent.setStart(startDate);
-                    existingEvent.setEnd(endDate);
+                    existingEvent.setEnd(endDate || startDate);
                     existingEvent.setProp('backgroundColor', areaColors[area]);
                     existingEvent.setProp('borderColor', areaColors[area]);
                     existingEvent.setExtendedProp('area', area);
                     existingEvent.setExtendedProp('description', description);
                     existingEvent.setExtendedProp('location', location);
+                    existingEvent.setExtendedProp('financing', financing);
+                    
+                    // Actualizar en nuestra variable de eventos
+                    const eventIndex = eventsData.findIndex(e => e.id === currentEventId);
+                    if (eventIndex !== -1) {
+                        eventsData[eventIndex] = {
+                            id: currentEventId,
+                            title: title,
+                            start: startDate,
+                            end: endDate,
+                            area: area,
+                            description: description,
+                            location: location,
+                            financing: financing
+                        };
+                    }
                 }
                 showNotification('Evento actualizado correctamente', 'success');
             } else {
                 // Agregar nuevo evento
+                const newEventId = Date.now(); // ID único basado en timestamp
                 const newEvent = {
-                    id: Date.now(), // ID único basado en timestamp
+                    id: newEventId,
                     title: title,
                     start: startDate,
                     end: endDate,
@@ -636,20 +739,51 @@
                     extendedProps: {
                         area: area,
                         description: description,
-                        location: location
+                        location: location,
+                        financing: financing
                     }
                 };
                 
                 calendar.addEvent(newEvent);
+                
+                // Agregar a nuestra variable de eventos
+                eventsData.push({
+                    id: newEventId,
+                    title: title,
+                    start: startDate,
+                    end: endDate,
+                    area: area,
+                    description: description,
+                    location: location,
+                    financing: financing
+                });
+                
                 showNotification('Evento agregado correctamente', 'success');
             }
             
             closeEventModal();
         }
 
+        // Eliminar evento
+        function deleteEvent() {
+            if (currentEventId) {
+                const existingEvent = calendar.getEventById(currentEventId);
+                if (existingEvent) {
+                    existingEvent.remove();
+                    
+                    // Eliminar de nuestra variable de eventos
+                    eventsData = eventsData.filter(e => e.id !== currentEventId);
+                    
+                    showNotification('Evento eliminado correctamente', 'success');
+                    closeEventModal();
+                }
+            }
+        }
+
         // Cerrar modal de evento
         function closeEventModal() {
             document.getElementById('eventModal').style.display = 'none';
+            currentEventId = null;
         }
 
         // Sincronizar calendario
@@ -661,44 +795,95 @@
             }, 2000);
         }
 
-        // Exportar calendario
+        // Exportar calendario a formato .ics
         function exportCalendar() {
-            showNotification('Exportando calendario...', 'info');
+            showNotification('Generando archivo de calendario...', 'info');
+            
+            // Crear contenido del archivo .ics
+            let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Geoportal Municipal//Calendario Municipal//ES\n';
+            
+            // Agregar cada evento al archivo .ics
+            eventsData.forEach(event => {
+                icsContent += 'BEGIN:VEVENT\n';
+                icsContent += `UID:${event.id}@geoportal-municipal.cl\n`;
+                icsContent += `DTSTART:${formatDateForICS(event.start)}\n`;
+                if (event.end) {
+                    icsContent += `DTEND:${formatDateForICS(event.end)}\n`;
+                } else {
+                    // Si no hay fecha de fin, usar la fecha de inicio + 1 día
+                    const nextDay = new Date(event.start);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    icsContent += `DTEND:${formatDateForICS(nextDay.toISOString().split('T')[0])}\n`;
+                }
+                icsContent += `SUMMARY:${event.title}\n`;
+                if (event.description) {
+                    icsContent += `DESCRIPTION:${event.description}\n`;
+                }
+                if (event.location) {
+                    icsContent += `LOCATION:${event.location}\n`;
+                }
+                if (event.area) {
+                    icsContent += `CATEGORIES:${event.area}\n`;
+                }
+                icsContent += 'END:VEVENT\n';
+            });
+            
+            icsContent += 'END:VCALENDAR';
+            
+            // Crear blob y descargar
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'calendario_municipal.ics';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             
             setTimeout(() => {
                 showNotification('Calendario exportado correctamente', 'success');
-            }, 2000);
+            }, 500);
         }
 
-        // Sistema de notificaciones
+        // Función para formatear fecha a formato ICS (YYYYMMDD)
+        function formatDateForICS(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}${month}${day}`;
+        }
+
+        // Sistema de notificaciones mejorado
         function showNotification(message, type = 'info') {
             // Crear elemento de notificación
             const notification = document.createElement('div');
-            notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 transform transition-all duration-300 translate-x-full`;
+            notification.className = `notification ${type}`;
             
-            // Configurar estilo según tipo
+            // Configurar contenido según tipo
+            let icon = '';
             if (type === 'success') {
-                notification.classList.add('bg-green-500', 'text-white');
-                notification.innerHTML = `<i class="fas fa-check-circle"></i><span>${message}</span>`;
+                icon = '<i class="fas fa-check-circle"></i>';
             } else if (type === 'error') {
-                notification.classList.add('bg-red-500', 'text-white');
-                notification.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+                icon = '<i class="fas fa-exclamation-circle"></i>';
             } else {
-                notification.classList.add('bg-blue-500', 'text-white');
-                notification.innerHTML = `<i class="fas fa-info-circle"></i><span>${message}</span>`;
+                icon = '<i class="fas fa-info-circle"></i>';
             }
+            
+            notification.innerHTML = `${icon}<span>${message}</span>`;
             
             // Añadir al DOM
             document.body.appendChild(notification);
             
             // Animar entrada
             setTimeout(() => {
-                notification.classList.remove('translate-x-full');
+                notification.classList.add('show');
             }, 100);
             
             // Eliminar después de 3 segundos
             setTimeout(() => {
-                notification.classList.add('translate-x-full');
+                notification.classList.remove('show');
                 setTimeout(() => {
                     document.body.removeChild(notification);
                 }, 300);
@@ -738,14 +923,14 @@
             
             // Aquí se implementaría la lógica para cambiar la vista según el rol
             if (role === 'public') {
-                alert('Modo público activado - Se ocultará información sensible');
+                showNotification('Modo público activado - Se ocultará información sensible', 'info');
             }
         }
 
         // Toggle notifications
         function toggleNotifications() {
             // Implement notification panel
-            alert('Panel de notificaciones - En desarrollo');
+            showNotification('Panel de notificaciones - En desarrollo', 'info');
         }
 
         // Close menus when clicking outside
