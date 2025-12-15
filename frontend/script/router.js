@@ -47,8 +47,8 @@ function checkLoginStatus() {
     
     if (!isLoggedIn || isLoggedIn !== 'true' || !verificarRutaPermitida(userData)) {
         // Redirigir a la página de login si no está logueado
-        window.location.href = `${BASE}/frontend/index.html`;
-        //console.log("aka salio");
+        //window.location.href = `${BASE}/frontend/index.html`;
+        console.log("aka salio");
     }
     const token = localStorage.getItem('authToken'); // trae el string
     return [token,userData];
