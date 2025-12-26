@@ -44,6 +44,12 @@ function checkLoginStatus() {
     const userData = JSON.parse(userDataString); // lo convierte a objeto
 
     const isLoggedIn = localStorage.getItem('isLoggedIn');    
+     if (!isLoggedIn || isLoggedIn !== 'true') {
+        // Redirigir a la página de login si no está logueado
+        window.location.href = `${BASE}/frontend/index.html`;
+        //console.log("aka salio");
+    }
+
     
     if (!isLoggedIn || isLoggedIn !== 'true' || !verificarRutaPermitida(userData)) {
         // Redirigir a la página de login si no está logueado
