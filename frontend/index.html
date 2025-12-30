@@ -237,10 +237,15 @@
                         } else {
                             localStorage.removeItem('rememberUser');
                         }
+
                         const division = data.user.division.nombre.toLowerCase();
                         const rol = data.user.roles[0].nombre.toLowerCase();
-                        const ruta = `/ALGARROBO_BASE/frontend/division/${division}/${rol}/dashboard.html`
-                        console.log(ruta)
+                        let ruta = `/ALGARROBO_BASE/frontend/division/${division}/${rol}/dashboard.html`
+                        console.log("User",data.user.nivel_acceso)
+                        if (data.user.nivel_acceso == 10){
+                            ruta = `/ALGARROBO_BASE/frontend/administracion/index.html`;
+                        }
+                        //console.log(data)
                         // Redirect to dashboard instead of index.html
                         window.location.href = ruta;
                         //window.location.href = '/ALGARROBO_BASE/frontend/division/secplan/dashboard.html';

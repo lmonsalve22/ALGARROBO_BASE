@@ -52,4 +52,42 @@ CREATE TABLE proyectos (
     longitud NUMERIC(12,6)                      -- LONGITUD
 );
 
+CREATE TABLE mapas (
+    mapa_id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT
+);
+
+CREATE TABLE mapas_roles (
+    mapa_id INTEGER NOT NULL,
+    role_id INTEGER NOT NULL,
+    PRIMARY KEY (mapa_id, role_id),
+    CONSTRAINT fk_mapas_roles_mapa
+        FOREIGN KEY (mapa_id)
+        REFERENCES mapas (mapa_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_mapas_roles_role
+        FOREIGN KEY (role_id)
+        REFERENCES roles (role_id)
+        ON DELETE CASCADE
+);
+
+INSERT INTO mapas (nombre, descripcion)
+VALUES 
+('Varios', '1.html'),
+('Proyectos', '2.html');
+
+INSERT INTO mapas (nombre, descripcion)
+VALUES 
+('Camara', '3.html');
+
+INSERT INTO mapas_roles (mapa_id, role_id)
+VALUES 
+(1, 10),
+(2, 10),
+(1, 11);
+
+INSERT INTO mapas_roles (mapa_id, role_id)
+VALUES 
+(3, 10);
 

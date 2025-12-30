@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal Algarrobo | Plataforma de Datos Geoespaciales</title>
+
+    <!-- Leaflet CSS (Última versión) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- Variables de Diseño (Nueva Paleta de Colores) --- */
+        :root {
+            --primary-color: #007B5E;
+            --secondary-color: #006644;
+            --accent-color: #005C4A;
+            --accent2-color: #C70039;
+            --text-color: #333333;
+            --light-gray: #F0F0F0;
+            --dark-gray: #444444;
+            --white: #ffffff;
+            --border-radius: 16px;
+            --transition-speed: 0.3s;
+        }
+
+        /* --- Estilos Generales y Reset --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--white);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: var(--white);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color var(--transition-speed) ease;
+        }
+
+        a:hover {
+            color: var(--accent-color);
+        }
+
+        /* --- Header Optimizado con Gradiente Animado y Efecto Corporativo --- */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 70px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-100%);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .main-header.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .main-header.expanded {
+            height: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .main-header.collapsed {
+            height: 0;
+            box-shadow: none;
+        }
+
+        /* Línea indicadora en la parte inferior del header */
+        .main-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+        }
+
+        .main-header.loaded::after {
+            transform: scaleX(1);
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            transition: transform var(--transition-speed) ease;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--white);
+            transition: width var(--transition-speed) ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo:hover::after {
+            width: 100%;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+
+        .main-nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        .main-nav ul li {
+            margin-left: 30px;
+            position: relative;
+        }
+
+        .main-nav a {
+            font-weight: 600;
+            color: var(--white);
+            font-size: 1rem;
+            position: relative;
+            padding-bottom: 5px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        /* Animación subrayado deslizante mejorada */
+        .main-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--white);
+            transition: width var(--transition-speed) ease;
+        }
+
+        .main-nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Efecto de resplandor al pasar el ratón */
+        .main-nav a:hover {
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--white);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Botón flotante corporativo para mostrar/ocultar header */
+        .header-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: all var(--transition-speed) ease;
+            opacity: 0;
+            transform: scale(0) rotate(180deg);
+        }
+
+        .header-toggle.loaded {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+
+        .header-toggle:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .header-toggle:active {
+            transform: scale(0.95) rotate(-5deg);
+        }
+
+        /* Efecto de pulso para llamar la atención */
+        .header-toggle.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 94, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(0, 123, 94, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 94, 0);
+            }
+        }
+
+        .header-toggle i {
+            font-size: 1.5rem;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        /* Indicador de estado del header */
+        .header-indicator {
+            position: fixed;
+            top: 85px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--primary-color);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all var(--transition-speed) ease;
+            z-index: 999;
+        }
+
+        .header-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Contenedor Principal del Mapa --- */
+        .map-container {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Asegurar que los controles de Leaflet sean visibles */
+        .leaflet-control-container {
+            z-index: 999;
+        }
+
+        .leaflet-top {
+            top: 80px !important;
+        }
+
+        .leaflet-right {
+            right: 10px !important;
+        }
+
+        /* --- Panel de Control de Capas Mejorado con Glassmorphism --- */
+        .layers-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 70vh;
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            z-index: 998;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+            opacity: 0;
+            transform: translateX(50px);
+        }
+
+        .layers-panel.loaded {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .layers-panel.collapsed {
+            width: 50px;
+            height: 50px;
+            max-height: 50px;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            color: var(--white);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .panel-header:hover {
+            filter: brightness(1.1);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .panel-toggle {
+            font-size: 1.1rem;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .layers-panel.collapsed .panel-toggle {
+            transform: rotate(180deg);
+        }
+
+        .panel-content {
+            padding: 15px;
+            max-height: calc(70vh - 50px);
+            overflow-y: auto;
+        }
+
+        .layers-panel.collapsed .panel-content {
+            display: none;
+        }
+
+        .layer-group {
+            margin-bottom: 15px;
+        }
+
+        .layer-group-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 0;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .layer-group-title:hover {
+            color: var(--accent-color);
+            transform: translateX(5px);
+        }
+
+        .layer-group-title i {
+            margin-right: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .layer-group.collapsed .layer-group-title i {
+            transform: rotate(-90deg);
+        }
+
+        .layer-group-content {
+            padding-left: 20px;
+        }
+
+        .layer-group.collapsed .layer-group-content {
+            display: none;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .layer-item:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(5px);
+        }
+
+        .layer-checkbox {
+            margin-right: 10px;
+        }
+
+        .layer-label {
+            flex-grow: 1;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* --- Panel de Información Mejorado con Glassmorphism --- */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+            max-height: 40vh;
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            z-index: 998;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .info-panel.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-panel.collapsed {
+            width: 50px;
+            height: 50px;
+            max-height: 50px;
+        }
+
+        .info-panel-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            color: var(--white);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .info-panel-header:hover {
+            filter: brightness(1.1);
+        }
+
+        .info-panel-content {
+            padding: 15px;
+            max-height: calc(40vh - 50px);
+            overflow-y: auto;
+        }
+
+        .info-panel.collapsed .info-panel-content {
+            display: none;
+        }
+
+        .feature-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .feature-table th {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 8px;
+            text-align: left;
+        }
+
+        .feature-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .feature-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* --- Barra de Herramientas Simplificada con Microinteracciones --- */
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            z-index: 998;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+
+        .toolbar.loaded {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .tool-button {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-button:last-child {
+            border-bottom: none;
+        }
+
+        .tool-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(0, 123, 94, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .tool-button:hover::before {
+            width: 100px;
+            height: 100px;
+        }
+
+        .tool-button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+            color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .tool-button.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* --- Barra de Búsqueda Mejorada con Tooltips --- */
+        .search-container {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 350px;
+            z-index: 998;
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        }
+
+        .search-container.loaded {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            font-size: 0.9rem;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.5);
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-button:hover {
+            color: var(--accent-color);
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 5px;
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 998;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            font-size: 0.9rem;
+        }
+
+        .search-result-item:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(5px);
+        }
+
+        /* --- Indicador de Carga Personalizado --- */
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light-gray);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Animación de Carga Temática Personalizada --- */
+        .custom-loader {
+            width: 80px;
+            height: 40px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .custom-loader .wave {
+            position: absolute;
+            height: 20px;
+            width: 10px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: wave 1.5s linear infinite;
+        }
+
+        .custom-loader .wave:nth-child(2) {
+            left: 15px;
+            animation-delay: 0.2s;
+        }
+
+        .custom-loader .wave:nth-child(3) {
+            left: 30px;
+            animation-delay: 0.4s;
+        }
+
+        .custom-loader .wave:nth-child(4) {
+            left: 45px;
+            animation-delay: 0.6s;
+        }
+
+        .custom-loader .wave:nth-child(5) {
+            left: 60px;
+            animation-delay: 0.8s;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+        }
+
+        /* --- Escala y Norte --- */
+        .map-scale {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 998;
+        }
+
+        .map-north {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 50%;
+            z-index: 998;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .map-north:hover {
+            transform: scale(1.1);
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- Footer con Degradado --- */
+        .main-footer {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+            color: var(--light-gray);
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 5rem;
+            display: none; /* Oculto para centrar la atención en el mapa */
+        }
+
+        .main-footer p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .main-footer a {
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        /* --- Tooltips Enriquecidos --- */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* --- Popups Estilizados --- */
+        .leaflet-popup-content-wrapper {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .leaflet-popup-content {
+            margin: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .popup-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .popup-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .popup-description {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .popup-details {
+            font-size: 0.8rem;
+            color: var(--dark-gray);
+        }
+
+        /* --- Efecto Parallax Sutil --- */
+        .parallax-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .parallax-element {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('https://picsum.photos/seed/algarrobo/1920/1080.jpg') center/cover no-repeat;
+            opacity: 0.1;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        /* --- Diseño Responsivo (Mobile) --- */
+        @media (max-width: 768px) {
+            .main-header .container {
+                flex-wrap: wrap;
+            }
+
+            .main-nav {
+                width: 100%;
+                display: none;
+            }
+
+            .main-nav.active {
+                display: block;
+            }
+
+            .main-nav ul {
+                flex-direction: column;
+                text-align: center;
+                margin-top: 1rem;
+            }
+
+            .main-nav ul li {
+                margin: 10px 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .layers-panel {
+                width: 280px;
+                right: 10px;
+                top: 10px;
+            }
+
+            .info-panel {
+                width: 280px;
+                left: 10px;
+                bottom: 10px;
+            }
+
+            .search-container {
+                width: 90%;
+                top: 70px;
+            }
+
+            .toolbar {
+                flex-direction: row;
+                top: auto;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .tool-button {
+                border-bottom: none;
+                border-right: 1px solid rgba(255, 255, 255, 0.18);
+            }
+
+            .tool-button:last-child {
+                border-right: none;
+            }
+            
+            /* Ajustes para controles en móvil */
+            .leaflet-top {
+                top: 60px !important;
+            }
+            
+            .leaflet-right {
+                right: 10px !important;
+            }
+
+            .header-toggle {
+                top: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="main-header" id="main-header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-water"></i>
+                Geoportal Algarrobo
+            </a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html" class="nav-link active">Visor</a></li>
+                    <li><a href="index.html" class="nav-link">Aplicaciones</a></li>
+                    <li><a href="index.html" class="nav-link">Acerca de</a></li>
+                </ul>
+            </nav>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Botón flotante corporativo para mostrar/ocultar header -->
+    <!-- El icono inicial es 'ojo tachado' porque el header está visible y la acción es ocultarlo -->
+    <div class="header-toggle pulse" id="header-toggle">
+        <i class="fas fa-eye-slash"></i>
+    </div>
+
+    <!-- Indicador de estado del header -->
+    <div class="header-indicator" id="header-indicator">Header visible</div>
+
+    <!-- ==================== MAPA Y CONTROLES ==================== -->
+    <div class="map-container">
+        <!-- Efecto Parallax Sutil -->
+        <div class="parallax-container">
+            <div class="parallax-element" id="parallax-element"></div>
+        </div>
+        
+        <div id="map"></div>
+        
+        <!-- Barra de Herramientas Simplificada -->
+        <div class="toolbar" id="toolbar">
+            <div class="tooltip">
+                <button class="tool-button" id="home-button" title="Inicio">
+                    <i class="fas fa-home"></i>
+                </button>
+                <span class="tooltiptext">Volver a la página principal</span>
+            </div>
+            <div class="tooltip">
+                <button class="tool-button" id="zoom-in" title="Acercar">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <span class="tooltiptext">Acercar el mapa</span>
+            </div>
+            <div class="tooltip">
+                <button class="tool-button" id="zoom-out" title="Alejar">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span class="tooltiptext">Alejar el mapa</span>
+            </div>
+            <div class="tooltip">
+                <button class="tool-button" id="home" title="Vista inicial">
+                    <i class="fas fa-globe"></i>
+                </button>
+                <span class="tooltiptext">Volver a la vista inicial</span>
+            </div>
+            <div class="tooltip">
+                <button class="tool-button" id="print" title="Imprimir">
+                    <i class="fas fa-print"></i>
+                </button>
+                <span class="tooltiptext">Imprimir el mapa actual</span>
+            </div>
+            <div class="tooltip">
+                <button class="tool-button" id="refresh-layers" title="Actualizar capas">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <span class="tooltiptext">Actualizar todas las capas</span>
+            </div>
+        </div>
+        
+        <!-- Barra de Búsqueda -->
+        <div class="search-container" id="search-container">
+            <input type="text" class="search-input" id="search-input" placeholder="Buscar dirección o lugar...">
+            <button class="search-button" id="search-button">
+                <i class="fas fa-search"></i>
+            </button>
+            <div class="search-results" id="search-results"></div>
+        </div>
+        
+        <!-- Panel de Control de Capas -->
+        <div class="layers-panel" id="layers-panel">
+            <div class="panel-header" id="layers-panel-header">
+                <div class="panel-title">Capas</div>
+                <div class="panel-toggle">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="panel-content">
+                <!-- Capas Base -->
+                <div class="layer-group">
+                    <div class="layer-group-title">
+                        <i class="fas fa-layer-group"></i>
+                        Mapa Base
+                    </div>
+                    <div class="layer-group-content">
+                        <div class="layer-item">
+                            <input type="radio" name="base-layer" id="osm" class="layer-checkbox" checked>
+                            <label for="osm" class="layer-label">OpenStreetMap</label>
+                        </div>
+                        <div class="layer-item">
+                            <input type="radio" name="base-layer" id="satellite" class="layer-checkbox">
+                            <label for="satellite" class="layer-label">Satélite</label>
+                        </div>
+                        <div class="layer-item">
+                            <input type="radio" name="base-layer" id="terrain" class="layer-checkbox">
+                            <label for="terrain" class="layer-label">Terreno</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Capas Temáticas -->
+                <div class="layer-group">
+                    <div class="layer-group-title">
+                        <i class="fas fa-layer-group"></i>
+                        Capas Temáticas
+                    </div>
+                    <div class="layer-group-content" id="thematic-layers-container">
+                        <!-- Las capas temáticas se cargarán dinámicamente aquí -->
+                        <div class="layer-item">
+                            <div class="custom-loader">
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                            </div>
+                            <label class="layer-label">Cargando capas...</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de Información -->
+        <div class="info-panel" id="info-panel">
+            <div class="info-panel-header" id="info-panel-header">
+                <div class="panel-title">Información</div>
+                <div class="panel-toggle">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            <div class="info-panel-content">
+                <div id="feature-info">
+                    <p>Haz clic en un elemento del mapa para ver su información detallada.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Indicador de Carga -->
+        <div class="loading-indicator" id="loading-indicator">
+            <div class="loading-spinner"></div>
+        </div>
+        
+        <!-- Escala y Norte -->
+        <div class="map-north">
+            <i class="fas fa-location-arrow" style="transform: rotate(0deg);"></i>
+        </div>
+        <div class="map-scale" id="map-scale"></div>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2024 Geoportal Algarrobo. Municipalidad de Algarrobo, Chile. Todos los derechos reservados. Desarrollado con <i class="fas fa-heart" style="color: var(--accent2-color);"></i> usando <a href="https://leafletjs.com/" target="_blank">Leaflet</a>.</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS (Última versión) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+
+    <!-- Script para inicializar el mapa y la funcionalidad -->
+    <script>
+        // --- INICIALIZACIÓN DEL MAPA ---
+        // Coordenadas iniciales y nivel de zoom (Algarrobo, Chile)
+        const map = L.map('map').setView([-33.3549, -71.6559], 13);
+
+        // Capas base
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        });
+
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            maxZoom: 19
+        });
+
+        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            maxZoom: 17
+        });
+
+        // Añadir la capa base inicial
+        osmLayer.addTo(map);
+
+        // Grupo de capas base
+        const baseLayers = {
+            "OpenStreetMap": osmLayer,
+            "Satélite": satelliteLayer,
+            "Terreno": terrainLayer
+        };
+
+        // Grupo de capas temáticas (vacío inicialmente)
+        const thematicLayers = {};
+
+        // --- CONTROL DE CAPAS ---
+        const layerControl = L.control.layers(baseLayers, thematicLayers, {
+            position: 'topright'
+        }).addTo(map);
+
+        // --- FUNCIONALIDAD DEL PANEL DE CAPAS ---
+        const layersPanel = document.getElementById('layers-panel');
+        const layersPanelHeader = document.getElementById('layers-panel-header');
+        const infoPanel = document.getElementById('info-panel');
+        const infoPanelHeader = document.getElementById('info-panel-header');
+        const headerToggle = document.getElementById('header-toggle');
+        const mainHeader = document.getElementById('main-header');
+        const headerIndicator = document.getElementById('header-indicator');
+        const thematicLayersContainer = document.getElementById('thematic-layers-container');
+
+        // Toggle del panel de capas
+        layersPanelHeader.addEventListener('click', () => {
+            layersPanel.classList.toggle('collapsed');
+        });
+
+        // Toggle del panel de información
+        infoPanelHeader.addEventListener('click', () => {
+            infoPanel.classList.toggle('collapsed');
+        });
+
+        // Toggle del header con iconos de ojo mejorados
+        headerToggle.addEventListener('click', () => {
+            mainHeader.classList.toggle('collapsed');
+            const icon = headerToggle.querySelector('i');
+            
+            if (mainHeader.classList.contains('collapsed')) {
+                // El header está oculto, así que el botón debe mostrarlo
+                icon.className = 'fas fa-eye';
+                headerIndicator.textContent = 'Header oculto';
+                headerIndicator.classList.add('show');
+            } else {
+                // El header está visible, así que el botón debe ocultarlo
+                icon.className = 'fas fa-eye-slash';
+                headerIndicator.textContent = 'Header visible';
+                headerIndicator.classList.add('show');
+            }
+            
+            // Ocultar el indicador después de 2 segundos
+            setTimeout(() => {
+                headerIndicator.classList.remove('show');
+            }, 2000);
+            
+            // Quitar la clase de pulso cuando se interactúa con el botón
+            headerToggle.classList.remove('pulse');
+        });
+
+        // Auto-colapsar header después de 5 segundos con animación suave
+        setTimeout(() => {
+            mainHeader.classList.add('collapsed');
+            const icon = headerToggle.querySelector('i');
+            icon.className = 'fas fa-eye'; // Cambiar a icono de 'ojo' para mostrar
+            headerIndicator.textContent = 'Header auto-ocultado';
+            headerIndicator.classList.add('show');
+            
+            // Ocultar el indicador después de 3 segundos
+            setTimeout(() => {
+                headerIndicator.classList.remove('show');
+            }, 3000);
+            
+            // Añadir efecto de pulso para llamar la atención
+            headerToggle.classList.add('pulse');
+        }, 5000);
+
+        // Toggle de grupos de capas
+        document.querySelectorAll('.layer-group-title').forEach(title => {
+            title.addEventListener('click', () => {
+                const group = title.parentElement;
+                group.classList.toggle('collapsed');
+            });
+        });
+
+        // Cambio de capa base con transición suave
+        document.querySelectorAll('input[name="base-layer"]').forEach(input => {
+            input.addEventListener('change', () => {
+                if (input.checked) {
+                    // Mostrar indicador de carga
+                    showLoading();
+                    
+                    // Eliminar todas las capas base actuales con fade out
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.TileLayer) {
+                            layer.setOpacity(0);
+                            setTimeout(() => {
+                                map.removeLayer(layer);
+                            }, 300);
+                        }
+                    });
+                    
+                    // Añadir la nueva capa base con fade in
+                    setTimeout(() => {
+                        let newLayer;
+                        if (input.id === 'osm') {
+                            newLayer = osmLayer;
+                        } else if (input.id === 'satellite') {
+                            newLayer = satelliteLayer;
+                        } else if (input.id === 'terrain') {
+                            newLayer = terrainLayer;
+                        }
+                        
+                        newLayer.setOpacity(0);
+                        newLayer.addTo(map);
+                        
+                        // Animación de fadeIn
+                        let opacity = 0;
+                        const fadeInInterval = setInterval(() => {
+                            opacity += 0.1;
+                            newLayer.setOpacity(opacity);
+                            if (opacity >= 1) {
+                                clearInterval(fadeInInterval);
+                                hideLoading();
+                            }
+                        }, 30);
+                    }, 300);
+                }
+            });
+        });
+
+        // --- CONFIGURACIÓN DE CAPAS TEMÁTICAS DINÁMICAS ---
+        // Definición de las capas temáticas con sus URLs y configuración
+        const thematicLayersConfig = [
+                        {
+                id: 'proyectos1',
+                name: 'Proyectos',
+                //url: 'https://raw.githubusercontent.com/Sud-Austral/ALGARROBO_WEB/refs/heads/main/data/PREDIOS.json',
+                url: 'https://raw.githubusercontent.com/Sud-Austral/ALGARROBO_WEB/refs/heads/main/data/proyectos.geojson',
+                type: 'geojson',
+                style: {
+                color: "#6a5acd",
+                weight: 2,
+                fillColor: "#c3b5ff",
+                fillOpacity: 0.35
+                },
+                icon: null,
+                visible: false
+            }
+        
+        ];
+
+        // --- FUNCIÓN PARA CARGAR CAPAS DINÁMICAMENTE ---
+        function loadThematicLayers() {
+            // Mostrar indicador de carga
+            showLoading();
+            
+            // Limpiar el contenedor de capas temáticas
+            thematicLayersContainer.innerHTML = '';
+            
+            // Cargar cada capa temática
+            thematicLayersConfig.forEach(layerConfig => {
+                // Crear el elemento HTML para la capa
+                const layerItem = document.createElement('div');
+                layerItem.className = 'layer-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = layerConfig.id;
+                checkbox.className = 'layer-checkbox';
+                
+                const label = document.createElement('label');
+                label.htmlFor = layerConfig.id;
+                label.className = 'layer-label';
+                label.textContent = layerConfig.name;
+                
+                layerItem.appendChild(checkbox);
+                layerItem.appendChild(label);
+                thematicLayersContainer.appendChild(layerItem);
+                
+                // Agregar evento para mostrar/ocultar la capa
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        loadLayer(layerConfig);
+                    } else {
+                        if (thematicLayers[layerConfig.name]) {
+                            // Transición de fade out al ocultar la capa
+                            const layer = thematicLayers[layerConfig.name];
+                            if (layer instanceof L.GeoJSON) {
+                                layer.eachLayer(subLayer => {
+                                    if (subLayer.setStyle) {
+                                        subLayer.setStyle({ opacity: 0, fillOpacity: 0 });
+                                    }
+                                });
+                            }
+                            
+                            setTimeout(() => {
+                                map.removeLayer(layer);
+                                delete thematicLayers[layerConfig.name];
+                            }, 300);
+                        }
+                    }
+                });
+                
+                // Si la capa debe estar visible por defecto, cargarla
+                if (layerConfig.visible) {
+                    checkbox.checked = true;
+                    loadLayer(layerConfig);
+                }
+            });
+            
+            // Ocultar indicador de carga
+            hideLoading();
+        }
+
+        // --- FUNCIÓN PARA CARGAR UNA CAPA ESPECÍFICA ---
+        function loadLayer(layerConfig) {
+            showLoading();
+            
+            fetch(layerConfig.url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error al cargar la capa ${layerConfig.name}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let layer;
+                    
+                    if (layerConfig.type === 'geojson') {
+                        // Crear la capa GeoJSON
+                        layer = L.geoJSON(data, {
+                            style: layerConfig.style,
+                            pointToLayer: function (feature, latlng) {
+                                if (layerConfig.icon) {
+                                    return L.marker(latlng, { icon: layerConfig.icon });
+                                }
+                                return L.marker(latlng);
+                            },
+                            onEachFeature: function (feature, layer) {
+                                // Agregar popup con información de la característica
+                                if (feature.properties) {
+                                    let popupContent = '<div class="popup-content">';
+                                    
+                                    // Si hay un nombre de propiedad, mostrarlo primero
+                                    if (feature.properties.nombre) {
+                                        popupContent += `<h3 class="popup-title">${feature.properties.nombre}</h3>`;
+                                    }
+                                    
+                                   
+                                    // Mostrar todas las propiedades
+                                    popupContent += '<div class="popup-details">';
+                                    for (const key in feature.properties) {
+                                        if (key !== 'nombre') {
+                                            popupContent += `<p><strong>${key}:</strong> ${feature.properties[key]}</p>`;
+                                        }
+                                    }
+                                    popupContent += '</div>';
+                                    
+                                    popupContent += '</div>';
+                                    layer.bindPopup(popupContent, {
+                                        maxWidth: 300,
+                                        className: 'custom-popup'
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Añadir la capa al mapa con fade in
+                    if (layer instanceof L.GeoJSON) {
+                        layer.eachLayer(subLayer => {
+                            if (subLayer.setStyle) {
+                                const originalStyle = subLayer.options;
+                                subLayer.setStyle({ 
+                                    opacity: 0, 
+                                    fillOpacity: 0,
+                                    ...originalStyle
+                                });
+                            }
+                        });
+                    }
+                    
+                    layer.addTo(map);
+                    
+                    // Animación de fadeIn
+                    let opacity = 0;
+                    const fadeInInterval = setInterval(() => {
+                        opacity += 0.1;
+                        if (layer instanceof L.GeoJSON) {
+                            layer.eachLayer(subLayer => {
+                                if (subLayer.setStyle) {
+                                    const originalStyle = subLayer.options;
+                                    subLayer.setStyle({ 
+                                        opacity: opacity, 
+                                        fillOpacity: opacity * 0.3,
+                                        ...originalStyle
+                                    });
+                                }
+                            });
+                        }
+                        
+                        if (opacity >= 1) {
+                            clearInterval(fadeInInterval);
+                        }
+                    }, 30);
+                    
+                    // Almacenar la capa en el objeto de capas temáticas
+                    thematicLayers[layerConfig.name] = layer;
+                    
+                    // CORRECCIÓN: Usar addOverlay en lugar de addLayer
+                    layerControl.addOverlay(layer, layerConfig.name);
+                    
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error(error);
+                    hideLoading();
+                    
+                    // Mostrar mensaje de error
+                    const featureInfo = document.getElementById('feature-info');
+                    featureInfo.innerHTML = `
+                        <div class="error-message">
+                            <h3>Error al cargar la capa</h3>
+                            <p>No se pudo cargar la capa ${layerConfig.name}. Por favor, inténtelo de nuevo más tarde.</p>
+                            <p><strong>Detalles:</strong> ${error.message}</p>
+                        </div>
+                    `;
+                    
+                    // Desmarcar el checkbox
+                    document.getElementById(layerConfig.id).checked = false;
+                });
+        }
+
+        // --- FUNCIÓN PARA ACTUALIZAR TODAS LAS CAPAS ---
+        function refreshAllLayers() {
+            // Mostrar indicador de carga
+            showLoading();
+            
+            // Eliminar todas las capas temáticas del mapa con fade out
+            Object.keys(thematicLayers).forEach(layerName => {
+                const layer = thematicLayers[layerName];
+                if (layer instanceof L.GeoJSON) {
+                    layer.eachLayer(subLayer => {
+                        if (subLayer.setStyle) {
+                            subLayer.setStyle({ opacity: 0, fillOpacity: 0 });
+                        }
+                    });
+                }
+            });
+            
+            setTimeout(() => {
+                Object.keys(thematicLayers).forEach(layerName => {
+                    map.removeLayer(thematicLayers[layerName]);
+                    delete thematicLayers[layerName];
+                });
+                
+                // CORRECCIÓN: Actualizar el control de capas correctamente
+                layerControl.remove();
+                const newLayerControl = L.control.layers(baseLayers, thematicLayers, {
+                    position: 'topright'
+                }).addTo(map);
+                
+                // Desmarcar todos los checkboxes
+                document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Ocultar indicador de carga
+                hideLoading();
+                
+                // Mostrar mensaje de éxito
+                const featureInfo = document.getElementById('feature-info');
+                featureInfo.innerHTML = `
+                    <div class="success-message">
+                        <h3>Capas actualizadas</h3>
+                        <p>Todas las capas han sido actualizadas correctamente.</p>
+                    </div>
+                `;
+            }, 300);
+        }
+
+        // --- FUNCIONALIDAD DE BARRA DE HERRAMIENTAS ---
+        // Botón de inicio para ir a index.html
+        document.getElementById('home-button').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            map.zoomIn();
+        });
+        
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            map.zoomOut();
+        });
+        
+        document.getElementById('home').addEventListener('click', () => {
+            map.setView([-33.3549, -71.6559], 13);
+        });
+        
+        // Herramienta de impresión
+        document.getElementById('print').addEventListener('click', () => {
+            window.print();
+        });
+        
+        // Herramienta de actualización de capas
+        document.getElementById('refresh-layers').addEventListener('click', () => {
+            refreshAllLayers();
+        });
+        
+        // --- FUNCIONALIDAD DE BÚSQUEDA ---
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const searchResults = document.getElementById('search-results');
+        
+        // CORRECCIÓN: Implementar búsqueda de direcciones usando Nominatim
+        function performSearch() {
+            const query = searchInput.value.toLowerCase().trim() + ",Algarrobo";
+            //console.log(query)
+            if (query === '') {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            showLoading();
+            
+            // Primero, buscar direcciones usando Nominatim
+            const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=cl`;
+            
+            fetch(nominatimUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const results = [];
+                    
+                    // Procesar resultados de Nominatim
+                    data.forEach(item => {
+                        results.push({
+                            name: item.display_name,
+                            lat: parseFloat(item.lat),
+                            lng: parseFloat(item.lon),
+                            type: 'address'
+                        });
+                    });
+                    
+                    // Buscar en las capas cargadas
+                    Object.keys(thematicLayers).forEach(layerName => {
+                        const layer = thematicLayers[layerName];
+                        
+                        if (layer instanceof L.GeoJSON) {
+                            layer.eachLayer(featureLayer => {
+                                if (featureLayer.feature && featureLayer.feature.properties) {
+                                    // Buscar en todas las propiedades
+                                    for (const key in featureLayer.feature.properties) {
+                                        const value = String(featureLayer.feature.properties[key]).toLowerCase();
+                                        if (value.includes(query)) {
+                                            results.push({
+                                                name: featureLayer.feature.properties.nombre || `${layerName} - ${key}: ${featureLayer.feature.properties[key]}`,
+                                                layer: featureLayer,
+                                                layerName: layerName,
+                                                type: 'feature'
+                                            });
+                                            break; // No necesitamos añadir el mismo resultado varias veces
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Ocultar indicador de carga
+                    hideLoading();
+                    
+                    if (results.length > 0) {
+                        searchResults.innerHTML = '';
+                        results.forEach(result => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'search-result-item';
+                            resultItem.textContent = result.name;
+                            resultItem.addEventListener('click', () => {
+                                if (result.type === 'address') {
+                                    // Centrar el mapa en la dirección
+                                    map.setView([result.lat, result.lng], 16);
+                                    
+                                    // Añadir un marcador temporal
+                                    const tempMarker = L.marker([result.lat, result.lng]).addTo(map);
+                                    tempMarker.bindPopup(result.name).openPopup();
+                                    
+                                    // Eliminar el marcador después de cerrar el popup
+                                    tempMarker.on('popupclose', function() {
+                                        map.removeLayer(tempMarker);
+                                    });
+                                } else if (result.type === 'feature') {
+                                    // Centrar el mapa en el resultado
+                                    if (result.layer.getBounds) {
+                                        map.fitBounds(result.layer.getBounds());
+                                    } else if (result.layer.getLatLng) {
+                                        map.setView(result.layer.getLatLng(), 16);
+                                    }
+                                    
+                                    // Abrir el popup
+                                    result.layer.openPopup();
+                                }
+                                
+                                searchResults.style.display = 'none';
+                                searchInput.value = '';
+                            });
+                            searchResults.appendChild(resultItem);
+                        });
+                        searchResults.style.display = 'block';
+                    } else {
+                        searchResults.innerHTML = '<div class="search-result-item">No se encontraron resultados</div>';
+                        searchResults.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la búsqueda:', error);
+                    hideLoading();
+                    searchResults.innerHTML = '<div class="search-result-item">Error al realizar la búsqueda</div>';
+                    searchResults.style.display = 'block';
+                });
+        }
+        
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Cerrar resultados de búsqueda al hacer clic fuera
+        document.addEventListener('click', (event) => {
+            if (!searchInput.contains(event.target) && !searchResults.contains(event.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        // --- MOSTRAR INFORMACIÓN DE ELEMENTOS AL HACER CLIC ---
+        map.on('click', function(e) {
+            const featureInfo = document.getElementById('feature-info');
+            
+            // Verificar si se hizo clic en una capa
+            let clickedLayer = false;
+            
+            // Iterar sobre todas las capas temáticas
+            Object.values(thematicLayers).forEach(layerGroup => {
+                if (layerGroup instanceof L.GeoJSON) {
+                    layerGroup.eachLayer(layer => {
+                        if (layer instanceof L.Marker || layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                            // Para polígonos y polilíneas
+                            if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                                if (layer.getBounds().contains(e.latlng)) {
+                                    clickedLayer = true;
+                                    layer.openPopup();
+                                }
+                            }
+                            // Para marcadores
+                            else if (layer instanceof L.Marker) {
+                                const markerLatLng = layer.getLatLng();
+                                const distance = e.latlng.distanceTo(markerLatLng);
+                                if (distance < 100) { // 100 metros de tolerancia
+                                    clickedLayer = true;
+                                    layer.openPopup();
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Si no se hizo clic en ninguna capa, mostrar información de coordenadas
+            if (!clickedLayer) {
+                featureInfo.innerHTML = `
+                    <table class="feature-table">
+                        <tr>
+                            <th>Propiedad</th>
+                            <th>Valor</th>
+                        </tr>
+                        <tr>
+                            <td>Latitud</td>
+                            <td>${e.latlng.lat.toFixed(6)}</td>
+                        </tr>
+                        <tr>
+                            <td>Longitud</td>
+                            <td>${e.latlng.lng.toFixed(6)}</td>
+                        </tr>
+                        <tr>
+                            <td>Zoom</td>
+                            <td>${map.getZoom()}</td>
+                        </tr>
+                    </table>
+                `;
+            }
+        });
+        
+        // --- ESCALA Y ORIENTACIÓN ---
+        L.control.scale({
+            position: 'bottomright',
+            metric: true,
+            imperial: false
+        }).addTo(map);
+        
+        // Actualizar la orientación del norte al mover el mapa
+        // Se elimina la función que causa el error de getBearing
+        // La brújula ahora permanecerá fija apuntando al norte geográfico
+        
+        // --- FUNCIONALIDAD DEL MENÚ MÓVIL ---
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mainNav = document.querySelector('.main-nav');
+        
+        menuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('active');
+        });
+        
+        // --- NAVEGACIÓN ENTRE SECCIONES ---
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Eliminar clase activa de todos los enlaces
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Añadir clase activa al enlace actual
+                this.classList.add('active');
+                
+                // Aquí podrías cargar diferentes vistas o secciones
+                // Por ahora, solo mostramos una alerta para demostrar la funcionalidad
+                const section = this.textContent;
+                console.log(`Navegando a la sección: ${section}`);
+            });
+        });
+        
+        // --- INDICADOR DE CARGA ---
+        function showLoading() {
+            document.getElementById('loading-indicator').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading-indicator').style.display = 'none';
+        }
+        
+        // --- EFECTO PARALLAX SUTIL ---
+        document.addEventListener('mousemove', (e) => {
+            const parallaxElement = document.getElementById('parallax-element');
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            
+            parallaxElement.style.transform = `translate(${x}px, ${y}px)`;
+        });
+        
+        // --- EVENTO DE CARGA COMPLETA CON ANIMACIONES DE ENTRADA ---
+        window.addEventListener('load', () => {
+            // Cargar las capas temáticas dinámicamente
+            loadThematicLayers();
+            
+            // Animación inicial del mapa
+            setTimeout(() => {
+                map.flyTo([-33.3549, -71.6559], 14, {
+                    duration: 2
+                });
+            }, 1000);
+            
+            // Ocultar indicador de carga
+            hideLoading();
+            
+            // Animaciones de entrada para los elementos
+            setTimeout(() => {
+                document.getElementById('main-header').classList.add('loaded');
+                document.getElementById('header-toggle').classList.add('loaded');
+                document.getElementById('layers-panel').classList.add('loaded');
+                document.getElementById('info-panel').classList.add('loaded');
+                document.getElementById('toolbar').classList.add('loaded');
+                document.getElementById('search-container').classList.add('loaded');
+            }, 500);
+        });
+    </script>
+
+</body>
+</html>
