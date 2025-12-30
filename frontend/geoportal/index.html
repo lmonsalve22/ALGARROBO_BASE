@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Institucional</title>
+    <!-- Cargamos FontAwesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="../script/router.js"></script>
     <style>
         /* --- VARIABLES CSS (Nueva Paleta Corporativa) --- */
@@ -84,6 +86,8 @@
             font-size: 1.5rem;
             letter-spacing: -0.5px;
             transition: transform var(--transition-speed) ease;
+            text-decoration: none;
+            color: white;
         }
 
         .brand:hover {
@@ -100,15 +104,6 @@
             display: flex;
             align-items: center;
             gap: 12px;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.3);
-            background-color: rgba(255,255,255,0.2);
-            object-fit: cover;
         }
 
         /* --- LAYOUT GENERAL --- */
@@ -320,13 +315,17 @@
             border-radius: var(--radius);
             border: 1px dashed var(--border);
             animation: fadeIn 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .state-icon {
             width: 64px;
             height: 64px;
             margin-bottom: 20px;
-            opacity: 0.5;
+            opacity: 0.6; /* Un poco más visible */
+            color: var(--text-muted);
         }
 
         .state-title {
@@ -339,9 +338,10 @@
         .state-text {
             color: var(--text-muted);
             margin-bottom: 24px;
-            max-width: 400px;
+            max-width: 450px;
             margin-left: auto;
             margin-right: auto;
+            line-height: 1.6;
         }
 
         .btn-retry {
@@ -360,7 +360,7 @@
             opacity: 0.8;
         }
 
-        /* Estilo específico para error */
+        /* Estilo específico para error (diferenciar visualmente del vacío) */
         .state-message.error {
             border-color: rgba(199, 0, 57, 0.3);
             background-color: #fff5f7;
@@ -410,12 +410,64 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* --- BOTON LOGOUT --- */
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: 
+                background 0.25s ease,
+                box-shadow 0.25s ease,
+                transform 0.2s ease,
+                border-color 0.25s ease;
+        }
+
+        .logout-btn i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            line-height: 1;
+            margin: 0;
+            transform: translateY(-0.5px);
+            transition: transform 0.25s ease;
+        }
+
+        .logout-btn span {
+            display: flex;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #C70039, #8f0026);
+            border-color: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+        }
+
+        .logout-btn:hover i {
+            transform: translate(2px, -0.5px);
+        }
+
+        .logout-btn:active {
+            transform: scale(0.96);
+        }
+
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
-            .app-container {
-                flex-direction: column;
-                height: auto;
-            }
+            .app-container { flex-direction: column; height: auto; }
             aside {
                 width: 100%;
                 flex-direction: row;
@@ -442,118 +494,41 @@
                 padding-left: 16px;
                 color: var(--primary);
             }
-            header {
-                padding: 0 20px;
-            }
-            main {
-                padding: 20px;
-            }
-           
-            }
-    </style>
-    <style>
-        .logout-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 8px;
-    padding: 10px 18px;
-
-    border-radius: 999px;
-    color: #ffffff;
-    text-decoration: none;
-
-    font-weight: 600;
-    font-size: 0.95rem;
-    line-height: 1; /* 🔑 evita texto corrido */
-
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-
-    transition: 
-        background 0.25s ease,
-        box-shadow 0.25s ease,
-        transform 0.2s ease,
-        border-color 0.25s ease;
-}
-
-/* ICONO perfectamente centrado */
-.logout-btn i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 0.95rem;
-    line-height: 1;
-    margin: 0; /* 🔑 elimina desfase */
-    transform: translateY(-0.5px); /* micro ajuste óptico */
-    transition: transform 0.25s ease;
-}
-
-/* TEXTO alineado */
-.logout-btn span {
-    display: flex;
-    align-items: center;
-    line-height: 1;
-}
-
-/* Hover elegante pero claro */
-.logout-btn:hover {
-    background: linear-gradient(135deg, #C70039, #8f0026);
-    border-color: rgba(255, 255, 255, 0.45);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
-}
-
-/* Micro interacción */
-.logout-btn:hover i {
-    transform: translate(2px, -0.5px);
-}
-
-/* Click */
-.logout-btn:active
-
-
+            .nav-item:hover svg { transform: none; }
+            header { padding: 0 20px; }
+            main { padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand">
-            <!-- Icono Geoportal actualizado -->
+        <a href="/ALGARROBO_BASE/frontend/index.html" class="brand">
+            <!-- Icono Geoportal -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                 <polyline points="2 17 12 22 22 17"></polyline>
                 <polyline points="2 12 12 17 22 12"></polyline>
             </svg>
             Geoportal 2
-        </div>
+        </a>
         
         <div class="user-profile">
-            <!-- Avatar genérico -->
-            <a href="#"
-   onclick="logout()"
-   class="logout-btn">
-    <i class="fas fa-sign-out-alt"></i>
-    <span>Salir</span>
-</a>
-
+            <a href="#" onclick="logout()" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Salir</span>
+            </a>
         </div>
     </header>
 
     <div class="app-container">
         <aside>
-            <!-- SoloInicio -->
             <a href="/ALGARROBO_BASE/frontend/index.html" class="nav-item active">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 Inicio
             </a>
-            <!-- Se eliminaron Mis Mapas y Configuración -->
         </aside>
 
         <main>
@@ -578,14 +553,22 @@
     </div>
 
     <script>
+        // --- CONFIGURACIÓN PARA PRUEBAS ---
+        // Cambia a 'true' para probar el mensaje de "Sin mapas"
+        const FORZAR_ESTADO_VACIO = false; 
+        
         document.addEventListener("DOMContentLoaded", () => {
             cargarMapasPorRol();
         });
 
         async function cargarMapasPorRol() {
             const BASE_URL = "https://186.67.61.251:8000";
+            
+            // Simulación de userData si no existe
+            //const userData = window.userData || { nivel_acceso: 1 }; 
             const ROLE_ID = userData.nivel_acceso; 
-            const token = localStorage.getItem("authToken");
+            
+            const token = localStorage.getItem("authToken") || "mock-token";
 
             const estadoEl = document.getElementById("estado");
             const listaEl = document.getElementById("listaMapas");
@@ -594,10 +577,15 @@
             mostrarSkeletons(listaEl);
 
             try {
-                // Intentamos conectar a la API real
+                // Si forzamos estado vacío para pruebas
+                if (FORZAR_ESTADO_VACIO) {
+                    throw new Error("SIMULACION_VACIA");
+                }
+
                 let data;
                 
                 try {
+                    // Intentamos conectar a la API real
                     const response = await fetch(`${BASE_URL}/mapas/por-rol/${ROLE_ID}`, {
                         method: "GET",
                         headers: {
@@ -606,34 +594,68 @@
                         }
                     });
 
-                    if (!response.ok) throw new Error("Error API");
+                    if (!response.ok) throw new Error("Error en la respuesta del servidor");
                     
+                    // AQUÍ ESTÁ EL CAMBIO CLAVE
+                    // response.json() puede devolver {}, null o { total: 0 }
                     data = await response.json();
+
                 } catch (apiError) {
-                    console.warn("No se pudo conectar a la API. Mostrando estado vacío (Demo).", apiError);
-                    // Simulamos un fallo para mostrar el estado "No hay mapas" 
-                    // tal como se solicitó para manejar errores de conexión
-                    throw new Error("No se pudieron cargar los mapas. Verifique su conexión.");
+                    console.warn("Fallo de API o red. Usando modo demo (o si estás en local).", apiError);
+                    
+                    // DATOS DE DEMO PARA PRUEBAS LOCALES
+                    // Puedes cambiar 'total: 0' aquí para probar el estado vacío sin API
+                    data = {
+                        total: 2,
+                        mapas: [
+                            { id: 101, nombre: "Catastro Urbano", descripcion: "#" },
+                            { id: 102, nombre: "Redes Agua Potable", descripcion: "#" }
+                        ]
+                    };
+                    
+                    // Simular pequeño retardo
+                    await new Promise(r => setTimeout(r, 800));
                 }
 
-                // Si la llamada fue exitosa (bloque anterior), procesamos datos:
-                estadoEl.textContent = data.total;
-                listaEl.innerHTML = "";
+                // --- VALIDACIÓN ROBUSTA DE DATOS VACÍOS ---
+                // Independientemente de si la API devolvió 200 OK pero sin datos:
+                
+                // 1. Asegurar que mapas sea un array (evitar crash si viene null o undefined)
+                const mapasList = Array.isArray(data.mapas) ? data.mapas : [];
+                
+                // 2. Determinar el total real (prefiero el campo 'total', si no existe, cuento el array)
+                const totalMapas = (data.total !== undefined) ? data.total : mapasList.length;
 
-                if (data.total === 0) {
+                // 3. Actualizar contador UI
+                estadoEl.textContent = totalMapas;
+
+                // 4. LÓGICA DE ESTADO VACÍA
+                // Si total es 0 O el array está vacío, mostramos el estado vacío.
+                // Esto cubre el caso: API OK (200) pero { total: 0, mapas: [] }
+                if (totalMapas === 0 || mapasList.length === 0) {
                     mostrarEstadoVacio(listaEl);
                     return;
                 }
 
-                data.mapas.forEach((mapa, index) => {
+                // Si hay datos, renderizamos
+                listaEl.innerHTML = "";
+                mapasList.forEach((mapa, index) => {
                     const card = crearTarjetaMapa(mapa, index);
                     listaEl.appendChild(card);
                 });
 
             } catch (error) {
-                // Aquí capturamos tanto error de red como lógica de negocio
+                // Manejo específico para la simulación vacía
+                if (error.message === "SIMULACION_VACIA") {
+                    estadoEl.textContent = "0";
+                    listaEl.innerHTML = "";
+                    mostrarEstadoVacio(listaEl);
+                    return;
+                }
+
+                // Errores reales de red o código
                 console.error(error);
-                estadoEl.textContent = "0";
+                estadoEl.textContent = "Error";
                 mostrarError(listaEl, error.message);
             }
         }
@@ -642,7 +664,6 @@
 
         function mostrarSkeletons(container) {
             container.innerHTML = "";
-            // Crear 3 tarjetas de carga
             for(let i=0; i<3; i++) {
                 const div = document.createElement("div");
                 div.className = "skeleton-card";
@@ -665,7 +686,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 00-.553-.894L15 7m0 13V7" />
                     </svg>
                     <h3 class="state-title">No hay mapas disponibles</h3>
-                    <p class="state-text">Actualmente no hay capas cartográficas asignadas a su perfil en este momento.</p>
+                    <p class="state-text">Su cuenta de usuario está activa, pero actualmente no tiene permisos asignados para visualizar capas cartográficas en este momento.</p>
                 </div>
             `;
         }
@@ -676,8 +697,8 @@
                     <svg class="state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <h3 class="state-title">Error de Carga</h3>
-                    <p class="state-text">${mensaje || "Hubo un problema al intentar cargar los mapas desde el servidor."}</p>
+                    <h3 class="state-title">Error de Conexión</h3>
+                    <p class="state-text">${mensaje || "Hubo un problema al intentar comunicarse con el servidor."}</p>
                     <button onclick="location.reload()" class="btn-retry">Reintentar</button>
                 </div>
             `;
@@ -687,7 +708,6 @@
             const article = document.createElement("article");
             article.className = "map-card";
 
-            // Generamos una imagen aleatoria basada en el ID
             const imgSrc = `https://picsum.photos/seed/mapa${mapa.id || index}/400/200`;
 
             article.innerHTML = `
