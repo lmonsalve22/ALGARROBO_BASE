@@ -27,6 +27,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         
+        /* Estilos para el modal */
         .modal {
             display: none;
             position: fixed;
@@ -199,6 +200,19 @@
             animation: spin 1s ease-in-out infinite;
         }
 
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s;
+        }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
@@ -219,16 +233,18 @@
         .status-pending { background: #fef3c7; color: #92400e; }
         .priority-badge { background: #fbbf24; color: #78350f; }
 
+        /* Estilos para ocultar/mostrar columnas */
         .toggle-column {
             display: none;
         }
         .toggle-column-visible {
-            display: revert;
+            display: revert; /* O 'table-cell' para ser más específico */
         }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Header -->
+     <!-- Header -->
      <div id="headerRender">
      </div>
      
@@ -290,58 +306,6 @@
                             <div class="bg-purple-100 p-3 rounded-full">
                                 <i class="fas fa-chart-line text-purple-600"></i>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filter Bar Section -->
-                <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-indigo-500">
-                    <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
-                        <!-- Buscador -->
-                        <div class="w-full md:w-1/3">
-                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
-                                </div>
-                                <input type="text" id="searchInput" 
-                                    class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
-                                    placeholder="Nombre, código o sector...">
-                            </div>
-                        </div>
-
-                        <!-- Filtros Select Conectados -->
-                        <div class="flex flex-1 w-full gap-3">
-                            <!-- Filtro Área -->
-                            <div class="flex-1">
-                                <label for="filterArea" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
-                                <select id="filterArea" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option value="">Todas las áreas</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Filtro Financiamiento -->
-                            <div class="flex-1">
-                                <label for="filterFinancing" class="block text-sm font-medium text-gray-700 mb-1">Financiamiento</label>
-                                <select id="filterFinancing" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option value="">Todo el financiamiento</option>
-                                </select>
-                            </div>
-
-                            <!-- Filtro Estado -->
-                            <div class="flex-1">
-                                <label for="filterStatus" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                                <select id="filterStatus" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option value="">Todos los estados</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Botón Limpiar -->
-                        <div>
-                            <button onclick="clearFilters()" class="mt-6 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
-                                <i class="fas fa-times-circle"></i> Limpiar
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -634,8 +598,9 @@
         const API_BASE = 'https://186.67.61.251:8000';
         let proyectos = [];
         let editingId = null;
-        let columnsVisible = false;
+        let columnsVisible = false; // Estado para las columnas visibles
 
+        // Función auxiliar para obtener los encabezados de autenticación
         function getAuthHeaders() {
             const token = localStorage.getItem('authToken');
             if (!token) {
@@ -649,19 +614,14 @@
             };
         }
 
+        // Verificar si el usuario está logueado al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
             loadProjects();
-            
-            // Listeners para filtros y búsqueda
-            document.getElementById('searchInput').addEventListener('input', applyFilters);
-            document.getElementById('filterArea').addEventListener('change', applyFilters);
-            document.getElementById('filterFinancing').addEventListener('change', applyFilters);
-            document.getElementById('filterStatus').addEventListener('change', applyFilters);
-            
             document.getElementById('proyectoForm').addEventListener('submit', handleSubmit);
         });
 
+        // Cargar todos los proyectos
         async function loadProjects() {
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -684,14 +644,16 @@
                 }
 
                 proyectos = await response.json();
+                renderProyectos(proyectos);
+                updateKPIs(proyectos);
+                updateCount(proyectos.length);
                 
-                // Inicializar filtros con todos los datos disponibles
-                updateFilterOptions();
-                applyFilters(); // Renderizar tabla inicial
-                
+                // Actualizar fecha de última actualización
                 const today = new Date();
                 const formattedDate = today.toLocaleDateString('es-ES', { 
-                    day: '2-digit', month: '2-digit', year: 'numeric' 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
                 });
                 document.getElementById('lastUpdate').textContent = formattedDate;
             } catch (error) {
@@ -702,114 +664,15 @@
             }
         }
 
-        // --- LÓGICA DE FILTROS CONECTADOS ---
-
-        // Función auxiliar para regenerar el HTML de un <select>
-        function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
-            const select = document.getElementById(selectElementId);
-            const currentValueValue = currentValue || select.value; // Mantener valor si no se pasa uno explícito
-            
-            // Guardar el valor actual antes de modificar el HTML
-            const previousValue = select.value;
-
-            // Construir HTML
-            let html = `<option value="">${defaultLabel}</option>`;
-            optionsList.forEach(opt => {
-                html += `<option value="${opt}" ${opt === previousValue ? 'selected' : ''}>${opt}</option>`;
-            });
-
-            select.innerHTML = html;
-
-            // Si el valor previo ya no existe en la nueva lista, lo reseteamos a vacío
-            if (previousValue && !optionsList.includes(previousValue)) {
-                select.value = "";
-            } else if (previousValue) {
-                select.value = previousValue;
-            }
-        }
-
-        // Función maestra que actualiza las opciones de los 3 selectores
-        // basándose en lo que está seleccionado en los otros.
-        function updateFilterOptions() {
-            const selectedArea = document.getElementById('filterArea').value;
-            const selectedFinancing = document.getElementById('filterFinancing').value;
-            const selectedStatus = document.getElementById('filterStatus').value;
-
-            // 1. Calcular Áreas disponibles (filtrando por Financiamiento y Estado seleccionados)
-            // Si Area no está seleccionada, mostramos todas las áreas que coinciden con el financiamiento y estado activos
-            const dataForAreas = proyectos.filter(p => 
-                (selectedFinancing === '' || p.financiamiento === selectedFinancing) &&
-                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
-            );
-            const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
-            populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
-
-            // 2. Calcular Financiamientos disponibles (filtrando por Área y Estado seleccionados)
-            const dataForFinancing = proyectos.filter(p => 
-                (selectedArea === '' || p.area === selectedArea) &&
-                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
-            );
-            const uniqueFinancing = [...new Set(dataForFinancing.map(p => p.financiamiento).filter(Boolean))].sort();
-            populateSelectOptions('filterFinancing', uniqueFinancing, 'Todo el financiamiento', selectedFinancing);
-
-            // 3. Calcular Estados disponibles (filtrando por Área y Financiamiento seleccionados)
-            const dataForStatus = proyectos.filter(p => 
-                (selectedArea === '' || p.area === selectedArea) &&
-                (selectedFinancing === '' || p.financiamiento === selectedFinancing)
-            );
-            const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
-            populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
-        }
-
-        function applyFilters() {
-            // Paso 1: Actualizar las opciones de los dropdowns (Conexión entre filtros)
-            updateFilterOptions();
-
-            // Paso 2: Obtener valores actualizados después de la actualización
-            const selectedArea = document.getElementById('filterArea').value;
-            const selectedFinancing = document.getElementById('filterFinancing').value;
-            const selectedStatus = document.getElementById('filterStatus').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-            // Paso 3: Filtrar los datos para la tabla
-            const filteredData = proyectos.filter(proyecto => {
-                const matchesSearch = 
-                    (proyecto.nombre && proyecto.nombre.toLowerCase().includes(searchTerm)) ||
-                    (proyecto.codigo && proyecto.codigo.toLowerCase().includes(searchTerm)) ||
-                    (proyecto.sector && proyecto.sector.toLowerCase().includes(searchTerm));
-
-                const matchesArea = selectedArea === '' || proyecto.area === selectedArea;
-                const matchesFinancing = selectedFinancing === '' || proyecto.financiamiento === selectedFinancing;
-                const matchesStatus = selectedStatus === '' || proyecto.estado_proyecto === selectedStatus;
-
-                return matchesSearch && matchesArea && matchesFinancing && matchesStatus;
-            });
-
-            // Paso 4: Renderizar resultados
-            renderProyectos(filteredData);
-            updateKPIs(filteredData);
-            updateCount(filteredData.length);
-        }
-
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('filterArea').value = '';
-            document.getElementById('filterFinancing').value = '';
-            document.getElementById('filterStatus').value = '';
-            applyFilters();
-        }
-
-        // --- RENDERIZADO Y DEMÁS FUNCIONES ---
-
+        // Renderizar proyectos en la tabla
         function renderProyectos(proyectosToRender) {
             const tableBody = document.getElementById('projectsTableBody');
             
             if (proyectosToRender.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
-                            <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
-                            <p class="text-lg">No se encontraron proyectos con los filtros actuales.</p>
+                        <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                            No se encontraron proyectos
                         </td>
                     </tr>
                 `;
@@ -817,29 +680,28 @@
             }
 
             tableBody.innerHTML = proyectosToRender.map(proyecto => {
+                // Determinar el color de la etiqueta de estado
                 let statusClass = '';
                 if (proyecto.estado_proyecto === 'Ejecución') statusClass = 'bg-green-100 text-green-800';
                 else if (proyecto.estado_proyecto === 'Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
                 else if (proyecto.estado_proyecto === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
-                else if (proyecto.estado_proyecto === 'Terminado') statusClass = 'bg-gray-100 text-gray-800';
-                else statusClass = 'bg-red-100 text-red-800';
+                else statusClass = 'bg-gray-100 text-gray-800';
                 
+                // Determinar el color de la barra de progreso
                 let progressClass = '';
-                const progress = proyecto.avance_total_porcentaje ? parseFloat(proyecto.avance_total_porcentaje) : 0;
-                const displayProgress = (progress > 1 ? progress : progress * 100);
-
-                if (displayProgress < 25) progressClass = 'bg-red-500';
-                else if (displayProgress < 50) progressClass = 'bg-yellow-500';
-                else if (displayProgress < 75) progressClass = 'bg-blue-500';
+                const progress = proyecto.avance_total_porcentaje ? parseFloat(proyecto.avance_total_porcentaje) * 100 : 0;
+                if (progress < 25) progressClass = 'bg-red-500';
+                else if (progress < 50) progressClass = 'bg-yellow-500';
+                else if (progress < 75) progressClass = 'bg-blue-500';
                 else progressClass = 'bg-green-500';
                 
                 return `
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 toggle-column">${proyecto.id || ''}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${proyecto.nombre || ''}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.area || ''}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.financiamiento || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column font-mono">${formatCurrency(proyecto.monto)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${formatCurrency(proyecto.monto)}</td>
                         <td class="px-6 py-4 whitespace-nowrap toggle-column">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
                                 ${proyecto.estado_proyecto || ''}
@@ -848,33 +710,42 @@
                         <td class="px-6 py-4 whitespace-nowrap toggle-column">
                             <div class="flex items-center">
                                 <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                    <div class="${progressClass} h-2.5 rounded-full" style="width: ${displayProgress}%"></div>
+                                    <div class="${progressClass} h-2.5 rounded-full" style="width: ${progress}%"></div>
                                 </div>
-                                <span class="text-sm text-gray-500 w-10 text-right">${displayProgress.toFixed(0)}%</span>
+                                <span class="text-sm text-gray-500">${progress.toFixed(1)}%</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="viewProject(${proyecto.id})" class="text-blue-600 hover:text-blue-900 mr-3" title="Ver detalles"><i class="fas fa-eye"></i></button>
-                            <button onclick="editProject(${proyecto.id})" class="text-green-600 hover:text-green-900 mr-3" title="Editar"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteProject(${proyecto.id})" class="text-red-600 hover:text-red-900" title="Eliminar"><i class="fas fa-trash"></i></button>
+                            <button onclick="viewProject(${proyecto.id})" class="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
+                            <button onclick="editProject(${proyecto.id})" class="text-green-600 hover:text-green-900 mr-3">Editar</button>
+                            <button onclick="deleteProject(${proyecto.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
 
+        // Actualizar KPIs
         function updateKPIs(proyectosData) {
+            // Total de proyectos
             document.getElementById('totalProjects').textContent = proyectosData.length;
+            
+            // Proyectos en ejecución
             const executionCount = proyectosData.filter(p => p.estado_proyecto === 'Ejecución').length;
             document.getElementById('executionProjects').textContent = executionCount;
+            
+            // Monto total
             const totalAmount = proyectosData.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
             document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+            
+            // Avance promedio
             const avgProgress = proyectosData.length > 0 
                 ? proyectosData.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / proyectosData.length 
                 : 0;
-            document.getElementById('averageProgress').textContent = (avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1) + '%';
+            document.getElementById('averageProgress').textContent = (avgProgress * 100).toFixed(1) + '%';
         }
 
+        // Función para alternar la visibilidad de las columnas
         function toggleColumns() {
             const toggleElements = document.querySelectorAll('.toggle-column');
             const toggleBtn = document.getElementById('toggleColumnsBtn');
@@ -891,13 +762,15 @@
             }
         }
 
+        // Actualizar contador
         function updateCount(count) {
             const countElement = document.getElementById('proyectoCount');
             if (countElement) {
-                countElement.textContent = `${count} proyecto${count !== 1 ? 's' : ''} encontrados`;
+                countElement.textContent = `${count} proyecto${count !== 1 ? 's' : ''}`;
             }
         }
 
+        // Función para ver los detalles de un proyecto
         function viewProject(id) {
             const proyecto = proyectos.find(p => p.id === id);
             if (!proyecto) {
@@ -906,50 +779,83 @@
             }
             
             const detailsContainer = document.getElementById('viewProjectDetails');
-            detailsContainer.innerHTML = '';
+            detailsContainer.innerHTML = ''; // Limpiar contenido anterior
 
             const labels = {
-                id: "ID", nombre: "Nombre del Proyecto", codigo: "Código", n_registro: "N° de Registro",
-                area: "Área", estado_proyecto: "Estado del Proyecto", etapa_proyecto: "Etapa del Proyecto",
-                estado_postulacion: "Estado de Postulación", avance_total_decimal: "Avance Total (Decimal)",
-                avance_total_porcentaje: "Avance Total (%)", es_prioridad: "¿Es Prioridad?",
-                financiamiento: "Financiamiento", financiamiento_municipal: "¿Financiamiento Municipal?",
-                monto: "Monto", anno_elaboracion: "Año de Elaboración", anno_ejecucion: "Año de Ejecución",
-                fecha_postulacion: "Fecha de Postulación", fecha_actualizacion: "Fecha de Actualización",
-                lineamiento_estrategico: "Lineamiento Estratégico", sector: "Sector",
-                unidad_vecinal: "Unidad Vecinal", latitud: "Latitud", longitud: "Longitud",
-                profesional_1: "Profesional 1", profesional_2: "Profesional 2",
-                dupla_profesionales: "Dupla de Profesionales", documentos: "Documentos (Estado)",
-                planimetrias: "Planimetrías (Estado)", topografia: "Topografía (Estado)",
-                ingenieria: "Ingeniería", perfil_tecnico_economico: "Perfil Técnico Económico",
-                aprobacion_dom: "Aprobación DOM", aprobacion_serviu: "Aprobación SERVIU",
+                id: "ID",
+                nombre: "Nombre del Proyecto",
+                codigo: "Código",
+                n_registro: "N° de Registro",
+                area: "Área",
+                estado_proyecto: "Estado del Proyecto",
+                etapa_proyecto: "Etapa del Proyecto",
+                estado_postulacion: "Estado de Postulación",
+                avance_total_decimal: "Avance Total (Decimal)",
+                avance_total_porcentaje: "Avance Total (%)",
+                es_prioridad: "¿Es Prioridad?",
+                financiamiento: "Financiamiento",
+                financiamiento_municipal: "¿Financiamiento Municipal?",
+                monto: "Monto",
+                anno_elaboracion: "Año de Elaboración",
+                anno_ejecucion: "Año de Ejecución",
+                fecha_postulacion: "Fecha de Postulación",
+                fecha_actualizacion: "Fecha de Actualización",
+                lineamiento_estrategico: "Lineamiento Estratégico",
+                sector: "Sector",
+                unidad_vecinal: "Unidad Vecinal",
+                latitud: "Latitud",
+                longitud: "Longitud",
+                profesional_1: "Profesional 1",
+                profesional_2: "Profesional 2",
+                dupla_profesionales: "Dupla de Profesionales",
+                documentos: "Documentos (Estado)",
+                planimetrias: "Planimetrías (Estado)",
+                topografia: "Topografía (Estado)",
+                ingenieria: "Ingeniería",
+                perfil_tecnico_economico: "Perfil Técnico Económico",
+                aprobacion_dom: "Aprobación DOM",
+                aprobacion_serviu: "Aprobación SERVIU",
                 observaciones: "Observaciones Generales"
             };
 
             for (const key in labels) {
                 let value = proyecto[key];
-                if (key === 'monto') value = formatCurrency(value);
-                else if (key.includes('fecha') && value) value = new Date(value).toLocaleDateString('es-CL');
-                else if (key === 'avance_total_porcentaje' && value) value = `${(parseFloat(value) > 1 ? parseFloat(value) : parseFloat(value)*100).toFixed(2)}%`;
+
+                // Formatear valores especiales
+                if (key === 'monto') {
+                    value = formatCurrency(value);
+                } else if (key.includes('fecha') && value) {
+                    value = new Date(value).toLocaleDateString('es-CL');
+                } else if (key === 'avance_total_porcentaje' && value) {
+                    value = `${(parseFloat(value) * 100).toFixed(2)}%`;
+                }
                 
+                // Manejar valores nulos o vacíos
                 const displayValue = (value === null || value === undefined || value === '') ? '-' : value;
-                detailsContainer.innerHTML += `
+
+                const rowHtml = `
                     <div class="flex justify-between py-2 border-b border-gray-100">
                         <span class="font-semibold text-gray-700 w-1/3">${labels[key]}:</span>
                         <span class="text-gray-900 text-right w-2/3 break-words">${displayValue}</span>
                     </div>
                 `;
+                detailsContainer.innerHTML += rowHtml;
             }
+
             document.getElementById('viewProjectModal').classList.add('active');
         }
 
         function editProject(id) {
             const proyecto = proyectos.find(p => p.id === id);
-            if (proyecto) openModal(proyecto);
+            if (proyecto) {
+                openModal(proyecto);
+            }
         }
 
         async function deleteProject(id) {
-            if (!confirm('¿Está seguro de que desea eliminar este proyecto? Esta acción no se puede deshacer.')) return;
+            if (!confirm('¿Está seguro de que desea eliminar este proyecto? Esta acción no se puede deshacer.')) {
+                return;
+            }
 
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -960,18 +866,25 @@
                     method: 'DELETE',
                     headers: headers
                 });
-                if (!response.ok) throw new Error('Error al eliminar el proyecto');
-                showToast('Proyecto eliminado exitosamente', 'success');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error al eliminar el proyecto');
+                }
+
+                const result = await response.json();
+                showToast(result.message || 'Proyecto eliminado exitosamente', 'success');
                 loadProjects();
             } catch (error) {
                 console.error('Error:', error);
-                showToast('Error al eliminar el proyecto', 'error');
+                showToast(error.message || 'Error al eliminar el proyecto', 'error');
             } finally {
                 showLoading(false);
             }
         }
 
         function exportData() {
+            // Implementar función de exportación
             showToast('Función de exportación en desarrollo', 'warning');
         }
 
@@ -979,6 +892,7 @@
             openModal();
         }
 
+        // Funciones para el modal de crear/editar
         function openModal(proyecto = null) {
             const modal = document.getElementById('proyectoModal');
             const form = document.getElementById('proyectoForm');
@@ -987,11 +901,17 @@
             if (proyecto) {
                 title.textContent = 'Editar Proyecto';
                 editingId = proyecto.id;
+                
+                // Llenar el formulario con los datos del proyecto
                 Object.keys(proyecto).forEach(key => {
                     const input = form.elements[key];
                     if (input) {
-                        if (input.type === 'checkbox') input.checked = (proyecto[key] === 'SI' || proyecto[key] === true);
-                        else input.value = proyecto[key] || '';
+                        if (input.type === 'checkbox') {
+                             // Manejo específico para checkboxes
+                            input.checked = (proyecto[key] === 'SI' || proyecto[key] === true);
+                        } else {
+                            input.value = proyecto[key] || '';
+                        }
                     }
                 });
             } else {
@@ -999,87 +919,156 @@
                 editingId = null;
                 form.reset();
             }
+
             modal.classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById('proyectoModal').classList.remove('active');
+            const modal = document.getElementById('proyectoModal');
+            modal.classList.remove('active');
             document.getElementById('proyectoForm').reset();
             editingId = null;
         }
         
+        // Función para cerrar el modal de ver detalles
         function closeViewModal() {
-            document.getElementById('viewProjectModal').classList.remove('active');
+            const modal = document.getElementById('viewProjectModal');
+            modal.classList.remove('active');
         }
 
+        // Manejar envío del formulario
         async function handleSubmit(e) {
             e.preventDefault();
+            
             const formData = new FormData(e.target);
             const data = {};
+            // Convertir FormData a un objeto simple y manejar checkboxes
             for (let [key, value] of formData.entries()) {
-                if (e.target.elements[key].type === 'checkbox') data[key] = e.target.elements[key].checked ? 'SI' : 'NO';
-                else data[key] = value;
+                if (e.target.elements[key].type === 'checkbox') {
+                    data[key] = e.target.elements[key].checked ? 'SI' : 'NO';
+                } else {
+                    data[key] = value;
+                }
             }
-            Object.keys(data).forEach(key => { if (data[key] === '' || data[key] === null) delete data[key]; });
+            
+            // Eliminar campos vacíos para no enviarlos innecesariamente
+            Object.keys(data).forEach(key => {
+                if (data[key] === '' || data[key] === null) {
+                    delete data[key];
+                }
+            });
 
             const headers = getAuthHeaders();
             if (!headers) return;
 
             try {
                 showLoading(true, 'Guardando...');
+                
                 let response;
                 if (editingId) {
-                    response = await fetch(`${API_BASE}/proyectos/${editingId}`, { method: 'PUT', headers: headers, body: JSON.stringify(data) });
+                    response = await fetch(`${API_BASE}/proyectos/${editingId}`, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify(data)
+                    });
                 } else {
-                    response = await fetch(`${API_BASE}/proyectos`, { method: 'POST', headers: headers, body: JSON.stringify(data) });
+                    response = await fetch(`${API_BASE}/proyectos`, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(data)
+                    });
                 }
-                if (!response.ok) throw new Error('Error al guardar el proyecto');
-                showToast('Proyecto guardado exitosamente', 'success');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error al guardar el proyecto');
+                }
+
+                const result = await response.json();
+                showToast(result.message || 'Proyecto guardado exitosamente', 'success');
                 closeModal();
                 loadProjects();
             } catch (error) {
                 console.error('Error:', error);
-                showToast('Error al guardar el proyecto', 'error');
+                showToast(error.message || 'Error al guardar el proyecto', 'error');
             } finally {
                 showLoading(false);
             }
         }
 
+        // Función para logout
+        /*
+        function logout() {
+            // Eliminar la sesión del usuario
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('authToken');
+            
+            // Redirigir a la página de login
+            window.location.href = '../../index.html';
+        }
+        */
+        // User menu
         function toggleUserMenu() {
             const menu = document.getElementById('userMenu');
             menu.classList.toggle('hidden');
         }
 
+        // Change role
         function changeRole(role) {
-            const roleNames = { 'admin': 'Administrador', 'alcalde': 'Alcalde', 'secplac': 'SECPLAC', 'public': 'Vista Pública' };
+            const roleNames = {
+                'admin': 'Administrador',
+                'alcalde': 'Alcalde',
+                'secplac': 'SECPLAC',
+                'public': 'Vista Pública'
+            };
             document.getElementById('currentRole').textContent = roleNames[role];
             document.getElementById('userMenu').classList.add('hidden');
+            
+            // Guardar el rol en localStorage
             localStorage.setItem('userRole', role);
-            if (role === 'public') showToast('Modo público activado - Se ocultará información sensible', 'warning');
+            
+            // Aquí se implementaría la lógica para cambiar la vista según el rol
+            if (role === 'public') {
+                showToast('Modo público activado - Se ocultará información sensible', 'warning');
+            }
         }
 
+        // Toggle notifications
         function toggleNotifications() {
+            // Implement notification panel
             showToast('Panel de notificaciones - En desarrollo', 'warning');
         }
 
+        // Close menus when clicking outside
         document.addEventListener('click', function(event) {
             const userMenu = document.getElementById('userMenu');
             const userButton = event.target.closest('button[onclick="toggleUserMenu()"]');
-            if (!userButton && !userMenu.contains(event.target)) userMenu.classList.add('hidden');
+            
+            if (!userButton && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
         });
 
+        // Mostrar notificación toast
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
+            
             toast.className = `toast ${type}`;
             toastMessage.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 4000);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
         }
 
+        // Mostrar/ocultar indicador de carga
         function showLoading(show, message = 'Guardando...') {
             const submitBtn = document.getElementById('submitBtn');
             const submitText = document.getElementById('submitText');
+            
             if (show) {
                 submitBtn.disabled = true;
                 submitText.innerHTML = `<span class="loading"></span> ${message}`;
@@ -1089,20 +1078,30 @@
             }
         }
 
+        // Formatear moneda
         function formatCurrency(value) {
             if (!value) return '$0';
             return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
         }
 
+        // Cerrar modales al hacer clic fuera
         window.onclick = function(event) {
             const editModal = document.getElementById('proyectoModal');
             const viewModal = document.getElementById('viewProjectModal');
-            if (event.target === editModal) closeModal();
-            if (event.target === viewModal) closeViewModal();
+            if (event.target === editModal) {
+                closeModal();
+            }
+            if (event.target === viewModal) {
+                closeViewModal();
+            }
         }
 
+        // Manejar tecla Escape para cerrar modales
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') { closeModal(); closeViewModal(); }
+            if (event.key === 'Escape') {
+                closeModal();
+                closeViewModal();
+            }
         });
     </script>
 </body>

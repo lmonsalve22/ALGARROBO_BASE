@@ -1,19 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script>
-        // Función para verificar el estado de login
-        function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            console.log(isLoggedIn)
-            
-            if (!isLoggedIn || isLoggedIn !== 'true') {
-                // Redirigir a la página de login si no está logueado
-                window.location.href = '../../index.html';
-            }
-        }
-        checkLoginStatus() 
-    </script>
+    <script src="../../../script/router.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Algarrobo</title>
@@ -267,7 +255,7 @@
             <!-- El contenido se cargará aquí dinámicamente -->
         </div>
     </div>
-    
+
     <script src="../../../script/layout.js"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
