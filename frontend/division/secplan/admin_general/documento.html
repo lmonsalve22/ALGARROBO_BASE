@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="../../../script/router.js"></script> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal Municipal - Gestión Documental</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ... Estilos previos mantenidos ... */
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 1000; animation: fadeIn 0.2s;
+        }
+        .modal.active { display: flex; justify-content: center; align-items: center; }
+        .modal-content {
+            background: white; border-radius: 12px; padding: 2rem; width: 95%; max-width: 600px;
+            max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s; position: relative;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
+        .modal-title { font-size: 1.5rem; font-weight: 600; color: #1e293b; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; }
+        
+        /* Formularios y Filtros */
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem; color: #1e293b; }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        /* Custom File Input */
+        .file-upload-wrapper {
+            position: relative; width: 100%; height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; background: #f8fafc;
+        }
+        .file-upload-wrapper:hover { border-color: #4f46e5; background: #eef2ff; }
+        .file-upload-wrapper input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; background: white;
+            border-radius: 8px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            display: flex; align-items: center; gap: 0.75rem; transform: translateX(400px); transition: transform 0.3s; z-index: 2000;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+        
+        .loading {
+            display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite;
+        }
+        .loading-dark {
+            display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%; border-top-color: #4f46e5; animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        
+        /* Transición suave para la tabla de documentos */
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+     <div id="headerRender"></div>
+     
+    <div class="flex">
+        <div id="asideRender"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <div id="documentsView" class="view-content">
+                
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Gestión Documental</h2>
+                    <p class="text-gray-600">Repositorio central de archivos SECPLAC</p>
+                </div>
+
+                <!-- BARRA DE FILTROS -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-indigo-500">
+                    <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
+                        <!-- Buscador -->
+                        <div class="w-full md:w-1/3">
+                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Buscar Proyecto</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" id="searchInput" 
+                                    class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                                    placeholder="Nombre, código o sector...">
+                            </div>
+                        </div>
+
+                        <!-- Filtros Select Conectados -->
+                        <div class="flex flex-1 w-full gap-3">
+                            <div class="flex-1">
+                                <label for="filterArea" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                                <select id="filterArea" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option value="">Todas las áreas</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label for="filterStatus" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                <select id="filterStatus" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option value="">Todos los estados</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Botón Limpiar -->
+                        <div>
+                            <button onclick="clearFilters()" class="mt-6 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-times-circle"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Selector Card -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="flex-1 w-full">
+                            <label for="projectSelect" class="block text-sm font-medium text-gray-700 mb-1">
+                                1. Seleccionar Proyecto
+                                <span id="projectCountBadge" class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0</span>
+                            </label>
+                            <select id="projectSelect" class="w-full py-3 px-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option value="" disabled selected>-- Selecciona un proyecto --</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-2">Al seleccionar, se cargarán los documentos existentes.</p>
+                        </div>
+                        <div class="w-full md:w-auto">
+                            <button onclick="loadProjects()" class="w-full md:w-auto px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-sync-alt"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions & Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    
+                    <!-- Upload Action Area -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-lg shadow p-6 h-full flex flex-col items-center justify-center text-center border border-dashed border-gray-300 hover:border-indigo-500 transition cursor-pointer group" onclick="openUploadModal()">
+                            <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-indigo-600"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Subir Documento</h3>
+                            <p class="text-gray-500 text-sm mb-4">Adjunta archivos técnicos, planos o legales.</p>
+                            <span class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-md shadow-indigo-200">
+                                Iniciar Carga
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Recent Uploads Log -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-lg shadow overflow-hidden h-full">
+                            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                                <h3 class="font-semibold text-gray-800">Historial de Carga (Sesión)</h3>
+                                <span id="sessionCount" class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded-full">0</span>
+                            </div>
+                            <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archivo</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proyecto</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="uploadLogBody" class="bg-white divide-y divide-gray-200">
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500">
+                                                No hay actividad reciente en esta sesión.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NUEVA SECCIÓN: LISTADO DE DOCUMENTOS DEL PROYECTO -->
+                <div id="projectDocumentsPanel" class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
+                    <!-- Header del Panel -->
+                    <div class="px-6 py-4 border-b border-gray-200 bg-indigo-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-indigo-900 flex items-center gap-2">
+                                <i class="fas fa-folder-open"></i> 
+                                Documentos del Proyecto 
+                                <span id="selectedProjectNameDisplay" class="font-normal text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-200 text-sm"></span>
+                            </h3>
+                            <p class="text-xs text-indigo-600 mt-1">Archivos almacenados en el servidor</p>
+                        </div>
+                        <div>
+                            <button onclick="downloadProjectZip()" id="btnDownloadZip" class="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-2">
+                                <i class="fas fa-file-archive"></i> 
+                                <span>Descargar Todo (ZIP)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Documentos -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre Archivo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamaño</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectDocsBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Se llena con JS -->
+                            </tbody>
+                        </table>
+                        <div id="docsLoading" class="hidden p-8 text-center">
+                            <i class="fas fa-circle-notch fa-spin text-indigo-500 text-2xl"></i>
+                            <p class="text-sm text-gray-500 mt-2">Cargando documentos...</p>
+                        </div>
+                        <div id="docsEmpty" class="hidden p-8 text-center">
+                            <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">Este proyecto aún no tiene documentos subidos.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- FIN NUEVA SECCIÓN -->
+
+            </div>
+        </main>
+    </div>
+    
+    <!-- MODAL DE SUBIDA DE ARCHIVO -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Subir Documento</h2>
+                <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+            </div>
+            
+            <form id="uploadForm" onsubmit="handleUpload(event)">
+                <!-- Contexto Proyecto -->
+                <div class="form-group p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <label class="text-xs text-gray-500 uppercase">Proyecto Destino</label>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-folder text-indigo-500"></i>
+                        <span id="modalProjectName" class="font-medium text-gray-800">Ninguno seleccionado</span>
+                        <input type="hidden" id="uploadProjectId" name="project_id">
+                    </div>
+                </div>
+
+                <!-- Archivo -->
+                <div class="form-group">
+                    <label>Archivo *</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="uploadFile" name="file" required onchange="updateFileInfo(this)">
+                        <i class="fas fa-file-import text-2xl text-gray-400 mb-2"></i>
+                        <span id="fileNameDisplay" class="text-sm font-medium text-gray-700">Haz clic para explorar</span>
+                    </div>
+                </div>
+
+                <!-- Tipo y Descripción -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label for="uploadType">Tipo de Documento</label>
+                        <select id="uploadType" name="tipo_documento">
+                            <option value="Estudio">Estudio Técnico</option>
+                            <option value="Plano">Plano/Planimetría</option>
+                            <option value="Legal">Legal/Permisología</option>
+                            <option value="Foto">Fotografía</option>
+                            <option value="Presupuesto">Presupuesto</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="uploadDesc">Descripción Corta</label>
+                        <input type="text" id="uploadDesc" name="descripcion" placeholder="Ej: Plano fundaciones v2">
+                    </div>
+                </div>
+
+                <div class="modal-footer flex justify-end gap-3 mt-6">
+                    <button type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" onclick="closeUploadModal()">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-md shadow-indigo-200 flex items-center" id="btnSubmitUpload">
+                        <span id="btnUploadText">Subir Archivo</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastIcon"></span>
+        <span id="toastMessage" class="font-medium text-gray-800"></span>
+    </div>
+
+    <script src="../../../script/layout.js"></script>
+    
+    <script>
+        // --- CONFIGURACIÓN ---
+        const API_BASE = 'https://186.67.61.251:8000';
+        let allProjects = []; // Lista maestra de proyectos
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.error("No se encontró token.");
+                showToast("Sesión no iniciada", "error");
+                return null;
+            }
+            return {
+                'Authorization': `Bearer ${token}`
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjects();
+            
+            // Listeners de filtros
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('filterArea').addEventListener('change', applyFilters);
+            document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+            // Listener para cargar documentos cuando se selecciona un proyecto
+            document.getElementById('projectSelect').addEventListener('change', function(e) {
+                const pid = e.target.value;
+                const projectName = e.target.options[e.target.selectedIndex].text;
+                
+                if (pid) {
+                    loadProjectDocuments(pid, projectName);
+                } else {
+                    document.getElementById('projectDocumentsPanel').classList.add('hidden');
+                }
+            });
+        });
+
+        // --- LÓGICA DE FILTROS Y PROYECTOS ---
+
+        async function loadProjects() {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const select = document.getElementById('projectSelect');
+            select.innerHTML = '<option value="" disabled selected>Cargando...</option>';
+            select.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/proyectos`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) throw new Error('Error al cargar proyectos');
+
+                allProjects = await response.json();
+                
+                updateFilterOptions();
+                applyFilters();
+                select.disabled = false;
+                showToast(`Proyectos cargados: ${allProjects.length}`, "success");
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error al conectar con el servidor', 'error');
+                select.innerHTML = '<option value="" disabled selected>Error de conexión</option>';
+            }
+        }
+
+        // --- LÓGICA DE FILTROS ---
+
+        function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
+            const select = document.getElementById(selectElementId);
+            const previousValue = select.value || currentValue;
+
+            let html = `<option value="">${defaultLabel}</option>`;
+            optionsList.forEach(opt => {
+                html += `<option value="${opt}" ${opt === previousValue ? 'selected' : ''}>${opt}</option>`;
+            });
+
+            select.innerHTML = html;
+
+            if (previousValue && !optionsList.includes(previousValue)) {
+                select.value = "";
+            } else if (previousValue) {
+                select.value = previousValue;
+            }
+        }
+
+        function updateFilterOptions() {
+            const selectedArea = document.getElementById('filterArea').value;
+            const selectedStatus = document.getElementById('filterStatus').value;
+
+            const dataForAreas = allProjects.filter(p => 
+                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
+            );
+            const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
+            populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
+
+            const dataForStatus = allProjects.filter(p => 
+                (selectedArea === '' || p.area === selectedArea)
+            );
+            const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
+            populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
+        }
+
+        function applyFilters() {
+            updateFilterOptions();
+
+            const selectedArea = document.getElementById('filterArea').value;
+            const selectedStatus = document.getElementById('filterStatus').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            const filteredProjects = allProjects.filter(proyecto => {
+                const matchesSearch = 
+                    (proyecto.nombre && proyecto.nombre.toLowerCase().includes(searchTerm)) ||
+                    (proyecto.codigo && proyecto.codigo.toLowerCase().includes(searchTerm)) ||
+                    (proyecto.sector && proyecto.sector.toLowerCase().includes(searchTerm));
+
+                const matchesArea = selectedArea === '' || proyecto.area === selectedArea;
+                const matchesStatus = selectedStatus === '' || proyecto.estado_proyecto === selectedStatus;
+
+                return matchesSearch && matchesArea && matchesStatus;
+            });
+
+            renderProjectOptions(filteredProjects);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterArea').value = '';
+            document.getElementById('filterStatus').value = '';
+            applyFilters();
+        }
+
+        function renderProjectOptions(projectList) {
+            const select = document.getElementById('projectSelect');
+            const countBadge = document.getElementById('projectCountBadge');
+            
+            // Mantener la selección actual si existe en la nueva lista
+            const currentVal = select.value;
+            
+            select.innerHTML = '<option value="" disabled selected>-- Selecciona un proyecto --</option>';
+            
+            projectList.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                const label = p.codigo 
+                    ? `[${p.codigo}] ${p.nombre || 'Sin nombre'}` 
+                    : `${p.nombre || 'Sin nombre'}`;
+                option.textContent = label;
+                select.appendChild(option);
+            });
+
+            // Restaurar selección si aplica
+            if(currentVal) {
+                select.value = currentVal;
+            }
+
+            countBadge.textContent = projectList.length;
+        }
+
+        // --- NUEVAS FUNCIONES: LISTAR Y DESCARGAR ---
+
+        async function loadProjectDocuments(pid, projectName) {
+            const panel = document.getElementById('projectDocumentsPanel');
+            const tbody = document.getElementById('projectDocsBody');
+            const loading = document.getElementById('docsLoading');
+            const empty = document.getElementById('docsEmpty');
+            const nameDisplay = document.getElementById('selectedProjectNameDisplay');
+            
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            // UI Updates
+            panel.classList.remove('hidden');
+            nameDisplay.textContent = projectName;
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+            empty.classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/proyectos/${pid}/documentos`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) throw new Error('Error al obtener documentos');
+
+                const data = await response.json();
+                console.log(pid,"data",data)
+                const docs = data.documentos || [];
+
+                loading.classList.add('hidden');
+
+                if (docs.length === 0) {
+                    empty.classList.remove('hidden');
+                } else {
+                    docs.forEach(doc => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50 transition";
+                        
+                        // Icono según tipo
+                        let typeIcon = 'fa-file';
+                        let typeColor = 'text-gray-400';
+                        if (doc.tipo_documento) {
+                            const t = doc.tipo_documento.toLowerCase();
+                            if(t.includes('pdf')) { typeIcon = 'fa-file-pdf'; typeColor = 'text-red-500'; }
+                            else if(t.includes('imagen') || t.includes('foto')) { typeIcon = 'fa-file-image'; typeColor = 'text-purple-500'; }
+                            else if(t.includes('plano')) { typeIcon = 'fa-drafting-compass'; typeColor = 'text-blue-500'; }
+                            else if(t.includes('word') || t.includes('doc')) { typeIcon = 'fa-file-word'; typeColor = 'text-blue-700'; }
+                        }
+
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 rounded text-gray-800">
+                                    ${doc.tipo_documento || 'General'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center gap-2">
+                                <i class="fas ${typeIcon} ${typeColor}"></i>
+                                ${doc.nombre || doc.archivo_nombre}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${doc.descripcion || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${new Date(doc.fecha_subida).toLocaleDateString('es-CL')} 
+                                <span class="text-xs text-gray-300 ml-1">${new Date(doc.fecha_subida).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'})}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${formatBytes(doc.archivo_size)}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando docs:', error);
+                loading.classList.add('hidden');
+                showToast('Error al cargar lista de documentos', 'error');
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500">Error de carga</td></tr>';
+            }
+        }
+
+        async function downloadProjectZip() {
+            const pid = document.getElementById('projectSelect').value;
+            if (!pid) return;
+
+            const btn = document.getElementById('btnDownloadZip');
+            const originalContent = btn.innerHTML;
+            const headers = getAuthHeaders();
+
+            if (!headers) return;
+
+            // UI Loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-dark"></span> Procesando...';
+
+            try {
+                // Nota: Usamos fetch para poder incluir los headers de autenticación
+                const response = await fetch(`${API_BASE}/proyectos/${pid}/documentos/descargar`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(errText || 'Error al descargar');
+                }
+
+                // Obtener el blob (archivo binario)
+                const blob = await response.blob();
+                
+                // Crear URL temporal y hacer click
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `documentos_proyecto_${pid}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                
+                window.URL.revokeObjectURL(url);
+                showToast("Descarga iniciada", "success");
+
+            } catch (error) {
+                console.error('Error descarga:', error);
+                showToast("No se pudo descargar el archivo ZIP", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        // --- GESTIÓN DEL MODAL Y SUBIDA ---
+
+        function openUploadModal() {
+            const projectId = document.getElementById('projectSelect').value;
+            const select = document.getElementById('projectSelect');
+            const projectText = select.options[select.selectedIndex]?.text;
+
+            if (!projectId) {
+                showToast("Primero debes seleccionar un proyecto de la lista", "warning");
+                const selectContainer = document.getElementById('projectSelect').closest('.bg-white');
+                selectContainer.classList.add('ring-2', 'ring-red-400');
+                setTimeout(() => selectContainer.classList.remove('ring-2', 'ring-red-400'), 1000);
+                return;
+            }
+
+            document.getElementById('uploadProjectId').value = projectId;
+            document.getElementById('modalProjectName').textContent = projectText;
+            
+            document.getElementById('uploadForm').reset();
+            document.getElementById('fileNameDisplay').textContent = "Haz clic para explorar";
+
+            document.getElementById('uploadModal').classList.add('active');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+
+        function updateFileInfo(input) {
+            const fileName = input.files[0] ? input.files[0].name : "Haz clic para explorar";
+            document.getElementById('fileNameDisplay').textContent = fileName;
+        }
+
+        async function handleUpload(e) {
+            e.preventDefault();
+            
+            const pid = document.getElementById('uploadProjectId').value;
+            const tipo = document.getElementById('uploadType').value;
+            const descripcion = document.getElementById('uploadDesc').value;
+            const fileInput = document.getElementById('uploadFile');
+
+            if (!pid || fileInput.files.length === 0) {
+                showToast("Faltan datos requeridos", "error");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            if (tipo) formData.append("tipo_documento", tipo);
+            if (descripcion) formData.append("descripcion", descripcion);
+
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const btn = document.getElementById('btnSubmitUpload');
+            const originalText = document.getElementById('btnUploadText').textContent;
+            btn.disabled = true;
+            document.getElementById('btnUploadText').innerHTML = '<span class="loading"></span> Subiendo...';
+
+            try {
+                const res = await fetch(`${API_BASE}/proyectos/${pid}/documentos/upload`, {
+                    method: "POST",
+                    headers: headers, 
+                    body: formData
+                });
+
+                let responseText = "";
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const data = await res.json();
+                    responseText = data.message || JSON.stringify(data);
+                } else {
+                    responseText = await res.text();
+                }
+
+                if (res.ok) {
+                    showToast("Documento subido exitosamente", "success");
+                    addToLog(pid, fileInput.files[0].name, "success");
+                    closeUploadModal();
+                    // Recargar lista de documentos del proyecto
+                    const select = document.getElementById('projectSelect');
+                    loadProjectDocuments(pid, select.options[select.selectedIndex].text);
+                } else {
+                    console.error("Error Server:", responseText);
+                    showToast(`Error al subir: ${res.status}`, "error");
+                    addToLog(pid, fileInput.files[0].name, "error");
+                }
+
+            } catch (error) {
+                console.error('Error de Red:', error);
+                showToast('Error de conexión al subir archivo', 'error');
+            } finally {
+                btn.disabled = false;
+                document.getElementById('btnUploadText').textContent = originalText;
+            }
+        }
+
+        // --- UTILIDADES VISUALES (LOG) ---
+
+        function addToLog(projectId, fileName, status) {
+            const tbody = document.getElementById('uploadLogBody');
+            const countBadge = document.getElementById('sessionCount');
+            
+            if (tbody.querySelector('td[colspan]')) {
+                tbody.innerHTML = '';
+            }
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
+            
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50 transition animate-fadeIn";
+            
+            const badgeClass = status === 'success' ? 'badge-success' : 'badge-pending';
+            const icon = status === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+            const statusText = status === 'success' ? 'Completado' : 'Fallido';
+
+            const select = document.getElementById('projectSelect');
+            const projectName = (status === 'success') 
+                ? (Array.from(select.options).find(o => o.value == projectId)?.text || `#${projectId}`) 
+                : `#${projectId}`;
+
+            tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="badge ${badgeClass}">${icon} ${statusText}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">${fileName}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${projectName}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${timeString}</td>
+            `;
+            
+            tbody.insertBefore(tr, tbody.firstChild);
+
+            let currentCount = parseInt(countBadge.textContent);
+            countBadge.textContent = currentCount + 1;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toast.className = `toast ${type}`;
+            toastMsg.textContent = message;
+
+            let iconHtml = '';
+            if (type === 'success') iconHtml = '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
+            else if (type === 'error') iconHtml = '<i class="fas fa-times-circle text-red-500 text-xl"></i>';
+            else iconHtml = '<i class="fas fa-exclamation-circle text-yellow-500 text-xl"></i>';
+            
+            toastIcon.innerHTML = iconHtml;
+
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('uploadModal');
+            if (event.target === modal) {
+                closeUploadModal();
+            }
+        }
+    </script>
+</body>
+</html>

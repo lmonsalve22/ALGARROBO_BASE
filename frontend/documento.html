@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Proyectos - Upload documentos</title>
+</head>
+<body>
+
+<h2>Login</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<hr>
+
+<h2>Proyectos</h2>
+<button onclick="cargarProyectos()">Cargar proyectos</button>
+
+<ul id="listaProyectos"></ul>
+
+<hr>
+
+<h2>Subir documento</h2>
+<input type="number" id="proyectoId" placeholder="ID Proyecto">
+<br><br>
+<input type="text" id="tipoDocumento" placeholder="Tipo documento">
+<br><br>
+<input type="text" id="descripcion" placeholder="Descripción">
+<br><br>
+<input type="file" id="archivo">
+<br><br>
+<button onclick="subirDocumento()">Subir archivo</button>
+
+<pre id="output"></pre>
+
+<script>
+const BASE_URL = "https://186.67.61.251:8000";
+let TOKEN = null;
+
+// ----------------------
+// LOGIN
+// ----------------------
+async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+        TOKEN = data.token;
+        log("Login OK");
+    } else {
+        log(JSON.stringify(data));
+    }
+}
+
+// ----------------------
+// CARGAR PROYECTOS
+// ----------------------
+async function cargarProyectos() {
+    if (!TOKEN) return log("Debes loguearte primero");
+
+    const res = await fetch(`${BASE_URL}/proyectos`, {
+        headers: {
+            "Authorization": "Bearer " + TOKEN
+        }
+    });
+
+    const proyectos = await res.json();
+    const ul = document.getElementById("listaProyectos");
+    ul.innerHTML = "";
+
+    proyectos.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = `ID: ${p.id} - ${p.nombre || "Sin nombre"}`;
+        ul.appendChild(li);
+    });
+}
+
+// ----------------------
+// SUBIR DOCUMENTO
+// ----------------------
+async function subirDocumento() {
+    const pid = document.getElementById("proyectoId").value;
+    const tipo = document.getElementById("tipoDocumento").value;
+    const descripcion = document.getElementById("descripcion").value;
+    const fileInput = document.getElementById("archivo");
+
+    if (!pid || fileInput.files.length === 0) {
+        return log("Proyecto ID y archivo son obligatorios");
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+    if (tipo) formData.append("tipo_documento", tipo);
+    if (descripcion) formData.append("descripcion", descripcion);
+
+    const res = await fetch(`${BASE_URL}/proyectos/${pid}/documentos/upload`, {
+        method: "POST",
+        body: formData
+    });
+
+    const text = await res.text();
+    log(text);
+}
+
+// ----------------------
+// LOG
+// ----------------------
+function log(msg) {
+    document.getElementById("output").textContent = msg;
+}
+</script>
+
+</body>
+</html>

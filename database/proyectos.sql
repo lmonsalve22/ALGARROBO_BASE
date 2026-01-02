@@ -91,3 +91,43 @@ INSERT INTO mapas_roles (mapa_id, role_id)
 VALUES 
 (3, 10);
 
+
+
+CREATE TABLE proyectos_documentos (
+    documento_id SERIAL PRIMARY KEY,
+
+    proyecto_id INT NOT NULL,
+    tipo_documento VARCHAR(100),        -- ej: "Planimetría", "Ingeniería", "Contrato"
+    nombre VARCHAR(255),                -- nombre visible del documento
+    descripcion TEXT,
+
+    url TEXT,                            -- URL en storage (Supabase, S3, etc)
+    archivo_nombre VARCHAR(255),
+    archivo_extension VARCHAR(20),
+    archivo_size BIGINT,                -- bytes
+
+    fecha_subida TIMESTAMP DEFAULT now(),
+
+    CONSTRAINT fk_documentos_proyecto
+        FOREIGN KEY (proyecto_id)
+        REFERENCES proyectos (id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE proyectos_geomapas (
+    geomapa_id SERIAL PRIMARY KEY,
+
+    proyecto_id INT NOT NULL,
+    nombre VARCHAR(150),
+    descripcion TEXT,
+
+    geojson JSONB NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT now(),
+
+    CONSTRAINT fk_geomapas_proyecto
+        FOREIGN KEY (proyecto_id)
+        REFERENCES proyectos (id)
+        ON DELETE CASCADE
+);
+
+
