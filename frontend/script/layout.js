@@ -81,7 +81,8 @@ function renderSidebar(containerId = "sidebarContainer") {
         proyecto: "proyecto.html",
         mapa: "mapa.html",
         informe: "informe.html",
-        calendario: "calendario.html"
+        calendario: "calendario.html",
+        documento:"documento.html"
     };
 
     // Función para saber si está activo
@@ -136,6 +137,12 @@ function renderSidebar(containerId = "sidebarContainer") {
                         <span>Proyectos</span>
                     </a>
                 </li>
+                 <li>
+                    <a href="${pages.documento}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.documento)}">
+                        <i class="fas fa-calendar-alt w-5"></i>
+                        <span>Documentos</span>
+                    </a>
+                </li>
 
                 <li>
                     <a href="${pages.mapa}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.mapa)}">
@@ -157,6 +164,8 @@ function renderSidebar(containerId = "sidebarContainer") {
                         <span>Calendario</span>
                     </a>
                 </li>
+
+               
                  <li>
                     <a href="/ALGARROBO_BASE/frontend/geoportal/index.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg">
                         <i class="fas fa-calendar-alt w-5"></i>
