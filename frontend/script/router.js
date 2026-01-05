@@ -68,6 +68,12 @@ function checkLoginStatus() {
             // Redirigir a la página de login
             window.location.href = `${BASE}/frontend/index.html`;
         }
+
+// User menu
+function toggleUserMenu() {
+    const menu = document.getElementById('userMenu');
+    menu.classList.toggle('hidden');
+}
  
 const salida = checkLoginStatus(); 
 const token = salida[0]

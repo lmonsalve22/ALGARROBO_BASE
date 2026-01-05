@@ -342,7 +342,7 @@
                             <div class="avatar"><i class="fas fa-robot"></i></div>
                             <div class="flex-1">
                                 <div class="message-content markdown-body">
-                                    <p><strong>¡Hola! Soy tu asistente potenciado</strong></p>
+                                    <p><strong>¡Hola! Soy tu asistente potenciado por ZhipuAI.</strong></p>
                                     <p>Estoy conectado a los datos del Geoportal. Selecciona proyectos de la lista izquierda y hazme preguntas sobre:</p>
                                     <ul>
                                         <li>Análisis de montos y presupuestos.</li>
@@ -364,7 +364,6 @@
 
                     <!-- Input Chat -->
                     <div class="p-4 bg-white border-t border-gray-100">
-                        <!-- El formulario maneja el envío correctamente ahora -->
                         <form id="chatForm" class="flex items-end gap-2">
                             <button type="button" id="voiceButton" class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition" title="Dictar por voz">
                                 <i class="fas fa-microphone"></i>
@@ -394,10 +393,8 @@
     <script>
         // --- CONFIGURACIÓN ZHIPU AI ---
         const API_KEY = "1dbcda64e67c4d31a7e9e5565efc5cae.M5ZIv5sFPbdOwgKw";
-        //const API_URL = "https://api.z.ai/api/paas/v4/chat/completions";
-        const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"; 
-        const MODEL_NAME = "GLM-4.5-Flash"; 
-        //const MODEL_NAME = "glm-4.5-flash"; 
+        const API_URL = "https://api.z.ai/api/paas/v4/chat/completions";
+        const MODEL_NAME = "glm-4.5-flash"; 
         
         // Configuración Chat
         const CHAT_CONFIG = {
@@ -411,8 +408,7 @@
             selectedIds: new Set(), // IDs seleccionados en UI
             chatHistory: [], // Historial conversación Zhipu
             recognition: null, // Voz a Texto
-            synthesis: window.speechSynthesis, // Texto a Voz,
-            filterProject: []
+            synthesis: window.speechSynthesis // Texto a Voz
         };
 
         // Referencias DOM
@@ -459,7 +455,6 @@
 
                 if (!response.ok) throw new Error(`Error API: ${response.status}`);
                 AppState.allProjects = await response.json();
-                AppState.filterProject = AppState.allProjects;
                 
                 initFilters(); 
             } catch (error) {
@@ -514,7 +509,6 @@
                 const matchFin = fin === "" || p.financiamiento === fin;
                 return matchTxt && matchArea && matchStatus && matchFin;
             });
-            AppState.filterProject = filtered; 
 
             renderProjectList(filtered);
             DOM.visibleCount.textContent = filtered.length;
@@ -616,9 +610,8 @@
         // --- 2. LÓGICA DE CHAT (ZhipuAI Integration) ---
 
         function initChat() {
-            // ✅ SOLUCIÓN: Solo el evento 'submit' del formulario
             DOM.chatForm.addEventListener('submit', sendMessage);
-            
+            DOM.chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
             DOM.chatInput.addEventListener('input', updateCharCounter);
             DOM.voiceButton.addEventListener('click', toggleVoiceRecognition);
 
@@ -673,10 +666,7 @@
         }
 
         // --- Core Chat Logic ---
-        async function sendMessage(e) {
-            // ✅ SOLUCIÓN: Prevenir comportamiento por defecto del formulario
-            if (e) e.preventDefault();
-
+        async function sendMessage() {
             const text = DOM.chatInput.value.trim();
             if (!text) return;
 
@@ -714,7 +704,6 @@
         }
 
         async function fetchZhipuResponse(userMessage, systemContext) {
-            console.log(AppState.filterProject)
             AppState.chatHistory.push({ role: "user", content: userMessage });
 
             const promptSistema = `Eres un asistente experto en análisis de datos municipales.
@@ -724,9 +713,6 @@
             - Usa formato Markdown para estructurar la información (listas, tablas, negritas).
             - Si tienes datos de proyectos en el contexto, usa números y cifras reales del JSON.
             - Al final de tu respuesta, genera exactamente 3 preguntas de seguimiento relevantes.
-            - Responde solo usando datos de la base de datos en el contexto.
-
-            Base de datos ${JSON.stringify(AppState.filterProject)}
             
             Formato de salida requerido:
             [RESPUESTA]
@@ -743,8 +729,7 @@
                 messages: [
                     { role: "system", content: promptSistema },
                     ...AppState.chatHistory.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH)
-                ],
-                temperature: 0.1
+                ]
             };
 
             const response = await fetch(API_URL, {
@@ -836,8 +821,7 @@
                         chip.innerHTML = `<i class="fas fa-arrow-right text-xs"></i> ${q}`;
                         chip.onclick = () => {
                             DOM.chatInput.value = q;
-                            // Aquí llamamos sendMessage() sin evento (null), lo cual es seguro por el chequeo `if (e)`
-                            sendMessage(); 
+                            sendMessage();
                         };
                         chipsContainer.appendChild(chip);
                     });
