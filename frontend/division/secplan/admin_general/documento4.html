@@ -62,12 +62,19 @@
             display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite;
         }
+        .loading-dark {
+            display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%; border-top-color: #4f46e5; animation: spin 1s ease-in-out infinite;
+        }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes spin { to { transform: rotate(360deg); } }
         .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .badge-success { background: #dcfce7; color: #166534; }
         .badge-pending { background: #fef3c7; color: #92400e; }
+        
+        /* Transición suave para la tabla de documentos */
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -87,7 +94,7 @@
                     <p class="text-gray-600">Repositorio central de archivos SECPLAC</p>
                 </div>
 
-                <!-- BARRA DE FILTROS (Para buscar el proyecto objetivo) -->
+                <!-- BARRA DE FILTROS -->
                 <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-indigo-500">
                     <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
                         <!-- Buscador -->
@@ -105,15 +112,12 @@
 
                         <!-- Filtros Select Conectados -->
                         <div class="flex flex-1 w-full gap-3">
-                            <!-- Filtro Área -->
                             <div class="flex-1">
                                 <label for="filterArea" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
                                 <select id="filterArea" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Todas las áreas</option>
                                 </select>
                             </div>
-                            
-                            <!-- Filtro Estado -->
                             <div class="flex-1">
                                 <label for="filterStatus" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                                 <select id="filterStatus" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
@@ -136,13 +140,13 @@
                     <div class="flex flex-col md:flex-row gap-4 items-end">
                         <div class="flex-1 w-full">
                             <label for="projectSelect" class="block text-sm font-medium text-gray-700 mb-1">
-                                1. Seleccionar Proyecto para Carga
+                                1. Seleccionar Proyecto
                                 <span id="projectCountBadge" class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0</span>
                             </label>
                             <select id="projectSelect" class="w-full py-3 px-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                                 <option value="" disabled selected>-- Selecciona un proyecto --</option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-2">Usa los filtros superiores si el proyecto no aparece en la lista.</p>
+                            <p class="text-xs text-gray-500 mt-2">Al seleccionar, se cargarán los documentos existentes.</p>
                         </div>
                         <div class="w-full md:w-auto">
                             <button onclick="loadProjects()" class="w-full md:w-auto px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
@@ -153,7 +157,7 @@
                 </div>
 
                 <!-- Actions & Recent Activity -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     
                     <!-- Upload Action Area -->
                     <div class="lg:col-span-1">
@@ -176,9 +180,9 @@
                                 <h3 class="font-semibold text-gray-800">Historial de Carga (Sesión)</h3>
                                 <span id="sessionCount" class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded-full">0</span>
                             </div>
-                            <div class="overflow-x-auto">
+                            <div class="overflow-x-auto max-h-64 overflow-y-auto">
                                 <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
+                                    <thead class="bg-gray-50 sticky top-0">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archivo</th>
@@ -198,6 +202,55 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- NUEVA SECCIÓN: LISTADO DE DOCUMENTOS DEL PROYECTO -->
+                <div id="projectDocumentsPanel" class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
+                    <!-- Header del Panel -->
+                    <div class="px-6 py-4 border-b border-gray-200 bg-indigo-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-indigo-900 flex items-center gap-2">
+                                <i class="fas fa-folder-open"></i> 
+                                Documentos del Proyecto 
+                                <span id="selectedProjectNameDisplay" class="font-normal text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-200 text-sm"></span>
+                            </h3>
+                            <p class="text-xs text-indigo-600 mt-1">Archivos almacenados en el servidor</p>
+                        </div>
+                        <div>
+                            <button onclick="downloadProjectZip()" id="btnDownloadZip" class="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-2">
+                                <i class="fas fa-file-archive"></i> 
+                                <span>Descargar Todo (ZIP)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Documentos -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre Archivo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamaño</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectDocsBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Se llena con JS -->
+                            </tbody>
+                        </table>
+                        <div id="docsLoading" class="hidden p-8 text-center">
+                            <i class="fas fa-circle-notch fa-spin text-indigo-500 text-2xl"></i>
+                            <p class="text-sm text-gray-500 mt-2">Cargando documentos...</p>
+                        </div>
+                        <div id="docsEmpty" class="hidden p-8 text-center">
+                            <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">Este proyecto aún no tiene documentos subidos.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- FIN NUEVA SECCIÓN -->
+
             </div>
         </main>
     </div>
@@ -250,7 +303,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer">
+                <div class="modal-footer flex justify-end gap-3 mt-6">
                     <button type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" onclick="closeUploadModal()">Cancelar</button>
                     <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-md shadow-indigo-200 flex items-center" id="btnSubmitUpload">
                         <span id="btnUploadText">Subir Archivo</span>
@@ -292,6 +345,18 @@
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+            // Listener para cargar documentos cuando se selecciona un proyecto
+            document.getElementById('projectSelect').addEventListener('change', function(e) {
+                const pid = e.target.value;
+                const projectName = e.target.options[e.target.selectedIndex].text;
+                
+                if (pid) {
+                    loadProjectDocuments(pid, projectName);
+                } else {
+                    document.getElementById('projectDocumentsPanel').classList.add('hidden');
+                }
+            });
         });
 
         // --- LÓGICA DE FILTROS Y PROYECTOS ---
@@ -300,7 +365,6 @@
             const headers = getAuthHeaders();
             if (!headers) return;
 
-            // UI Loading en selector
             const select = document.getElementById('projectSelect');
             select.innerHTML = '<option value="" disabled selected>Cargando...</option>';
             select.disabled = true;
@@ -315,12 +379,8 @@
 
                 allProjects = await response.json();
                 
-                // 1. Poblar opciones de los filtros (Area, Status)
                 updateFilterOptions();
-                
-                // 2. Aplicar filtros iniciales (que llamará a renderProjectOptions)
                 applyFilters();
-
                 select.disabled = false;
                 showToast(`Proyectos cargados: ${allProjects.length}`, "success");
 
@@ -331,9 +391,8 @@
             }
         }
 
-        // --- LÓGICA DE FILTROS INTERCONECTADOS ---
+        // --- LÓGICA DE FILTROS ---
 
-        // Regenera el HTML de los selectores de filtro basándose en los proyectos cargados
         function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
             const select = document.getElementById(selectElementId);
             const previousValue = select.value || currentValue;
@@ -345,7 +404,6 @@
 
             select.innerHTML = html;
 
-            // Resetear si el valor anterior ya no existe
             if (previousValue && !optionsList.includes(previousValue)) {
                 select.value = "";
             } else if (previousValue) {
@@ -354,18 +412,15 @@
         }
 
         function updateFilterOptions() {
-            // Se usa el mismo criterio de filtrado cruzado que en el proyecto original
             const selectedArea = document.getElementById('filterArea').value;
             const selectedStatus = document.getElementById('filterStatus').value;
 
-            // 1. Áreas disponibles
             const dataForAreas = allProjects.filter(p => 
                 (selectedStatus === '' || p.estado_proyecto === selectedStatus)
             );
             const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
             populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
 
-            // 2. Estados disponibles
             const dataForStatus = allProjects.filter(p => 
                 (selectedArea === '' || p.area === selectedArea)
             );
@@ -374,15 +429,12 @@
         }
 
         function applyFilters() {
-            // 1. Actualizar opciones de los dropdowns
             updateFilterOptions();
 
-            // 2. Obtener valores
             const selectedArea = document.getElementById('filterArea').value;
             const selectedStatus = document.getElementById('filterStatus').value;
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
-            // 3. Filtrar lista maestra
             const filteredProjects = allProjects.filter(proyecto => {
                 const matchesSearch = 
                     (proyecto.nombre && proyecto.nombre.toLowerCase().includes(searchTerm)) ||
@@ -395,7 +447,6 @@
                 return matchesSearch && matchesArea && matchesStatus;
             });
 
-            // 4. Renderizar en el SELECT de selección de proyecto
             renderProjectOptions(filteredProjects);
         }
 
@@ -406,17 +457,18 @@
             applyFilters();
         }
 
-        // Renderiza el <select> donde el usuario elige a qué proyecto subir el archivo
         function renderProjectOptions(projectList) {
             const select = document.getElementById('projectSelect');
             const countBadge = document.getElementById('projectCountBadge');
+            
+            // Mantener la selección actual si existe en la nueva lista
+            const currentVal = select.value;
             
             select.innerHTML = '<option value="" disabled selected>-- Selecciona un proyecto --</option>';
             
             projectList.forEach(p => {
                 const option = document.createElement('option');
                 option.value = p.id;
-                // Mostramos código si existe, luego nombre
                 const label = p.codigo 
                     ? `[${p.codigo}] ${p.nombre || 'Sin nombre'}` 
                     : `${p.nombre || 'Sin nombre'}`;
@@ -424,21 +476,163 @@
                 select.appendChild(option);
             });
 
-            // Actualizar contador de resultados
+            // Restaurar selección si aplica
+            if(currentVal) {
+                select.value = currentVal;
+            }
+
             countBadge.textContent = projectList.length;
+        }
+
+        // --- NUEVAS FUNCIONES: LISTAR Y DESCARGAR ---
+
+        async function loadProjectDocuments(pid, projectName) {
+            const panel = document.getElementById('projectDocumentsPanel');
+            const tbody = document.getElementById('projectDocsBody');
+            const loading = document.getElementById('docsLoading');
+            const empty = document.getElementById('docsEmpty');
+            const nameDisplay = document.getElementById('selectedProjectNameDisplay');
+            
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            // UI Updates
+            panel.classList.remove('hidden');
+            nameDisplay.textContent = projectName;
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+            empty.classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/proyectos/${pid}/documentos`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) throw new Error('Error al obtener documentos');
+
+                const data = await response.json();
+                console.log(pid,"data",data)
+                const docs = data.documentos || [];
+
+                loading.classList.add('hidden');
+
+                if (docs.length === 0) {
+                    empty.classList.remove('hidden');
+                } else {
+                    docs.forEach(doc => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50 transition";
+                        
+                        // Icono según tipo
+                        let typeIcon = 'fa-file';
+                        let typeColor = 'text-gray-400';
+                        if (doc.tipo_documento) {
+                            const t = doc.tipo_documento.toLowerCase();
+                            if(t.includes('pdf')) { typeIcon = 'fa-file-pdf'; typeColor = 'text-red-500'; }
+                            else if(t.includes('imagen') || t.includes('foto')) { typeIcon = 'fa-file-image'; typeColor = 'text-purple-500'; }
+                            else if(t.includes('plano')) { typeIcon = 'fa-drafting-compass'; typeColor = 'text-blue-500'; }
+                            else if(t.includes('word') || t.includes('doc')) { typeIcon = 'fa-file-word'; typeColor = 'text-blue-700'; }
+                        }
+
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 rounded text-gray-800">
+                                    ${doc.tipo_documento || 'General'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center gap-2">
+                                <i class="fas ${typeIcon} ${typeColor}"></i>
+                                ${doc.nombre || doc.archivo_nombre}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${doc.descripcion || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${new Date(doc.fecha_subida).toLocaleDateString('es-CL')} 
+                                <span class="text-xs text-gray-300 ml-1">${new Date(doc.fecha_subida).toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'})}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${formatBytes(doc.archivo_size)}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando docs:', error);
+                loading.classList.add('hidden');
+                showToast('Error al cargar lista de documentos', 'error');
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500">Error de carga</td></tr>';
+            }
+        }
+
+        async function downloadProjectZip() {
+            const pid = document.getElementById('projectSelect').value;
+            if (!pid) return;
+
+            const btn = document.getElementById('btnDownloadZip');
+            const originalContent = btn.innerHTML;
+            const headers = getAuthHeaders();
+
+            if (!headers) return;
+
+            // UI Loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-dark"></span> Procesando...';
+
+            try {
+                // Nota: Usamos fetch para poder incluir los headers de autenticación
+                const response = await fetch(`${API_BASE}/proyectos/${pid}/documentos/descargar`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(errText || 'Error al descargar');
+                }
+
+                // Obtener el blob (archivo binario)
+                const blob = await response.blob();
+                
+                // Crear URL temporal y hacer click
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `documentos_proyecto_${pid}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                
+                window.URL.revokeObjectURL(url);
+                showToast("Descarga iniciada", "success");
+
+            } catch (error) {
+                console.error('Error descarga:', error);
+                showToast("No se pudo descargar el archivo ZIP", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
         }
 
         // --- GESTIÓN DEL MODAL Y SUBIDA ---
 
         function openUploadModal() {
             const projectId = document.getElementById('projectSelect').value;
-            // Obtener texto de la opción seleccionada para mostrar contexto
             const select = document.getElementById('projectSelect');
             const projectText = select.options[select.selectedIndex]?.text;
 
             if (!projectId) {
                 showToast("Primero debes seleccionar un proyecto de la lista", "warning");
-                // Efecto visual de atención
                 const selectContainer = document.getElementById('projectSelect').closest('.bg-white');
                 selectContainer.classList.add('ring-2', 'ring-red-400');
                 setTimeout(() => selectContainer.classList.remove('ring-2', 'ring-red-400'), 1000);
@@ -509,6 +703,9 @@
                     showToast("Documento subido exitosamente", "success");
                     addToLog(pid, fileInput.files[0].name, "success");
                     closeUploadModal();
+                    // Recargar lista de documentos del proyecto
+                    const select = document.getElementById('projectSelect');
+                    loadProjectDocuments(pid, select.options[select.selectedIndex].text);
                 } else {
                     console.error("Error Server:", responseText);
                     showToast(`Error al subir: ${res.status}`, "error");
@@ -544,7 +741,6 @@
             const icon = status === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
             const statusText = status === 'success' ? 'Completado' : 'Fallido';
 
-            // Intentar obtener el nombre del proyecto desde el select actual o mostrar ID
             const select = document.getElementById('projectSelect');
             const projectName = (status === 'success') 
                 ? (Array.from(select.options).find(o => o.value == projectId)?.text || `#${projectId}`) 

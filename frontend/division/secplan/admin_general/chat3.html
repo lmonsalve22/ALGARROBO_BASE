@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat IA ZhipuAI (GLM-4)</title>
+    <!-- Dependencias externas -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --chat-bg: #ffffff;
+            --header-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --input-bg: #ffffff;
+            --border-color: #ddd;
+            --primary-color: #0084ff;
+            --user-msg-bg: #0084ff;
+            --user-msg-text: #ffffff;
+            --bot-msg-bg: #f1f0f0;
+            --bot-msg-text: #333333;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --chat-bg: #2d2d2d;
+            --header-bg: #242424;
+            --text-primary: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --input-bg: #3d3d3d;
+            --border-color: #444;
+            --user-msg-bg: #3a3a3a; /* Más oscuro en modo noche */
+            --user-msg-text: #ffffff;
+            --bot-msg-bg: #444444;
+            --bot-msg-text: #e0e0e0;
+            --shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Header */
+        header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .header-buttons button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-left: 15px;
+            padding: 5px;
+        }
+        .header-buttons button:hover { color: var(--primary-color); }
+
+        /* Main Chat Area */
+        #chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+        }
+
+        /* Message Bubbles */
+        .message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message-wrapper.user-wrapper {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 10px;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+        .user-wrapper .avatar { background-color: #ccc; color: #555; }
+        .bot-wrapper .avatar { background-color: var(--primary-color); color: white; }
+
+        .message-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 12px;
+            position: relative;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+        }
+
+        /* Estilos específicos por tipo */
+        .user-wrapper .message-content {
+            background-color: var(--user-msg-bg);
+            color: var(--user-msg-text);
+            border-top-right-radius: 2px;
+        }
+
+        .bot-wrapper .message-content {
+            background-color: var(--bot-msg-bg);
+            color: var(--bot-msg-text);
+            border-top-left-radius: 2px;
+        }
+        
+        /* Estilos Markdown dentro del chat */
+        .message-content p { margin: 0 0 8px 0; }
+        .message-content p:last-child { margin: 0; }
+        .message-content pre { 
+            background: rgba(0,0,0,0.1); 
+            padding: 10px; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-family: monospace;
+        }
+        .message-content code { font-family: monospace; background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 4px; }
+        body.dark-mode .message-content code { background: rgba(255,255,255,0.1); }
+
+        .timestamp {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: right;
+        }
+        .user-wrapper .timestamp { text-align: left; }
+
+        /* Acciones en mensaje del bot */
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+            justify-content: flex-end;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        .action-btn:hover { opacity: 1; color: var(--primary-color); }
+
+        /* Suggested Questions */
+        .suggestions {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .suggestion-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .suggestion-btn:hover {
+            background: rgba(0, 132, 255, 0.1);
+            border-color: var(--primary-color);
+        }
+
+        /* Error Message Style */
+        .error-message {
+            color: #ff4d4d;
+            font-style: italic;
+            font-size: 0.9rem;
+            border-left: 3px solid #ff4d4d;
+            padding-left: 8px;
+        }
+
+        /* Loading */
+        #loading-indicator {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.9rem;
+            padding: 10px;
+            display: none; /* JS cambiará esto */
+        }
+        #loading-indicator.active { display: block; }
+
+        /* Footer / Input Area */
+        footer {
+            background-color: var(--header-bg);
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            outline: none;
+        }
+        #user-input:focus { border-color: var(--primary-color); }
+        
+        .icon-btn, #send-button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .icon-btn:hover, #send-button:hover { background-color: rgba(0,0,0,0.05); color: var(--primary-color); }
+        body.dark-mode .icon-btn:hover { background-color: rgba(255,255,255,0.1); }
+
+        #send-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50%;
+        }
+        #send-button:hover { background-color: #0070e0; }
+
+        #char-counter {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsivo */
+        @media (max-width: 600px) {
+            .message-wrapper { max-width: 95%; }
+            header h1 { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Asistente GLM-4</h1>
+        <div class="header-buttons">
+            <button id="dark-mode-toggle" title="Cambiar tema"><i class="fas fa-moon"></i></button>
+            <button id="clear-button" title="Limpiar chat"><i class="fas fa-trash"></i></button>
+            <button id="export-button" title="Exportar"><i class="fas fa-download"></i></button>
+        </div>
+    </header>
+
+    <!-- Contenedor del Chat -->
+    <main id="chat-container">
+        <!-- Mensaje de bienvenida inicial -->
+        <div class="message-wrapper bot-wrapper">
+            <div class="avatar"><i class="fas fa-robot"></i></div>
+            <div class="message-info">
+                <div class="message-content">¡Hola! Soy una inteligencia artificial basada en GLM-4. ¿En qué puedo ayudarte hoy?</div>
+                <div class="timestamp" id="initial-timestamp">Hoy, --:--</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Indicador de carga -->
+    <div id="loading-indicator"><i class="fas fa-circle-notch fa-spin"></i> Pensando...</div>
+
+    <!-- Área de Input -->
+    <footer>
+        <div class="input-container">
+            <button id="voice-button" class="icon-btn" title="Dictar por voz"><i class="fas fa-microphone"></i></button>
+            <input type="text" id="user-input" placeholder="Escribe tu mensaje..." autocomplete="off">
+            <button id="send-button" title="Enviar"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <div id="char-counter">0/500</div>
+    </footer>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        // NOTA: Tu clave es visible aquí. En producción usa un servidor backend.
+        const API_KEY = "1dbcda64e67c4d31a7e9e5565efc5cae.M5ZIv5sFPbdOwgKw";
+        // URL Oficial ZhipuAI (BigModel Open Platform)
+        const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"; 
+        const MODEL_NAME = "GLM-4.5-Flash"; // Modelo más rápido y económico (ideal para web)
+        
+        
+        const CHAT_CONFIG = {
+            MAX_HISTORY_LENGTH: 10,
+            MAX_INPUT_LENGTH: 500
+        };
+
+        const UIState = {
+            historialConversacion: [],
+            recognition: null,
+            synthesis: window.speechSynthesis,
+            isProcessing: false // Evitar doble envío
+        };
+
+        const DOMElements = {
+            chatContainer: document.getElementById('chat-container'),
+            userInput: document.getElementById('user-input'),
+            sendButton: document.getElementById('send-button'),
+            clearButton: document.getElementById('clear-button'),
+            exportButton: document.getElementById('export-button'),
+            darkModeToggle: document.getElementById('dark-mode-toggle'),
+            voiceButton: document.getElementById('voice-button'),
+            loadingIndicator: document.getElementById('loading-indicator'),
+            charCounter: document.getElementById('char-counter')
+        };
+
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Listeners
+            DOMElements.sendButton.addEventListener('click', sendMessage);
+            DOMElements.clearButton.addEventListener('click', clearChat);
+            DOMElements.exportButton.addEventListener('click', exportConversation);
+            DOMElements.darkModeToggle.addEventListener('click', toggleDarkMode);
+            DOMElements.voiceButton.addEventListener('click', toggleVoiceRecognition);
+            
+            DOMElements.userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+            DOMElements.userInput.addEventListener('input', updateCharCounter);
+            
+            DOMElements.userInput.focus();
+            initializeVoiceRecognition();
+            
+            // Hora inicial
+            updateInitialTimestamp();
+        });
+
+        // --- FUNCIONES DE UI ---
+
+        function updateInitialTimestamp() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const tsEl = document.getElementById('initial-timestamp');
+            if(tsEl) tsEl.textContent = `Hoy, ${timeStr}`;
+        }
+
+        // FIX: Función faltante que causaba el error "updateCharCounter is not defined"
+        function updateCharCounter() {
+            const currentLength = DOMElements.userInput.value.length;
+            DOMElements.charCounter.textContent = `${currentLength}/${CHAT_CONFIG.MAX_INPUT_LENGTH}`;
+            
+            if (currentLength > CHAT_CONFIG.MAX_INPUT_LENGTH) {
+                DOMElements.charCounter.style.color = '#ff4d4d';
+                DOMElements.userInput.style.borderColor = '#ff4d4d';
+            } else {
+                DOMElements.charCounter.style.color = 'var(--text-secondary)';
+                DOMElements.userInput.style.borderColor = 'var(--border-color)';
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            DOMElements.darkModeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+
+        function addMessageToChat(sender, message, preguntas = []) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `message-wrapper ${sender}-wrapper`;
+
+            // Avatar
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+
+            // Info
+            const info = document.createElement('div');
+            info.className = 'message-info';
+
+            // Content
+            const content = document.createElement('div');
+            content.className = 'message-content';
+
+            if (sender === 'user') {
+                content.textContent = message;
+            } else if (sender === 'error') {
+                // Mensaje de error especial
+                content.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+                content.style.border = "1px solid #ffcccc";
+            } else {
+                // Bot message
+                content.innerHTML = marked.parse(sanitizeInput(message));
+                
+                // Botones de acción
+                const actions = document.createElement('div');
+                actions.className = 'message-actions';
+                
+                const btnCopy = document.createElement('button');
+                btnCopy.className = 'action-btn';
+                btnCopy.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                btnCopy.onclick = () => copyToClipboard(message);
+                
+                const btnSpeak = document.createElement('button');
+                btnSpeak.className = 'action-btn';
+                btnSpeak.innerHTML = '<i class="fas fa-volume-up"></i> Leer';
+                btnSpeak.onclick = () => speakText(message, btnSpeak);
+
+                actions.appendChild(btnCopy);
+                actions.appendChild(btnSpeak);
+                content.appendChild(actions);
+            }
+
+            info.appendChild(content);
+
+            // Timestamp
+            const time = document.createElement('div');
+            time.className = 'timestamp';
+            time.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            info.appendChild(time);
+
+            // Preguntas sugeridas (Solo para el bot)
+            if (sender === 'bot' && preguntas.length > 0) {
+                const suggestContainer = document.createElement('div');
+                suggestContainer.className = 'suggestions';
+                
+                preguntas.forEach(q => {
+                    const btn = document.createElement('button');
+                    btn.className = 'suggestion-btn';
+                    btn.innerHTML = `<i class="fas fa-arrow-right"></i> ${q}`;
+                    btn.onclick = () => {
+                        // Prevenir múltiples clics rápidos
+                        if(UIState.isProcessing) return;
+                        DOMElements.userInput.value = q;
+                        // Pequeño timeout para que se vea que se escribió
+                        setTimeout(() => sendMessage(), 200); 
+                    };
+                    suggestContainer.appendChild(btn);
+                });
+                info.appendChild(suggestContainer);
+            }
+
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(info);
+            
+            DOMElements.chatContainer.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            DOMElements.chatContainer.scrollTop = DOMElements.chatContainer.scrollHeight;
+        }
+
+        function setLoading(isLoading) {
+            UIState.isProcessing = isLoading;
+            DOMElements.loadingIndicator.style.display = isLoading ? 'block' : 'none';
+            DOMElements.sendButton.disabled = isLoading;
+            DOMElements.userInput.disabled = isLoading;
+            if(!isLoading) DOMElements.userInput.focus();
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = "Copiar";
+                // Buscar botón y cambiar texto temporalmente (opcional)
+            });
+        }
+
+        // --- LÓGICA DE VOZ ---
+        function initializeVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                DOMElements.voiceButton.style.display = 'none';
+                return;
+            }
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            UIState.recognition = new SpeechRecognition();
+            UIState.recognition.lang = 'es-ES';
+            UIState.recognition.continuous = false;
+            UIState.recognition.interimResults = false;
+
+            UIState.recognition.onstart = () => {
+                DOMElements.voiceButton.innerHTML = '<i class="fas fa-stop fa-pulse"></i>';
+                DOMElements.voiceButton.style.color = '#ff4d4d';
+            };
+
+            UIState.recognition.onend = () => {
+                resetVoiceButton();
+            };
+
+            UIState.recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                DOMElements.userInput.value = transcript;
+                // Opcional: enviar automáticamente al dejar de hablar
+                // sendMessage(); 
+            };
+
+            UIState.recognition.onerror = () => resetVoiceButton();
+        }
+
+        function resetVoiceButton() {
+            DOMElements.voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+            DOMElements.voiceButton.style.color = '';
+        }
+
+        function toggleVoiceRecognition() {
+            if (!UIState.recognition) return;
+            try {
+                if (DOMElements.voiceButton.innerHTML.includes('fa-stop')) {
+                    UIState.recognition.stop();
+                } else {
+                    UIState.recognition.start();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function speakText(text, btn) {
+            if (!UIState.synthesis) return;
+            if (UIState.synthesis.speaking) {
+                UIState.synthesis.cancel();
+                btn.innerHTML = '<i class="fas fa-volume-up"></i> Leer';
+                return;
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.onend = () => { btn.innerHTML = '<i class="fas fa-volume-up"></i> Leer'; };
+            UIState.synthesis.speak(utterance);
+            btn.innerHTML = '<i class="fas fa-stop"></i> Parar';
+        }
+
+        // --- LÓGICA PRINCIPAL DEL CHAT ---
+
+        async function sendMessage() {
+            const message = DOMElements.userInput.value.trim();
+            if (!message || UIState.isProcessing) return;
+
+            // Actualizar UI inmediatamente
+            addMessageToChat('user', message);
+            DOMElements.userInput.value = '';
+            updateCharCounter();
+            setLoading(true);
+
+            try {
+                const response = await obtenerRespuestaAPI(message);
+                addMessageToChat('bot', response.respuesta, response.preguntas);
+            } catch (error) {
+                console.error(error);
+                // Manejo elegante del error 429 u otros
+                let errorMsg = error.message;
+                if(error.message.includes("429")) {
+                    errorMsg = "Has excedido el límite de peticiones de la API gratuita. Por favor, espera unos minutos antes de intentar de nuevo.";
+                }
+                addMessageToChat('error', errorMsg);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function obtenerRespuestaAPI(pregunta) {
+            // Agregar al historial
+            UIState.historialConversacion.push({ role: "user", content: pregunta });
+
+            const promptSistema = `Eres un asistente IA útil y conciso.
+            Responde siempre en formato Markdown.
+            Al final de tu respuesta, genera exactamente 3 preguntas de seguimiento relacionadas.
+            Estructura obligatoria:
+            [RESPUESTA]
+            (Tu respuesta aquí)
+            [/RESPUESTA]
+            [PREGUNTAS]
+            1. Pregunta...
+            2. Pregunta...
+            3. Pregunta...
+            [/PREGUNTAS]`;
+
+            const payload = {
+                model: MODEL_NAME,
+                messages: [
+                    { role: "system", content: promptSistema },
+                    ...UIState.historialConversacion.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH)
+                ],
+                temperature: 0.7
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(`API ${response.status}: ${errData.error?.message || response.statusText}`);
+            }
+
+            const data = await response.json();
+            const textoCrudo = data.choices[0].message.content;
+
+            // Guardar respuesta del asistente en el historial (solo la parte de respuesta, no las preguntas)
+            // Para mantener el contexto limpio para la IA
+            
+            // Parsear la respuesta usando Regex
+            let respuestaFinal = "";
+            let preguntasFinal = [];
+
+            // Extraer Respuesta
+            const matchResp = textoCrudo.match(/\[RESPUESTA\]([\s\S]*?)\[\/RESPUESTA\]/i);
+            if (matchResp) {
+                respuestaFinal = matchResp[1].trim();
+            } else {
+                // Fallback si la IA no sigue el formato estricto
+                respuestaFinal = textoCrudo.split("[PREGUNTAS]")[0].trim();
+            }
+
+            // Extraer Preguntas
+            const matchPreg = textoCrudo.match(/\[PREGUNTAS\]([\s\S]*?)\[\/PREGUNTAS\]/i);
+            if (matchPreg) {
+                const lines = matchPreg[1].split('\n');
+                preguntasFinal = lines
+                    .map(line => line.replace(/^\d+\.\s*/, '').trim())
+                    .filter(line => line.length > 0);
+            } else {
+                // Generar preguntas genéricas si falla el parseo
+                preguntasFinal = ["¿Puedes explicarlo con más detalle?", "¿Dame un ejemplo práctico.", "¿Qué más debo saber sobre esto?"];
+            }
+
+            // Actualizar historial con la respuesta limpia
+            UIState.historialConversacion.push({ role: "assistant", content: respuestaFinal });
+
+            return { respuesta: respuestaFinal, preguntas: preguntasFinal };
+        }
+
+        // --- UTILIDADES ---
+        function sanitizeInput(text) {
+            // Prevenir inyección de HTML básico (Marked se encarga de la mayor parte, esto es un extra)
+            return text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        }
+
+        function clearChat() {
+            if(confirm("¿Estás seguro de que quieres borrar toda la conversación?")) {
+                DOMElements.chatContainer.innerHTML = '';
+                UIState.historialConversacion = [];
+                // Reinsertar mensaje inicial
+                const initialWrapper = document.createElement('div');
+                initialWrapper.className = 'message-wrapper bot-wrapper';
+                initialWrapper.innerHTML = `
+                <div class="avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-info">
+                    <div class="message-content">Chat reiniciado. ¿En qué puedo ayudarte?</div>
+                    <div class="timestamp">Ahora</div>
+                </div>`;
+                DOMElements.chatContainer.appendChild(initialWrapper);
+            }
+        }
+
+        function exportConversation() {
+            let text = "Historial de Chat\n=================\n\n";
+            const msgs = DOMElements.chatContainer.querySelectorAll('.message-content');
+            msgs.forEach((msg, index) => {
+                if(!msg.textContent.includes('Chat reiniciado')) {
+                    text += `${index+1}. ${msg.textContent}\n\n`;
+                }
+            });
+            
+            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `chat-export-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

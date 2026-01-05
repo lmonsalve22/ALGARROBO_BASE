@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="../../../script/router.js"></script> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Inteligente - Geoportal Algarrobo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Estilos específicos para el Chat */
+        .chat-container {
+            height: 600px; /* Altura fija para el área de chat */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: #f8fafc;
+            scroll-behavior: smooth;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .message {
+            max-width: 80%;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .message.bot {
+            background-color: white;
+            color: #334155;
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-right: auto;
+            border: 1px solid #e2e8f0;
+        }
+
+        .message.user {
+            background-color: #4f46e5; /* Indigo 600 */
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+            margin-left: auto;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+            margin: 0 2px;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Scrollbar personalizada */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .project-card-selected {
+            background-color: #eff6ff;
+            border-color: #4f46e5;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 0.5rem;
+        }
+    </style>
+    <style>
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #1e293b;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        fieldset {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        legend {
+            padding: 0 0.5rem;
+            font-weight: 600;
+            color: #4f46e5;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #1e293b;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .priority-badge { background: #fbbf24; color: #78350f; }
+
+        .toggle-column {
+            display: none;
+        }
+        .toggle-column-visible {
+            display: revert;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
+    
+    <!-- Header inyectado por layout.js -->
+    <div id="headerRender"></div>
+    
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Aside/Sidebar inyectado por layout.js -->
+        <div id="asideRender"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col p-6 overflow-hidden relative">
+            
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-robot text-indigo-600"></i> Asistente de Análisis
+                </h2>
+                <p class="text-gray-500 text-sm">Filtra y selecciona proyectos reales para consultar con la IA.</p>
+            </div>
+
+            <!-- 1. Barra de Filtros -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
+                    
+                    <!-- Buscador -->
+                    <div class="w-full md:w-1/4">
+                        <label for="filterSearch" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Buscar</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="filterSearch" 
+                                class="pl-10 block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2" 
+                                placeholder="Nombre, código...">
+                        </div>
+                    </div>
+
+                    <!-- Filtros Select -->
+                    <div class="flex flex-1 w-full gap-3">
+                        <!-- Área -->
+                        <div class="flex-1">
+                            <label for="filterArea" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Área</label>
+                            <select id="filterArea" class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
+                                <option value="">Cargando...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Estado (usando estado_proyecto) -->
+                        <div class="flex-1">
+                            <label for="filterStatus" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Estado</label>
+                            <select id="filterStatus" class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
+                                <option value="">Cargando...</option>
+                            </select>
+                        </div>
+
+                        <!-- Financiamiento -->
+                        <div class="flex-1">
+                            <label for="filterFinancing" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Financiamiento</label>
+                            <select id="filterFinancing" class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
+                                <option value="">Cargando...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="flex gap-2">
+                        <button onclick="clearFilters()" class="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                        <button onclick="selectAllFiltered()" class="px-4 py-2 bg-indigo-50 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-100 transition">
+                            <i class="fas fa-check-double"></i> Sel. Visibles
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Contenedor Flex: Lista Proyectos (Izq) + Chat (Der) -->
+            <div class="flex gap-4 flex-1 min-h-0">
+                
+                <!-- Columna Izquierda: Lista de Proyectos con Checkboxes -->
+                <div class="w-1/3 bg-white rounded-lg shadow border border-gray-200 flex flex-col relative">
+                    <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center rounded-t-lg">
+                        <span class="font-semibold text-gray-700 text-sm">Proyectos Disponibles</span>
+                        <span id="visibleCount" class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    
+                    <!-- Loading Overlay -->
+                    <div id="projectsLoading" class="loading-overlay hidden">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-spinner fa-spin text-indigo-600 text-2xl mb-2"></i>
+                            <span class="text-xs text-gray-500">Cargando datos...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista Scrollable -->
+                    <div id="projectListContainer" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scroll">
+                        <!-- Items renderizados por JS -->
+                    </div>
+                    
+                    <div class="p-3 border-t border-gray-100 text-xs text-gray-400 bg-gray-50 rounded-b-lg">
+                        <i class="fas fa-info-circle mr-1"></i> Selecciona para analizar en el chat.
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Interfaz de Chat -->
+                <div class="w-2/3 bg-white rounded-lg shadow border border-gray-200 flex flex-col chat-container">
+                    <!-- Header del Chat -->
+                    <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-white">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span class="text-sm font-bold text-gray-700">Asistente Municipal</span>
+                        </div>
+                        <div id="chatContextBadge" class="hidden text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-1 rounded flex items-center gap-1">
+                            <i class="fas fa-check-square"></i> <span id="selectedCountMsg">0</span> seleccionados
+                        </div>
+                    </div>
+
+                    <!-- Área de Mensajes -->
+                    <div class="messages-area" id="messagesArea">
+                        <div class="message bot">
+                            <p class="font-bold mb-1">¡Hola! Soy tu asistente.</p>
+                            <p>Estoy conectado a la base de datos en tiempo real. Utiliza los filtros de arriba para buscar proyectos o selecciónalos manualmente de la lista izquierda.</p>
+                            <p class="mt-2 text-sm text-gray-500">Luego pregúntame por montos, estados o resúmenes.</p>
+                        </div>
+                    </div>
+
+                    <!-- Indicador escribiendo -->
+                    <div id="typingIndicator" class="hidden px-4 py-2 bg-white">
+                        <div class="message bot" style="max-width: 50px; padding: 0.5rem 1rem;">
+                            <div class="typing-indicator">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Chat -->
+                    <div class="p-4 bg-gray-50 rounded-b-lg">
+                        <form id="chatForm" class="flex gap-2">
+                            <input type="text" id="chatInput" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2.5" placeholder="Escribe tu pregunta aquí..." autocomplete="off">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow-sm transition-colors">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    
+    <!-- Script de Funcionalidad -->
+    <script>
+        // --- CONFIGURACIÓN API ---
+        const API_BASE = 'https://186.67.61.251:8000';
+        let allProjects = []; // Almacén local de proyectos traídos de la API
+        let selectedIds = new Set();
+
+        // Obtener Headers de Autorización
+        function getAuthHeaders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.error("No se encontró el token de autenticación.");
+                // Intentamos continuar sin token o mostramos error si fuera estricto
+                return { 'Content-Type': 'application/json' };
+            }
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // --- 1. CARGA DE DATOS DESDE API ---
+        async function loadProjects() {
+            const loading = document.getElementById('projectsLoading');
+            const container = document.getElementById('projectListContainer');
+            
+            try {
+                loading.classList.remove('hidden');
+                container.innerHTML = ''; // Limpiar mientras carga
+
+                const response = await fetch(`${API_BASE}/proyectos`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error API: ${response.status}`);
+                }
+
+                allProjects = await response.json();
+                
+                // Inicializar filtros y renderizar
+                initFilters(); 
+                
+            } catch (error) {
+                console.error('Error al cargar proyectos:', error);
+                container.innerHTML = `
+                    <div class="p-4 text-center text-red-500 text-sm">
+                        <i class="fas fa-exclamation-circle mb-2"></i><br>
+                        Error al cargar proyectos.<br>
+                        Verifica tu conexión o token.
+                    </div>`;
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // --- 2. LÓGICA DE FILTROS ---
+        const filterSearch = document.getElementById('filterSearch');
+        const filterArea = document.getElementById('filterArea');
+        const filterStatus = document.getElementById('filterStatus'); // Mapea a estado_proyecto
+        const filterFinancing = document.getElementById('filterFinancing');
+        const projectListContainer = document.getElementById('projectListContainer');
+        const visibleCountEl = document.getElementById('visibleCount');
+
+        function initFilters() {
+            // Listeners
+            filterSearch.addEventListener('input', applyFilters);
+            filterArea.addEventListener('change', applyFilters);
+            filterStatus.addEventListener('change', applyFilters);
+            filterFinancing.addEventListener('change', applyFilters);
+
+            // Inicializar opciones de dropdowns basadas en datos reales
+            populateDropdowns();
+            // Primer render
+            applyFilters();
+        }
+
+        function populateDropdowns() {
+            // Obtener valores únicos del conjunto de datos real
+            const areas = [...new Set(allProjects.map(p => p.area).filter(Boolean))].sort();
+            // Nota: El campo en la API es 'estado_proyecto'
+            const statuses = [...new Set(allProjects.map(p => p.estado_proyecto).filter(Boolean))].sort();
+            const financings = [...new Set(allProjects.map(p => p.financiamiento).filter(Boolean))].sort();
+
+            fillSelect(filterArea, areas, "Todas las áreas");
+            fillSelect(filterStatus, statuses, "Todos los estados");
+            fillSelect(filterFinancing, financings, "Todo el financiamiento");
+        }
+
+        function fillSelect(selectEl, options, defaultLabel) {
+            selectEl.innerHTML = `<option value="">${defaultLabel}</option>`;
+            options.forEach(opt => {
+                selectEl.innerHTML += `<option value="${opt}">${opt}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            const txt = filterSearch.value.toLowerCase();
+            const area = filterArea.value;
+            const status = filterStatus.value;
+            const fin = filterFinancing.value;
+
+            const filtered = allProjects.filter(p => {
+                const matchTxt = (p.nombre && p.nombre.toLowerCase().includes(txt)) || 
+                                 (p.codigo && p.codigo.toLowerCase().includes(txt));
+                const matchArea = area === "" || p.area === area;
+                // Mapeo: filtro Status -> campo estado_proyecto
+                const matchStatus = status === "" || p.estado_proyecto === status;
+                const matchFin = fin === "" || p.financiamiento === fin;
+                return matchTxt && matchArea && matchStatus && matchFin;
+            });
+
+            renderProjectList(filtered);
+            visibleCountEl.textContent = filtered.length;
+        }
+
+        function clearFilters() {
+            filterSearch.value = "";
+            filterArea.value = "";
+            filterStatus.value = "";
+            filterFinancing.value = "";
+            selectedIds.clear();
+            updateContextUI();
+            applyFilters();
+        }
+
+        function selectAllFiltered() {
+            const checkboxes = document.querySelectorAll('.project-checkbox');
+            checkboxes.forEach(cb => {
+                const id = parseInt(cb.value);
+                selectedIds.add(id);
+                cb.checked = true;
+                // Actualizar estilo visual del padre
+                const card = cb.closest('.cursor-pointer');
+                if(card) {
+                    card.classList.add('project-card-selected');
+                    card.classList.remove('bg-white');
+                }
+            });
+            updateContextUI();
+        }
+
+        // --- 3. RENDERIZADO DE LISTA ---
+        function renderProjectList(list) {
+            projectListContainer.innerHTML = "";
+            
+            if(list.length === 0) {
+                projectListContainer.innerHTML = `<div class="p-4 text-center text-gray-400 text-sm">No hay proyectos con estos filtros.</div>`;
+                return;
+            }
+
+            list.forEach(p => {
+                const isSelected = selectedIds.has(p.id);
+                const div = document.createElement('div');
+                div.className = `p-3 rounded border border-gray-200 cursor-pointer hover:shadow-md transition-colors ${isSelected ? 'project-card-selected' : 'bg-white hover:bg-gray-50'}`;
+                div.onclick = (e) => toggleSelection(p.id, div, e);
+
+                // Usamos estado_proyecto y avance_total_porcentaje
+                const estado = p.estado_proyecto || 'Sin Estado';
+                const monto = p.monto ? formatCompact(p.monto) : '$0';
+                const codigo = p.codigo || 'N/A';
+                const nombre = p.nombre || 'Sin Nombre';
+
+                div.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="pt-1">
+                            <input type="checkbox" class="project-checkbox w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer" 
+                                value="${p.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelection(${p.id}, this.parentElement.parentElement.parentElement, event)">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-gray-800 truncate" title="${nombre}">${nombre}</p>
+                            <p class="text-xs text-gray-500 mb-1">${codigo} - ${p.area || 'S/A'}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-medium px-2 py-0.5 rounded ${getStatusBadgeColor(estado)}">${estado}</span>
+                                <span class="text-xs text-gray-400">${monto}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                projectListContainer.appendChild(div);
+            });
+        }
+
+        function getStatusBadgeColor(status) {
+            if(status === 'Ejecución') return 'bg-green-100 text-green-700';
+            if(status === 'Terminado') return 'bg-gray-100 text-gray-700';
+            if(status === 'Licitación') return 'bg-yellow-100 text-yellow-700';
+            if(status === 'Diseño') return 'bg-blue-100 text-blue-700';
+            return 'bg-gray-100 text-gray-600';
+        }
+
+        function toggleSelection(id, cardEl, event) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+                cardEl.classList.remove('project-card-selected');
+                cardEl.classList.add('bg-white');
+                cardEl.querySelector('input').checked = false;
+            } else {
+                selectedIds.add(id);
+                cardEl.classList.add('project-card-selected');
+                cardEl.classList.remove('bg-white');
+                cardEl.querySelector('input').checked = true;
+            }
+            updateContextUI();
+        }
+
+        function updateContextUI() {
+            const count = selectedIds.size;
+            const badge = document.getElementById('chatContextBadge');
+            const countSpan = document.getElementById('selectedCountMsg');
+            
+            countSpan.textContent = count;
+            if (count > 0) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
+        }
+
+        // --- 4. LÓGICA DEL CHAT ---
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const messagesArea = document.getElementById('messagesArea');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const txt = chatInput.value.trim();
+            if(!txt) return;
+
+            addMessage(txt, 'user');
+            chatInput.value = '';
+
+            // Mostrar estado "pensando"
+            typingIndicator.classList.remove('hidden');
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+
+            // Preparar lista filtrada para la "IA"
+            const listaParaAPI = allProjects.filter(p => selectedIds.has(p.id));
+
+            try {
+                const response = await obtenerRespuestaAPI(txt, listaParaAPI);
+                typingIndicator.classList.add('hidden');
+                addMessage(response, 'bot');
+            } catch (err) {
+                typingIndicator.classList.add('hidden');
+                addMessage("Lo siento, ocurrió un error al procesar tu consulta.", 'bot');
+            }
+        });
+
+        function addMessage(html, sender) {
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            div.innerHTML = html;
+            messagesArea.appendChild(div);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function formatCompact(num) {
+            if (!num) return '$0';
+            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumSignificantDigits: 3 }).format(num);
+        }
+
+        // --- 5. SIMULACIÓN DE IA (OBTENER RESPUESTA) ---
+        function obtenerRespuestaAPI(pregunta, listaFiltrada) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const lowerPregunta = pregunta.toLowerCase();
+                    let respuesta = "";
+
+                    if (listaFiltrada.length === 0) {
+                        respuesta = "No has seleccionado ningún proyecto específico. Por favor, selecciona uno o más proyectos de la lista izquierda para que pueda analizarlos.";
+                    } else {
+                        // Usar nombres de campos reales: monto, estado_proyecto
+                        if (lowerPregunta.includes('monto') || lowerPregunta.includes('dinero') || lowerPregunta.includes('costo') || lowerPregunta.includes('inversión')) {
+                            const total = listaFiltrada.reduce((acc, curr) => acc + (parseInt(curr.monto) || 0), 0);
+                            respuesta = `La inversión total para los <strong>${listaFiltrada.length} proyecto(s) seleccionado(s)</strong> es de <strong>${formatCompact(total)}</strong>.`;
+                        } 
+                        else if (lowerPregunta.includes('estado') || lowerPregunta.includes('avance')) {
+                            const estados = listaFiltrada.map(p => p.estado_proyecto);
+                            const counts = {};
+                            estados.forEach(x => { counts[x] = (counts[x] || 0) + 1; });
+                            const resumen = Object.entries(counts).map(([k,v]) => `<li>${v} en estado <strong>${k}</strong></li>`).join('');
+                            
+                            respuesta = `Sobre el estado de los proyectos seleccionados:<br><ul class="list-disc list-inside mt-1">${resumen}</ul>`;
+                        }
+                        else if (lowerPregunta.includes('resumen') || lowerPregunta.includes('lista') || lowerPregunta.includes('qué son')) {
+                            const items = listaFiltrada.map(p => `<li><strong>${p.nombre}</strong> (${p.area || 'S/A'}) - ${formatCompact(p.monto)}</li>`).join('');
+                            respuesta = `Aquí tienes el resumen de los proyectos seleccionados:<br><ul class="list-disc list-inside mt-1">${items}</ul>`;
+                        }
+                        else {
+                            respuesta = `Tengo seleccionados ${listaFiltrada.length} proyectos para analizar. <br>Puedo decirte su <strong>monto de inversión</strong>, detallar sus <strong>estados actuales</strong> o darte un <strong>resumen</strong> de la lista. ¿Qué necesitas saber?`;
+                        }
+                    }
+                    resolve(respuesta);
+                }, 1200);
+            });
+        }
+
+        // Inicializar al cargar DOM
+        document.addEventListener('DOMContentLoaded', loadProjects);
+
+    </script>
+    <script src="../../../script/layout.js"></script>
+</body>
+</html>

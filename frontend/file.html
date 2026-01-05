@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Visor Excel / Word</title>
+
+    <!-- Librería para Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Librería para Word -->
+    <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+</head>
+<body>
+
+    <h2>Cargar archivo Excel o Word</h2>
+
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.docx">
+    <br><br>
+
+    <div id="output"></div>
+
+    <script>
+        document.getElementById("fileInput").addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const output = document.getElementById("output");
+            output.innerHTML = "";
+
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            if (extension === "xlsx" || extension === "xls") {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                    let table = "<table border='1'>";
+                    json.forEach(row => {
+                        table += "<tr>";
+                        row.forEach(cell => {
+                            table += `<td>${cell ?? ""}</td>`;
+                        });
+                        table += "</tr>";
+                    });
+                    table += "</table>";
+
+                    output.innerHTML = table;
+                };
+                reader.readAsArrayBuffer(file);
+
+            } else if (extension === "docx") {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    mammoth.extractRawText({ arrayBuffer: event.target.result })
+                        .then(result => {
+                            output.innerHTML = "<pre>" + result.value + "</pre>";
+                        })
+                        .catch(err => {
+                            output.innerHTML = "Error al leer el archivo Word";
+                        });
+                };
+                reader.readAsArrayBuffer(file);
+
+            } else {
+                output.innerHTML = "Formato no soportado";
+            }
+        });
+    </script>
+
+</body>
+</html>

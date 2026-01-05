@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Ver documento</title>
+</head>
+<body>
+
+<h2>Documento</h2>
+
+<iframe
+    id="visor"
+    width="100%"
+    height="600"
+    style="border:1px solid #ccc">
+</iframe>
+
+<script>
+const documentoId = 1; // dinámico
+const token = localStorage.getItem("authToken");
+console.log(token)
+fetch(`https://186.67.61.251:8000/documentos/${documentoId}/view`, {
+    headers: {
+        "Authorization": "Bearer " + token
+    }
+})
+.then(res => {
+    if (!res.ok) throw new Error("No se pudo cargar");
+    return res.blob();
+})
+.then(blob => {
+    const url = URL.createObjectURL(blob);
+    document.getElementById("visor").src = url;
+})
+.catch(err => {
+    alert(err.message);
+});
+</script>
+
+</body>
+</html>

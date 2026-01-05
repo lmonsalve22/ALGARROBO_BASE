@@ -13,22 +13,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* ... Estilos previos mantenidos ... */
+        /* Estilos generales */
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         
+        /* Modal Base */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5); z-index: 1000; animation: fadeIn 0.2s;
         }
         .modal.active { display: flex; justify-content: center; align-items: center; }
+        
+        /* Contenido Modal Estándar (Subir) */
         .modal-content {
             background: white; border-radius: 12px; padding: 2rem; width: 95%; max-width: 600px;
             max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s; position: relative;
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
-        .modal-title { font-size: 1.5rem; font-weight: 600; color: #1e293b; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; }
+
+        /* Contenido Modal Visor (Grande) */
+        .modal-content-viewer {
+            background: white; border-radius: 12px; width: 95%; max-width: 95%; height: 90vh;
+            display: flex; flex-direction: column; overflow: hidden; animation: slideUp 0.3s; position: relative;
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: #1e293b; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; transition: color 0.2s; }
+        .close-btn:hover { color: #1e293b; }
         
         /* Formularios y Filtros */
         .form-group { margin-bottom: 1.25rem; }
@@ -48,6 +59,7 @@
         .file-upload-wrapper:hover { border-color: #4f46e5; background: #eef2ff; }
         .file-upload-wrapper input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
+        /* Toast Notification */
         .toast {
             position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; background: white;
             border-radius: 8px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
@@ -75,6 +87,21 @@
         
         /* Transición suave para la tabla de documentos */
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
+
+        /* Estilos específicos del visor */
+        #docViewerFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        .viewer-loading-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 10;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -203,7 +230,7 @@
                     </div>
                 </div>
 
-                <!-- NUEVA SECCIÓN: LISTADO DE DOCUMENTOS DEL PROYECTO -->
+                <!-- SECCIÓN LISTADO DE DOCUMENTOS DEL PROYECTO -->
                 <div id="projectDocumentsPanel" class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
                     <!-- Header del Panel -->
                     <div class="px-6 py-4 border-b border-gray-200 bg-indigo-50 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -233,6 +260,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamaño</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="projectDocsBody" class="bg-white divide-y divide-gray-200">
@@ -249,7 +277,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- FIN NUEVA SECCIÓN -->
 
             </div>
         </main>
@@ -313,6 +340,40 @@
         </div>
     </div>
 
+    <!-- NUEVO MODAL VISOR DE DOCUMENTOS -->
+    <div id="viewerModal" class="modal">
+        <div class="modal-content-viewer">
+            <div class="modal-header">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-file-alt text-indigo-600 text-xl"></i>
+                    <div>
+                        <h2 class="modal-title m-0">Vista Previa</h2>
+                        <span id="viewerFileName" class="text-xs text-gray-500 block leading-none mt-1"></span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="downloadCurrentDocument()" id="btnViewerDownload" class="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition" title="Descargar archivo actual">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="close-btn" onclick="closeViewerModal()" title="Cerrar visor">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex-1 relative bg-gray-800 overflow-hidden">
+                <!-- Loading Overlay -->
+                <div id="viewerLoading" class="viewer-loading-overlay">
+                    <div class="loading-dark mb-3"></div>
+                    <p class="text-sm text-gray-500">Cargando documento...</p>
+                </div>
+
+                <!-- Iframe contenedor -->
+                <iframe id="docViewerFrame" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">
         <span id="toastIcon"></span>
@@ -325,6 +386,7 @@
         // --- CONFIGURACIÓN ---
         const API_BASE = 'https://186.67.61.251:8000';
         let allProjects = []; // Lista maestra de proyectos
+        let currentViewerBlobUrl = null; // Para limpiar memoria
 
         function getAuthHeaders() {
             const token = localStorage.getItem('authToken');
@@ -390,8 +452,6 @@
                 select.innerHTML = '<option value="" disabled selected>Error de conexión</option>';
             }
         }
-
-        // --- LÓGICA DE FILTROS ---
 
         function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
             const select = document.getElementById(selectElementId);
@@ -461,7 +521,6 @@
             const select = document.getElementById('projectSelect');
             const countBadge = document.getElementById('projectCountBadge');
             
-            // Mantener la selección actual si existe en la nueva lista
             const currentVal = select.value;
             
             select.innerHTML = '<option value="" disabled selected>-- Selecciona un proyecto --</option>';
@@ -476,7 +535,6 @@
                 select.appendChild(option);
             });
 
-            // Restaurar selección si aplica
             if(currentVal) {
                 select.value = currentVal;
             }
@@ -484,7 +542,7 @@
             countBadge.textContent = projectList.length;
         }
 
-        // --- NUEVAS FUNCIONES: LISTAR Y DESCARGAR ---
+        // --- LÓGICA DE LISTADO Y VISUALIZACIÓN ---
 
         async function loadProjectDocuments(pid, projectName) {
             const panel = document.getElementById('projectDocumentsPanel');
@@ -496,7 +554,6 @@
             const headers = getAuthHeaders();
             if (!headers) return;
 
-            // UI Updates
             panel.classList.remove('hidden');
             nameDisplay.textContent = projectName;
             tbody.innerHTML = '';
@@ -512,11 +569,10 @@
                 if (!response.ok) throw new Error('Error al obtener documentos');
 
                 const data = await response.json();
-                console.log(pid,"data",data)
                 const docs = data.documentos || [];
 
                 loading.classList.add('hidden');
-
+                console.log(docs)
                 if (docs.length === 0) {
                     empty.classList.remove('hidden');
                 } else {
@@ -553,6 +609,11 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 ${formatBytes(doc.archivo_size)}
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button onclick="openViewer(${doc.documento_id}, '${doc.nombre || doc.archivo_nombre}')" class="text-indigo-600 hover:text-indigo-900 transition mx-1 p-2 rounded-full hover:bg-indigo-50" title="Ver documento">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -561,9 +622,103 @@
                 console.error('Error cargando docs:', error);
                 loading.classList.add('hidden');
                 showToast('Error al cargar lista de documentos', 'error');
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500">Error de carga</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-500">Error de carga</td></tr>';
             }
         }
+
+        // --- LÓGICA DEL VISOR ---
+
+        function openViewer(docId, docName) {
+            const modal = document.getElementById('viewerModal');
+            const iframe = document.getElementById('docViewerFrame');
+            const loading = document.getElementById('viewerLoading');
+            const nameDisplay = document.getElementById('viewerFileName');
+
+            // Actualizar UI
+            nameDisplay.textContent = docName;
+            loading.classList.remove('hidden');
+            iframe.src = "about:blank"; // Limpiar anterior
+            
+            // Guardar referencia para descarga opcional
+            document.getElementById('btnViewerDownload').onclick = () => downloadDocumentById(docId, docName);
+
+            modal.classList.add('active');
+
+            // Obtener token y hacer fetch
+            const token = localStorage.getItem("authToken");
+
+            fetch(`${API_BASE}/documentos/${docId}/view`, {
+                headers: { "Authorization": "Bearer " + token }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("No se pudo cargar el documento");
+                return res.blob();
+            })
+            .then(blob => {
+                // Liberar URL anterior si existe
+                if (currentViewerBlobUrl) {
+                    URL.revokeObjectURL(currentViewerBlobUrl);
+                }
+                const url = URL.createObjectURL(blob);
+                currentViewerBlobUrl = url;
+                
+                // Asignar al iframe
+                iframe.src = url;
+                
+                // Ocultar loading cuando el iframe empieza a cargar contenido
+                iframe.onload = () => {
+                    loading.classList.add('hidden');
+                };
+            })
+            .catch(err => {
+                console.error(err);
+                loading.innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>${err.message}</p></div>`;
+            });
+        }
+
+        function closeViewerModal() {
+            const modal = document.getElementById('viewerModal');
+            const iframe = document.getElementById('docViewerFrame');
+            
+            modal.classList.remove('active');
+            
+            // Limpiar iframe para detener reproducción de audio/video si existiera
+            setTimeout(() => {
+                iframe.src = "about:blank";
+                if (currentViewerBlobUrl) {
+                    URL.revokeObjectURL(currentViewerBlobUrl);
+                    currentViewerBlobUrl = null;
+                }
+            }, 300); // Esperar a que termine la transición CSS
+        }
+
+        function downloadDocumentById(docId, fileName) {
+            const token = localStorage.getItem("authToken");
+            fetch(`${API_BASE}/documentos/${docId}/view`, {
+                headers: { "Authorization": "Bearer " + token }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Error al descargar");
+                return res.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName || 'documento';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showToast("Descarga iniciada", "success");
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("No se pudo descargar el archivo", "error");
+            });
+        }
+
+        // --- DESCARGA ZIP Y UTILIDADES ---
 
         async function downloadProjectZip() {
             const pid = document.getElementById('projectSelect').value;
@@ -575,12 +730,10 @@
 
             if (!headers) return;
 
-            // UI Loading state
             btn.disabled = true;
             btn.innerHTML = '<span class="loading-dark"></span> Procesando...';
 
             try {
-                // Nota: Usamos fetch para poder incluir los headers de autenticación
                 const response = await fetch(`${API_BASE}/proyectos/${pid}/documentos/descargar`, {
                     method: 'GET',
                     headers: headers
@@ -591,10 +744,7 @@
                     throw new Error(errText || 'Error al descargar');
                 }
 
-                // Obtener el blob (archivo binario)
                 const blob = await response.blob();
-                
-                // Crear URL temporal y hacer click
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -624,7 +774,7 @@
             return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
         }
 
-        // --- GESTIÓN DEL MODAL Y SUBIDA ---
+        // --- GESTIÓN DEL MODAL DE SUBIDA ---
 
         function openUploadModal() {
             const projectId = document.getElementById('projectSelect').value;
@@ -783,9 +933,14 @@
         }
 
         window.onclick = function(event) {
-            const modal = document.getElementById('uploadModal');
-            if (event.target === modal) {
+            const uploadModal = document.getElementById('uploadModal');
+            const viewerModal = document.getElementById('viewerModal');
+            
+            if (event.target === uploadModal) {
                 closeUploadModal();
+            }
+            if (event.target === viewerModal) {
+                closeViewerModal();
             }
         }
     </script>

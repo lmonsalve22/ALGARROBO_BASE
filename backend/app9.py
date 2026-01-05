@@ -1027,27 +1027,7 @@ def add_doc(current_user_id, pid):
         if conn:
             release_db_connection(conn)
 
-"""
-@app.route("/proyectos/<int:pid>/documentos", methods=["GET"])
-@session_required
-def get_docs(current_user_id, pid):
-    conn = None
-    try:
-        conn = get_db_connection()
-        if not conn:
-            return jsonify({"message": "Error conex BD"}), 500
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("SELECT * FROM documentos WHERE proyecto_id = %s ORDER BY fecha_subida DESC", (pid,))
-            rows = cur.fetchall()
-        return jsonify(rows)
-    except Exception as e:
-        logger.error(f"Error en get_docs: {e}")
-        traceback.print_exc()
-        return jsonify({"message": "Error interno"}), 500
-    finally:
-        if conn:
-            release_db_connection(conn)
-"""
+
 @app.route("/mapas/por-rol/<int:role_id>", methods=["GET"])
 @session_required
 def get_mapas_by_role(current_user_id, role_id):
@@ -1287,6 +1267,96 @@ def descargar_documentos_proyecto(current_user_id, pid):
             release_db_connection(conn)
 
 
+@app.route("/documentos/<int:documento_id>", methods=["GET"])
+@session_required
+def get_documento_metadata(current_user_id, documento_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT
+                    documento_id,
+                    proyecto_id,
+                    tipo_documento,
+                    nombre,
+                    descripcion,
+                    archivo_extension,
+                    archivo_size,
+                    fecha_subida
+                FROM proyectos_documentos
+                WHERE documento_id = %s
+            """, (documento_id,))
+            doc = cur.fetchone()
+
+        if not doc:
+            return jsonify({"message": "Documento no encontrado"}), 404
+
+        return jsonify(doc)
+
+    except Exception as e:
+        logger.error(f"Error get_documento_metadata: {e}")
+        return jsonify({"message": "Error interno"}), 500
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+@app.route("/documentos/<int:documento_id>/view", methods=["GET"])
+@session_required
+def view_documento(current_user_id, documento_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT
+                    proyecto_id,
+                    archivo_nombre,
+                    archivo_extension,
+                    nombre
+                FROM proyectos_documentos
+                WHERE documento_id = %s
+            """, (documento_id,))
+            doc = cur.fetchone()
+
+        if not doc:
+            return jsonify({"message": "Documento no encontrado"}), 404
+
+        file_path = os.path.join(
+            DOCS_FOLDER,
+            str(doc["proyecto_id"]),
+            doc["archivo_nombre"]
+        )
+
+        if not os.path.exists(file_path):
+            return jsonify({"message": "Archivo no existe en disco"}), 404
+
+        # MIME type básico
+        mime_map = {
+            "pdf": "application/pdf",
+            "png": "image/png",
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg"
+        }
+
+        mimetype = mime_map.get(
+            doc["archivo_extension"].lower(),
+            "application/octet-stream"
+        )
+
+        return send_file(
+            file_path,
+            mimetype=mimetype,
+            as_attachment=False,  # 👈 clave para visualizar
+            download_name=doc["nombre"]
+        )
+
+    except Exception as e:
+        logger.error(f"Error view_documento: {e}")
+        return jsonify({"message": "Error interno"}), 500
+    finally:
+        if conn:
+            release_db_connection(conn)
 
 
 # AUDITORÍA
