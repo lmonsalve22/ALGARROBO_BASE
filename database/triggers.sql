@@ -6,10 +6,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_proyectos_fecha_actualizacion
-BEFORE UPDATE ON proyectos
-FOR EACH ROW
-EXECUTE FUNCTION set_fecha_actualizacion();
+
 
 CREATE OR REPLACE FUNCTION auditoria2_trigger()
 RETURNS TRIGGER AS $$
@@ -34,4 +31,10 @@ BEGIN
     RETURN COALESCE(NEW, OLD);
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_proyectos_fecha_actualizacion
+BEFORE UPDATE ON proyectos
+FOR EACH ROW
+EXECUTE FUNCTION set_fecha_actualizacion();
 
