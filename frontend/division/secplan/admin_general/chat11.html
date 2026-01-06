@@ -227,7 +227,7 @@
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
                         <i class="fas fa-robot text-indigo-600"></i> Asistente Inteligente ZhipuAI
                     </h2>
-                    <p class="text-gray-500 text-sm">Selecciona un proyecto para análisis profundo o pregunta sobre la lista filtrada.</p>
+                    <p class="text-gray-500 text-sm">Selecciona un proyecto para analizar el contenido textual completo de sus documentos.</p>
                 </div>
             </div>
 
@@ -309,7 +309,7 @@
                     </div>
                     
                     <div class="p-3 border-t border-gray-100 text-xs text-gray-400 bg-gray-50 rounded-b-lg">
-                        <i class="fas fa-info-circle mr-1"></i> Selecciona 1 proyecto para detalles.
+                        <i class="fas fa-info-circle mr-1"></i> Selección restringida a 1 proyecto.
                     </div>
                 </div>
 
@@ -342,9 +342,13 @@
                             <div class="avatar"><i class="fas fa-robot"></i></div>
                             <div class="flex-1">
                                 <div class="message-content markdown-body">
-                                    <p><strong>¡Hola! Soy tu asistente.</strong></p>
-                                    <p>Puedes preguntarme sobre la <strong>lista de proyectos filtrada</strong> actual (ej: "¿Cuántos proyectos hay?").</p>
-                                    <p>O bien, <strong>selecciona un proyecto</strong> específico para que analice el texto completo de sus documentos y responda dudas detalladas.</p>
+                                    <p><strong>¡Hola! Soy tu asistente potenciado</strong></p>
+                                    <p>Estoy conectado a los datos del Geoportal. Selecciona <strong>un solo proyecto</strong> de la lista izquierda. Extraeré y analizaré el texto completo de todos sus documentos adjuntos para responder tus dudas.</p>
+                                    <ul>
+                                        <li>Consulta detalles específicos dentro de los archivos.</li>
+                                        <li>Busca cláusulas contractuales o técnicas.</li>
+                                        <li>Solicita resúmenes del contenido.</li>
+                                    </ul>
                                 </div>
                                 <div class="message-meta text-gray-500" id="initial-timestamp">Hoy, --:--</div>
                             </div>
@@ -397,7 +401,7 @@
         const CHAT_CONFIG = {
             MAX_HISTORY_LENGTH: 10,
             MAX_INPUT_LENGTH: 500,
-            // Límite de seguridad para el texto de documentos
+            // Límite de seguridad para no exceder el contexto del modelo (aprox 60k caracteres de margen)
             MAX_TEXT_PAYLOAD_LENGTH: 80000 
         };
 
@@ -414,10 +418,10 @@
             chatHistory: [], 
             recognition: null, 
             synthesis: window.speechSynthesis, 
-            filterProject: [], // Lista de proyectos filtrados visibles en UI
+            filterProject: [],
             isMarked: false,       
-            projectMarket: null,  // Proyecto seleccionado individualmente
-            projectRawText: null, // Texto de los documentos del proyecto seleccionado
+            projectMarket: null,    
+            projectRawText: null, // Almacena el string de texto completo
             textCharsCount: 0
         };
 
@@ -616,7 +620,8 @@
             
             if (count > 0) {
                 DOM.chatContextBadge.classList.remove('hidden');
-                let badgeText = "1 Proyecto Seleccionado";
+                // Mostrar indicador de texto cargado o pendiente
+                let badgeText = "1 Proyecto";
                 if (AppState.textCharsCount > 0) {
                     badgeText += ` + Texto (${(AppState.textCharsCount/1024).toFixed(0)}KB)`;
                 }
@@ -687,13 +692,15 @@
             }
         }
 
-        // --- LÓGICA: Fetch de Texto Completo ---
+        // --- NUEVA LÓGICA: Fetch de Texto Completo ---
         async function fetchProjectText(projectId) {
+            // Si ya tenemos el texto cargado para este proyecto, retornarlo
             if (AppState.projectRawText && AppState.projectMarket && AppState.projectMarket.id === projectId) {
                 return AppState.projectRawText;
             }
 
             try {
+                // Llamada al nuevo endpoint de texto
                 const response = await fetch(ENDPOINT_PROJECT_TEXT(projectId), {
                     method: 'GET',
                     headers: getAuthHeaders()
@@ -705,6 +712,8 @@
                 }
 
                 const data = await response.json();
+                
+                // Validación: La API devuelve { "proyecto_id": ..., "texto": ..., "chars": ... }
                 let rawText = "";
                 
                 if (data && data.texto) {
@@ -716,6 +725,7 @@
                     rawText = "El proyecto no tiene documentos procesados o el contenido está vacío.";
                 }
 
+                // Cachear el texto
                 AppState.projectRawText = rawText;
                 updateContextUI();
                 
@@ -752,26 +762,24 @@
                 let response;
 
                 if (AppState.isMarked && AppState.projectMarket) {
-                    // --- MODO CONTEXTO: PROYECTO SELECCIONADO ---
-                    // Usa: AppState.projectMarket + Documentos
+                    // --- CASO 1: PROYECTO MARCADO ---
                     DOM.typingText.textContent = "Extrayendo y leyendo contenido de documentos...";
                     
+                    // 1. Obtener el texto completo
                     const rawTextContent = await fetchProjectText(AppState.projectMarket.id);
                     
+                    // 2. Preparar Prompt con el texto completo
                     response = await fetchZhipuResponse(text, {
                         mode: 'project_context',
                         projectData: AppState.projectMarket,
-                        documentText: rawTextContent 
+                        rawText: rawTextContent // Pasamos el string entero
                     });
 
                 } else {
-                    // --- MODO GENERAL: SIN PROYECTO ---
-                    // Usa: AppState.filterProject (Lista de proyectos visibles)
-                    DOM.typingText.textContent = "Analizando lista de proyectos...";
-                    
+                    // --- CASO 2: SIN PROYECTO ---
+                    DOM.typingText.textContent = "Generando respuesta...";
                     response = await fetchZhipuResponse(text, {
-                        mode: 'general',
-                        filteredProjects: AppState.filterProject
+                        mode: 'general'
                     });
                 }
 
@@ -794,31 +802,36 @@
             let systemPrompt = "";
             
             if (context.mode === 'project_context') {
-                // --- LÓGICA PARA MODO PROYECTO ---
-                // Usamos SOLO el proyecto seleccionado y sus documentos
-                let textToInject = context.documentText || "No hay contenido de documentos.";
+                // Recortar texto si es excesivamente largo para evitar errores de API (Safety Truncation)
+                let textToInject = context.rawText || "No hay contenido de documentos.";
                 
                 if (textToInject.length > CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) {
-                    console.warn(`Texto largo (${textToInject.length} chars). Truncando...`);
-                    textToInject = textToInject.substring(0, CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) + "\n\n[... Contenido truncado ...]";
+                    console.warn(`El texto excede el límite seguro (${textToInject.length} chars). Truncando...`);
+                    textToInject = textToInject.substring(0, CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) + "\n\n[... El contenido se ha truncado por longitud excesiva para mantener el contexto manejable ...]";
+                    showToast("El contenido de los documentos es muy extenso, se ha recortado parcialmente.", "info");
                 }
 
                 const projectJSON = JSON.stringify(context.projectData);
 
                 systemPrompt = `Eres un asistente experto en análisis de proyectos municipales.
-Estás analizando UN ÚNICO PROYECTO seleccionado y sus documentos.
+Tu tarea es analizar la información del proyecto y el contenido textual íntegro de sus documentos adjuntos.
 
-DATOS DEL PROYECTO SELECCIONADO:
+DATOS GENERALES DEL PROYECTO:
  ${projectJSON}
 
-CONTENIDO DE LOS DOCUMENTOS:
+---
+CONTENIDO INTEGRAL DE LOS DOCUMENTOS:
+A continuación se presenta el texto extraído de todos los documentos asociados al proyecto (PDFs, Word, etc.):
  ${textToInject}
+---
 
-INSTRUCCIONES:
-1. Responde basándote estrictamente en el "CONTENIDO DE LOS DOCUMENTOS" y los datos del proyecto provistos.
-2. Ignora cualquier otro proyecto que exista en la base de datos.
-3. Si el usuario pregunta algo general sin relación con el texto del documento, usa los datos del proyecto.
-4. Responde siempre en español y usa formato Markdown.
+INSTRUCCIONES ESTRICTAS:
+1. Utiliza el "CONTENIDO INTEGRAL DE LOS DOCUMENTOS" como tu fuente principal de verdad.
+2. Responde a preguntas específicas sobre cláusulas, montos, fechas, términos técnicos o cualquier detalle presente en el texto.
+3. Si la información no está en el texto proporcionado ni en los datos generales, indícalo claramente.
+4. Responde siempre en español.
+5. Usa formato Markdown para estructurar la respuesta (listas, negritas, tablas si es necesario).
+6. Genera 3 preguntas de seguimiento relevantes al final.
 
 Formato de salida requerido:
 [RESPUESTA]
@@ -831,34 +844,16 @@ Formato de salida requerido:
 [/PREGUNTAS]`;
 
             } else {
-                // --- LÓGICA PARA MODO GENERAL ---
-                // Usamos AppState.filterProject (Lista de proyectos filtrados)
-                
-                // Mapeamos la lista a un JSON simple para ahorrar tokens pero mantener datos clave
-                const projectsListJSON = JSON.stringify(context.filteredProjects.map(p => ({
-                    id: p.id,
-                    codigo: p.codigo,
-                    nombre: p.nombre,
-                    area: p.area,
-                    estado: p.estado_proyecto,
-                    monto: p.monto
-                })));
-
+                // Modo General
                 systemPrompt = `Eres un asistente útil del Geoportal Municipal.
-Actualmente NO hay ningún proyecto seleccionado específicamente.
-
-LISTA DE PROYECTOS FILTRADOS (VISIBLES EN PANTALLA):
- ${projectsListJSON}
-
-INSTRUCCIONES:
-1. Responde a preguntas utilizando la "LISTA DE PROYECTOS FILTRADOS" como fuente de verdad.
-2. Puedes contar proyectos, buscar por estado, área o montos dentro de esta lista.
-3. Si el usuario pregunta detalles profundos de documentos, invítalo a seleccionar un proyecto específico de la lista.
-4. Responde siempre en español y usa formato Markdown.
+No hay ningún proyecto seleccionado actualmente.
+Responde de forma general, amable y concisa en español.
+Invita al usuario a seleccionar un proyecto de la lista para realizar un análisis profundo de sus documentos.
+Genera 3 preguntas generales relevantes al final.
 
 Formato de salida requerido:
 [RESPUESTA]
-... (tu respuesta detallada) ...
+... (respuesta) ...
 [/RESPUESTA]
 [PREGUNTAS]
 1. Pregunta
@@ -1000,8 +995,8 @@ Formato de salida requerido:
                     <div class="avatar"><i class="fas fa-robot"></i></div>
                     <div class="flex-1">
                         <div class="message-content markdown-body">
-                            <p><strong>¡Hola! Soy tu asistente.</strong></p>
-                            <p>El chat ha sido reiniciado. Puedes preguntar sobre la lista filtrada o seleccionar un proyecto para detalles.</p>
+                            <p><strong>¡Hola! Soy tu asistente potenciado por ZhipuAI.</strong></p>
+                            <p>El chat ha sido reiniciado. Selecciona un proyecto y comienza de nuevo.</p>
                         </div>
                         <div class="message-meta text-gray-500">Hoy, ${new Date().toLocaleTimeString()}</div>
                     </div>

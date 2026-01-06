@@ -131,3 +131,25 @@ CREATE TABLE proyectos_geomapas (
 );
 
 
+CREATE TABLE auditoria2 (
+    auditoria_id BIGSERIAL PRIMARY KEY,
+
+    fecha TIMESTAMP NOT NULL DEFAULT now(),
+
+    tabla_nombre TEXT NOT NULL,
+    operacion TEXT NOT NULL,                 -- INSERT | UPDATE | DELETE
+
+    registro_id TEXT,                        -- id del registro afectado
+
+    usuario_bd TEXT DEFAULT current_user,    -- usuario PostgreSQL
+
+    ip_origen TEXT,
+    aplicacion TEXT,
+
+    query TEXT,                              -- query ejecutada
+    datos_antes JSONB,
+    datos_despues JSONB
+);
+
+
+
