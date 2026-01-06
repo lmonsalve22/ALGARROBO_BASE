@@ -61,13 +61,13 @@ function checkLoginStatus() {
 }
 
 // Función para logout
-        function logout() {
-            // Eliminar la sesión del usuario
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userRole');            
-            // Redirigir a la página de login
-            window.location.href = `${BASE}/frontend/index.html`;
-        }
+function logout() {
+    // Eliminar la sesión del usuario
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userRole');            
+    // Redirigir a la página de login
+    window.location.href = `${BASE}/frontend/index.html`;
+}
 
 // User menu
 function toggleUserMenu() {
@@ -78,4 +78,3 @@ function toggleUserMenu() {
 const salida = checkLoginStatus(); 
 const token = salida[0]
 const userData = salida[1]
-console.log(token,userData)

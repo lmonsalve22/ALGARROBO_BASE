@@ -816,10 +816,6 @@
                 return;
             }
 
-            // Determinar si debemos agregar la clase de visibilidad basándonos en el estado global
-            // Esto arregla el problema de filtrar y perder las columnas visibles
-            const visibilityClass = columnsVisible ? 'toggle-column-visible' : '';
-
             tableBody.innerHTML = proyectosToRender.map(proyecto => {
                 let statusClass = '';
                 if (proyecto.estado_proyecto === 'Ejecución') statusClass = 'bg-green-100 text-green-800';
@@ -839,17 +835,17 @@
                 
                 return `
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 toggle-column ${visibilityClass}">${proyecto.id || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 toggle-column">${proyecto.id || ''}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${proyecto.nombre || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.area || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.financiamiento || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass} font-mono">${formatCurrency(proyecto.monto)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap toggle-column ${visibilityClass}">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.area || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.financiamiento || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column font-mono">${formatCurrency(proyecto.monto)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap toggle-column">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
                                 ${proyecto.estado_proyecto || ''}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap toggle-column ${visibilityClass}">
+                        <td class="px-6 py-4 whitespace-nowrap toggle-column">
                             <div class="flex items-center">
                                 <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
                                     <div class="${progressClass} h-2.5 rounded-full" style="width: ${displayProgress}%"></div>

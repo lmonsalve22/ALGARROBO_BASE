@@ -227,7 +227,7 @@
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
                         <i class="fas fa-robot text-indigo-600"></i> Asistente Inteligente ZhipuAI
                     </h2>
-                    <p class="text-gray-500 text-sm">Selecciona un proyecto para analizar el contenido textual completo de sus documentos.</p>
+                    <p class="text-gray-500 text-sm">Selecciona proyectos y consulta con IA potenciada por GLM-4.</p>
                 </div>
             </div>
 
@@ -280,8 +280,8 @@
                         <button onclick="clearFilters()" class="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition">
                             <i class="fas fa-times"></i> Limpiar
                         </button>
-                        <button onclick="selectFirstFiltered()" class="px-4 py-2 bg-indigo-50 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-100 transition">
-                            <i class="fas fa-check"></i> Sel. Primero
+                        <button onclick="selectAllFiltered()" class="px-4 py-2 bg-indigo-50 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-100 transition">
+                            <i class="fas fa-check-double"></i> Sel. Visibles
                         </button>
                     </div>
                 </div>
@@ -309,7 +309,7 @@
                     </div>
                     
                     <div class="p-3 border-t border-gray-100 text-xs text-gray-400 bg-gray-50 rounded-b-lg">
-                        <i class="fas fa-info-circle mr-1"></i> Selección restringida a 1 proyecto.
+                        <i class="fas fa-info-circle mr-1"></i> Selecciona para analizar en el chat.
                     </div>
                 </div>
 
@@ -323,7 +323,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <span id="chatContextBadge" class="hidden text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full flex items-center gap-1">
-                                <i class="fas fa-file-alt"></i> <span id="selectedCountMsg">0</span>
+                                <i class="fas fa-database"></i> <span id="selectedCountMsg">0</span> proyectos en contexto
                             </span>
                             <div class="h-4 w-px bg-gray-300 mx-1"></div>
                             <button onclick="clearChat()" class="text-gray-400 hover:text-red-500 transition" title="Limpiar chat">
@@ -343,11 +343,11 @@
                             <div class="flex-1">
                                 <div class="message-content markdown-body">
                                     <p><strong>¡Hola! Soy tu asistente potenciado</strong></p>
-                                    <p>Estoy conectado a los datos del Geoportal. Selecciona <strong>un solo proyecto</strong> de la lista izquierda. Extraeré y analizaré el texto completo de todos sus documentos adjuntos para responder tus dudas.</p>
+                                    <p>Estoy conectado a los datos del Geoportal. Selecciona proyectos de la lista izquierda y hazme preguntas sobre:</p>
                                     <ul>
-                                        <li>Consulta detalles específicos dentro de los archivos.</li>
-                                        <li>Busca cláusulas contractuales o técnicas.</li>
-                                        <li>Solicita resúmenes del contenido.</li>
+                                        <li>Análisis de montos y presupuestos.</li>
+                                        <li>Estados de avance por área.</li>
+                                        <li>Comparación entre proyectos.</li>
                                     </ul>
                                 </div>
                                 <div class="message-meta text-gray-500" id="initial-timestamp">Hoy, --:--</div>
@@ -355,16 +355,16 @@
                         </div>
                     </div>
 
-                    <!-- Indicador escribiendo / Procesando -->
+                    <!-- Indicador escribiendo -->
                     <div id="typingIndicator" class="hidden px-4 py-2 bg-gray-50 flex items-center gap-2">
-                        <div class="message-content py-2 px-4 text-xs text-gray-500 bg-gray-100 border-0 shadow-none flex items-center gap-2">
-                            <div id="typingText">Analizando solicitud</div>
+                        <div class="message-content py-2 px-4 text-xs text-gray-500 bg-gray-100 border-0 shadow-none">
                             <div class="typing-indicator"><span></span><span></span><span></span></div>
                         </div>
                     </div>
 
                     <!-- Input Chat -->
                     <div class="p-4 bg-white border-t border-gray-100">
+                        <!-- El formulario maneja el envío correctamente ahora -->
                         <form id="chatForm" class="flex items-end gap-2">
                             <button type="button" id="voiceButton" class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition" title="Dictar por voz">
                                 <i class="fas fa-microphone"></i>
@@ -394,39 +394,32 @@
     <script>
         // --- CONFIGURACIÓN ZHIPU AI ---
         const API_KEY = "1dbcda64e67c4d31a7e9e5565efc5cae.M5ZIv5sFPbdOwgKw";
+        //const API_URL = "https://api.z.ai/api/paas/v4/chat/completions";
         const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"; 
+        //const MODEL_NAME = "GLM-4.5-Flash"; 
         const MODEL_NAME = "GLM-4.6V-Flash"; 
         
         // Configuración Chat
         const CHAT_CONFIG = {
             MAX_HISTORY_LENGTH: 10,
-            MAX_INPUT_LENGTH: 500,
-            // Límite de seguridad para no exceder el contexto del modelo (aprox 60k caracteres de margen)
-            MAX_TEXT_PAYLOAD_LENGTH: 80000 
+            MAX_INPUT_LENGTH: 500
         };
-
-        // --- CONFIGURACIÓN BACKEND ---
-        const API_BASE = 'https://186.67.61.251:8000';
-        
-        // NUEVO ENDPOINT PARA TEXTO COMPLETO
-        const ENDPOINT_PROJECT_TEXT = (projectId) => `${API_BASE}/proyectos/${projectId}/documentos/texto`;
 
         // Estado de la Aplicación
         const AppState = {
-            allProjects: [], 
-            selectedIds: new Set(), 
-            chatHistory: [], 
-            recognition: null, 
-            synthesis: window.speechSynthesis, 
+            allProjects: [], // Proyectos desde API Geoportal
+            selectedIds: new Set(), // IDs seleccionados en UI
+            chatHistory: [], // Historial conversación Zhipu
+            recognition: null, // Voz a Texto
+            synthesis: window.speechSynthesis, // Texto a Voz,
             filterProject: [],
-            isMarked: false,       
-            projectMarket: null,    
-            projectRawText: null, // Almacena el string de texto completo
-            textCharsCount: 0
+            isMarked: false,
+            projectMarket: {}
         };
 
         // Referencias DOM
         const DOM = {
+            // Proyectos
             projectListContainer: document.getElementById('projectListContainer'),
             filterSearch: document.getElementById('filterSearch'),
             filterArea: document.getElementById('filterArea'),
@@ -434,11 +427,12 @@
             filterFinancing: document.getElementById('filterFinancing'),
             visibleCount: document.getElementById('visibleCount'),
             projectsLoading: document.getElementById('projectsLoading'),
+            
+            // Chat
             messagesArea: document.getElementById('messagesArea'),
             chatForm: document.getElementById('chatForm'),
             chatInput: document.getElementById('chatInput'),
             typingIndicator: document.getElementById('typingIndicator'),
-            typingText: document.getElementById('typingText'),
             voiceButton: document.getElementById('voiceButton'),
             charCounter: document.getElementById('charCounter'),
             chatContextBadge: document.getElementById('chatContextBadge'),
@@ -447,6 +441,8 @@
 
         // --- 1. LÓGICA DE PROYECTOS (Geoportal) ---
         
+        const API_BASE = 'https://186.67.61.251:8000';
+
         function getAuthHeaders() {
             const token = localStorage.getItem('authToken');
             return {
@@ -481,10 +477,12 @@
         }
 
         function initFilters() {
+            // Listeners
             DOM.filterSearch.addEventListener('input', applyFilters);
             DOM.filterArea.addEventListener('change', applyFilters);
             DOM.filterStatus.addEventListener('change', applyFilters);
             DOM.filterFinancing.addEventListener('change', applyFilters);
+
             populateDropdowns();
             applyFilters();
         }
@@ -519,6 +517,7 @@
                 return matchTxt && matchArea && matchStatus && matchFin;
             });
             AppState.filterProject = filtered; 
+
             renderProjectList(filtered);
             DOM.visibleCount.textContent = filtered.length;
         }
@@ -529,22 +528,20 @@
             DOM.filterStatus.value = "";
             DOM.filterFinancing.value = "";
             AppState.selectedIds.clear();
-            AppState.isMarked = false;
-            AppState.projectMarket = null;
-            AppState.projectRawText = null;
-            AppState.textCharsCount = 0;
             updateContextUI();
             applyFilters();
         }
 
-        function selectFirstFiltered() {
-            const currentList = AppState.filterProject;
-            if(currentList.length > 0) {
-                const firstProject = currentList[0];
-                toggleSelection(firstProject.id, null, null); 
-            } else {
-                showToast("No hay proyectos visibles para seleccionar.", "info");
-            }
+        function selectAllFiltered() {
+            const checkboxes = document.querySelectorAll('.project-checkbox');
+            checkboxes.forEach(cb => {
+                const id = parseInt(cb.value);
+                AppState.selectedIds.add(id);
+                cb.checked = true;
+                const card = cb.closest('.cursor-pointer');
+                if(card) card.classList.add('project-card-selected');
+            });
+            updateContextUI();
         }
 
         function renderProjectList(list) {
@@ -558,7 +555,6 @@
                 const isSelected = AppState.selectedIds.has(p.id);
                 const div = document.createElement('div');
                 div.className = `p-3 rounded border border-gray-200 cursor-pointer hover:shadow-md transition-colors ${isSelected ? 'project-card-selected' : 'bg-white hover:bg-gray-50'}`;
-                div.dataset.projectId = p.id; 
                 div.onclick = (e) => toggleSelection(p.id, div, e);
 
                 const estado = p.estado_proyecto || 'Sin Estado';
@@ -570,7 +566,7 @@
                     <div class="flex items-start gap-3">
                         <div class="pt-1">
                             <input type="checkbox" class="project-checkbox w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer" 
-                                value="${p.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelection(${p.id}, this.closest('.cursor-pointer'), event)">
+                                value="${p.id}" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelection(${p.id}, this.parentElement.parentElement.parentElement, event)">
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-semibold text-gray-800 truncate" title="${nombre}">${nombre}</p>
@@ -595,40 +591,23 @@
         }
 
         function toggleSelection(id, cardEl, event) {
-            const isCurrentlySelected = AppState.selectedIds.has(id);
-
-            if (isCurrentlySelected) {
+            if (AppState.selectedIds.has(id)) {
                 AppState.selectedIds.delete(id);
-                AppState.isMarked = false;
-                AppState.projectMarket = null;
-                AppState.projectRawText = null;
-                AppState.textCharsCount = 0;
+                cardEl.classList.remove('project-card-selected');
+                cardEl.querySelector('input').checked = false;
             } else {
-                AppState.selectedIds.clear(); 
                 AppState.selectedIds.add(id);
-                AppState.isMarked = true;
-                const projectData = AppState.allProjects.find(p => p.id === id);
-                AppState.projectMarket = projectData || null;
+                cardEl.classList.add('project-card-selected');
+                cardEl.querySelector('input').checked = true;
             }
-
-            renderProjectList(AppState.filterProject); 
             updateContextUI();
         }
 
         function updateContextUI() {
             const count = AppState.selectedIds.size;
-            
-            if (count > 0) {
-                DOM.chatContextBadge.classList.remove('hidden');
-                // Mostrar indicador de texto cargado o pendiente
-                let badgeText = "1 Proyecto";
-                if (AppState.textCharsCount > 0) {
-                    badgeText += ` + Texto (${(AppState.textCharsCount/1024).toFixed(0)}KB)`;
-                }
-                DOM.selectedCountMsg.textContent = badgeText;
-            } else {
-                DOM.chatContextBadge.classList.add('hidden');
-            }
+            DOM.selectedCountMsg.textContent = count;
+            if (count > 0) DOM.chatContextBadge.classList.remove('hidden');
+            else DOM.chatContextBadge.classList.add('hidden');
         }
 
         function formatCompact(num) {
@@ -639,10 +618,13 @@
         // --- 2. LÓGICA DE CHAT (ZhipuAI Integration) ---
 
         function initChat() {
+            // ✅ SOLUCIÓN: Solo el evento 'submit' del formulario
             DOM.chatForm.addEventListener('submit', sendMessage);
+            
             DOM.chatInput.addEventListener('input', updateCharCounter);
             DOM.voiceButton.addEventListener('click', toggleVoiceRecognition);
 
+            // Inicializar timestamp
             const now = new Date();
             document.getElementById('initial-timestamp').textContent = `Hoy, ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
 
@@ -668,7 +650,7 @@
             AppState.recognition.onresult = (event) => {
                 DOM.chatInput.value = event.results[0][0].transcript;
                 updateCharCounter();
-                sendMessage(); 
+                sendMessage(); // Auto enviar al terminar de hablar
             };
             AppState.recognition.onerror = resetVoiceButton;
             AppState.recognition.onend = resetVoiceButton;
@@ -692,54 +674,9 @@
             }
         }
 
-        // --- NUEVA LÓGICA: Fetch de Texto Completo ---
-        async function fetchProjectText(projectId) {
-            // Si ya tenemos el texto cargado para este proyecto, retornarlo
-            if (AppState.projectRawText && AppState.projectMarket && AppState.projectMarket.id === projectId) {
-                return AppState.projectRawText;
-            }
-
-            try {
-                // Llamada al nuevo endpoint de texto
-                const response = await fetch(ENDPOINT_PROJECT_TEXT(projectId), {
-                    method: 'GET',
-                    headers: getAuthHeaders()
-                });
-
-                if (!response.ok) {
-                    console.warn(`API de texto falló para proyecto ${projectId}: ${response.status}`);
-                    return "No se pudo cargar el contenido de los documentos."; 
-                }
-
-                const data = await response.json();
-                
-                // Validación: La API devuelve { "proyecto_id": ..., "texto": ..., "chars": ... }
-                let rawText = "";
-                
-                if (data && data.texto) {
-                    rawText = data.texto;
-                    AppState.textCharsCount = data.chars || rawText.length;
-                } else {
-                    console.warn("La API no devolvió texto válido.");
-                    AppState.textCharsCount = 0;
-                    rawText = "El proyecto no tiene documentos procesados o el contenido está vacío.";
-                }
-
-                // Cachear el texto
-                AppState.projectRawText = rawText;
-                updateContextUI();
-                
-                return rawText;
-
-            } catch (error) {
-                console.error('Error fetching document text:', error);
-                AppState.projectRawText = null;
-                return "Ocurrió un error al intentar leer los documentos del proyecto.";
-            }
-        }
-
         // --- Core Chat Logic ---
         async function sendMessage(e) {
+            // ✅ SOLUCIÓN: Prevenir comportamiento por defecto del formulario
             if (e) e.preventDefault();
 
             const text = DOM.chatInput.value.trim();
@@ -750,39 +687,22 @@
                 return;
             }
 
+            // UI Updates
             addMessageToChat('user', text);
             DOM.chatInput.value = '';
             DOM.chatInput.disabled = true;
             DOM.typingIndicator.classList.remove('hidden');
-            DOM.typingText.textContent = "Analizando solicitud...";
             updateCharCounter();
             DOM.messagesArea.scrollTop = DOM.messagesArea.scrollHeight;
 
+            // Preparar Contexto (Proyectos Seleccionados)
+            const selectedProjects = AppState.allProjects.filter(p => AppState.selectedIds.has(p.id));
+            const contextData = selectedProjects.length > 0 
+                ? `Contexto de Proyectos Seleccionados (JSON):\n${JSON.stringify(selectedProjects, null, 2)}\n\nAnaliza estos datos para responder.` 
+                : "No hay proyectos seleccionados actualmente. Responde de forma general o pide al usuario que seleccione proyectos.";
+
             try {
-                let response;
-
-                if (AppState.isMarked && AppState.projectMarket) {
-                    // --- CASO 1: PROYECTO MARCADO ---
-                    DOM.typingText.textContent = "Extrayendo y leyendo contenido de documentos...";
-                    
-                    // 1. Obtener el texto completo
-                    const rawTextContent = await fetchProjectText(AppState.projectMarket.id);
-                    
-                    // 2. Preparar Prompt con el texto completo
-                    response = await fetchZhipuResponse(text, {
-                        mode: 'project_context',
-                        projectData: AppState.projectMarket,
-                        rawText: rawTextContent // Pasamos el string entero
-                    });
-
-                } else {
-                    // --- CASO 2: SIN PROYECTO ---
-                    DOM.typingText.textContent = "Generando respuesta...";
-                    response = await fetchZhipuResponse(text, {
-                        mode: 'general'
-                    });
-                }
-
+                const response = await fetchZhipuResponse(text, contextData);
                 DOM.typingIndicator.classList.add('hidden');
                 addMessageToChat('bot', response.respuesta, response.preguntas);
             } catch (error) {
@@ -792,80 +712,38 @@
             } finally {
                 DOM.chatInput.disabled = false;
                 DOM.chatInput.focus();
-                DOM.typingText.textContent = "Analizando solicitud...";
             }
         }
 
-        async function fetchZhipuResponse(userMessage, context) {
+        async function fetchZhipuResponse(userMessage, systemContext) {
+            console.log(AppState.filterProject)
             AppState.chatHistory.push({ role: "user", content: userMessage });
 
-            let systemPrompt = "";
+            const promptSistema = `Eres un asistente experto en análisis de datos municipales.
+            ${systemContext}
+            Instrucciones:
+            - Responde siempre en español.
+            - Usa formato Markdown para estructurar la información (listas, tablas, negritas).
+            - Si tienes datos de proyectos en el contexto, usa números y cifras reales del JSON.
+            - Al final de tu respuesta, genera exactamente 3 preguntas de seguimiento relevantes que pudiera hacer el usuario.
+            - Responde solo usando datos de la base de datos en el contexto.
+
+            Base de datos ${JSON.stringify(AppState.filterProject)}
             
-            if (context.mode === 'project_context') {
-                // Recortar texto si es excesivamente largo para evitar errores de API (Safety Truncation)
-                let textToInject = context.rawText || "No hay contenido de documentos.";
-                
-                if (textToInject.length > CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) {
-                    console.warn(`El texto excede el límite seguro (${textToInject.length} chars). Truncando...`);
-                    textToInject = textToInject.substring(0, CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) + "\n\n[... El contenido se ha truncado por longitud excesiva para mantener el contexto manejable ...]";
-                    showToast("El contenido de los documentos es muy extenso, se ha recortado parcialmente.", "info");
-                }
-
-                const projectJSON = JSON.stringify(context.projectData);
-
-                systemPrompt = `Eres un asistente experto en análisis de proyectos municipales.
-Tu tarea es analizar la información del proyecto y el contenido textual íntegro de sus documentos adjuntos.
-
-DATOS GENERALES DEL PROYECTO:
- ${projectJSON}
-
----
-CONTENIDO INTEGRAL DE LOS DOCUMENTOS:
-A continuación se presenta el texto extraído de todos los documentos asociados al proyecto (PDFs, Word, etc.):
- ${textToInject}
----
-
-INSTRUCCIONES ESTRICTAS:
-1. Utiliza el "CONTENIDO INTEGRAL DE LOS DOCUMENTOS" como tu fuente principal de verdad.
-2. Responde a preguntas específicas sobre cláusulas, montos, fechas, términos técnicos o cualquier detalle presente en el texto.
-3. Si la información no está en el texto proporcionado ni en los datos generales, indícalo claramente.
-4. Responde siempre en español.
-5. Usa formato Markdown para estructurar la respuesta (listas, negritas, tablas si es necesario).
-6. Genera 3 preguntas de seguimiento relevantes al final.
-
-Formato de salida requerido:
-[RESPUESTA]
-... (tu respuesta detallada) ...
-[/RESPUESTA]
-[PREGUNTAS]
-1. Pregunta
-2. Pregunta
-3. Pregunta
-[/PREGUNTAS]`;
-
-            } else {
-                // Modo General
-                systemPrompt = `Eres un asistente útil del Geoportal Municipal.
-No hay ningún proyecto seleccionado actualmente.
-Responde de forma general, amable y concisa en español.
-Invita al usuario a seleccionar un proyecto de la lista para realizar un análisis profundo de sus documentos.
-Genera 3 preguntas generales relevantes al final.
-
-Formato de salida requerido:
-[RESPUESTA]
-... (respuesta) ...
-[/RESPUESTA]
-[PREGUNTAS]
-1. Pregunta
-2. Pregunta
-3. Pregunta
-[/PREGUNTAS]`;
-            }
+            Formato de salida requerido:
+            [RESPUESTA]
+            ... (tu respuesta en markdown) ...
+            [/RESPUESTA]
+            [PREGUNTAS]
+            1. Primera pregunta
+            2. Segunda pregunta
+            3. Tercera pregunta
+            [/PREGUNTAS]`;
 
             const requestBody = {
                 model: MODEL_NAME,
                 messages: [
-                    { role: "system", content: systemPrompt },
+                    { role: "system", content: promptSistema },
                     ...AppState.chatHistory.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH)
                 ],
                 temperature: 0.1
@@ -887,6 +765,7 @@ Formato de salida requerido:
 
             const data = await response.json();
             const rawContent = data.choices[0].message.content;
+            console.log(rawContent)
             
             // Parsear respuesta
             let respuestaFinal = "";
@@ -896,7 +775,7 @@ Formato de salida requerido:
             const matchPreg = rawContent.match(/\[PREGUNTAS\]([\s\S]*?)\[\/PREGUNTAS\]/i);
 
             if (matchResp) respuestaFinal = matchResp[1].trim();
-            else respuestaFinal = rawContent; 
+            else respuestaFinal = rawContent; // Fallback si el modelo no sigue el formato estricto
 
             if (matchPreg) {
                 const lines = matchPreg[1].split('\n').filter(l => l.trim());
@@ -906,7 +785,7 @@ Formato de salida requerido:
                 });
             }
 
-            if (preguntasFinal.length === 0) preguntasFinal = ["¿Qué más puedo ayudarte?", "¿Necesitas más detalles?", "¿Cómo proceder?"];
+            if (preguntasFinal.length === 0) preguntasFinal = ["¿Qué más puedes decir?", "¿Puedes resumir?", "Dame más detalles"];
 
             AppState.chatHistory.push({ role: "assistant", content: respuestaFinal });
 
@@ -917,18 +796,22 @@ Formato de salida requerido:
             const wrapper = document.createElement('div');
             wrapper.className = `message-wrapper ${sender}`;
 
+            // Avatar
             const avatar = document.createElement('div');
             avatar.className = 'avatar';
             avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
 
+            // Contenido
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content markdown-body';
             
             if (sender === 'user') {
                 contentDiv.textContent = text;
             } else {
+                // Parsear Markdown
                 contentDiv.innerHTML = marked.parse(sanitizeInput(text));
                 
+                // Botones de acción (Copiar / Hablar)
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'flex gap-2 mt-3 border-t border-gray-200 pt-2 opacity-60 hover:opacity-100 transition';
                 
@@ -946,6 +829,7 @@ Formato de salida requerido:
                 actionsDiv.appendChild(btnSpeak);
                 contentDiv.appendChild(actionsDiv);
 
+                // Chips de Preguntas Sugeridas
                 if (preguntas.length > 0) {
                     const chipsContainer = document.createElement('div');
                     chipsContainer.className = 'suggestion-chips';
@@ -955,6 +839,7 @@ Formato de salida requerido:
                         chip.innerHTML = `<i class="fas fa-arrow-right text-xs"></i> ${q}`;
                         chip.onclick = () => {
                             DOM.chatInput.value = q;
+                            // Aquí llamamos sendMessage() sin evento (null), lo cual es seguro por el chequeo `if (e)`
                             sendMessage(); 
                         };
                         chipsContainer.appendChild(chip);
@@ -969,6 +854,8 @@ Formato de salida requerido:
             DOM.messagesArea.appendChild(wrapper);
             DOM.messagesArea.scrollTop = DOM.messagesArea.scrollHeight;
         }
+
+        // --- Utilidades ---
 
         function sanitizeInput(text) {
             return text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/javascript:/gi, '');
@@ -990,13 +877,14 @@ Formato de salida requerido:
 
         function clearChat() {
             if(!confirm("¿Estás seguro de que quieres borrar todo el historial del chat?")) return;
+            // Mensaje de bienvenida
             DOM.messagesArea.innerHTML = `
                 <div class="message-wrapper bot">
                     <div class="avatar"><i class="fas fa-robot"></i></div>
                     <div class="flex-1">
                         <div class="message-content markdown-body">
                             <p><strong>¡Hola! Soy tu asistente potenciado por ZhipuAI.</strong></p>
-                            <p>El chat ha sido reiniciado. Selecciona un proyecto y comienza de nuevo.</p>
+                            <p>El chat ha sido reiniciado. Selecciona proyectos y comienza de nuevo.</p>
                         </div>
                         <div class="message-meta text-gray-500">Hoy, ${new Date().toLocaleTimeString()}</div>
                     </div>
@@ -1010,6 +898,7 @@ Formato de salida requerido:
             DOM.messagesArea.querySelectorAll('.message-wrapper').forEach(wrapper => {
                 const isBot = wrapper.classList.contains('bot');
                 const role = isBot ? "IA:" : "Tú:";
+                // Solo extraer texto, limpiar un poco
                 const content = wrapper.querySelector('.message-content').innerText;
                 txt += `${role}\n${content}\n\n`;
             });
@@ -1042,10 +931,12 @@ Formato de salida requerido:
             }, 3000);
         }
 
+        // --- Inicialización Global ---
         document.addEventListener('DOMContentLoaded', () => {
             loadProjects();
             initChat();
         });
+
     </script>
     <script src="../../../script/layout.js"></script>
 </body>

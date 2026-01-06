@@ -84,6 +84,7 @@ function renderSidebar(containerId = "sidebarContainer") {
         calendario: "calendario.html",
         documento:"documento.html",
         chat:"chat.html",
+        geomapas:"geomapas.html"
     
     };
 
@@ -143,6 +144,12 @@ function renderSidebar(containerId = "sidebarContainer") {
                     <a href="${pages.documento}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.documento)}">
                         <i class="fas fa-calendar-alt w-5"></i>
                         <span>Documentos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="${pages.geomapas}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.geomapas)}">
+                        <i class="fas fa-calendar-alt w-5"></i>
+                        <span>GeoMapas</span>
                     </a>
                 </li>
                 <li>
