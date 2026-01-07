@@ -509,7 +509,7 @@
                             <label for="fecha_postulacion">Fecha Postulación</label>
                             <input type="date" id="fecha_postulacion" name="fecha_postulacion">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="display: none;">
                             <label for="fecha_actualizacion">Fecha Actualización</label>
                             <input type="date" id="fecha_actualizacion" name="fecha_actualizacion">
                         </div>
@@ -594,7 +594,7 @@
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset style="display: none;">
                     <legend>Observaciones</legend>
                     <div class="form-group">
                         <label for="observaciones">Observaciones Generales</label>
@@ -655,6 +655,30 @@
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
+        }
+
+        // --- UTILIDAD PARA FECHAS (Fix Edición) ---
+        // Convierte cualquier formato de fecha a YYYY-MM-DD para el input type="date"
+        function formatDateForInput(dateString) {
+            if (!dateString) return '';
+            
+            // Si ya viene en formato correcto (YYYY-MM-DD), lo devolvemos tal cual
+            if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+                return dateString;
+            }
+
+            const dateObj = new Date(dateString);
+            
+            // Si la fecha es inválida (ej. "Invalid Date"), devolvemos vacío o el string original
+            if (isNaN(dateObj.getTime())) {
+                return dateString;
+            }
+
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}`;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1043,7 +1067,12 @@
                     const input = form.elements[key];
                     if (input) {
                         if (input.type === 'checkbox') input.checked = (proyecto[key] === 'SI' || proyecto[key] === true);
-                        else input.value = proyecto[key] || '';
+                        else if (input.type === 'date') {
+                            // FIX AQUÍ: Usar función para formatear fecha a YYYY-MM-DD
+                            input.value = formatDateForInput(proyecto[key]);
+                        } else {
+                            input.value = proyecto[key] || '';
+                        }
                     }
                 });
             } else {
