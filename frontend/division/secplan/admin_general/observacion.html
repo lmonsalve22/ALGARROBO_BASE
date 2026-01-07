@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="../../../script/router.js"></script> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geoportal Municipal - Gestión de Observaciones</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Estilos generales heredados */
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        /* Modal Base */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 1000; animation: fadeIn 0.2s;
+            backdrop-filter: blur(2px);
+        }
+        .modal.active { display: flex; justify-content: center; align-items: center; }
+        
+        /* Contenido Modal Estándar */
+        .modal-content {
+            background: white; border-radius: 12px; width: 95%; max-width: 600px;
+            max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s; position: relative;
+            display: flex; flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        /* Contenido Modal Visor (Detalle) */
+        .modal-content-viewer {
+            background: white; border-radius: 12px; width: 95%; max-width: 500px;
+            animation: slideUp 0.3s; position: relative;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 12px 12px 0 0; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; color: #1e293b; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; transition: color 0.2s; }
+        .close-btn:hover { color: #1e293b; }
+        
+        /* Formularios y Filtros */
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem; color: #1e293b; }
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; background: white;
+            border-radius: 8px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            display: flex; align-items: center; gap: 0.75rem; transform: translateX(400px); transition: transform 0.3s; z-index: 2000;
+            border-left: 4px solid transparent;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.warning { border-left-color: #f59e0b; }
+        
+        .loading {
+            display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite;
+        }
+        .loading-dark {
+            display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%; border-top-color: #3b82f6; animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-info { background: #e0f2fe; color: #075985; }
+        
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+     <div id="headerRender"></div>
+     
+    <div class="flex">
+        <div id="asideRender"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <div id="observacionesView" class="view-content">
+                
+                <!-- Page Header -->
+                <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Gestión de Observaciones</h2>
+                        <p class="text-gray-600 text-sm">Registro de novedades, comentarios y seguimiento de proyectos</p>
+                    </div>
+                    <button onclick="openCreateObservacionModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2 text-sm font-medium">
+                        <i class="fas fa-comment-medical"></i> Nueva Observación
+                    </button>
+                </div>
+
+                <!-- BARRA DE FILTROS (Misma lógica que Hitos) -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-blue-500">
+                    <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
+                        <div class="w-full md:w-1/3">
+                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Buscar Proyecto</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" id="searchInput" 
+                                    class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2" 
+                                    placeholder="Nombre, código o sector...">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-1 w-full gap-3">
+                            <div class="flex-1">
+                                <label for="filterArea" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                                <select id="filterArea" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2">
+                                    <option value="">Todas las áreas</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label for="filterStatus" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                <select id="filterStatus" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2">
+                                    <option value="">Todos los estados</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button onclick="clearFilters()" class="mt-6 md:mt-0 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-times-circle"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Selector Card -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="flex-1 w-full">
+                            <label for="projectSelect" class="block text-sm font-medium text-gray-700 mb-1">
+                                1. Seleccionar Proyecto
+                                <span id="projectCountBadge" class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">0</span>
+                            </label>
+                            <select id="projectSelect" class="w-full py-3 px-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option value="" disabled selected>-- Selecciona un proyecto --</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-2">Al seleccionar, se cargará el historial de observaciones.</p>
+                        </div>
+                        <div class="w-full md:w-auto">
+                            <button onclick="loadProjects()" class="w-full md:w-auto px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-sync-alt"></i> Actualizar Lista
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Log -->
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-800 text-sm">Historial de Registro (Sesión Actual)</h3>
+                        <span id="sessionCount" class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded-full">0</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-48 overflow-y-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proyecto</th>
+                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody id="uploadLogBody" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-6 text-center text-sm text-gray-400 italic">
+                                        No hay actividad reciente en esta sesión.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN LISTADO DE OBSERVACIONES DEL PROYECTO -->
+                <div id="projectObservacionesPanel" class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
+                    <!-- Header del Panel -->
+                    <div class="px-6 py-4 border-b border-gray-200 bg-blue-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-blue-900 flex items-center gap-2 text-lg">
+                                <i class="fas fa-clipboard-list"></i> 
+                                Historial de Observaciones 
+                            </h3>
+                            <p class="text-xs text-blue-700 mt-1">
+                                Proyecto: <span id="selectedProjectNameDisplay" class="font-bold bg-white px-2 py-0.5 rounded border border-blue-200"></span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                             <button onclick="refreshObservaciones()" class="px-4 py-2 bg-white border border-blue-200 text-blue-700 text-xs font-bold uppercase rounded-lg hover:bg-blue-50 transition shadow-sm flex items-center justify-center gap-2">
+                                <i class="fas fa-sync-alt"></i> Refrescar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Observaciones -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" width="150">Fecha Registro</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observación</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" width="120">Creado por</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" width="100">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectObservacionesBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Se llena con JS -->
+                            </tbody>
+                        </table>
+                        <div id="obsLoading" class="hidden p-8 text-center">
+                            <i class="fas fa-circle-notch fa-spin text-blue-500 text-2xl"></i>
+                            <p class="text-sm text-gray-500 mt-2">Cargando observaciones...</p>
+                        </div>
+                        <div id="obsEmpty" class="hidden p-10 text-center">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                                <i class="fas fa-comments text-gray-300 text-2xl"></i>
+                            </div>
+                            <p class="text-gray-500 font-medium">Sin observaciones</p>
+                            <p class="text-gray-400 text-xs mt-1">No se han registrado novedades para este proyecto.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    
+    <!-- MODAL DE CREAR OBSERVACIÓN -->
+    <div id="createObservacionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Registrar Observación</h2>
+                <button class="close-btn" onclick="closeCreateObservacionModal()">&times;</button>
+            </div>
+            
+            <div class="p-6">
+                <form id="createObservacionForm" onsubmit="handleCreateObservacion(event)">
+                    <!-- Contexto Proyecto -->
+                    <div class="form-group p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+                        <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Proyecto Destino</label>
+                        <div class="flex items-center gap-2 mt-1">
+                            <i class="fas fa-folder-open text-blue-500"></i>
+                            <span id="modalProjectName" class="font-medium text-gray-800 text-sm">Ninguno seleccionado</span>
+                            <input type="hidden" id="createProjectId" name="project_id">
+                        </div>
+                    </div>
+
+                    <!-- Datos de la Observación -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="form-group">
+                            <label for="fechaObservacion">Fecha *</label>
+                            <input type="date" id="fechaObservacion" name="fecha" required class="bg-white">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="obsText">Detalle de la Observación *</label>
+                            <textarea id="obsText" name="observacion" rows="5" placeholder="Describa la novedad, observación técnica o nota de seguimiento..." required class="bg-white"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer p-6 pt-0 flex justify-end gap-3">
+                <button type="button" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm" onclick="closeCreateObservacionModal()">Cancelar</button>
+                <button type="button" onclick="document.getElementById('createObservacionForm').dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}))" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md shadow-blue-200 flex items-center font-medium text-sm" id="btnSubmitCreate">
+                    <span id="btnCreateText">Registrar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISOR DETALLE OBSERVACIÓN -->
+    <div id="viewerModal" class="modal">
+        <div class="modal-content-viewer">
+            <div class="modal-header">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-100 p-2 rounded-full text-blue-600">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <div>
+                        <h2 class="modal-title m-0 text-base">Detalle de Observación</h2>
+                        <span id="viewerObsId" class="text-xs text-gray-400 block leading-none mt-1"></span>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeViewerModal()" title="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Loading Overlay -->
+                <div id="viewerLoading" class="hidden text-center py-8">
+                    <div class="loading-dark mx-auto mb-3"></div>
+                    <p class="text-sm text-gray-500">Cargando detalles...</p>
+                </div>
+
+                <!-- Detalle -->
+                <div id="viewerContent" class="hidden space-y-5">
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Fecha Registro</label>
+                            <div id="detailFecha" class="text-gray-800 font-medium text-sm bg-gray-50 p-2 rounded border border-gray-200"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Observación</label>
+                        <div id="detailObs" class="text-gray-700 bg-gray-50 p-4 rounded border border-gray-200 min-h-[100px] whitespace-pre-wrap text-sm leading-relaxed shadow-inner"></div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 flex justify-between items-center">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold">Registrado por</span>
+                            <span id="detailCreador" class="text-sm text-gray-600 font-medium flex items-center gap-1">
+                                <i class="fas fa-user-circle text-gray-400"></i> Cargando...
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-xs font-bold">
+                            <i class="fas fa-database"></i> BD Central
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastIcon"></span>
+        <span id="toastMessage" class="font-medium text-gray-800 text-sm"></span>
+    </div>
+
+    <!-- Scripts Layout -->
+    <script src="../../../script/layout.js"></script>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const API_BASE = 'https://186.67.61.251:8000';
+        let allProjects = []; 
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                console.error("No se encontró token.");
+                showToast("Sesión no iniciada", "error");
+                return null;
+            }
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // --- UTILIDAD PARA FECHAS GMT (FIX INVALID DATE) ---
+        // Maneja formato: "Wed, 07 Jan 2026 00:00:00 GMT"
+        // Usamos Intl.DateTimeFormat con timeZone: 'UTC' para evitar desfases de zona horaria
+        function formatDisplayDate(dateString) {
+            if (!dateString) return "Sin fecha registrada";
+            
+            const dateObj = new Date(dateString);
+            
+            // Chequear si la fecha es válida
+            if (isNaN(dateObj.getTime())) return "Fecha inválida";
+
+            // Forzar zona horaria UTC para mostrar exactamente lo que envía el servidor
+            return new Intl.DateTimeFormat('es-CL', {
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'UTC'
+            }).format(dateObj);
+        }
+
+        function formatShortDate(dateString) {
+            if (!dateString) return "-";
+            const dateObj = new Date(dateString);
+            if (isNaN(dateObj.getTime())) return dateString;
+
+            // Formato corto DD-MM-YYYY
+            return new Intl.DateTimeFormat('es-CL', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'UTC'
+            }).format(dateObj);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjects();
+            
+            // Listeners de filtros
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('filterArea').addEventListener('change', applyFilters);
+            document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+            // Listener para cargar observaciones cuando se selecciona un proyecto
+            document.getElementById('projectSelect').addEventListener('change', function(e) {
+                const pid = e.target.value;
+                const projectName = e.target.options[e.target.selectedIndex].text;
+                
+                if (pid) {
+                    loadProjectObservaciones(pid, projectName);
+                } else {
+                    document.getElementById('projectObservacionesPanel').classList.add('hidden');
+                }
+            });
+        });
+
+        // --- LÓGICA DE PROYECTOS (REUTILIZADA) ---
+
+        async function loadProjects() {
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const select = document.getElementById('projectSelect');
+            select.innerHTML = '<option value="" disabled selected>Cargando proyectos...</option>';
+            select.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/proyectos`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) throw new Error('Error al cargar proyectos');
+
+                allProjects = await response.json();
+                
+                updateFilterOptions();
+                applyFilters();
+                select.disabled = false;
+                showToast(`Proyectos actualizados: ${allProjects.length}`, "success");
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error al conectar con el servidor', 'error');
+                select.innerHTML = '<option value="" disabled selected>Error de conexión</option>';
+            }
+        }
+
+        function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
+            const select = document.getElementById(selectElementId);
+            const previousValue = select.value || currentValue;
+
+            let html = `<option value="">${defaultLabel}</option>`;
+            optionsList.forEach(opt => {
+                html += `<option value="${opt}" ${opt === previousValue ? 'selected' : ''}>${opt}</option>`;
+            });
+
+            select.innerHTML = html;
+
+            if (previousValue && !optionsList.includes(previousValue)) {
+                select.value = "";
+            } else if (previousValue) {
+                select.value = previousValue;
+            }
+        }
+
+        function updateFilterOptions() {
+            const selectedArea = document.getElementById('filterArea').value;
+            const selectedStatus = document.getElementById('filterStatus').value;
+
+            const dataForAreas = allProjects.filter(p => 
+                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
+            );
+            const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
+            populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
+
+            const dataForStatus = allProjects.filter(p => 
+                (selectedArea === '' || p.area === selectedArea)
+            );
+            const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
+            populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
+        }
+
+        function applyFilters() {
+            updateFilterOptions();
+
+            const selectedArea = document.getElementById('filterArea').value;
+            const selectedStatus = document.getElementById('filterStatus').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            const filteredProjects = allProjects.filter(proyecto => {
+                const matchesSearch = 
+                    (proyecto.nombre && proyecto.nombre.toLowerCase().includes(searchTerm)) ||
+                    (proyecto.codigo && proyecto.codigo.toLowerCase().includes(searchTerm)) ||
+                    (proyecto.sector && proyecto.sector.toLowerCase().includes(searchTerm));
+
+                const matchesArea = selectedArea === '' || proyecto.area === selectedArea;
+                const matchesStatus = selectedStatus === '' || proyecto.estado_proyecto === selectedStatus;
+
+                return matchesSearch && matchesArea && matchesStatus;
+            });
+
+            renderProjectOptions(filteredProjects);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterArea').value = '';
+            document.getElementById('filterStatus').value = '';
+            applyFilters();
+        }
+
+        function renderProjectOptions(projectList) {
+            const select = document.getElementById('projectSelect');
+            const countBadge = document.getElementById('projectCountBadge');
+            
+            const currentVal = select.value;
+            
+            select.innerHTML = '<option value="" disabled selected>-- Selecciona un proyecto --</option>';
+            
+            projectList.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                const label = p.codigo 
+                    ? `[${p.codigo}] ${p.nombre || 'Sin nombre'}` 
+                    : `${p.nombre || 'Sin nombre'}`;
+                option.textContent = label;
+                select.appendChild(option);
+            });
+
+            if(currentVal) {
+                select.value = currentVal;
+            }
+
+            countBadge.textContent = projectList.length;
+        }
+
+        // --- LÓGICA ESPECÍFICA DE OBSERVACIONES ---
+
+        async function loadProjectObservaciones(pid, projectName) {
+            const panel = document.getElementById('projectObservacionesPanel');
+            const tbody = document.getElementById('projectObservacionesBody');
+            const loading = document.getElementById('obsLoading');
+            const empty = document.getElementById('obsEmpty');
+            const nameDisplay = document.getElementById('selectedProjectNameDisplay');
+            
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            panel.classList.remove('hidden');
+            nameDisplay.textContent = projectName;
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+            empty.classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/proyectos/${pid}/observaciones`, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) throw new Error('Error al obtener observaciones');
+
+                const data = await response.json();
+                const observaciones = data.observaciones || [];
+
+                loading.classList.add('hidden');
+
+                if (observaciones.length === 0) {
+                    empty.classList.remove('hidden');
+                } else {
+                    observaciones.forEach(obs => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50 transition";
+                        
+                        // USO DE FUNCIÓN CORREGIDA PARA FORMATO GMT
+                        const fechaStr = formatShortDate(obs.fecha);
+                        
+                        let obsShort = obs.observacion ? obs.observacion.substring(0, 60) + (obs.observacion.length > 60 ? '...' : '') : '-';
+
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span class="text-gray-500 text-xs block">Reg.</span>
+                                <span class="font-medium">${fechaStr}</span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                <div class="max-w-md truncate" title="${obs.observacion || ''}">
+                                    ${obsShort}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+                                        ${obs.creado_por ? obs.creado_por.toString().substring(0,1).toUpperCase() : '?'}
+                                    </div>
+                                    <span class="text-xs">ID: ${obs.creado_por || 'N/A'}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button onclick="openObservacionViewer(${obs.id})" class="text-blue-600 hover:text-blue-900 transition mx-1 p-2 rounded-full hover:bg-blue-50" title="Ver detalle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando observaciones:', error);
+                loading.classList.add('hidden');
+                showToast('Error al cargar lista de observaciones', 'error');
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 text-sm">Error de carga de datos</td></tr>';
+            }
+        }
+
+        function refreshObservaciones() {
+            const pid = document.getElementById('projectSelect').value;
+            const select = document.getElementById('projectSelect');
+            const projectName = select.options[select.selectedIndex].text;
+            if (pid) loadProjectObservaciones(pid, projectName);
+        }
+
+        // --- LÓGICA DEL VISOR (DETALLE) ---
+
+        function openObservacionViewer(obsId) {
+            const modal = document.getElementById('viewerModal');
+            const loading = document.getElementById('viewerLoading');
+            const content = document.getElementById('viewerContent');
+            const idDisplay = document.getElementById('viewerObsId');
+
+            idDisplay.textContent = `ID: ${obsId}`;
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            modal.classList.add('active');
+
+            const headers = getAuthHeaders();
+            
+            fetch(`${API_BASE}/observaciones/${obsId}/detalle`, {
+                headers: headers
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("No se pudo cargar el detalle");
+                return res.json();
+            })
+            .then(data => {
+                // USO DE FUNCIÓN CORREGIDA PARA FORMATO GMT
+                document.getElementById('detailFecha').textContent = formatDisplayDate(data.fecha);
+                
+                document.getElementById('detailObs').textContent = data.observacion || 'Sin observaciones registradas.';
+                
+                const creadorEl = document.getElementById('detailCreador');
+                if(data.creado_por) {
+                    creadorEl.innerHTML = `<i class="fas fa-user-check text-blue-500"></i> Usuario ID: ${data.creado_por}`;
+                } else {
+                    creadorEl.innerHTML = `<i class="fas fa-user text-gray-400"></i> Desconocido`;
+                }
+
+                loading.classList.add('hidden');
+                content.classList.remove('hidden');
+            })
+            .catch(err => {
+                console.error(err);
+                loading.innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p class="text-sm">${err.message}</p></div>`;
+                loading.classList.remove('hidden');
+                content.classList.add('hidden');
+            });
+        }
+
+        function closeViewerModal() {
+            const modal = document.getElementById('viewerModal');
+            modal.classList.remove('active');
+        }
+
+        // --- GESTIÓN DEL MODAL DE CREAR ---
+
+        function openCreateObservacionModal() {
+            const projectId = document.getElementById('projectSelect').value;
+            const select = document.getElementById('projectSelect');
+            const projectText = select.options[select.selectedIndex]?.text;
+
+            if (!projectId) {
+                showToast("Debes seleccionar un proyecto primero", "warning");
+                const selectContainer = document.getElementById('projectSelect').closest('.bg-white');
+                selectContainer.classList.add('ring-2', 'ring-red-400', 'ring-opacity-50');
+                setTimeout(() => selectContainer.classList.remove('ring-2', 'ring-red-400', 'ring-opacity-50'), 1000);
+                return;
+            }
+
+            document.getElementById('createProjectId').value = projectId;
+            document.getElementById('modalProjectName').textContent = projectText;
+            
+            document.getElementById('createObservacionForm').reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fechaObservacion').value = today;
+
+            document.getElementById('createObservacionModal').classList.add('active');
+        }
+
+        function closeCreateObservacionModal() {
+            document.getElementById('createObservacionModal').classList.remove('active');
+        }
+
+        async function handleCreateObservacion(e) {
+            if(e) e.preventDefault();
+            
+            const pid = document.getElementById('createProjectId').value;
+            const fecha = document.getElementById('fechaObservacion').value;
+            const observacion = document.getElementById('obsText').value;
+
+            if (!observacion || !fecha) {
+                showToast("La fecha y el detalle son obligatorios", "warning");
+                return;
+            }
+
+            const payload = {
+                fecha: fecha,
+                observacion: observacion
+            };
+
+            const headers = getAuthHeaders();
+            if (!headers) return;
+
+            const btn = document.getElementById('btnSubmitCreate');
+            const originalText = document.getElementById('btnCreateText').textContent;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            document.getElementById('btnCreateText').innerHTML = '<span class="loading"></span> Guardando...';
+
+            try {
+                const res = await fetch(`${API_BASE}/proyectos/${pid}/observaciones`, {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(data.message || "Observación registrada exitosamente", "success");
+                    addToLog(pid, "Nueva Observación", "success");
+                    closeCreateObservacionModal();
+                    const select = document.getElementById('projectSelect');
+                    loadProjectObservaciones(pid, select.options[select.selectedIndex].text);
+                } else {
+                    console.error("Error Server:", data);
+                    showToast(`Error: ${data.message || 'Ocurrió un problema'}`, "error");
+                    addToLog(pid, "Error Observación", "error");
+                }
+
+            } catch (error) {
+                console.error('Error de Red:', error);
+                showToast('Error de conexión al registrar observación', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                document.getElementById('btnCreateText').textContent = originalText;
+            }
+        }
+
+        // --- UTILIDADES VISUALES (LOG) ---
+
+        function addToLog(projectId, itemName, status) {
+            const tbody = document.getElementById('uploadLogBody');
+            const countBadge = document.getElementById('sessionCount');
+            
+            if (tbody.querySelector('td[colspan]')) {
+                tbody.innerHTML = '';
+            }
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
+            
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50 transition animate-fadeIn border-l-2 " + (status === 'success' ? 'border-blue-500' : 'border-red-500');
+            
+            const badgeClass = status === 'success' ? 'badge-success' : 'badge-pending'; 
+            const icon = status === 'success' ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+            const statusText = status === 'success' ? 'Éxito' : 'Error';
+
+            const select = document.getElementById('projectSelect');
+            const projectName = (status === 'success') 
+                ? (Array.from(select.options).find(o => o.value == projectId)?.text || `#${projectId}`) 
+                : `#${projectId}`;
+
+            tr.innerHTML = `
+                <td class="px-6 py-3 whitespace-nowrap">
+                    <span class="badge ${badgeClass}">${icon} ${statusText}</span>
+                </td>
+                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700 font-medium">${itemName}</td>
+                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[150px]">${projectName}</td>
+                <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-mono text-xs">${timeString}</td>
+            `;
+            
+            tbody.insertBefore(tr, tbody.firstChild);
+
+            let currentCount = parseInt(countBadge.textContent);
+            countBadge.textContent = currentCount + 1;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toast.className = `toast ${type}`;
+            toastMsg.textContent = message;
+
+            let iconHtml = '';
+            if (type === 'success') iconHtml = '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
+            else if (type === 'error') iconHtml = '<i class="fas fa-times-circle text-red-500 text-xl"></i>';
+            else iconHtml = '<i class="fas fa-exclamation-circle text-yellow-500 text-xl"></i>';
+            
+            toastIcon.innerHTML = iconHtml;
+
+            toast.classList.add('show');
+            
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            
+            window.toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            const createModal = document.getElementById('createObservacionModal');
+            const viewerModal = document.getElementById('viewerModal');
+            
+            if (event.target === createModal) {
+                closeCreateObservacionModal();
+            }
+            if (event.target === viewerModal) {
+                closeViewerModal();
+            }
+        }
+    </script>
+</body>
+</html>

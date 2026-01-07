@@ -152,4 +152,57 @@ CREATE TABLE auditoria2 (
 );
 
 
+CREATE TABLE proyectos_hitos (
+    id SERIAL PRIMARY KEY,
+    proyecto_id INT NOT NULL REFERENCES proyectos(id),
+
+    tipo_hito VARCHAR(100) NOT NULL,
+
+    fecha DATE NOT NULL,
+    observacion TEXT,
+
+    creado_por INT NOT NULL REFERENCES users(user_id),
+    creado_en TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE TABLE proyectos_observaciones (
+    id SERIAL PRIMARY KEY,
+    proyecto_id INT NOT NULL REFERENCES proyectos(id),
+    fecha DATE NOT NULL,
+    creado_por INT NOT NULL REFERENCES users(user_id),
+    observacion TEXT,
+    creado_en TIMESTAMP DEFAULT now()
+);
+
+
+
+CREATE TABLE financiamiento_plazos (
+    id SERIAL PRIMARY KEY,
+
+    financiamiento VARCHAR(50) NOT NULL,
+    hito_origen VARCHAR(100) NOT NULL,
+    hito_destino VARCHAR(100) NOT NULL,
+
+    dias INT NOT NULL,
+    tipo_dia VARCHAR(20) NOT NULL
+    -- 'HABILES' | 'CORRIDOS'
+);
+
+-- FNDR
+INSERT INTO financiamiento_plazos
+(financiamiento, hito_origen, hito_destino, dias, tipo_dia)
+VALUES
+('FNDR', 'RECEPCION_OBSERVACIONES', 'RESPUESTA_OBSERVACIONES', 60, 'CORRIDOS'),
+('FNDR', 'APROBACION_CONVENIO', 'INICIO_LICITACION', 90, 'CORRIDOS');
+
+-- FRIL
+INSERT INTO financiamiento_plazos
+(financiamiento, hito_origen, hito_destino, dias, tipo_dia)
+VALUES
+('FRIL', 'RECEPCION_OBSERVACIONES', 'RESPUESTA_OBSERVACIONES', 20, 'HABILES'),
+('FRIL', 'APROBACION_CONVENIO', 'INICIO_LICITACION', 90, 'CORRIDOS');
+
+
+
+
 

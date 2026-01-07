@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mantenedor de Usuarios</title>
+</head>
+<body>
+
+<h1>Mantenedor de Usuarios</h1>
+
+<hr>
+
+<h2>Crear Usuario</h2>
+
+<form id="formUser">
+
+    <div>
+        <label>Email</label><br>
+        <input type="email" id="email" required>
+    </div>
+
+    <div>
+        <label>Nombre</label><br>
+        <input type="text" id="nombre" required>
+    </div>
+
+    <div>
+        <label>Password</label><br>
+        <input type="password" id="password" required>
+    </div>
+
+    <div>
+        <label>División</label><br>
+        <select id="division_id">
+            <option value="">-- sin división --</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Rol</label><br>
+        <select id="role_id" required>
+            <option value="">-- seleccionar rol --</option>
+        </select>
+    </div>
+
+    <br>
+    <button type="submit">Crear usuario</button>
+
+</form>
+
+<hr>
+
+<h2>Usuarios</h2>
+
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>División</th>
+            <th>Rol (nivel_acceso)</th>
+            <th>Activo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="usersTable"></tbody>
+</table>
+
+<script>
+const API_URL = "https://186.67.61.251:8000/";
+const TOKEN = localStorage.getItem("authToken");
+
+// ----------------------------
+// Cargar divisiones
+// ----------------------------
+async function loadDivisiones() {
+    const res = await fetch(API_URL + "/divisiones", {
+        headers: { "Authorization": "Bearer " + TOKEN }
+    });
+
+    const divisiones = await res.json();
+    const select = document.getElementById("division_id");
+
+    divisiones.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d.division_id;
+        opt.textContent = d.nombre;
+        select.appendChild(opt);
+    });
+}
+
+// ----------------------------
+// Cargar roles
+// ----------------------------
+async function loadRoles() {
+    const res = await fetch(API_URL + "/roles", {
+        headers: { "Authorization": "Bearer " + TOKEN }
+    });
+
+    const roles = await res.json();
+    const select = document.getElementById("role_id");
+
+    roles.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r.role_id;
+        opt.textContent = r.nombre;
+        select.appendChild(opt);
+    });
+}
+
+// ----------------------------
+// Cargar usuarios
+// ----------------------------
+async function loadUsers() {
+    const res = await fetch(API_URL + "/users", {
+        headers: { "Authorization": "Bearer " + TOKEN }
+    });
+
+    const users = await res.json();
+    const tbody = document.getElementById("usersTable");
+    tbody.innerHTML = "";
+
+    users.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${u.user_id}</td>
+            <td>${u.email}</td>
+            <td>${u.nombre}</td>
+            <td>${u.division || ""}</td>
+            <td>${u.nivel_acceso}</td>
+            <td>${u.activo}</td>
+            <td>
+                <button onclick="deleteUser(${u.user_id})">Borrar</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ----------------------------
+// Crear usuario
+// ----------------------------
+document.getElementById("formUser").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const nombre = document.getElementById("nombre").value;
+    const password = document.getElementById("password").value;
+    const division_id = document.getElementById("division_id").value || null;
+    const role_id = document.getElementById("role_id").value;
+
+    if (!role_id) {
+        alert("Debe seleccionar un rol");
+        return;
+    }
+
+    // 1️⃣ Crear usuario con nivel_acceso = role_id
+    const res = await fetch(API_URL + "/users", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + TOKEN
+        },
+        body: JSON.stringify({
+            email,
+            nombre,
+            password,
+            division_id,
+            nivel_acceso: String(role_id)
+        })
+    });
+
+    const result = await res.json();
+
+    if (!res.ok || !result.user_id) {
+        alert("Error creando usuario");
+        return;
+    }
+
+    const userId = result.user_id;
+
+    // 2️⃣ Asignar rol
+    await fetch(`${API_URL}/users/${userId}/roles`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + TOKEN
+        },
+        body: JSON.stringify({ roles: [parseInt(role_id)] })
+    });
+
+    alert("Usuario creado correctamente");
+
+    e.target.reset();
+    loadUsers();
+});
+
+// ----------------------------
+// Borrar usuario
+// ----------------------------
+async function deleteUser(userId) {
+    if (!confirm("¿Seguro que deseas borrar este usuario?")) return;
+
+    const res = await fetch(`${API_URL}/users/${userId}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + TOKEN }
+    });
+
+    if (!res.ok) {
+        alert("Error borrando usuario");
+        return;
+    }
+
+    alert("Usuario eliminado");
+    loadUsers();
+}
+
+// INIT
+loadDivisiones();
+loadRoles();
+loadUsers();
+</script>
+
+</body>
+</html>

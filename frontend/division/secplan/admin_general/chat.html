@@ -831,30 +831,34 @@ Formato de salida requerido:
 [/PREGUNTAS]`;
 
             } else {
+                console.log(context.filteredProjects)
+                const totalProyectos = context.filteredProjects.length; // Calculado por JS
                 // --- LÓGICA PARA MODO GENERAL ---
                 // Usamos AppState.filterProject (Lista de proyectos filtrados)
                 
                 // Mapeamos la lista a un JSON simple para ahorrar tokens pero mantener datos clave
                 const projectsListJSON = JSON.stringify(context.filteredProjects.map(p => ({
-                    id: p.id,
-                    codigo: p.codigo,
                     nombre: p.nombre,
                     area: p.area,
                     estado: p.estado_proyecto,
                     monto: p.monto
-                })));
+                })),null,0);
 
                 systemPrompt = `Eres un asistente útil del Geoportal Municipal.
 Actualmente NO hay ningún proyecto seleccionado específicamente.
 
-LISTA DE PROYECTOS FILTRADOS (VISIBLES EN PANTALLA):
- ${projectsListJSON}
 
 INSTRUCCIONES:
 1. Responde a preguntas utilizando la "LISTA DE PROYECTOS FILTRADOS" como fuente de verdad.
 2. Puedes contar proyectos, buscar por estado, área o montos dentro de esta lista.
 3. Si el usuario pregunta detalles profundos de documentos, invítalo a seleccionar un proyecto específico de la lista.
 4. Responde siempre en español y usa formato Markdown.
+5. Antes de dar la respuesta final, explica brevemente: 'Procesando lista... encontrados X proyectos
+6. Considera que los valores de los proyectos estan en pesos chilenos (CLP)
+
+LISTA DE PROYECTOS FILTRADOS (VISIBLES EN PANTALLA):
+ ${projectsListJSON}
+NOTA: Hay exactamente ${totalProyectos} proyectos en esta lista. Usa este número como referencia.
 
 Formato de salida requerido:
 [RESPUESTA]
@@ -873,7 +877,8 @@ Formato de salida requerido:
                     { role: "system", content: systemPrompt },
                     ...AppState.chatHistory.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH)
                 ],
-                temperature: 0.1
+                temperature: 0.3,
+                //max_tokens: 5500   // 👈 límite de tokens de salida
             };
 
             const response = await fetch(API_URL, {

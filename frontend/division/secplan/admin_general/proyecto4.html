@@ -311,9 +311,9 @@
                         </div>
 
                         <!-- Filtros Select Conectados -->
-                        <div class="flex flex-1 w-full gap-3">
+                        <div class="flex flex-1 w-full gap-3 flex-wrap">
                             <!-- Filtro Área -->
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-[140px]">
                                 <label for="filterArea" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
                                 <select id="filterArea" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Todas las áreas</option>
@@ -321,7 +321,7 @@
                             </div>
                             
                             <!-- Filtro Financiamiento -->
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-[140px]">
                                 <label for="filterFinancing" class="block text-sm font-medium text-gray-700 mb-1">Financiamiento</label>
                                 <select id="filterFinancing" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Todo el financiamiento</option>
@@ -329,17 +329,25 @@
                             </div>
 
                             <!-- Filtro Estado -->
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-[140px]">
                                 <label for="filterStatus" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                                 <select id="filterStatus" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="">Todos los estados</option>
                                 </select>
                             </div>
+
+                            <!-- NUEVO FILTRO PROFESIONAL -->
+                            <div class="flex-1 min-w-[140px]">
+                                <label for="filterProfessional" class="block text-sm font-medium text-gray-700 mb-1">Profesional</label>
+                                <select id="filterProfessional" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option value="">Todos los profesionales</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Botón Limpiar -->
-                        <div>
-                            <button onclick="clearFilters()" class="mt-6 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                        <div class="w-full md:w-auto">
+                            <button onclick="clearFilters()" class="w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
                                 <i class="fas fa-times-circle"></i> Limpiar
                             </button>
                         </div>
@@ -658,6 +666,7 @@
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterFinancing').addEventListener('change', applyFilters);
             document.getElementById('filterStatus').addEventListener('change', applyFilters);
+            document.getElementById('filterProfessional').addEventListener('change', applyFilters); // Nuevo Listener
             
             document.getElementById('proyectoForm').addEventListener('submit', handleSubmit);
         });
@@ -684,6 +693,7 @@
                 }
 
                 proyectos = await response.json();
+                console.log(proyectos)
                 
                 // Inicializar filtros con todos los datos disponibles
                 updateFilterOptions();
@@ -702,12 +712,12 @@
             }
         }
 
-        // --- LÓGICA DE FILTROS CONECTADOS ---
+        // --- LÓGICA DE FILTROS CONECTADOS (ACTUALIZADA) ---
 
         // Función auxiliar para regenerar el HTML de un <select>
         function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
             const select = document.getElementById(selectElementId);
-            const currentValueValue = currentValue || select.value; // Mantener valor si no se pasa uno explícito
+            const currentValueValue = currentValue || select.value; 
             
             // Guardar el valor actual antes de modificar el HTML
             const previousValue = select.value;
@@ -728,37 +738,70 @@
             }
         }
 
-        // Función maestra que actualiza las opciones de los 3 selectores
-        // basándose en lo que está seleccionado en los otros.
+        // Función auxiliar para extraer profesionales de un proyecto
+        function getProfessionalsFromProject(p) {
+            // Revisamos las 5 columnas solicitadas
+            return [
+                p.profesional_1, 
+                p.profesional_2, 
+                p.profesional_3, 
+                p.profesional_4, 
+                p.profesional_5
+            ].filter(Boolean); // Eliminar nulos/vacíos
+        }
+
+        // Función maestra que actualiza las opciones de los 4 selectores
         function updateFilterOptions() {
             const selectedArea = document.getElementById('filterArea').value;
             const selectedFinancing = document.getElementById('filterFinancing').value;
             const selectedStatus = document.getElementById('filterStatus').value;
+            const selectedProfessional = document.getElementById('filterProfessional').value;
 
-            // 1. Calcular Áreas disponibles (filtrando por Financiamiento y Estado seleccionados)
-            // Si Area no está seleccionada, mostramos todas las áreas que coinciden con el financiamiento y estado activos
-            const dataForAreas = proyectos.filter(p => 
-                (selectedFinancing === '' || p.financiamiento === selectedFinancing) &&
-                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
-            );
+            // 1. Calcular Áreas disponibles (filtrando por Financiamiento, Estado y Profesional)
+            const dataForAreas = proyectos.filter(p => {
+                const profs = getProfessionalsFromProject(p);
+                const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
+                return matchesPro &&
+                       (selectedFinancing === '' || p.financiamiento === selectedFinancing) &&
+                       (selectedStatus === '' || p.estado_proyecto === selectedStatus);
+            });
             const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
             populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
 
-            // 2. Calcular Financiamientos disponibles (filtrando por Área y Estado seleccionados)
-            const dataForFinancing = proyectos.filter(p => 
-                (selectedArea === '' || p.area === selectedArea) &&
-                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
-            );
+            // 2. Calcular Financiamientos disponibles (filtrando por Área, Estado y Profesional)
+            const dataForFinancing = proyectos.filter(p => {
+                const profs = getProfessionalsFromProject(p);
+                const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
+                return matchesPro &&
+                       (selectedArea === '' || p.area === selectedArea) &&
+                       (selectedStatus === '' || p.estado_proyecto === selectedStatus);
+            });
             const uniqueFinancing = [...new Set(dataForFinancing.map(p => p.financiamiento).filter(Boolean))].sort();
             populateSelectOptions('filterFinancing', uniqueFinancing, 'Todo el financiamiento', selectedFinancing);
 
-            // 3. Calcular Estados disponibles (filtrando por Área y Financiamiento seleccionados)
-            const dataForStatus = proyectos.filter(p => 
-                (selectedArea === '' || p.area === selectedArea) &&
-                (selectedFinancing === '' || p.financiamiento === selectedFinancing)
-            );
+            // 3. Calcular Estados disponibles (filtrando por Área, Financiamiento y Profesional)
+            const dataForStatus = proyectos.filter(p => {
+                const profs = getProfessionalsFromProject(p);
+                const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
+                return matchesPro &&
+                       (selectedArea === '' || p.area === selectedArea) &&
+                       (selectedFinancing === '' || p.financiamiento === selectedFinancing);
+            });
             const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
             populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
+
+            // 4. Calcular Profesionales disponibles (filtrando por Área, Financiamiento y Estado)
+            const dataForProfessionals = proyectos.filter(p => 
+                (selectedArea === '' || p.area === selectedArea) &&
+                (selectedFinancing === '' || p.financiamiento === selectedFinancing) &&
+                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
+            );
+            
+            // Extraer todos los profesionales de los proyectos filtrados
+            const allProfessionalsList = dataForProfessionals.flatMap(getProfessionalsFromProject);
+            const uniqueProfessionals = [...new Set(allProfessionalsList)].sort();
+            
+            populateSelectOptions('filterProfessional', uniqueProfessionals, 'Todos los profesionales', selectedProfessional);
         }
 
         function applyFilters() {
@@ -769,6 +812,7 @@
             const selectedArea = document.getElementById('filterArea').value;
             const selectedFinancing = document.getElementById('filterFinancing').value;
             const selectedStatus = document.getElementById('filterStatus').value;
+            const selectedProfessional = document.getElementById('filterProfessional').value;
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
             // Paso 3: Filtrar los datos para la tabla
@@ -781,8 +825,12 @@
                 const matchesArea = selectedArea === '' || proyecto.area === selectedArea;
                 const matchesFinancing = selectedFinancing === '' || proyecto.financiamiento === selectedFinancing;
                 const matchesStatus = selectedStatus === '' || proyecto.estado_proyecto === selectedStatus;
+                
+                // Lógica para verificar si el proyecto tiene al profesional seleccionado en cualquiera de sus 5 columnas
+                const projectProfessionals = getProfessionalsFromProject(proyecto);
+                const matchesProfessional = selectedProfessional === '' || projectProfessionals.includes(selectedProfessional);
 
-                return matchesSearch && matchesArea && matchesFinancing && matchesStatus;
+                return matchesSearch && matchesArea && matchesFinancing && matchesStatus && matchesProfessional;
             });
 
             // Paso 4: Renderizar resultados
@@ -796,6 +844,7 @@
             document.getElementById('filterArea').value = '';
             document.getElementById('filterFinancing').value = '';
             document.getElementById('filterStatus').value = '';
+            document.getElementById('filterProfessional').value = ''; // Limpiar filtro profesional
             applyFilters();
         }
 
@@ -816,6 +865,9 @@
                 return;
             }
 
+            // Determinar si debemos agregar la clase de visibilidad basándonos en el estado global
+            const visibilityClass = columnsVisible ? 'toggle-column-visible' : '';
+
             tableBody.innerHTML = proyectosToRender.map(proyecto => {
                 let statusClass = '';
                 if (proyecto.estado_proyecto === 'Ejecución') statusClass = 'bg-green-100 text-green-800';
@@ -835,17 +887,17 @@
                 
                 return `
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 toggle-column">${proyecto.id || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 toggle-column ${visibilityClass}">${proyecto.id || ''}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${proyecto.nombre || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.area || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column">${proyecto.financiamiento || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column font-mono">${formatCurrency(proyecto.monto)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap toggle-column">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.area || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.financiamiento || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass} font-mono">${formatCurrency(proyecto.monto)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap toggle-column ${visibilityClass}">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
                                 ${proyecto.estado_proyecto || ''}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap toggle-column">
+                        <td class="px-6 py-4 whitespace-nowrap toggle-column ${visibilityClass}">
                             <div class="flex items-center">
                                 <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
                                     <div class="${progressClass} h-2.5 rounded-full" style="width: ${displayProgress}%"></div>

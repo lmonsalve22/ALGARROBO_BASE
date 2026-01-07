@@ -226,7 +226,8 @@
                         // Save token to localStorage
                         localStorage.setItem('authToken', data.token);
                         localStorage.setItem('isLoggedIn', 'true');
-                        console.log("data",data)
+                        console.log("datax",data)
+                        
                         // Save user data for future reference
                         if (data.user) {
                             localStorage.setItem('userData', JSON.stringify(data.user));
@@ -237,11 +238,14 @@
                         } else {
                             localStorage.removeItem('rememberUser');
                         }
-
+                        
                         const division = data.user.division.nombre.toLowerCase();
+                        
                         const rol = data.user.roles[0].nombre.toLowerCase();
+                        console.log("data2",data.user.division)
                         let ruta = `/ALGARROBO_BASE/frontend/division/${division}/${rol}/dashboard.html`
                         console.log("User",data.user.nivel_acceso)
+                        
                         if (data.user.nivel_acceso == 10){
                             ruta = `/ALGARROBO_BASE/frontend/administracion/index.html`;
                         }
