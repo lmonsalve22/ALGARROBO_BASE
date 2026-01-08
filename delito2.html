@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Estratégico de Seguridad Pública - Comuna Santiago</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ==========================================================================
+           CSS Variables - Configuración Base (Modo Oscuro/Institucional)
+           ========================================================================== */
+        :root {
+            --bg-color: #121212;
+            --content-bg-color: #1e1e1e;
+            --card-bg-color: #2a2a2a;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --border-color: #444444;
+            --accent-color: #5a9fd4;
+            --accent-secondary: #2c3e50;
+            --alert-bg-color: #2c2c2c;
+            --table-hover-bg: #333333;
+            --chart-grid-color: rgba(255, 255, 255, 0.1);
+            --modal-overlay: rgba(0, 0, 0, 0.8);
+            --modal-bg: #2a2a2a;
+            
+            /* Semáforo Estratégico */
+            --color-trend-up: #e74c3c;   /* Rojo para alza */
+            --color-trend-down: #27ae60; /* Verde para baja */
+            --color-neutral: #f39c12;    /* Naranja para estable */
+        }
+
+        /* ==========================================================================
+           Base Styles
+           ========================================================================== */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 20px; line-height: 1.5;
+            color: var(--text-color); background-color: var(--bg-color);
+            font-size: 11pt; /* Tamaño cómodo para lectura en pantalla e impresión */
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Tipografía Institucional */
+        h1, h2, h3, h4 { color: var(--heading-color); margin-top: 0; font-weight: 600; }
+        h1 { font-size: 1.8rem; margin-bottom: 10px; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; }
+        h2 { font-size: 1.4rem; margin-bottom: 15px; margin-top: 30px; border-left: 5px solid var(--accent-color); padding-left: 10px; background: linear-gradient(90deg, rgba(90,159,212,0.1) 0%, transparent 100%); }
+        h3 { font-size: 1.15rem; margin-bottom: 12px; color: var(--accent-color); }
+        h4 { font-size: 1rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Secciones y Contenedores */
+        .section { 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            background-color: var(--content-bg-color);
+            break-inside: avoid; 
+            page-break-inside: avoid;
+        }
+
+        /* Tarjetas de Resumen Ejecutivo (High Impact) */
+        .executive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .exec-card {
+            padding: 15px;
+            border-left: 4px solid;
+            background-color: var(--card-bg-color);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .exec-card.trend-up { border-left-color: var(--color-trend-up); }
+        .exec-card.trend-down { border-left-color: var(--color-trend-down); }
+        .exec-card.highlight { border-left-color: var(--accent-color); }
+        
+        .exec-label { font-size: 0.85rem; text-transform: uppercase; color: #bbb; display: block; margin-bottom: 5px; }
+        .exec-value { font-size: 1.5rem; font-weight: bold; display: block; }
+        .exec-desc { font-size: 0.9rem; margin-top: 5px; color: #ccc; }
+
+        /* Gráficos Estáticos */
+        .chart-wrapper { 
+            height: 350px; 
+            margin: 20px 0; 
+            border: 1px solid var(--border-color); 
+            padding: 10px; 
+            border-radius: 4px; 
+            position: relative; 
+            break-inside: avoid;
+        }
+
+        /* Tablas Institucionales */
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9rem; }
+        th, td { border: 1px solid var(--border-color); padding: 8px 12px; text-align: left; }
+        th { background-color: var(--alert-bg-color); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+        tr:nth-child(even) { background-color: rgba(255,255,255,0.03); }
+        
+        /* Celda de Conclusión Estratégica */
+        td.strategy-conclusion {
+            font-style: italic;
+            background-color: rgba(90, 159, 212, 0.1);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        /* Badges */
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; display: inline-block; }
+        .badge-up { background-color: rgba(231, 76, 60, 0.2); color: #ff6b6b; border: 1px solid #c0392b; }
+        .badge-down { background-color: rgba(39, 174, 96, 0.2); color: #58d68d; border: 1px solid #27ae60; }
+        .badge-stable { background-color: rgba(243, 156, 18, 0.2); color: #f4d03f; border: 1px solid #d68910; }
+
+        /* Escenarios Interactivos (Simulador) */
+        .scenario-box {
+            background-color: var(--card-bg-color);
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .scenario-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .range-slider { width: 100%; cursor: pointer; accent-color: var(--accent-color); }
+        .result-box { text-align: center; padding: 15px; background: var(--bg-color); border-radius: 4px; margin-top: 15px; }
+
+        /* Advertencias Metodológicas */
+        .methodology-note {
+            font-size: 0.8rem;
+            color: #888;
+            border-top: 1px dashed var(--border-color);
+            margin-top: 20px;
+            padding-top: 10px;
+            font-style: italic;
+        }
+
+        /* Recomendaciones */
+        .rec-list { list-style: none; padding: 0; }
+        .rec-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+        .rec-list li::before {
+            content: "➜";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* ==========================================================================
+           Print Styles - Optimizado para PDF Oficial
+           ========================================================================== */
+        @media print {
+            body { 
+                background-color: #fff !important; 
+                color: #000 !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                padding: 0;
+            }
+            .container { max-width: 100%; width: 100%; margin: 0; }
+            .section { 
+                page-break-inside: avoid; 
+                border: 1px solid #ccc; 
+                background-color: #fff !important; 
+                box-shadow: none;
+            }
+            .chart-wrapper { height: 300px; border: 1px solid #ccc; page-break-inside: avoid; }
+            h1, h2, h3, h4 { color: #000 !important; }
+            .exec-card { border: 1px solid #000; background: #f9f9f9 !important; box-shadow: none; break-inside: avoid; }
+            td.strategy-conclusion { background-color: #f0f0f0 !important; border-left-color: #000; -webkit-print-color-adjust: exact; }
+            table { border: 1px solid #000; }
+            th { background-color: #eee !important; color: #000; border: 1px solid #000; }
+            td { border: 1px solid #000; }
+            .scenario-box { display: none; /* Ocultar simulador en impresión, mostrar solo escenarios estáticos */ }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <!-- ENCABEZADO INSTITUCIONAL -->
+        <header style="margin-bottom: 30px; break-inside: avoid;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <p style="margin: 0; color: var(--accent-color); font-weight: bold; font-size: 0.9rem; text-transform: uppercase;">Plataforma Ley STOP</p>
+                    <h1>Informe Estratégico de Seguridad Pública</h1>
+                    <p style="margin: 5px 0 0 0; color: #888;">Comuna de Santiago &bull; Semana 38 &bull; Año 2025</p>
+                </div>
+                <div style="text-align: right; font-size: 0.8rem; color: #888;">
+                    <p><strong>Destinatarios:</strong> Alcaldía, Delegación Presidencial, Concejo, Fiscalía, Prensa.</p>
+                    <p><strong>Confidencialidad:</strong> Uso Interno / Público</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- 1. RESUMEN EJECUTIVO (JERARQUÍA DEL MENSAJE) -->
+        <section class="section">
+            <h2>1. Resumen Ejecutivo</h2>
+            <p style="margin-bottom: 20px;">El presente informe busca <strong>evidenciar</strong> la dinámica delictual reciente para <strong>consolidar</strong> estrategias de prevención y control. A continuación, se presentan los indicadores críticos del período.</p>
+            
+            <div class="executive-grid">
+                <!-- Respuesta 1: ¿Aumenta o Disminuye? -->
+                <div class="exec-card trend-up">
+                    <span class="exec-label">Tendencia General (Semana)</span>
+                    <span class="exec-value" style="color: var(--color-trend-up);">ALZA (+8.5%)</span>
+                    <span class="exec-desc">La incidencia delictual evidencia un incremento sostenido respecto a la semana anterior.</span>
+                </div>
+
+                <!-- Respuesta 2: ¿Delito Más Frecuente? -->
+                <div class="exec-card highlight">
+                    <span class="exec-label">Delito Más Frecuente</span>
+                    <span class="exec-value">HURTOS</span>
+                    <span class="exec-desc">Concentra el 25% del total de registros semanales. Mayor impacto en volumen.</span>
+                </div>
+
+                <!-- Respuesta 3: ¿Delito que Más Aumenta? -->
+                <div class="exec-card trend-up">
+                    <span class="exec-label">Mayor Crecimiento</span>
+                    <span class="exec-value">ROBOS CON VIOLENCIA</span>
+                    <span class="exec-desc">Aumento interanual del +31% en misma semana. Prioridad estratégica.</span>
+                </div>
+
+                <!-- Dato Positivo: Sin relativizar -->
+                <div class="exec-card trend-down">
+                    <span class="exec-label">Comportamiento Positivo</span>
+                    <span class="exec-value" style="color: var(--color-trend-down);">DAÑOS (-15%)</span>
+                    <span class="exec-desc">Disminución sostenida en delitos contra la propiedad respecto a semana anterior.</span>
+                </div>
+            </div>
+
+            <article class="methodology-note">
+                <strong>Fuente:</strong> Datos exclusivos Plataforma Ley STOP. No comparables con otras instituciones. <br>
+                <strong>Nota Metodológica:</strong> Los análisis se basan en frecuencia y tendencia. La variabilidad semanal es propia del registro administrativo.
+            </article>
+        </section>
+
+        <!-- 2. ANÁLISIS COMPARATIVO SEMANAL -->
+        <section class="section">
+            <h2>2. Análisis Exploratorio Semanal</h2>
+            <article class="subsection">
+                <h3>2.a Comparativo Semana Actual vs Semana Anterior</h3>
+                <p>Se evidencia una dinámica compleja donde los delitos de menor connotación social (Daños) disminuyen, mientras que los delitos violentos muestran un repunte preocupante.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipificación</th>
+                            <th>Semana Actual</th>
+                            <th>Semana Anterior</th>
+                            <th>Variación</th>
+                            <th>Conclusión Estratégica</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Robos con violencia e intimidación</strong></td>
+                            <td>245</td>
+                            <td>199</td>
+                            <td><span class="badge badge-up">+23%</span></td>
+                            <td class="strategy-conclusion">Requiere intervención inmediata y refuerzo de presencia policial en hotspots.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hurto</strong></td>
+                            <td>312</td>
+                            <td>264</td>
+                            <td><span class="badge badge-up">+18%</span></td>
+                            <td class="strategy-conclusion">Mantiene tendencia al alza. Necesario fortalecer prevención situacional.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Violaciones y delitos sexuales</strong></td>
+                            <td>45</td>
+                            <td>39</td>
+                            <td><span class="badge badge-up">+15%</span></td>
+                            <td class="strategy-conclusion">Alta sensibilidad social. Requiere coordinación con Fiscalía y apoyo a víctimas.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lesiones leves</strong></td>
+                            <td>187</td>
+                            <td>167</td>
+                            <td><span class="badge badge-up">+12%</span></td>
+                            <td class="strategy-conclusion">Indicador de conflictividad interpersonal en espacios públicos.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Daños</strong></td>
+                            <td>123</td>
+                            <td>145</td>
+                            <td><span class="badge badge-down">-15%</span></td>
+                            <td class="strategy-conclusion">Comportamiento positivo. Sugiere efectividad de controles o variabilidad estadística favorable.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <!-- 2.b GRÁFICOS: EVOLUCIÓN POR DELITO (Foco Visual) -->
+            <h3>2.b Evolución Semanal (Últimas 12 semanas)</h3>
+            <p>La siguiente serie temporal permite consolidar la identificación de tendencias sostenidas a corto plazo para cada categoría delictual.</p>
+            
+            <h4>Robos con violencia e intimidación</h4>
+            <div class="chart-wrapper"><canvas id="chart-robos"></canvas></div>
+            
+            <h4>Hurto</h4>
+            <div class="chart-wrapper"><canvas id="chart-hurto"></canvas></div>
+
+            <h4>Violaciones y delitos sexuales</h4>
+            <div class="chart-wrapper"><canvas id="chart-violaciones"></canvas></div>
+        </section>
+
+        <!-- 3. ANÁLISIS ANUAL Y MENSUAL -->
+        <section class="section">
+            <h2>3. Perspectiva Temporal Ampliada</h2>
+            <article class="subsection">
+                <h3>3.a Comparativo Anual (Año Actual vs Año Anterior)</h3>
+                <p>El análisis anual permite <strong>evidenciar</strong> estructuras de comportamiento delictual que trascienden la variabilidad semanal.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipificación</th>
+                            <th>Año Actual</th>
+                            <th>Año Anterior</th>
+                            <th>Variación Anual</th>
+                            <th>Conclusión Estratégica</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Robos con violencia</strong></td>
+                            <td>5,872</td>
+                            <td>5,234</td>
+                            <td><span class="badge badge-up">+12.2%</span></td>
+                            <td class="strategy-conclusion">Tendencia estructural al alza. Prioridad absoluta en plan de seguridad.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Violaciones y delitos sexuales</strong></td>
+                            <td>1,876</td>
+                            <td>1,567</td>
+                            <td><span class="badge badge-up">+19.7%</span></td>
+                            <td class="strategy-conclusion">Crecimiento interanual más elevado. Demanda políticas transversales.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hurto</strong></td>
+                            <td>12,456</td>
+                            <td>12,123</td>
+                            <td><span class="badge badge-stable">+2.7%</span></td>
+                            <td class="strategy-conclusion">Estabilidad relativa. Mantener estrategias de disuasión actuales.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lesiones leves</strong></td>
+                            <td>7,456</td>
+                            <td>7,123</td>
+                            <td><span class="badge badge-stable">+4.7%</span></td>
+                            <td class="strategy-conclusion">Incremento leve. Monitoreo de conflictividad urbana.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Daños</strong></td>
+                            <td>4,892</td>
+                            <td>5,123</td>
+                            <td><span class="badge badge-down">-4.5%</span></td>
+                            <td class="strategy-conclusion">Mejora sostenida. Validar factores de éxito en prevención.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+            
+            <h3>3.b Evolución Mensual (Últimos 6 meses)</h3>
+            <div class="chart-wrapper"><canvas id="chart-mensual-robos"></canvas></div>
+        </section>
+
+        <!-- 4. ESCENARIOS (PROYECCIONES) -->
+        <section class="section">
+            <h2>4. Escenarios de Tendencia</h2>
+            <p style="margin-bottom: 15px;">
+                A continuación se presentan <strong>escenarios estimados</strong> basados en la proyección de tendencias históricas recientes. 
+                <br><strong>Advertencia:</strong> Estos datos no constituyen una predicción categórica, sino una herramienta de apoyo técnico para la planificación de recursos. Están sujetos a la variabilidad inherente del fenómeno delictual.
+            </p>
+
+            <h3>4.a Escenario Semanal (Próximas 4 semanas)</h3>
+            <p>Proyección de tendencia para delitos de mayor connotación social (Robos con violencia).</p>
+            <div class="chart-wrapper"><canvas id="chart-escenario-robos"></canvas></div>
+            
+            <div style="background-color: rgba(230, 126, 34, 0.1); padding: 10px; border-left: 3px solid #e67e22; margin-top: 10px;">
+                <strong>Interpretación del Escenario:</strong> Se proyecta un aplanamiento de la curva de crecimiento en las próximas 4 semanas, aunque manteniéndose por encima del promedio histórico. Sugiere mantener la alerta operativa.
+            </div>
+
+            <!-- Simulador de Asignación de Recursos (Interactive Tool) -->
+            <div class="scenario-box">
+                <h3>4.b Simulador de Asignación de Recursos (Herramienta de Apoyo)</h3>
+                <p>Este simulador permite estimar el impacto teórico de decisiones operativas (Patrullaje, Iluminación, Cámaras) sobre la incidencia delictual proyectada.</p>
+                
+                <div class="scenario-row">
+                    <label style="width: 200px;">Incremento Patrullaje</label>
+                    <input type="range" min="-50" max="50" value="0" class="range-slider" id="slider-patrol">
+                    <span id="val-patrol" style="width: 40px; text-align: right;">0%</span>
+                </div>
+                <div class="scenario-row">
+                    <label style="width: 200px;">Mejora Alumbrado</label>
+                    <input type="range" min="-50" max="50" value="0" class="range-slider" id="slider-light">
+                    <span id="val-light" style="width: 40px; text-align: right;">0%</span>
+                </div>
+                <div class="scenario-row">
+                    <label style="width: 200px;">Nuevas Cámaras</label>
+                    <input type="range" min="-50" max="50" value="0" class="range-slider" id="slider-cam">
+                    <span id="val-cam" style="width: 40px; text-align: right;">0%</span>
+                </div>
+
+                <div class="result-box">
+                    <h4>Resultado Estimado del Escenario</h4>
+                    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 10px;">
+                        <div>
+                            <small>Proyección Base</small>
+                            <div style="font-size: 1.5rem; font-weight: bold;">1,245</div>
+                        </div>
+                        <div style="font-size: 2rem;">➜</div>
+                        <div>
+                            <small>Escenario Ajustado</small>
+                            <div id="final-result" style="font-size: 1.5rem; font-weight: bold; color: var(--accent-color);">1,245</div>
+                        </div>
+                    </div>
+                    <small style="display: block; margin-top: 10px; color: #888;">*Cálculo basado en ponderaciones históricas aproximadas. Solo referencial.</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CONCLUSIONES Y RECOMENDACIONES -->
+        <section class="section" style="border: 2px solid var(--accent-color);">
+            <h2>5. Conclusiones Estratégicas y Recomendaciones</h2>
+            
+            <article>
+                <h3>5.1 Síntesis de Situación</h3>
+                <p>La comuna evidencia una fase de <strong>crecimiento de la delincuencia</strong>, impulsada principalmente por delitos de mayor connotación social y violencia (Robos con violencia). Si bien los delitos contra la propiedad (Daños) muestran una mejora, la percepción de inseguridad likely aumentará debido a la agresividad de los hechos registrados. La situación requiere una respuesta contundente pero focalizada.</p>
+            </article>
+
+            <article style="margin-top: 20px;">
+                <h3>5.2 Recomendaciones Institucionales</h3>
+                <ul class="rec-list">
+                    <li>
+                        <strong>Refuerzo Focalizado en Zonas Calientes:</strong> Redistribuir efectivos policiales hacia los sectores con mayor incidencia de Robos con Violencia, priorizando horarios punta y fines de semana, según datos Ley STOP.
+                    </li>
+                    <li>
+                        <strong>Plan de Prevención de Delitos Sexuales:</strong> Activar protocolos coordinados entre Municipalidad, Carabineros y Fiscalía para el abordaje de la tendencia al alza en violaciones y delitos sexuales, incluyendo mejoramiento de iluminación en espacios públicos vulnerables.
+                    </li>
+                    <li>
+                        <strong>Mantenimiento de Estrategias contra Hurto:</strong> Dado que el hurto es el delito más frecuente, mantener las actuales estrategias de disuasión visual (community watch) y controles en centros comerciales para evitar un cambio de tendencia al alza.
+                    </li>
+                    <li>
+                        <strong>Comunicación Pública:</strong> Utilizar el dato positivo de la reducción de Daños para comunicar avances parciales, evitando alarmismos, pero reconociendo la gravedad del incremento en delitos violentos.
+                    </li>
+                </ul>
+            </article>
+        </section>
+
+        <footer style="text-align: center; color: #666; font-size: 0.8rem; margin-top: 40px; border-top: 1px solid #333; padding-top: 20px;">
+            <p>Informe generado automáticamente por Plataforma Ley STOP. <br> Este documento es de carácter informativo para el apoyo a la toma de decisiones.</p>
+        </footer>
+    </main>
+
+    <script>
+        // Configuración Global de Gráficos
+        Chart.defaults.font.family = "'Segoe UI', 'Roboto', sans-serif";
+        Chart.defaults.color = '#e0e0e0';
+        
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#444',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { 
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    beginAtZero: true 
+                }
+            }
+        };
+
+        // Datos (Simulados para el ejemplo)
+        const labelsWeeks = Array.from({length: 12}, (_, i) => `Sem ${27+i}`);
+        const labelsMonths = ['Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'];
+        const labelsScenario = ['Sem 38 (Actual)', 'Sem 39', 'Sem 40', 'Sem 41', 'Sem 42'];
+
+        // --- GRÁFICOS SECCIÓN 2.b (Evolución Semanal) ---
+        
+        // Robos con Violencia (Tendencia Alcista)
+        new Chart(document.getElementById('chart-robos'), {
+            type: 'line',
+            data: {
+                labels: labelsWeeks,
+                datasets: [{
+                    label: 'Robos con Violencia (2025)',
+                    data: [180, 195, 210, 205, 220, 245, 230, 235, 240, 250, 260, 245],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: {display: true, text: 'Tendencia Alcista Sostenida'} } }
+        });
+
+        // Hurto (Oscilatorio)
+        new Chart(document.getElementById('chart-hurto'), {
+            type: 'line',
+            data: {
+                labels: labelsWeeks,
+                datasets: [{
+                    label: 'Hurto (2025)',
+                    data: [280, 290, 300, 295, 305, 312, 300, 305, 310, 315, 320, 312],
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: {display: true, text: 'Alta Frecuencia con Variabilidad'} } }
+        });
+
+        // Violaciones (Alarma Social)
+        new Chart(document.getElementById('chart-violaciones'), {
+            type: 'bar', // Bar para dar énfasis a la gravedad
+            data: {
+                labels: labelsWeeks,
+                datasets: [{
+                    label: 'Delitos Sexuales (2025)',
+                    data: [35, 36, 38, 37, 40, 45, 42, 43, 44, 46, 47, 45],
+                    backgroundColor: '#8e44ad',
+                }]
+            },
+            options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: {display: true, text: 'Sensibilidad Social (Tendencia en Aumento)'} } }
+        });
+
+        // --- GRÁFICOS SECCIÓN 3.b (Mensual) ---
+        new Chart(document.getElementById('chart-mensual-robos'), {
+            type: 'line',
+            data: {
+                labels: labelsMonths,
+                datasets: [{
+                    label: 'Robos con Violencia',
+                    data: [850, 890, 920, 910, 950, 987],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'transparent',
+                    borderDash: [5,5],
+                    tension: 0.1
+                }, {
+                    label: 'Año Anterior',
+                    data: [820, 840, 860, 850, 880, 900],
+                    borderColor: '#7f8c8d',
+                    backgroundColor: 'transparent',
+                    borderDash: [2,2],
+                }]
+            },
+            options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: {display: true, text: 'Comparativa Mensual: Brecha en Aumento'} } }
+        });
+
+        // --- GRÁFICO SECCIÓN 4.a (Escenario) ---
+        new Chart(document.getElementById('chart-escenario-robos'), {
+            type: 'line',
+            data: {
+                labels: labelsScenario,
+                datasets: [
+                    {
+                        label: 'Histórico (Sem 35-38)',
+                        data: [220, 235, 240, 245],
+                        borderColor: '#95a5a6',
+                        borderWidth: 2,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Escenario Proyectado',
+                        data: [null, null, null, 245, 255, 260, 265, 258],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        borderDash: [5,5],
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: {display: true, text: 'Estimación de Tendencia (Próximas 4 Semanas)'} } }
+        });
+
+        // --- LÓGICA SIMULADOR (Sección 4.b) ---
+        const sPatrol = document.getElementById('slider-patrol');
+        const sLight = document.getElementById('slider-light');
+        const sCam = document.getElementById('slider-cam');
+        const vPatrol = document.getElementById('val-patrol');
+        const vLight = document.getElementById('val-light');
+        const vCam = document.getElementById('val-cam');
+        const finalRes = document.getElementById('final-result');
+
+        const BASE = 1245;
+
+        function updateSimulator() {
+            // Actualizar etiquetas
+            vPatrol.innerText = (sPatrol.value > 0 ? '+' : '') + sPatrol.value + '%';
+            vLight.innerText = (sLight.value > 0 ? '+' : '') + sLight.value + '%';
+            vCam.innerText = (sCam.value > 0 ? '+' : '') + sCam.value + '%';
+
+            // Lógica simple de impacto (Ponderada)
+            // Patrulla: -0.3% de impacto por cada % de inversión
+            // Luz: -0.2%
+            // Camara: -0.25%
+            const impact = (parseInt(sPatrol.value) * -0.3) + 
+                           (parseInt(sLight.value) * -0.2) + 
+                           (parseInt(sCam.value) * -0.25);
+            
+            const result = Math.round(BASE * (1 + (impact / 100)));
+            
+            finalRes.innerText = result.toLocaleString('es-CL');
+            
+            // Color semántico
+            if(result < BASE) finalRes.style.color = '#27ae60';
+            else if (result > BASE) finalRes.style.color = '#e74c3c';
+            else finalRes.style.color = '#e0e0e0';
+        }
+
+        [sPatrol, sLight, sCam].forEach(el => el.addEventListener('input', updateSimulator));
+
+    </script>
+</body>
+</html>

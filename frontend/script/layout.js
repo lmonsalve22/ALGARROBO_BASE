@@ -165,7 +165,7 @@ function renderSidebar(containerId = "sidebarContainer") {
                 <li>
                     <a href="${pages.observacion}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.observacion)}">
                         <i class="fas fa-calendar-alt w-5"></i>
-                        <span>Observaci</span>
+                        <span>Observación</span>
                     </a>
                 </li>
 

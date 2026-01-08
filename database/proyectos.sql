@@ -1,56 +1,62 @@
 CREATE TABLE proyectos (
     id SERIAL PRIMARY KEY,
 
-    n_registro INT,                             -- Nº
-    es_prioridad VARCHAR(20),                   -- ES PRIORIDAD
-    area VARCHAR(150),                          -- ÁREA
-    lineamiento_estrategico VARCHAR(300),       -- LINEAMIENTO ESTRATÉGICO
+    -- 🔗 Usuario dueño del proyecto
+    user_id INT NOT NULL REFERENCES users(user_id),
 
-    financiamiento_municipal VARCHAR(50),       -- FINANCIAMIENTO MUNICIPAL
-    financiamiento VARCHAR(100),                -- FINANCIAMIENTO
+    actualizado_por INT NOT NULL REFERENCES users(user_id),
 
-    nombre TEXT,                                -- NOMBRE
-    monto NUMERIC,                              -- MONTO
+    n_registro INT,
+    es_prioridad VARCHAR(20),
+    area VARCHAR(150),
+    lineamiento_estrategico VARCHAR(300),
 
-    anno_elaboracion INT,                       -- AÑO DE ELABORACIÓN
-    anno_ejecucion INT,                         -- AÑO DE EJECUCIÓN
+    financiamiento_municipal VARCHAR(50),
+    financiamiento VARCHAR(100),
 
-    topografia TEXT,                            -- TOPOGRAFÍA
-    planimetrias TEXT,                          -- PLANIMETRÍAS
-    ingenieria TEXT,                            -- INGENIERIA
-    perfil_tecnico_economico TEXT,              -- PERFIL TÉCNICO - ECONOMICO
-    documentos TEXT,                            -- DOCUMENTOS
+    nombre TEXT,
+    monto NUMERIC,
 
-    avance_total_porcentaje NUMERIC(5,2),       -- AVANCE TOTAL EN PORCENTAJE
-    avance_total_decimal NUMERIC(10,4),         -- AVANCE TOTAL DECIMAL
+    anno_elaboracion INT,
+    anno_ejecucion INT,
 
-    estado_proyecto VARCHAR(150),               -- ESTADO DEL PROYECTO
-    codigo VARCHAR(100),                        -- CÓDIGO
+    topografia TEXT,
+    planimetrias TEXT,
+    ingenieria TEXT,
+    perfil_tecnico_economico TEXT,
+    documentos TEXT,
 
-    etapa_proyecto VARCHAR(150),                -- ETAPA DE PROYECTO
-    estado_postulacion VARCHAR(150),            -- ESTADO POSTULACIÓN
-    fecha_postulacion DATE,                     -- FECHA DE POSTULACIÓN
+    avance_total_porcentaje NUMERIC(5,2),
+    avance_total_decimal NUMERIC(10,4),
 
-    observaciones TEXT,                         -- OBSERVACIONES DEL PROYECTO
+    estado_proyecto VARCHAR(150),
+    codigo VARCHAR(100),
 
-    dupla_profesionales TEXT,                   -- DUPLA PROFESIONALES
-    profesional_1 VARCHAR(150),                 -- PROFESIONAL 1
-    profesional_2 VARCHAR(150),                 -- PROFESIONAL 2
-    profesional_3 VARCHAR(150),                 -- PROFESIONAL 3
-    profesional_4 VARCHAR(150),                 -- PROFESIONAL 4
-    profesional_5 VARCHAR(150),                 -- PROFESIONAL 5
+    etapa_proyecto VARCHAR(150),
+    estado_postulacion VARCHAR(150),
+    fecha_postulacion DATE,
 
-    unidad_vecinal VARCHAR(150),                -- UNIDAD VECINAL
-    sector VARCHAR(200),                        -- SECTOR
+    observaciones TEXT,
 
-    aprobacion_dom VARCHAR(100),                -- APROBACIÓN DOM
-    aprobacion_serviu VARCHAR(100),             -- APROBACIÓN SERVIU
+    dupla_profesionales TEXT,
+    profesional_1 VARCHAR(150),
+    profesional_2 VARCHAR(150),
+    profesional_3 VARCHAR(150),
+    profesional_4 VARCHAR(150),
+    profesional_5 VARCHAR(150),
 
-    fecha_actualizacion DATE,                   -- FECHA DE ACTUALIZACIÓN
+    unidad_vecinal VARCHAR(150),
+    sector VARCHAR(200),
 
-    latitud NUMERIC(12,6),                      -- LATITUD
-    longitud NUMERIC(12,6)                      -- LONGITUD
+    aprobacion_dom VARCHAR(100),
+    aprobacion_serviu VARCHAR(100),
+
+    fecha_actualizacion TIMESTAMP DEFAULT NOW(),
+
+    latitud NUMERIC(12,6),
+    longitud NUMERIC(12,6)
 );
+
 
 CREATE TABLE mapas (
     mapa_id SERIAL PRIMARY KEY,

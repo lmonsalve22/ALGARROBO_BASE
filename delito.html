@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Semanal de Cifras por Comuna - Plataforma Ley STOP</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ==========================================================================
+           CSS Variables - Configuración Base (Modo Oscuro por defecto)
+           ========================================================================== */
+        :root {
+            --bg-color: #121212;
+            --content-bg-color: #1e1e1e;
+            --card-bg-color: #2a2a2a;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --border-color: #444444;
+            --accent-color: #5a9fd4;
+            --accent-color-hover: #3498db;
+            --filter-bg-color: #2c2c2c;
+            --table-hover-bg: #333333;
+            --chart-grid-color: rgba(255, 255, 255, 0.1);
+            --chart-text-color: #b0b0b0;
+            --confidence-color: rgba(90, 159, 212, 0.2);
+            --scenario-color: rgba(46, 204, 113, 0.2);
+            --scenario-line: #2ecc71;
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --modal-bg: #2a2a2a;
+            --modal-border: #444444;
+        }
+
+        /* ==========================================================================
+           Mobile-First Base Styles
+           ========================================================================== */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0; padding: 16px; line-height: 1.6;
+            color: var(--text-color); background-color: var(--bg-color);
+        }
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--accent-color); color: white; padding: 8px; text-decoration: none; border-radius: 0 0 4px 0; z-index: 100; }
+        .skip-link:focus { top: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1, h2, h3 { color: var(--heading-color); margin-top: 0; }
+        h1 { font-size: 1.5rem; margin-bottom: 12px; }
+        h2 { font-size: 1.25rem; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        h3 { font-size: 1.15rem; margin-bottom: 12px; color: var(--accent-color); }
+        
+        /* Secciones optimizadas para evitar cortes en PDF */
+        .section { 
+            margin-bottom: 24px; 
+            padding: 16px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            background-color: var(--content-bg-color);
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        
+        .subsection { 
+            margin-bottom: 20px; 
+            padding: 14px; 
+            background-color: var(--bg-color); 
+            border-left: 4px solid var(--accent-color); 
+            border-radius: 0 6px 6px 0;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .card-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .card { flex: 1 1 100%; min-width: 160px; padding: 12px; background-color: var(--card-bg-color); border-radius: 6px; font-size: 0.95rem; }
+        
+        /* Contenedor de gráficos */
+        .chart-container { 
+            height: 400px; 
+            margin: 16px 0; 
+            background-color: var(--bg-color); 
+            border: 1px solid var(--border-color); 
+            padding: 12px; 
+            border-radius: 6px; 
+            position: relative; 
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .highlight { background-color: #ffffcc; color: #333; padding: 2px 5px; border-radius: 3px; font-weight: 500; }
+        ul { padding-left: 20px; margin: 10px 0; }
+        li { margin-bottom: 6px; }
+        
+        .alert-badge { display: inline-block; padding: 1px 6px; border-radius: 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-left: 8px; vertical-align: middle; }
+        .alert-bajo { background-color: #2e7d32; color: #e8f5e9; border: 1px solid #1b5e20; }
+        .alert-medio { background-color: #f9a825; color: #fffde7; border: 1px solid #f57f17; }
+        .alert-alto { background-color: #c62828; color: #ffebee; border: 1px solid #b71c1c; }
+        .alert-critico { background-color: #b71c1c; color: #ffebee; border: 1px solid #7f0000; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
+        
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
+        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        th { background-color: var(--filter-bg-color); font-weight: bold; }
+        tr:hover { background-color: var(--table-hover-bg); }
+
+        /* ==========================================================================
+           Tablet & Desktop Styles
+           ========================================================================== */
+        @media (min-width: 768px) {
+            body { padding: 24px; }
+            h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.4rem; }
+            .card { flex: 1 1 calc(50% - 10px); }
+            .alert-badge { font-size: 0.75rem; padding: 2px 8px; }
+            table { font-size: 1rem; }
+            th, td { padding: 8px 12px; }
+        }
+        
+        /* Estilo para la leyenda de intervalos de confianza */
+        .confidence-legend {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-color);
+        }
+        .confidence-box {
+            width: 20px;
+            height: 12px;
+            background-color: var(--confidence-color);
+            margin-right: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Estilos para la sección de escenarios interactivos */
+        .scenario-container {
+            background-color: var(--filter-bg-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            break-inside: avoid;
+        }
+        .scenario-control { margin-bottom: 16px; }
+        .scenario-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 500; }
+        .scenario-value { color: var(--accent-color); font-weight: bold; }
+        .scenario-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .scenario-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+        }
+        .scenario-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+        }
+        .scenario-results {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: var(--bg-color);
+            border-radius: 6px;
+            border-left: 4px solid var(--scenario-line);
+        }
+        .scenario-comparison { display: flex; justify-content: space-between; margin-top: 10px; }
+        .scenario-original, .scenario-adjusted { flex: 1; text-align: center; }
+        .scenario-original h4, .scenario-adjusted h4 { margin: 0 0 5px 0; font-size: 0.9rem; }
+        .scenario-original p, .scenario-adjusted p { margin: 0; font-size: 1.2rem; font-weight: bold; }
+        .scenario-original p { color: var(--text-color); }
+        .scenario-adjusted p { color: var(--scenario-line); }
+        .scenario-difference { display: flex; align-items: center; justify-content: center; padding: 0 10px; }
+        .scenario-difference span { font-size: 1.1rem; font-weight: bold; }
+        .scenario-difference.positive span { color: #2ecc71; }
+        .scenario-difference.negative span { color: #e74c3c; }
+        .scenario-legend { display: flex; align-items: center; margin-top: 10px; font-size: 0.85rem; color: var(--text-color); }
+        .scenario-box { width: 20px; height: 12px; background-color: var(--scenario-color); margin-right: 8px; border: 1px solid var(--border-color); }
+        
+        /* Estilos para el modal de detalles de proyección */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--modal-overlay);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal {
+            background-color: var(--modal-bg); border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 90%; max-height: 90%; width: 800px; overflow: hidden;
+            transform: translateY(20px); transition: transform 0.3s ease;
+            display: flex; flex-direction: column;
+        }
+        .modal-overlay.active .modal { transform: translateY(0); }
+        .modal-header {
+            padding: 20px; border-bottom: 1px solid var(--modal-border);
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        .modal-title { margin: 0; font-size: 1.5rem; color: var(--heading-color); }
+        .modal-close {
+            background: none; border: none; font-size: 1.5rem; cursor: pointer;
+            color: var(--text-color); width: 32px; height: 32px; display: flex;
+            align-items: center; justify-content: center; border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        .modal-close:hover { background-color: var(--filter-bg-color); }
+        .modal-body { padding: 20px; overflow-y: auto; }
+        .modal-section { margin-bottom: 25px; }
+        .modal-section h3 {
+            margin-top: 0; margin-bottom: 15px; color: var(--heading-color);
+            font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;
+        }
+        .modal-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; margin-bottom: 20px;
+        }
+        .modal-stat {
+            background-color: var(--filter-bg-color); padding: 15px;
+            border-radius: 6px; text-align: center;
+        }
+        .modal-stat-label { font-size: 0.9rem; color: var(--text-color); margin-bottom: 5px; }
+        .modal-stat-value { font-size: 1.8rem; font-weight: bold; color: var(--accent-color); }
+        .modal-chart-container { height: 250px; margin: 15px 0; }
+        .modal-recommendations {
+            background-color: var(--filter-bg-color); padding: 15px;
+            border-radius: 6px; border-left: 4px solid var(--accent-color);
+        }
+        .modal-recommendations h4 { margin-top: 0; margin-bottom: 10px; color: var(--heading-color); }
+        .modal-recommendations ul { margin-bottom: 0; }
+        .projection-list-item {
+            cursor: pointer; transition: background-color 0.2s;
+            padding: 4px 8px; border-radius: 4px;
+        }
+        .projection-list-item:hover { background-color: var(--filter-bg-color); }
+
+        /* ==========================================================================
+           Print Styles - Optimización para PDF
+           ========================================================================== */
+        @media print {
+            body {
+                background-color: #121212 !important;
+                color: #e0e0e0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                padding: 0;
+            }
+            .section, .subsection, .chart-container, .card {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                border: 1px solid #444;
+                background-color: #1e1e1e !important;
+            }
+            .settings-container, .scenario-container { display: none; }
+            .chart-container { height: 350px; margin-bottom: 20px; }
+            a { text-decoration: none; color: inherit; }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+    <main id="main-content" class="container">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: center; break-inside: avoid;">
+                <div>
+                    <h1>Reporte Semanal de Cifras por Comuna - Plataforma Ley STOP</h1>
+                    <p><strong>Comuna:</strong> Santiago (simulación)</p>
+                    <p><strong>Semana:</strong> 38 del año 2025</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2>0. Resumen Ejecutivo</h2>
+            <article class="subsection">
+                <h3>0.a Cifras Semana-Mes-Año</h3>
+                <div class="card-container">
+                    <div class="card"><strong>Semana 38:</strong> 1,245 delitos</div>
+                    <div class="card"><strong>Mes Actual:</strong> 5,872 delitos</div>
+                    <div class="card"><strong>Año Actual:</strong> 24,567 delitos</div>
+                    <div class="card"><strong>Variación Semanal:</strong> +8.5% vs semana anterior <span class="alert-badge alert-medio">Medio</span></div>
+                    <div class="card"><strong>Variación Mensual:</strong> -2.3% vs mes anterior <span class="alert-badge alert-bajo">Bajo</span></div>
+                    <div class="card"><strong>Variación Anual:</strong> +12.7% vs año anterior <span class="alert-badge alert-alto">Alto</span></div>
+                </div>
+            </article>
+            <article class="subsection">
+                <h3>0.b Principales Aumentos</h3>
+                <ul>
+                    <li><strong>Robos con violencia e intimidación:</strong> +23% <span class="alert-badge alert-alto">Alto</span></li>
+                    <li><strong>Hurto:</strong> +18% <span class="alert-badge alert-alto">Alto</span></li>
+                    <li><strong>Violaciones y delitos sexuales:</strong> +15% <span class="alert-badge alert-alto">Alto</span></li>
+                    <li><strong>Lesiones leves:</strong> +12% <span class="alert-badge alert-medio">Medio</span></li>
+                </ul>
+            </article>
+            <article class="subsection">
+                <h3>0.c Principales Reducciones</h3>
+                <ul>
+                    <li><strong>Daños:</strong> -15% <span class="alert-badge alert-bajo">Bajo</span></li>
+                    <li><strong>Incivilidades:</strong> -12% <span class="alert-badge alert-bajo">Bajo</span></li>
+                    <li><strong>Robos por sorpresa:</strong> -8% <span class="alert-badge alert-bajo">Bajo</span></li>
+                </ul>
+            </article>
+            <article class="subsection">
+                <h3>0.d Proyecciones</h3>
+                <p>Basado en el análisis de tendencias actuales, se proyecta un aumento moderado en la incidencia de delitos durante las próximas 4 semanas, particularmente en robos con violencia e intimidación. Se recomienda reforzar patrullajes en zonas comerciales y residenciales durante horas pico.</p>
+            </article>
+        </section>
+
+        <section class="section">
+            <h2>1. Análisis Semanal</h2>
+            <article class="subsection">
+                <h3>1.0 Análisis Resumen semanal con IA</h3>
+                <p>El análisis de inteligencia artificial indica una correlación significativa entre el aumento de robos con violencia e intimidación y la disminución de presencia policial en ciertas zonas periféricas. Se sugiere ajustar los horarios de patrullaje para maximizar la cobertura en áreas de mayor riesgo.</p>
+            </article>
+            <article class="subsection">
+                <h3 id="tabla-comparativo-semana-anterior">1.a Comparativo Semana Actual vs Semana Anterior</h3>
+                <table aria-describedby="tabla-comparativo-semana-anterior">
+                    <thead>
+                        <tr>
+                            <th>Delito</th>
+                            <th>Semana Actual</th>
+                            <th>Semana Anterior</th>
+                            <th>Variación</th>
+                            <th>Conclusión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Robos con violencia e intimidación</td>
+                            <td>245</td>
+                            <td>199</td>
+                            <td>+23% <span class="alert-badge alert-alto">Alto</span></td>
+                            <td>Alerta alta - Requiere intervención inmediata</td>
+                        </tr>
+                        <tr>
+                            <td>Hurto</td>
+                            <td>312</td>
+                            <td>264</td>
+                            <td>+18% <span class="alert-badge alert-alto">Alto</span></td>
+                            <td>Alerta media - Monitoreo continuo</td>
+                        </tr>
+                        <tr>
+                            <td>Violaciones y delitos sexuales</td>
+                            <td>45</td>
+                            <td>39</td>
+                            <td>+15% <span class="alert-badge alert-alto">Alto</span></td>
+                            <td>Alerta alta - Necesita atención especializada</td>
+                        </tr>
+                        <tr>
+                            <td>Lesiones leves</td>
+                            <td>187</td>
+                            <td>167</td>
+                            <td>+12% <span class="alert-badge alert-medio">Medio</span></td>
+                            <td>Alerta media - Evaluación de causas</td>
+                        </tr>
+                        <tr>
+                            <td>Daños</td>
+                            <td>123</td>
+                            <td>145</td>
+                            <td>-15% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Mejora - Mantener estrategias actuales</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+            <article class="subsection">
+                <h3 id="tabla-comparativo-misma-semana-anio-anterior">1.b Comparativo Semana Actual vs misma Semana Año Anterior</h3>
+                <table aria-describedby="tabla-comparativo-misma-semana-anio-anterior">
+                    <thead>
+                        <tr>
+                            <th>Delito</th>
+                            <th>Semana Actual</th>
+                            <th>Semana Año Anterior</th>
+                            <th>Variación</th>
+                            <th>Conclusión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Robos con violencia e intimidación</td>
+                            <td>245</td>
+                            <td>187</td>
+                            <td>+31% <span class="alert-badge alert-critico">Crítico</span></td>
+                            <td>Alerta crítica - Tendencia creciente</td>
+                        </tr>
+                        <tr>
+                            <td>Hurto</td>
+                            <td>312</td>
+                            <td>289</td>
+                            <td>+8% <span class="alert-badge alert-medio">Medio</span></td>
+                            <td>Alerta baja - Tendencia estable</td>
+                        </tr>
+                        <tr>
+                            <td>Violaciones y delitos sexuales</td>
+                            <td>45</td>
+                            <td>35</td>
+                            <td>+29% <span class="alert-badge alert-critico">Crítico</span></td>
+                            <td>Alerta alta - Necesita intervención urgente</td>
+                        </tr>
+                        <tr>
+                            <td>Lesiones leves</td>
+                            <td>187</td>
+                            <td>162</td>
+                            <td>+15% <span class="alert-badge alert-alto">Alto</span></td>
+                            <td>Alerta media - Investigar factores</td>
+                        </tr>
+                        <tr>
+                            <td>Daños</td>
+                            <td>123</td>
+                            <td>156</td>
+                            <td>-21% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Mejora significativa - Estrategias efectivas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <!-- 1.c Evolución Semanal - Separada por Delito -->
+            <h3>1.c Evolución Semanal Año Actual y Año Anterior (últimas 12 semanas)</h3>
+            
+            <article class="subsection">
+                <h4>Robos con violencia e intimidación</h4>
+                <div class="chart-container"><canvas id="chart-1c-robos"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Hurto</h4>
+                <div class="chart-container"><canvas id="chart-1c-hurto"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Violaciones y delitos sexuales</h4>
+                <div class="chart-container"><canvas id="chart-1c-violaciones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Lesiones leves</h4>
+                <div class="chart-container"><canvas id="chart-1c-lesiones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Daños</h4>
+                <div class="chart-container"><canvas id="chart-1c-danos"></canvas></div>
+            </article>
+        </section>
+
+        <section class="section">
+            <h2>2. Análisis Mensual</h2>
+            <article class="subsection">
+                <h3>2.0 Análisis Resumen Mensual con IA</h3>
+                <p>El análisis mensual con inteligencia artificial revela que los patrones de delincuencia están cambiando rápidamente, con un desplazamiento de los delitos hacia nuevas áreas geográficas. Se recomienda actualizar los mapas de riesgo y reasignar recursos de manera dinámica.</p>
+            </article>
+            <article class="subsection">
+                <h3 id="tabla-comparativo-mes-anterior">2.a Comparativo Mes Actual vs Mes Anterior</h3>
+                <table aria-describedby="tabla-comparativo-mes-anterior">
+                    <thead>
+                        <tr>
+                            <th>Delito</th>
+                            <th>Mes Actual</th>
+                            <th>Mes Anterior</th>
+                            <th>Variación</th>
+                            <th>Conclusión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Robos con violencia e intimidación</td>
+                            <td>987</td>
+                            <td>1,023</td>
+                            <td>-3.5% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Mejora leve - Evaluar impacto de medidas recientes</td>
+                        </tr>
+                        <tr>
+                            <td>Hurto</td>
+                            <td>1,245</td>
+                            <td>1,289</td>
+                            <td>-3.4% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Estabilidad - Mantener vigilancia</td>
+                        </tr>
+                        <tr>
+                            <td>Violaciones y delitos sexuales</td>
+                            <td>187</td>
+                            <td>175</td>
+                            <td>+6.9% <span class="alert-badge alert-medio">Medio</span></td>
+                            <td>Alerta media - Investigar causas</td>
+                        </tr>
+                        <tr>
+                            <td>Lesiones leves</td>
+                            <td>745</td>
+                            <td>723</td>
+                            <td>+3.0% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Estabilidad - Monitoreo continuo</td>
+                        </tr>
+                        <tr>
+                            <td>Daños</td>
+                            <td>489</td>
+                            <td>523</td>
+                            <td>-6.5% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Mejora significativa - Estrategias efectivas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <!-- 2.c Evolución Mensual - Separada por Delito -->
+            <h3>2.c Evolución Mensual Año Actual y Año Anterior (últimos 6 meses)</h3>
+
+            <article class="subsection">
+                <h4>Robos con violencia e intimidación</h4>
+                <div class="chart-container"><canvas id="chart-2c-robos"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Hurto</h4>
+                <div class="chart-container"><canvas id="chart-2c-hurto"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Violaciones y delitos sexuales</h4>
+                <div class="chart-container"><canvas id="chart-2c-violaciones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Lesiones leves</h4>
+                <div class="chart-container"><canvas id="chart-2c-lesiones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Daños</h4>
+                <div class="chart-container"><canvas id="chart-2c-danos"></canvas></div>
+            </article>
+        </section>
+
+        <section class="section">
+            <h2>3. Análisis Anual</h2>
+            <article class="subsection">
+                <h3>3.0 Análisis Resumen Anual con IA</h3>
+                <p>El análisis anual con inteligencia artificial indica que, a pesar de algunos avances en ciertos tipos de delitos, la tendencia general sigue siendo preocupante, especialmente en delitos violentos. Se recomienda implementar programas de prevención comunitaria y fortalecer la cooperación interinstitucional.</p>
+            </article>
+            <article class="subsection">
+                <h3 id="tabla-comparativo-anio-anterior">3.a Comparativo Año Actual vs Año Anterior</h3>
+                <table aria-describedby="tabla-comparativo-anio-anterior">
+                    <thead>
+                        <tr>
+                            <th>Delito</th>
+                            <th>Año Actual</th>
+                            <th>Año Anterior</th>
+                            <th>Variación</th>
+                            <th>Conclusión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Robos con violencia e intimidación</td>
+                            <td>5,872</td>
+                            <td>5,234</td>
+                            <td>+12.2% <span class="alert-badge alert-alto">Alto</span></td>
+                            <td>Alerta alta - Tendencia creciente</td>
+                        </tr>
+                        <tr>
+                            <td>Hurto</td>
+                            <td>12,456</td>
+                            <td>12,123</td>
+                            <td>+2.7% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Alerta baja - Tendencia estable</td>
+                        </tr>
+                        <tr>
+                            <td>Violaciones y delitos sexuales</td>
+                            <td>1,876</td>
+                            <td>1,567</td>
+                            <td>+19.7% <span class="alert-badge alert-alto">Alto</span></td>
+                            <td>Alerta crítica - Necesita intervención urgente</td>
+                        </tr>
+                        <tr>
+                            <td>Lesiones leves</td>
+                            <td>7,456</td>
+                            <td>7,123</td>
+                            <td>+4.7% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Alerta media - Investigar factores</td>
+                        </tr>
+                        <tr>
+                            <td>Daños</td>
+                            <td>4,892</td>
+                            <td>5,123</td>
+                            <td>-4.5% <span class="alert-badge alert-bajo">Bajo</span></td>
+                            <td>Mejora - Mantener estrategias actuales</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <!-- 3.b Evolución Anual - Separada por Delito -->
+            <h3>3.b Evolución Anual todos los años</h3>
+
+            <article class="subsection">
+                <h4>Robos con violencia e intimidación</h4>
+                <div class="chart-container"><canvas id="chart-3b-robos"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Hurto</h4>
+                <div class="chart-container"><canvas id="chart-3b-hurto"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Violaciones y delitos sexuales</h4>
+                <div class="chart-container"><canvas id="chart-3b-violaciones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Lesiones leves</h4>
+                <div class="chart-container"><canvas id="chart-3b-lesiones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Daños</h4>
+                <div class="chart-container"><canvas id="chart-3b-danos"></canvas></div>
+            </article>
+        </section>
+
+        <section class="section">
+            <h2>4. Proyecciones</h2>
+            <article class="subsection">
+                <h3>4.0 Análisis Resumen con IA</h3>
+                <p>Las proyecciones basadas en inteligencia artificial indican que, si no se implementan medidas adicionales, se espera un aumento continuo en la incidencia de delitos violentos durante el próximo año. Se recomienda implementar programas de prevención temprana y fortalecer la respuesta policial en áreas de mayor riesgo.</p>
+                <div class="chart-container">
+                    <canvas id="projectionComparisonChart"></canvas>
+                </div>
+                <div class="confidence-legend">
+                    <div class="confidence-box"></div>
+                    <span>Intervalo de confianza (90%): Rango probable de valores proyectados</span>
+                </div>
+            </article>
+
+            <!-- 4.a Proyección Semanal - Separada por Delito -->
+            <h3>4.a Proyección próximas 4 semanas</h3>
+
+            <article class="subsection">
+                <h4>Robos con violencia e intimidación</h4>
+                <div class="chart-container"><canvas id="chart-4a-robos"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Hurto</h4>
+                <div class="chart-container"><canvas id="chart-4a-hurto"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Violaciones y delitos sexuales</h4>
+                <div class="chart-container"><canvas id="chart-4a-violaciones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Lesiones leves</h4>
+                <div class="chart-container"><canvas id="chart-4a-lesiones"></canvas></div>
+            </article>
+            <article class="subsection">
+                <h4>Daños</h4>
+                <div class="chart-container"><canvas id="chart-4a-danos"></canvas></div>
+            </article>
+        </section>
+
+        <section class="section">
+            <h2>5. Proyecciones Detalladas y Escenarios</h2>
+            <article class="subsection">
+                <h3>5.a Lista de Proyecciones por Delito</h3>
+                <p>Haga clic en cada delito para ver detalles de la proyección, factores de riesgo y recomendaciones específicas:</p>
+                <ul>
+                    <li class="projection-list-item" data-crime="robos">
+                        <strong>Robos con violencia e intimidación:</strong> 
+                        Proyección a 4 semanas: 1,089 (+15%)
+                        <span class="alert-badge alert-alto">Alto</span>
+                    </li>
+                    <li class="projection-list-item" data-crime="hurto">
+                        <strong>Hurto:</strong> 
+                        Proyección a 4 semanas: 1,389 (+12%)
+                        <span class="alert-badge alert-medio">Medio</span>
+                    </li>
+                    <li class="projection-list-item" data-crime="violaciones">
+                        <strong>Violaciones y delitos sexuales:</strong> 
+                        Proyección a 4 semanas: 198 (+18%)
+                        <span class="alert-badge alert-critico">Crítico</span>
+                    </li>
+                    <li class="projection-list-item" data-crime="lesiones">
+                        <strong>Lesiones leves:</strong> 
+                        Proyección a 4 semanas: 823 (+10%)
+                        <span class="alert-badge alert-medio">Medio</span>
+                    </li>
+                    <li class="projection-list-item" data-crime="danos">
+                        <strong>Daños:</strong> 
+                        Proyección a 4 semanas: 541 (-5%)
+                        <span class="alert-badge alert-bajo">Bajo</span>
+                    </li>
+                </ul>
+            </article>
+            <article class="subsection">
+                <h3>5.b Escenarios Interactivos</h3>
+                <p>Ajuste los parámetros para simular diferentes escenarios y ver cómo podrían impactar en las cifras de delitos:</p>
+                <div class="scenario-container">
+                    <div class="scenario-control">
+                        <div class="scenario-label">
+                            <span>Patrullajes Policiales</span>
+                            <span class="scenario-value" id="patrol-value">0%</span>
+                        </div>
+                        <input type="range" min="-50" max="50" value="0" class="scenario-slider" id="patrol-slider">
+                    </div>
+                    <div class="scenario-control">
+                        <div class="scenario-label">
+                            <span>Mejora de Alumbrado Público</span>
+                            <span class="scenario-value" id="lighting-value">0%</span>
+                        </div>
+                        <input type="range" min="-50" max="50" value="0" class="scenario-slider" id="lighting-slider">
+                    </div>
+                    <div class="scenario-control">
+                        <div class="scenario-label">
+                            <span>Cámaras de Vigilancia</span>
+                            <span class="scenario-value" id="camera-value">0%</span>
+                        </div>
+                        <input type="range" min="-50" max="50" value="0" class="scenario-slider" id="camera-slider">
+                    </div>
+                    <div class="scenario-results">
+                        <h4>Resultados del Escenario</h4>
+                        <div class="scenario-comparison">
+                            <div class="scenario-original">
+                                <h4>Proyección Original</h4>
+                                <p id="original-crime-count">1,245</p>
+                            </div>
+                            <div class="scenario-difference">
+                                <span id="difference-arrow">→</span>
+                            </div>
+                            <div class="scenario-adjusted">
+                                <h4>Proyección Ajustada</h4>
+                                <p id="adjusted-crime-count">1,245</p>
+                            </div>
+                        </div>
+                        <div class="scenario-legend">
+                            <div class="scenario-box"></div>
+                            <span>Proyección ajustada según parámetros</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <!-- Modal para detalles de proyección -->
+    <div class="modal-overlay" id="projectionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Detalles de Proyección</h2>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>Resumen de Proyección</h3>
+                    <div class="modal-grid">
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Semana Actual</div>
+                            <div class="modal-stat-value" id="modal-current-week">245</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Proyección 4 Semanas</div>
+                            <div class="modal-stat-value" id="modal-projection-4weeks">289</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Variación</div>
+                            <div class="modal-stat-value" id="modal-variation">+18%</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Nivel de Confianza</div>
+                            <div class="modal-stat-value" id="modal-confidence">85%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Tendencia de Proyección</h3>
+                    <div class="modal-chart-container">
+                        <canvas id="modalProjectionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Factores de Riesgo Identificados</h3>
+                    <ul id="modal-risk-factors">
+                        <li>Aumento de la actividad comercial en zonas céntricas</li>
+                        <li>Disminución de patrullajes nocturnos</li>
+                        <li>Eventos masivos programados en las próximas semanas</li>
+                    </ul>
+                </div>
+                
+                <div class="modal-section">
+                    <div class="modal-recommendations">
+                        <h4>Recomendaciones</h4>
+                        <ul id="modal-recommendations">
+                            <li>Incrementar patrullajes en zonas comerciales durante horas pico</li>
+                            <li>Fortalecer la presencia policial en áreas de entretenimiento</li>
+                            <li>Coordinar con organizadores de eventos para planes de seguridad</li>
+                            <li>Implementar campañas de prevención ciudadana</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js Global Configuration
+        Chart.defaults.font.family = "'-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Arial', sans-serif";
+        Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-color');
+        Chart.defaults.borderColor = getComputedStyle(document.body).getPropertyValue('--border-color');
+
+        function getChartOptions(titleText, yTitleText) {
+            const isDark = document.body.classList.contains('dark-theme');
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: titleText,
+                        font: { size: 16 }
+                    },
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)',
+                        titleColor: isDark ? '#fff' : '#333',
+                        bodyColor: isDark ? '#fff' : '#333',
+                        borderColor: isDark ? '#444' : '#ddd',
+                        borderWidth: 1,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+                        ticks: { color: isDark ? '#b0b0b0' : '#666' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: yTitleText },
+                        grid: { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+                        ticks: { color: isDark ? '#b0b0b0' : '#666' }
+                    }
+                }
+            };
+        }
+
+        // Datos para los gráficos
+        const weeklyLabels = Array.from({length: 12}, (_, i) => `Semana ${27 + i}`);
+        const monthlyLabels = ['Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre'];
+        const annualLabels = ['2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+
+        const crimeData = {
+            robos: { label: 'Robos con violencia', current: [180, 195, 210, 205, 220, 245, 230, 235, 240, 250, 260, 245], previous: [160, 165, 175, 180, 185, 190, 195, 200, 205, 210, 215, 220] },
+            hurto: { label: 'Hurto', current: [280, 290, 300, 295, 305, 312, 300, 305, 310, 315, 320, 312], previous: [270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325] },
+            violaciones: { label: 'Delitos Sexuales', current: [35, 36, 38, 37, 40, 45, 42, 43, 44, 46, 47, 45], previous: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41] },
+            lesiones: { label: 'Lesiones Leves', current: [160, 165, 170, 168, 175, 187, 178, 180, 183, 186, 189, 187], previous: [150, 152, 155, 158, 160, 162, 165, 167, 169, 171, 173, 175] },
+            danos: { label: 'Daños', current: [130, 125, 120, 122, 118, 123, 125, 128, 130, 128, 126, 123], previous: [140, 138, 135, 133, 130, 128, 125, 123, 120, 118, 115, 112] }
+        };
+
+        const monthlyData = {
+            robos: { label: 'Robos con violencia', current: [850, 890, 920, 910, 950, 987], previous: [750, 780, 800, 820, 840, 860] },
+            hurto: { label: 'Hurto', current: [1100, 1150, 1180, 1170, 1200, 1245], previous: [1080, 1100, 1120, 1140, 1160, 1180] },
+            violaciones: { label: 'Delitos Sexuales', current: [160, 165, 170, 168, 175, 187], previous: [140, 145, 150, 152, 155, 160] },
+            lesiones: { label: 'Lesiones Leves', current: [680, 700, 720, 710, 730, 745], previous: [650, 660, 670, 680, 690, 700] },
+            danos: { label: 'Daños', current: [500, 480, 460, 470, 480, 489], previous: [520, 510, 500, 490, 480, 470] }
+        };
+
+        const annualData = {
+            robos: { label: 'Robos con violencia', data: [4500, 4800, 5000, 5100, 5300, 5500, 5872] },
+            hurto: { label: 'Hurto', data: [10500, 10800, 11000, 11200, 11500, 11800, 12456] },
+            violaciones: { label: 'Delitos Sexuales', data: [1400, 1450, 1500, 1550, 1600, 1700, 1876] },
+            lesiones: { label: 'Lesiones Leves', data: [6500, 6700, 6800, 6900, 7000, 7100, 7456] },
+            danos: { label: 'Daños', data: [5000, 4900, 4800, 4700, 4600, 4500, 4892] }
+        };
+
+        // Función auxiliar para renderizar gráficos de comparativa
+        function renderComparisonChart(canvasId, title, labels, datasetCurrent, datasetPrev, yLabel) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Año Actual', data: datasetCurrent, borderColor: 'rgba(52, 152, 219, 1)', backgroundColor: 'rgba(52, 152, 219, 0.2)', fill: true, tension: 0.3 },
+                        { label: 'Año Anterior', data: datasetPrev, borderColor: 'rgba(231, 76, 60, 1)', backgroundColor: 'rgba(231, 76, 60, 0.2)', fill: true, tension: 0.3 }
+                    ]
+                },
+                options: getChartOptions(title, yLabel)
+            });
+        }
+
+        // Función auxiliar para renderizar gráficos anuales (una sola serie)
+        function renderAnnualChart(canvasId, title, labels, dataset, yLabel) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total de Delitos Anuales',
+                        data: dataset,
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: getChartOptions(title, yLabel)
+            });
+        }
+
+        // 1.c Evolución Semanal (Loop por delito)
+        Object.keys(crimeData).forEach(crime => {
+            renderComparisonChart(
+                `chart-1c-${crime}`, 
+                `Evolución Semanal - ${crimeData[crime].label}`, 
+                weeklyLabels, 
+                crimeData[crime].current, 
+                crimeData[crime].previous, 
+                'Número de Delitos'
+            );
+        });
+
+        // 2.c Evolución Mensual (Loop por delito)
+        Object.keys(monthlyData).forEach(crime => {
+            renderComparisonChart(
+                `chart-2c-${crime}`, 
+                `Evolución Mensual - ${monthlyData[crime].label}`, 
+                monthlyLabels, 
+                monthlyData[crime].current, 
+                monthlyData[crime].previous, 
+                'Número de Delitos'
+            );
+        });
+
+        // 3.b Evolución Anual (Loop por delito)
+        Object.keys(annualData).forEach(crime => {
+            renderAnnualChart(
+                `chart-3b-${crime}`, 
+                `Evolución Anual - ${annualData[crime].label}`, 
+                annualLabels, 
+                annualData[crime].data, 
+                'Número de Delitos'
+            );
+        });
+
+        // 4.a Proyección Semanal (Loop por delito simulando datos)
+        // Simulación simple de proyección basada en datos históricos
+        Object.keys(crimeData).forEach(crime => {
+            const hist = crimeData[crime].current;
+            const lastVal = hist[hist.length - 1];
+            // Tendencia simple (+15% para simulación)
+            const proj = [
+                null, null, null, lastVal, 
+                Math.round(lastVal * 1.05), 
+                Math.round(lastVal * 1.10), 
+                Math.round(lastVal * 1.12), 
+                Math.round(lastVal * 1.15)
+            ];
+            const conf = [
+                null, null, null, [lastVal * 0.95, lastVal * 1.05],
+                [proj[4] * 0.95, proj[4] * 1.05],
+                [proj[5] * 0.95, proj[5] * 1.05],
+                [proj[6] * 0.95, proj[6] * 1.05],
+                [proj[7] * 0.95, proj[7] * 1.05]
+            ];
+
+            const ctx = document.getElementById(`chart-4a-${crime}`).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sem 35', 'Sem 36', 'Sem 37', 'Sem 38', 'Sem 39', 'Sem 40', 'Sem 41', 'Sem 42'],
+                    datasets: [
+                        { label: 'Datos Históricos', data: [hist[8], hist[9], hist[10], hist[11], null, null, null, null], borderColor: 'rgba(52, 152, 219, 1)', backgroundColor: 'rgba(52, 152, 219, 0.2)', fill: false, tension: 0.3 },
+                        { label: 'Proyección', data: proj, borderColor: 'rgba(46, 204, 113, 1)', borderDash: [5, 5], fill: false, tension: 0.3 },
+                        { label: 'Intervalo de Confianza', data: conf, backgroundColor: 'rgba(46, 204, 113, 0.2)', fill: '+1', pointRadius: 0, borderWidth: 0 }
+                    ]
+                },
+                options: getChartOptions(`Proyección Semanal - ${crimeData[crime].label}`, 'Número de Delitos')
+            });
+        });
+
+        // General Projection Comparison Chart (Resumen Global)
+        const projectionCtx = document.getElementById('projectionComparisonChart').getContext('2d');
+        new Chart(projectionCtx, {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                datasets: [
+                    { label: 'Histórico 2024', data: [2000, 2100, 2050, 2150, 2200, 2250, 2300, 2350, 2400, 2450, 2500, 2550], borderColor: 'rgba(52, 152, 219, 1)', fill: false, tension: 0.3 },
+                    { label: 'Proyección 2025', data: [null, null, null, null, null, null, null, null, null, 2600, 2650, 2700], borderColor: 'rgba(46, 204, 113, 1)', borderDash: [5, 5], fill: false, tension: 0.3 },
+                    { label: 'Intervalo de Confianza', data: [null, null, null, null, null, null, null, null, null, [2500, 2700], [2550, 2750], [2600, 2800]], backgroundColor: 'rgba(46, 204, 113, 0.2)', fill: '+1', pointRadius: 0, borderWidth: 0 }
+                ]
+            },
+            options: getChartOptions('Proyección Anual de Delitos', 'Número de Delitos')
+        });
+
+        // Scenario Sliders Logic
+        const patrolSlider = document.getElementById('patrol-slider');
+        const lightingSlider = document.getElementById('lighting-slider');
+        const cameraSlider = document.getElementById('camera-slider');
+        const baseCrimeCount = 1245;
+
+        function updateScenario() {
+            const patrolChange = parseInt(patrolSlider.value);
+            const lightingChange = parseInt(lightingSlider.value);
+            const cameraChange = parseInt(cameraSlider.value);
+            
+            document.getElementById('patrol-value').textContent = `${patrolChange > 0 ? '+' : ''}${patrolChange}%`;
+            document.getElementById('lighting-value').textContent = `${lightingChange > 0 ? '+' : ''}${lightingChange}%`;
+            document.getElementById('camera-value').textContent = `${cameraChange > 0 ? '+' : ''}${cameraChange}%`;
+            
+            const totalChange = (patrolChange * -0.3) + (lightingChange * -0.2) + (cameraChange * -0.25);
+            const adjustedCount = Math.round(baseCrimeCount * (1 + totalChange / 100));
+            
+            document.getElementById('adjusted-crime-count').textContent = adjustedCount;
+            
+            const diffArrow = document.getElementById('difference-arrow');
+            if (adjustedCount < baseCrimeCount) {
+                diffArrow.innerHTML = `<span style="color: #2ecc71;">↓ ${baseCrimeCount - adjustedCount}</span>`;
+            } else if (adjustedCount > baseCrimeCount) {
+                diffArrow.innerHTML = `<span style="color: #e74c3c;">↑ ${adjustedCount - baseCrimeCount}</span>`;
+            } else {
+                diffArrow.innerHTML = `<span style="color: #666;">→ 0</span>`;
+            }
+        }
+
+        [patrolSlider, lightingSlider, cameraSlider].forEach(el => el.addEventListener('input', updateScenario));
+
+        // Modal Logic
+        const modal = document.getElementById('projectionModal');
+        const modalClose = document.getElementById('modal-close');
+        
+        const modalData = {
+            robos: { title: "Detalles de Proyección - Robos con violencia", currentWeek: 245, projection4Weeks: 289, variation: "+18%", confidence: "85%", risk: ["Aumento actividad comercial", "Menos patrullajes nocturnos"], rec: ["Patrullajes horas pico", "Zonas de entretenimiento"] },
+            hurto: { title: "Detalles de Proyección - Hurto", currentWeek: 312, projection4Weeks: 350, variation: "+12%", confidence: "80%", risk: ["Temporada compras", "Centros comerciales"], rec: ["Seguridad comercios", "Vigilancia turística"] },
+            violaciones: { title: "Detalles de Proyección - Violaciones", currentWeek: 45, projection4Weeks: 53, variation: "+18%", confidence: "75%", risk: ["Vida nocturna", "Eventos festivos"], rec: ["Patrullajes específicos", "Mejora alumbrado"] },
+            lesiones: { title: "Detalles de Proyección - Lesiones leves", currentWeek: 187, projection4Weeks: 206, variation: "+10%", confidence: "82%", risk: ["Eventos deportivos", "Alcohol público"], rec: ["Presencia eventos masivos", "Control alcohol"] },
+            danos: { title: "Detalles de Proyección - Daños", currentWeek: 123, projection4Weeks: 117, variation: "-5%", confidence: "78%", risk: ["Vandalismo", "Grafitis"], rec: ["Mantenimiento infra", "Vigilancia comunitaria"] }
+        };
+
+        document.querySelectorAll('.projection-list-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const crime = item.getAttribute('data-crime');
+                const data = modalData[crime];
+                document.getElementById('modal-title').textContent = data.title;
+                document.getElementById('modal-current-week').textContent = data.currentWeek;
+                document.getElementById('modal-projection-4weeks').textContent = data.projection4Weeks;
+                document.getElementById('modal-variation').textContent = data.variation;
+                document.getElementById('modal-confidence').textContent = data.confidence;
+                document.getElementById('modal-risk-factors').innerHTML = data.risk.map(f => `<li>${f}</li>`).join('');
+                document.getElementById('modal-recommendations').innerHTML = data.rec.map(r => `<li>${r}</li>`).join('');
+
+                const modalCtx = document.getElementById('modalProjectionChart').getContext('2d');
+                if (window.modalChartInstance) window.modalChartInstance.destroy();
+                window.modalChartInstance = new Chart(modalCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Sem 38', 'Sem 39', 'Sem 40', 'Sem 41', 'Sem 42'],
+                        datasets: [{
+                            label: 'Proyección',
+                            data: [data.currentWeek, null, null, null, data.projection4Weeks],
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.3
+                        }]
+                    },
+                    options: getChartOptions('Tendencia de Proyección', 'Número de Delitos')
+                });
+                modal.classList.add('active');
+            });
+        });
+
+        modalClose.addEventListener('click', () => modal.classList.remove('active'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+    </script>
+</body>
+</html>

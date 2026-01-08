@@ -50,7 +50,7 @@
             border-radius: 12px;
             padding: 2rem;
             width: 95%;
-            max-width: 900px; /* Aumentado ligeramente para caber las tablas */
+            max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             animation: slideUp 0.3s;
@@ -224,28 +224,6 @@
         }
         .toggle-column-visible {
             display: revert;
-        }
-
-        /* Estilos para las tablas internas del modal */
-        .details-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-        .details-table th, .details-table td {
-            padding: 0.5rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .details-table th {
-            background-color: #f9fafb;
-            font-weight: 600;
-            color: #374151;
-            white-space: nowrap;
-        }
-        .details-table tr:hover {
-            background-color: #f9fafb;
         }
     </style>
 </head>
@@ -531,7 +509,6 @@
                             <label for="fecha_postulacion">Fecha Postulación</label>
                             <input type="date" id="fecha_postulacion" name="fecha_postulacion">
                         </div>
-                        <!-- Campo fecha_actualización se mantiene oculto, el backend lo maneja -->
                         <div class="form-group" style="display: none;">
                             <label for="fecha_actualizacion">Fecha Actualización</label>
                             <input type="date" id="fecha_actualizacion" name="fecha_actualizacion">
@@ -642,7 +619,7 @@
                 <h2 class="modal-title">Detalles del Proyecto</h2>
                 <button class="close-btn" onclick="closeViewModal()">&times;</button>
             </div>
-            <div id="viewProjectDetails" class="space-y-4">
+            <div id="viewProjectDetails" class="space-y-3">
                 <!-- Los detalles del proyecto se cargarán aquí dinámicamente -->
             </div>
             <div class="modal-footer">
@@ -680,7 +657,8 @@
             };
         }
 
-        // --- UTILIDAD PARA FECHAS ---
+        // --- UTILIDAD PARA FECHAS (Fix Edición) ---
+        // Convierte cualquier formato de fecha a YYYY-MM-DD para el input type="date"
         function formatDateForInput(dateString) {
             if (!dateString) return '';
             
@@ -699,21 +677,8 @@
             const year = dateObj.getFullYear();
             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
             const day = String(dateObj.getDate()).padStart(2, '0');
+            
             return `${year}-${month}-${day}`;
-        }
-
-        // Formateador para mostrar fechas legibles en el modal
-        function formatDisplayDate(dateString) {
-            if (!dateString) return '-';
-            try {
-                const date = new Date(dateString);
-                // Ajuste de zona horaria si es necesario
-                return date.toLocaleDateString('es-CL', { 
-                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit'
-                });
-            } catch (e) {
-                return dateString;
-            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -725,7 +690,7 @@
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterFinancing').addEventListener('change', applyFilters);
             document.getElementById('filterStatus').addEventListener('change', applyFilters);
-            document.getElementById('filterProfessional').addEventListener('change', applyFilters);
+            document.getElementById('filterProfessional').addEventListener('change', applyFilters); // Nuevo Listener
             
             document.getElementById('proyectoForm').addEventListener('submit', handleSubmit);
         });
@@ -735,10 +700,7 @@
             if (!headers) return;
 
             try {
-                const tableBody = document.getElementById('projectsTableBody');
-                // Mostrar estado de carga en la tabla
-                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Cargando proyectos...</td></tr>';
-
+                showLoading(true, 'Cargando proyectos...');
                 const response = await fetch(`${API_BASE}/proyectos`, {
                     method: 'GET',
                     headers: headers
@@ -755,7 +717,7 @@
                 }
 
                 proyectos = await response.json();
-                console.log("Datos recibidos del backend:", proyectos);
+                console.log(proyectos)
                 
                 // Inicializar filtros con todos los datos disponibles
                 updateFilterOptions();
@@ -769,15 +731,22 @@
             } catch (error) {
                 console.error('Error:', error);
                 showToast('Error al cargar los proyectos', 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
-        // --- LÓGICA DE FILTROS CONECTADOS ---
+        // --- LÓGICA DE FILTROS CONECTADOS (ACTUALIZADA) ---
 
+        // Función auxiliar para regenerar el HTML de un <select>
         function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
             const select = document.getElementById(selectElementId);
-            const previousValue = select.value; 
+            const currentValueValue = currentValue || select.value; 
+            
+            // Guardar el valor actual antes de modificar el HTML
+            const previousValue = select.value;
 
+            // Construir HTML
             let html = `<option value="">${defaultLabel}</option>`;
             optionsList.forEach(opt => {
                 html += `<option value="${opt}" ${opt === previousValue ? 'selected' : ''}>${opt}</option>`;
@@ -785,6 +754,7 @@
 
             select.innerHTML = html;
 
+            // Si el valor previo ya no existe en la nueva lista, lo reseteamos a vacío
             if (previousValue && !optionsList.includes(previousValue)) {
                 select.value = "";
             } else if (previousValue) {
@@ -792,24 +762,26 @@
             }
         }
 
+        // Función auxiliar para extraer profesionales de un proyecto
         function getProfessionalsFromProject(p) {
-            // Revisamos las columnas de profesionales
+            // Revisamos las 5 columnas solicitadas
             return [
                 p.profesional_1, 
                 p.profesional_2, 
                 p.profesional_3, 
                 p.profesional_4, 
                 p.profesional_5
-            ].filter(Boolean); 
+            ].filter(Boolean); // Eliminar nulos/vacíos
         }
 
+        // Función maestra que actualiza las opciones de los 4 selectores
         function updateFilterOptions() {
             const selectedArea = document.getElementById('filterArea').value;
             const selectedFinancing = document.getElementById('filterFinancing').value;
             const selectedStatus = document.getElementById('filterStatus').value;
             const selectedProfessional = document.getElementById('filterProfessional').value;
 
-            // 1. Áreas disponibles
+            // 1. Calcular Áreas disponibles (filtrando por Financiamiento, Estado y Profesional)
             const dataForAreas = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
@@ -820,7 +792,7 @@
             const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
             populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
 
-            // 2. Financiamientos disponibles
+            // 2. Calcular Financiamientos disponibles (filtrando por Área, Estado y Profesional)
             const dataForFinancing = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
@@ -831,7 +803,7 @@
             const uniqueFinancing = [...new Set(dataForFinancing.map(p => p.financiamiento).filter(Boolean))].sort();
             populateSelectOptions('filterFinancing', uniqueFinancing, 'Todo el financiamiento', selectedFinancing);
 
-            // 3. Estados disponibles
+            // 3. Calcular Estados disponibles (filtrando por Área, Financiamiento y Profesional)
             const dataForStatus = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
@@ -842,27 +814,32 @@
             const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
             populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
 
-            // 4. Profesionales disponibles
+            // 4. Calcular Profesionales disponibles (filtrando por Área, Financiamiento y Estado)
             const dataForProfessionals = proyectos.filter(p => 
                 (selectedArea === '' || p.area === selectedArea) &&
                 (selectedFinancing === '' || p.financiamiento === selectedFinancing) &&
                 (selectedStatus === '' || p.estado_proyecto === selectedStatus)
             );
             
+            // Extraer todos los profesionales de los proyectos filtrados
             const allProfessionalsList = dataForProfessionals.flatMap(getProfessionalsFromProject);
             const uniqueProfessionals = [...new Set(allProfessionalsList)].sort();
+            
             populateSelectOptions('filterProfessional', uniqueProfessionals, 'Todos los profesionales', selectedProfessional);
         }
 
         function applyFilters() {
+            // Paso 1: Actualizar las opciones de los dropdowns (Conexión entre filtros)
             updateFilterOptions();
 
+            // Paso 2: Obtener valores actualizados después de la actualización
             const selectedArea = document.getElementById('filterArea').value;
             const selectedFinancing = document.getElementById('filterFinancing').value;
             const selectedStatus = document.getElementById('filterStatus').value;
             const selectedProfessional = document.getElementById('filterProfessional').value;
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
+            // Paso 3: Filtrar los datos para la tabla
             const filteredData = proyectos.filter(proyecto => {
                 const matchesSearch = 
                     (proyecto.nombre && proyecto.nombre.toLowerCase().includes(searchTerm)) ||
@@ -873,12 +850,14 @@
                 const matchesFinancing = selectedFinancing === '' || proyecto.financiamiento === selectedFinancing;
                 const matchesStatus = selectedStatus === '' || proyecto.estado_proyecto === selectedStatus;
                 
+                // Lógica para verificar si el proyecto tiene al profesional seleccionado en cualquiera de sus 5 columnas
                 const projectProfessionals = getProfessionalsFromProject(proyecto);
                 const matchesProfessional = selectedProfessional === '' || projectProfessionals.includes(selectedProfessional);
 
                 return matchesSearch && matchesArea && matchesFinancing && matchesStatus && matchesProfessional;
             });
 
+            // Paso 4: Renderizar resultados
             renderProyectos(filteredData);
             updateKPIs(filteredData);
             updateCount(filteredData.length);
@@ -889,11 +868,11 @@
             document.getElementById('filterArea').value = '';
             document.getElementById('filterFinancing').value = '';
             document.getElementById('filterStatus').value = '';
-            document.getElementById('filterProfessional').value = '';
+            document.getElementById('filterProfessional').value = ''; // Limpiar filtro profesional
             applyFilters();
         }
 
-        // --- RENDERIZADO ---
+        // --- RENDERIZADO Y DEMÁS FUNCIONES ---
 
         function renderProyectos(proyectosToRender) {
             const tableBody = document.getElementById('projectsTableBody');
@@ -910,6 +889,7 @@
                 return;
             }
 
+            // Determinar si debemos agregar la clase de visibilidad basándonos en el estado global
             const visibilityClass = columnsVisible ? 'toggle-column-visible' : '';
 
             tableBody.innerHTML = proyectosToRender.map(proyecto => {
@@ -1004,7 +984,6 @@
             const detailsContainer = document.getElementById('viewProjectDetails');
             detailsContainer.innerHTML = '';
 
-            // Mapeo de etiquetas para campos generales
             const labels = {
                 id: "ID", nombre: "Nombre del Proyecto", codigo: "Código", n_registro: "N° de Registro",
                 area: "Área", estado_proyecto: "Estado del Proyecto", etapa_proyecto: "Etapa del Proyecto",
@@ -1012,7 +991,7 @@
                 avance_total_porcentaje: "Avance Total (%)", es_prioridad: "¿Es Prioridad?",
                 financiamiento: "Financiamiento", financiamiento_municipal: "¿Financiamiento Municipal?",
                 monto: "Monto", anno_elaboracion: "Año de Elaboración", anno_ejecucion: "Año de Ejecución",
-                fecha_postulacion: "Fecha de Postulación",
+                fecha_postulacion: "Fecha de Postulación", fecha_actualizacion: "Fecha de Actualización",
                 lineamiento_estrategico: "Lineamiento Estratégico", sector: "Sector",
                 unidad_vecinal: "Unidad Vecinal", latitud: "Latitud", longitud: "Longitud",
                 profesional_1: "Profesional 1", profesional_2: "Profesional 2",
@@ -1023,120 +1002,20 @@
                 observaciones: "Observaciones Generales"
             };
 
-            // 1. Sección de Información del Proyecto
-            let html = '<div class="space-y-3">';
-            
             for (const key in labels) {
-                // Excluimos campos de auditoría, hitos y observaciones que se muestran aparte
-                if (['user_id', 'user_nombre', 'user_email', 'actualizado_por', 'actualizado_por_nombre', 'actualizado_por_email', 'fecha_actualizacion', 'proyectos_hitos', 'proyectos_observaciones'].includes(key)) continue;
-
                 let value = proyecto[key];
                 if (key === 'monto') value = formatCurrency(value);
-                else if (key === 'fecha_postulacion' && value) value = formatDisplayDate(value);
+                else if (key.includes('fecha') && value) value = new Date(value).toLocaleDateString('es-CL');
                 else if (key === 'avance_total_porcentaje' && value) value = `${(parseFloat(value) > 1 ? parseFloat(value) : parseFloat(value)*100).toFixed(2)}%`;
                 
                 const displayValue = (value === null || value === undefined || value === '') ? '-' : value;
-                html += `
+                detailsContainer.innerHTML += `
                     <div class="flex justify-between py-2 border-b border-gray-100">
-                        <span class="font-semibold text-gray-700 w-1/3 text-sm">${labels[key]}:</span>
-                        <span class="text-gray-900 text-right w-2/3 break-words text-sm">${displayValue}</span>
+                        <span class="font-semibold text-gray-700 w-1/3">${labels[key]}:</span>
+                        <span class="text-gray-900 text-right w-2/3 break-words">${displayValue}</span>
                     </div>
                 `;
             }
-            html += '</div>';
-
-            // 2. Sección de HITOS (Tabla)
-            const hitos = proyecto.proyectos_hitos || [];
-            html += `
-                <div class="mt-8">
-                    <h3 class="text-md font-bold text-gray-800 mb-3 border-l-4 border-blue-500 pl-3 uppercase tracking-wide">Hitos del Proyecto</h3>
-                    ${hitos.length > 0 ? `
-                        <div class="overflow-x-auto border rounded-lg">
-                            <table class="details-table">
-                                <thead>
-                                    <tr>
-                                        <th>Tipo Hito</th>
-                                        <th>Fecha</th>
-                                        <th>Observación</th>
-                                        <th>Creado Por</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${hitos.map(h => `
-                                        <tr>
-                                            <td class="font-medium text-gray-900">${h.tipo_hito || '-'}</td>
-                                            <td class="text-gray-600 whitespace-nowrap">${formatDisplayDate(h.fecha)}</td>
-                                            <td class="text-gray-600">${h.observacion || '-'}</td>
-                                            <td class="text-xs text-gray-500">${h.creado_por || '-'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    ` : `<div class="text-sm text-gray-500 italic bg-gray-50 p-3 rounded border">No hay hitos registrados.</div>`}
-                </div>
-            `;
-
-            // 3. Sección de OBSERVACIONES (Tabla)
-            const observaciones = proyecto.proyectos_observaciones || [];
-            html += `
-                <div class="mt-6">
-                    <h3 class="text-md font-bold text-gray-800 mb-3 border-l-4 border-orange-500 pl-3 uppercase tracking-wide">Observaciones del Proyecto</h3>
-                    ${observaciones.length > 0 ? `
-                        <div class="overflow-x-auto border rounded-lg">
-                            <table class="details-table">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Observación</th>
-                                        <th>Creado Por</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${observaciones.map(o => `
-                                        <tr>
-                                            <td class="text-gray-600 whitespace-nowrap">${formatDisplayDate(o.fecha)}</td>
-                                            <td class="text-gray-800">${o.observacion || '-'}</td>
-                                            <td class="text-xs text-gray-500">${o.creado_por || '-'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    ` : `<div class="text-sm text-gray-500 italic bg-gray-50 p-3 rounded border">No hay observaciones registradas.</div>`}
-                </div>
-            `;
-
-            // 4. Sección de Auditoría (Conectada al nuevo Backend)
-            html += `
-                <div class="mt-8 pt-4 border-t border-gray-200 bg-gray-50 rounded-lg p-4">
-                    <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Auditoría del Sistema</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="block text-gray-400 text-xs">Creado por:</span>
-                            <div class="font-medium text-gray-800 flex items-center gap-2">
-                                <i class="fas fa-user-circle text-blue-400"></i>
-                                ${proyecto.user_nombre || 'Desconocido'}
-                            </div>
-                            <span class="text-xs text-gray-500 block ml-6">${proyecto.user_email || ''}</span>
-                        </div>
-                        <div>
-                            <span class="block text-gray-400 text-xs">Actualizado por:</span>
-                            <div class="font-medium text-gray-800 flex items-center gap-2">
-                                <i class="fas fa-edit text-green-400"></i>
-                                ${proyecto.actualizado_por_nombre || 'Desconocido'}
-                            </div>
-                            <span class="text-xs text-gray-500 block ml-6">${proyecto.actualizado_por_email || ''}</span>
-                        </div>
-                        <div class="md:col-span-2 border-t border-gray-200 mt-2 pt-2">
-                            <span class="block text-gray-400 text-xs">Última fecha de actualización:</span>
-                            <span class="font-medium text-gray-800 text-xs md:text-sm">${formatDisplayDate(proyecto.fecha_actualizacion)}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            detailsContainer.innerHTML = html;
             document.getElementById('viewProjectModal').classList.add('active');
         }
 
@@ -1157,15 +1036,12 @@
                     method: 'DELETE',
                     headers: headers
                 });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || errorData.detail || 'Error al eliminar el proyecto');
-                }
+                if (!response.ok) throw new Error('Error al eliminar el proyecto');
                 showToast('Proyecto eliminado exitosamente', 'success');
                 loadProjects();
             } catch (error) {
                 console.error('Error:', error);
-                showToast(error.message || 'Error al eliminar el proyecto', 'error');
+                showToast('Error al eliminar el proyecto', 'error');
             } finally {
                 showLoading(false);
             }
@@ -1192,6 +1068,7 @@
                     if (input) {
                         if (input.type === 'checkbox') input.checked = (proyecto[key] === 'SI' || proyecto[key] === true);
                         else if (input.type === 'date') {
+                            // FIX AQUÍ: Usar función para formatear fecha a YYYY-MM-DD
                             input.value = formatDateForInput(proyecto[key]);
                         } else {
                             input.value = proyecto[key] || '';
@@ -1220,30 +1097,11 @@
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = {};
-            
-            // Recopilar datos del formulario
             for (let [key, value] of formData.entries()) {
-                const element = e.target.elements[key];
-                if (element.type === 'checkbox') {
-                    data[key] = element.checked ? 'SI' : 'NO';
-                } else if (element.type === 'date') {
-                    // Enviar fecha como string estándar
-                    data[key] = value;
-                } else {
-                    data[key] = value;
-                }
+                if (e.target.elements[key].type === 'checkbox') data[key] = e.target.elements[key].checked ? 'SI' : 'NO';
+                else data[key] = value;
             }
-
-            // Eliminar campos vacíos
-            Object.keys(data).forEach(key => { 
-                if (data[key] === '' || data[key] === null) delete data[key]; 
-            });
-
-            // IMPORTANTE: No enviamos 'user_id', 'actualizado_por' ni 'fecha_actualizacion'
-            // El backend prohíbe estos campos y los asigna automáticamente.
-            delete data['user_id'];
-            delete data['actualizado_por'];
-            delete data['fecha_actualizacion'];
+            Object.keys(data).forEach(key => { if (data[key] === '' || data[key] === null) delete data[key]; });
 
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -1251,35 +1109,18 @@
             try {
                 showLoading(true, 'Guardando...');
                 let response;
-                
                 if (editingId) {
-                    // UPDATE
-                    response = await fetch(`${API_BASE}/proyectos/${editingId}`, { 
-                        method: 'PUT', 
-                        headers: headers, 
-                        body: JSON.stringify(data) 
-                    });
+                    response = await fetch(`${API_BASE}/proyectos/${editingId}`, { method: 'PUT', headers: headers, body: JSON.stringify(data) });
                 } else {
-                    // CREATE
-                    response = await fetch(`${API_BASE}/proyectos`, { 
-                        method: 'POST', 
-                        headers: headers, 
-                        body: JSON.stringify(data) 
-                    });
+                    response = await fetch(`${API_BASE}/proyectos`, { method: 'POST', headers: headers, body: JSON.stringify(data) });
                 }
-
-                const responseData = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(responseData.message || responseData.detail || 'Error al guardar el proyecto');
-                }
-
-                showToast(responseData.message || 'Proyecto guardado exitosamente', 'success');
+                if (!response.ok) throw new Error('Error al guardar el proyecto');
+                showToast('Proyecto guardado exitosamente', 'success');
                 closeModal();
                 loadProjects();
             } catch (error) {
                 console.error('Error:', error);
-                showToast(error.message || 'Error al guardar el proyecto', 'error');
+                showToast('Error al guardar el proyecto', 'error');
             } finally {
                 showLoading(false);
             }

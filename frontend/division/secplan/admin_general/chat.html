@@ -835,13 +835,39 @@ Formato de salida requerido:
                 const totalProyectos = context.filteredProjects.length; // Calculado por JS
                 // --- LÓGICA PARA MODO GENERAL ---
                 // Usamos AppState.filterProject (Lista de proyectos filtrados)
-                
+                const projectsTableMarkdown = (() => {
+                    const headers = [
+                        "ID",
+                        "Nombre",
+                        "Área",
+                        "Estado",
+                        "Monto",
+                        "Es Prioridad",
+                        "Financiamiento Municipal",
+                        "Financiamiento"
+                    ];
+
+                    let table = `| ${headers.join(" | ")} |\n`;
+                    table += `| ${headers.map(() => "---").join(" | ")} |\n`;
+
+                    context.filteredProjects.forEach(p => {
+                        table += `| ${p.id ?? ""} | ${p.nombre ?? ""} | ${p.area ?? ""} | ${p.estado_proyecto ?? ""} | ${p.monto ?? ""} | ${p.es_prioridad ?? ""} | ${p.financiamiento_municipal ?? ""} | ${p.financiamiento ?? ""} |\n`;
+                    });
+
+                    return table;
+                    })();
+                console.log(projectsTableMarkdown)
+
                 // Mapeamos la lista a un JSON simple para ahorrar tokens pero mantener datos clave
                 const projectsListJSON = JSON.stringify(context.filteredProjects.map(p => ({
+                    id:p.id,
                     nombre: p.nombre,
                     area: p.area,
                     estado: p.estado_proyecto,
-                    monto: p.monto
+                    monto: p.monto,
+                    es_prioridad:p.es_prioridad,
+                    financiamiento_municipal:p.financiamiento_municipal,
+                    financiamiento:p.financiamiento
                 })),null,0);
 
                 systemPrompt = `Eres un asistente útil del Geoportal Municipal.
@@ -855,9 +881,20 @@ INSTRUCCIONES:
 4. Responde siempre en español y usa formato Markdown.
 5. Antes de dar la respuesta final, explica brevemente: 'Procesando lista... encontrados X proyectos
 6. Considera que los valores de los proyectos estan en pesos chilenos (CLP)
-
+7. Los campos que tiene la tabla de base de datos son: 
+    id:Identificador numérico único o correlativo del proyecto en la lista.            
+    nombre:Título o nombre descriptivo del proyecto,
+    area:Categoría macro o departamento al que pertenece la iniciativa (Ej: Planificación, Espacios Públicos y equipamiento, Vialidad, Salud, Educación),
+    estado:Fase actual en la que se encuentra el proyecto (Ej: Diseño, En preparación, En ejecución, Licitación, Adjudicado, Ejecutado, Aprobado).,
+    monto:Presupuesto estimado o asignado al proyecto (en pesos chilenos, según el contexto de los datos).,
+    es_prioridad:Indicador que señala si el proyecto es considerado prioritario por la municipalidad (valores: Sí, No),
+    financiamiento_municipal:Indica si el proyecto utiliza fondos propios del municipio (valores: Sí, No).,
+    financiamiento:Fuente de financiamiento externo o fondo específico (Ej: FNDR, PMU, PMB, GORE, FRIL, Circular 33, Sectorial).
+8   - Primero enumera internamente todos los proyectos que cumplen la condición
+    - Luego cuenta esa enumeración
+    - Finalmente entrega el total   
 LISTA DE PROYECTOS FILTRADOS (VISIBLES EN PANTALLA):
- ${projectsListJSON}
+ ${projectsTableMarkdown}
 NOTA: Hay exactamente ${totalProyectos} proyectos en esta lista. Usa este número como referencia.
 
 Formato de salida requerido:
@@ -877,7 +914,7 @@ Formato de salida requerido:
                     { role: "system", content: systemPrompt },
                     ...AppState.chatHistory.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH)
                 ],
-                temperature: 0.3,
+                temperature: 0,
                 //max_tokens: 5500   // 👈 límite de tokens de salida
             };
 
