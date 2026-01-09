@@ -50,7 +50,7 @@
             border-radius: 12px;
             padding: 2rem;
             width: 95%;
-            max-width: 900px;
+            max-width: 900px; /* Aumentado ligeramente para caber las tablas */
             max-height: 90vh;
             overflow-y: auto;
             animation: slideUp 0.3s;
@@ -440,13 +440,9 @@
                             <label for="n_registro">N° Registro</label>
                             <input type="number" id="n_registro" name="n_registro">
                         </div>
-                        <!-- MODIFICADO: Select Dinámico para Área -->
                         <div class="form-group">
-                            <label for="area_id">Área</label>
-                            <select id="area_id" name="area_id">
-                                <option value="">Seleccione Área</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
+                            <label for="area">Área</label>
+                            <input type="text" id="area" name="area">
                         </div>
                     </div>
                 </fieldset>
@@ -454,28 +450,31 @@
                 <fieldset>
                     <legend>Estado y Avance</legend>
                     <div class="form-grid">
-                        <!-- MODIFICADO: Select Dinámico para Estado Proyecto -->
                         <div class="form-group">
-                            <label for="estado_proyecto_id">Estado Proyecto</label>
-                            <select id="estado_proyecto_id" name="estado_proyecto_id">
-                                <option value="">Seleccione Estado</option>
-                                <!-- Se llena dinámicamente -->
+                            <label for="estado_proyecto">Estado Proyecto</label>
+                            <select id="estado_proyecto" name="estado_proyecto">
+                                <option value="Diseño">Diseño</option>
+                                <option value="Ejecución">Ejecución</option>
+                                <option value="Terminado">Terminado</option>
+                                <option value="Suspendido">Suspendido</option>
                             </select>
                         </div>
-                        <!-- MODIFICADO: Select Dinámico para Etapa Proyecto -->
                         <div class="form-group">
-                            <label for="etapa_proyecto_id">Etapa Proyecto</label>
-                            <select id="etapa_proyecto_id" name="etapa_proyecto_id">
-                                <option value="">Seleccione Etapa</option>
-                                <!-- Se llena dinámicamente -->
+                            <label for="etapa_proyecto">Etapa Proyecto</label>
+                            <select id="etapa_proyecto" name="etapa_proyecto">
+                                <option value="Perfil">Perfil</option>
+                                <option value="Pre-factibilidad">Pre-factibilidad</option>
+                                <option value="Factibilidad">Factibilidad</option>
+                                <option value="Diseño Final">Diseño Final</option>
                             </select>
                         </div>
-                        <!-- MODIFICADO: Select Dinámico para Estado Postulación -->
                         <div class="form-group">
-                            <label for="estado_postulacion_id">Estado Postulación</label>
-                            <select id="estado_postulacion_id" name="estado_postulacion_id">
-                                <option value="">Seleccione Estado</option>
-                                <!-- Se llena dinámicamente -->
+                            <label for="estado_postulacion">Estado Postulación</label>
+                            <select id="estado_postulacion" name="estado_postulacion">
+                                <option value="Postulado">Postulado</option>
+                                <option value="Aprobado">Aprobado</option>
+                                <option value="Rechazado">Rechazado</option>
+                                <option value="Pendiente">Pendiente</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -494,12 +493,14 @@
                 <fieldset>
                     <legend>Financiamiento</legend>
                     <div class="form-grid">
-                        <!-- MODIFICADO: Select Dinámico para Financiamiento -->
                         <div class="form-group">
-                            <label for="financiamiento_id">Financiamiento</label>
-                            <select id="financiamiento_id" name="financiamiento_id">
-                                <option value="">Seleccione Financiamiento</option>
-                                <!-- Se llena dinámicamente -->
+                            <label for="financiamiento">Financiamiento</label>
+                            <select id="financiamiento" name="financiamiento">
+                                <option value="FNDR">FNDR</option>
+                                <option value="Municipal">Municipal</option>
+                                <option value="Regional">Regional</option>
+                                <option value="Privado">Privado</option>
+                                <option value="Otro">Otro</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -541,21 +542,13 @@
                 <fieldset>
                     <legend>Ubicación y Territorio</legend>
                     <div class="form-grid">
-                        <!-- MODIFICADO: Select Dinámico para Lineamiento -->
                         <div class="form-group">
-                            <label for="lineamiento_estrategico_id">Lineamiento Estratégico</label>
-                            <select id="lineamiento_estrategico_id" name="lineamiento_estrategico_id">
-                                <option value="">Seleccione Lineamiento</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
+                            <label for="lineamiento_estrategico">Lineamiento Estratégico</label>
+                            <input type="text" id="lineamiento_estrategico" name="lineamiento_estrategico">
                         </div>
-                        <!-- MODIFICADO: Select Dinámico para Sector -->
                         <div class="form-group">
-                            <label for="sector_id">Sector</label>
-                            <select id="sector_id" name="sector_id">
-                                <option value="">Seleccione Sector</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
+                            <label for="sector">Sector</label>
+                            <input type="text" id="sector" name="sector">
                         </div>
                         <div class="form-group">
                             <label for="unidad_vecinal">Unidad Vecinal</label>
@@ -671,16 +664,6 @@
         // Configuración
         const API_BASE = 'https://186.67.61.251:8000';
         let proyectos = [];
-        // Objeto para almacenar los catálogos (Areas, Finanzas, etc.)
-        let catalogData = {
-            areas: [],
-            financiamientos: [],
-            estados_proyecto: [],
-            etapas_proyecto: [],
-            estados_postulacion: [],
-            sectores: [],
-            lineamientos_estrategicos: []
-        };
         let editingId = null;
         let columnsVisible = false;
 
@@ -697,93 +680,34 @@
             };
         }
 
-        // --- CARGA DE CATÁLOGOS (MASTER DATA) ---
-        async function loadCatalogData() {
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
-            try {
-                // Fetch paralelo para todos los endpoints
-                const endpoints = {
-                    areas: '/areas',
-                    financiamientos: '/financiamientos',
-                    estados_proyecto: '/estados_proyecto',
-                    etapas_proyecto: '/etapas_proyecto',
-                    estados_postulacion: '/estados_postulacion',
-                    sectores: '/sectores',
-                    lineamientos_estrategicos: '/lineamientos_estrategicos'
-                };
-
-                const promises = Object.entries(endpoints).map(async ([key, url]) => {
-                    try {
-                        const res = await fetch(`${API_BASE}${url}`, { headers });
-                        if (res.ok) {
-                            const data = await res.json();
-                            catalogData[key] = data;
-                        }
-                    } catch (e) {
-                        console.warn(`Error cargando ${key}:`, e);
-                    }
-                });
-
-                await Promise.all(promises);
-
-                // Llenar los selects del formulario
-                populateFormSelects();
-
-            } catch (error) {
-                console.error('Error cargando catálogos:', error);
-            }
-        }
-
-        function populateFormSelects() {
-            // Helper para llenar un select
-            const fillSelect = (elementId, data, defaultText) => {
-                const select = document.getElementById(elementId);
-                if (!select) return;
-                
-                // Guardar selección actual si estamos editando
-                const currentVal = select.value;
-
-                select.innerHTML = `<option value="">${defaultText}</option>`;
-                data.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.textContent = item.nombre;
-                    select.appendChild(option);
-                });
-
-                // Restaurar valor si existía
-                if (currentVal) select.value = currentVal;
-            };
-
-            fillSelect('area_id', catalogData.areas, 'Seleccione Área');
-            fillSelect('financiamiento_id', catalogData.financiamientos, 'Seleccione Financiamiento');
-            fillSelect('estado_proyecto_id', catalogData.estados_proyecto, 'Seleccione Estado');
-            fillSelect('etapa_proyecto_id', catalogData.etapas_proyecto, 'Seleccione Etapa');
-            fillSelect('estado_postulacion_id', catalogData.estados_postulacion, 'Seleccione Estado Postulación');
-            fillSelect('sector_id', catalogData.sectores, 'Seleccione Sector');
-            fillSelect('lineamiento_estrategico_id', catalogData.lineamientos_estrategicos, 'Seleccione Lineamiento');
-        }
-
         // --- UTILIDAD PARA FECHAS ---
         function formatDateForInput(dateString) {
             if (!dateString) return '';
+            
+            // Si ya viene en formato correcto (YYYY-MM-DD), lo devolvemos tal cual
             if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
                 return dateString;
             }
+
             const dateObj = new Date(dateString);
-            if (isNaN(dateObj.getTime())) return dateString;
+            
+            // Si la fecha es inválida (ej. "Invalid Date"), devolvemos vacío o el string original
+            if (isNaN(dateObj.getTime())) {
+                return dateString;
+            }
+
             const year = dateObj.getFullYear();
             const month = String(dateObj.getMonth() + 1).padStart(2, '0');
             const day = String(dateObj.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
 
+        // Formateador para mostrar fechas legibles en el modal
         function formatDisplayDate(dateString) {
             if (!dateString) return '-';
             try {
                 const date = new Date(dateString);
+                // Ajuste de zona horaria si es necesario
                 return date.toLocaleDateString('es-CL', { 
                     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit'
                 });
@@ -794,10 +718,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
-            // Cargar datos maestros antes que proyectos para asegurar consistencia
-            loadCatalogData().then(() => {
-                loadProjects();
-            });
+            loadProjects();
             
             // Listeners para filtros y búsqueda
             document.getElementById('searchInput').addEventListener('input', applyFilters);
@@ -815,6 +736,7 @@
 
             try {
                 const tableBody = document.getElementById('projectsTableBody');
+                // Mostrar estado de carga en la tabla
                 tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Cargando proyectos...</td></tr>';
 
                 const response = await fetch(`${API_BASE}/proyectos`, {
@@ -835,8 +757,9 @@
                 proyectos = await response.json();
                 console.log("Datos recibidos del backend:", proyectos);
                 
+                // Inicializar filtros con todos los datos disponibles
                 updateFilterOptions();
-                applyFilters();
+                applyFilters(); // Renderizar tabla inicial
                 
                 const today = new Date();
                 const formattedDate = today.toLocaleDateString('es-ES', { 
@@ -849,15 +772,19 @@
             }
         }
 
-        // --- LÓGICA DE FILTROS ---
+        // --- LÓGICA DE FILTROS CONECTADOS ---
+
         function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
             const select = document.getElementById(selectElementId);
             const previousValue = select.value; 
+
             let html = `<option value="">${defaultLabel}</option>`;
             optionsList.forEach(opt => {
                 html += `<option value="${opt}" ${opt === previousValue ? 'selected' : ''}>${opt}</option>`;
             });
+
             select.innerHTML = html;
+
             if (previousValue && !optionsList.includes(previousValue)) {
                 select.value = "";
             } else if (previousValue) {
@@ -866,6 +793,7 @@
         }
 
         function getProfessionalsFromProject(p) {
+            // Revisamos las columnas de profesionales
             return [
                 p.profesional_1, 
                 p.profesional_2, 
@@ -881,45 +809,46 @@
             const selectedStatus = document.getElementById('filterStatus').value;
             const selectedProfessional = document.getElementById('filterProfessional').value;
 
-            // 1. Áreas (usamos area_nombre del join)
+            // 1. Áreas disponibles
             const dataForAreas = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
                 return matchesPro &&
-                       (selectedFinancing === '' || p.financiamiento_nombre === selectedFinancing) &&
-                       (selectedStatus === '' || p.estado_nombre === selectedStatus);
+                       (selectedFinancing === '' || p.financiamiento === selectedFinancing) &&
+                       (selectedStatus === '' || p.estado_proyecto === selectedStatus);
             });
-            const uniqueAreas = [...new Set(dataForAreas.map(p => p.area_nombre).filter(Boolean))].sort();
+            const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
             populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
 
-            // 2. Financiamientos (usamos financiamiento_nombre)
+            // 2. Financiamientos disponibles
             const dataForFinancing = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
                 return matchesPro &&
-                       (selectedArea === '' || p.area_nombre === selectedArea) &&
-                       (selectedStatus === '' || p.estado_nombre === selectedStatus);
+                       (selectedArea === '' || p.area === selectedArea) &&
+                       (selectedStatus === '' || p.estado_proyecto === selectedStatus);
             });
-            const uniqueFinancing = [...new Set(dataForFinancing.map(p => p.financiamiento_nombre).filter(Boolean))].sort();
+            const uniqueFinancing = [...new Set(dataForFinancing.map(p => p.financiamiento).filter(Boolean))].sort();
             populateSelectOptions('filterFinancing', uniqueFinancing, 'Todo el financiamiento', selectedFinancing);
 
-            // 3. Estados (usamos estado_nombre)
+            // 3. Estados disponibles
             const dataForStatus = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
                 return matchesPro &&
-                       (selectedArea === '' || p.area_nombre === selectedArea) &&
-                       (selectedFinancing === '' || p.financiamiento_nombre === selectedFinancing);
+                       (selectedArea === '' || p.area === selectedArea) &&
+                       (selectedFinancing === '' || p.financiamiento === selectedFinancing);
             });
-            const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_nombre).filter(Boolean))].sort();
+            const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
             populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
 
-            // 4. Profesionales
+            // 4. Profesionales disponibles
             const dataForProfessionals = proyectos.filter(p => 
-                (selectedArea === '' || p.area_nombre === selectedArea) &&
-                (selectedFinancing === '' || p.financiamiento_nombre === selectedFinancing) &&
-                (selectedStatus === '' || p.estado_nombre === selectedStatus)
+                (selectedArea === '' || p.area === selectedArea) &&
+                (selectedFinancing === '' || p.financiamiento === selectedFinancing) &&
+                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
             );
+            
             const allProfessionalsList = dataForProfessionals.flatMap(getProfessionalsFromProject);
             const uniqueProfessionals = [...new Set(allProfessionalsList)].sort();
             populateSelectOptions('filterProfessional', uniqueProfessionals, 'Todos los profesionales', selectedProfessional);
@@ -938,11 +867,11 @@
                 const matchesSearch = 
                     (proyecto.nombre && proyecto.nombre.toLowerCase().includes(searchTerm)) ||
                     (proyecto.codigo && proyecto.codigo.toLowerCase().includes(searchTerm)) ||
-                    (proyecto.sector_nombre && proyecto.sector_nombre.toLowerCase().includes(searchTerm));
+                    (proyecto.sector && proyecto.sector.toLowerCase().includes(searchTerm));
 
-                const matchesArea = selectedArea === '' || proyecto.area_nombre === selectedArea;
-                const matchesFinancing = selectedFinancing === '' || proyecto.financiamiento_nombre === selectedFinancing;
-                const matchesStatus = selectedStatus === '' || proyecto.estado_nombre === selectedStatus;
+                const matchesArea = selectedArea === '' || proyecto.area === selectedArea;
+                const matchesFinancing = selectedFinancing === '' || proyecto.financiamiento === selectedFinancing;
+                const matchesStatus = selectedStatus === '' || proyecto.estado_proyecto === selectedStatus;
                 
                 const projectProfessionals = getProfessionalsFromProject(proyecto);
                 const matchesProfessional = selectedProfessional === '' || projectProfessionals.includes(selectedProfessional);
@@ -965,8 +894,10 @@
         }
 
         // --- RENDERIZADO ---
+
         function renderProyectos(proyectosToRender) {
             const tableBody = document.getElementById('projectsTableBody');
+            
             if (proyectosToRender.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
@@ -982,25 +913,13 @@
             const visibilityClass = columnsVisible ? 'toggle-column-visible' : '';
 
             tableBody.innerHTML = proyectosToRender.map(proyecto => {
-                // Usamos estado_color del backend si existe, si no fallback a lógica manual
                 let statusClass = '';
-                let statusText = proyecto.estado_nombre || 'Sin Estado';
+                if (proyecto.estado_proyecto === 'Ejecución') statusClass = 'bg-green-100 text-green-800';
+                else if (proyecto.estado_proyecto === 'Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
+                else if (proyecto.estado_proyecto === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
+                else if (proyecto.estado_proyecto === 'Terminado') statusClass = 'bg-gray-100 text-gray-800';
+                else statusClass = 'bg-red-100 text-red-800';
                 
-                if (proyecto.estado_color) {
-                    statusClass = `text-white`; // Asumimos que el color del backend es un hex o nombre de clase, 
-                                                // pero para mantener consistencia con Tailwind:
-                                                // Si el backend devuelve 'text-blue-100' etc lo usamos,
-                                                // si devuelve un color real, usamos style.
-                    statusClass = ''; // Reset por defecto
-                } else {
-                    // Lógica manual de respaldo
-                    if (statusText === 'Ejecución') statusClass = 'bg-green-100 text-green-800';
-                    else if (statusText === 'Licitación') statusClass = 'bg-yellow-100 text-yellow-800';
-                    else if (statusText === 'Diseño') statusClass = 'bg-blue-100 text-blue-800';
-                    else if (statusText === 'Terminado') statusClass = 'bg-gray-100 text-gray-800';
-                    else statusClass = 'bg-red-100 text-red-800';
-                }
-
                 let progressClass = '';
                 const progress = proyecto.avance_total_porcentaje ? parseFloat(proyecto.avance_total_porcentaje) : 0;
                 const displayProgress = (progress > 1 ? progress : progress * 100);
@@ -1010,24 +929,16 @@
                 else if (displayProgress < 75) progressClass = 'bg-blue-500';
                 else progressClass = 'bg-green-500';
                 
-                // Determinar estilo del badge de estado
-                let badgeStyle = '';
-                if (proyecto.estado_color) {
-                    badgeStyle = `background-color: ${proyecto.estado_color}; color: white;`;
-                } else {
-                    badgeStyle = ''; // Usa la clase statusClass definida arriba
-                }
-
                 return `
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 toggle-column ${visibilityClass}">${proyecto.id || ''}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${proyecto.nombre || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.area_nombre || ''}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.financiamiento_nombre || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.area || ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass}">${proyecto.financiamiento || ''}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 toggle-column ${visibilityClass} font-mono">${formatCurrency(proyecto.monto)}</td>
                         <td class="px-6 py-4 whitespace-nowrap toggle-column ${visibilityClass}">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}" style="${badgeStyle}">
-                                ${statusText}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                ${proyecto.estado_proyecto || ''}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap toggle-column ${visibilityClass}">
@@ -1050,8 +961,7 @@
 
         function updateKPIs(proyectosData) {
             document.getElementById('totalProjects').textContent = proyectosData.length;
-            // Filtramos usando estado_nombre
-            const executionCount = proyectosData.filter(p => p.estado_nombre === 'Ejecución').length;
+            const executionCount = proyectosData.filter(p => p.estado_proyecto === 'Ejecución').length;
             document.getElementById('executionProjects').textContent = executionCount;
             const totalAmount = proyectosData.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
             document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
@@ -1094,15 +1004,16 @@
             const detailsContainer = document.getElementById('viewProjectDetails');
             detailsContainer.innerHTML = '';
 
+            // Mapeo de etiquetas para campos generales
             const labels = {
                 id: "ID", nombre: "Nombre del Proyecto", codigo: "Código", n_registro: "N° de Registro",
-                area_nombre: "Área", estado_nombre: "Estado del Proyecto", etapa_nombre: "Etapa del Proyecto",
-                estado_postulacion_nombre: "Estado de Postulación", avance_total_decimal: "Avance Total (Decimal)",
+                area: "Área", estado_proyecto: "Estado del Proyecto", etapa_proyecto: "Etapa del Proyecto",
+                estado_postulacion: "Estado de Postulación", avance_total_decimal: "Avance Total (Decimal)",
                 avance_total_porcentaje: "Avance Total (%)", es_prioridad: "¿Es Prioridad?",
-                financiamiento_nombre: "Financiamiento", financiamiento_municipal: "¿Financiamiento Municipal?",
+                financiamiento: "Financiamiento", financiamiento_municipal: "¿Financiamiento Municipal?",
                 monto: "Monto", anno_elaboracion: "Año de Elaboración", anno_ejecucion: "Año de Ejecución",
                 fecha_postulacion: "Fecha de Postulación",
-                lineamiento_nombre: "Lineamiento Estratégico", sector_nombre: "Sector",
+                lineamiento_estrategico: "Lineamiento Estratégico", sector: "Sector",
                 unidad_vecinal: "Unidad Vecinal", latitud: "Latitud", longitud: "Longitud",
                 profesional_1: "Profesional 1", profesional_2: "Profesional 2",
                 dupla_profesionales: "Dupla de Profesionales", documentos: "Documentos (Estado)",
@@ -1112,23 +1023,14 @@
                 observaciones: "Observaciones Generales"
             };
 
+            // 1. Sección de Información del Proyecto
             let html = '<div class="space-y-3">';
             
-            // Iteramos sobre las claves del objeto proyecto. Mostramos solo las que tienen etiqueta en 'labels'
-            // y excluyendo IDs técnicos y auditoría
-            const excludeKeys = ['user_id', 'user_nombre', 'user_email', 
-                                 'actualizado_por', 'actualizado_por_nombre', 'actualizado_por_email', 
-                                 'fecha_actualizacion', 'proyectos_hitos', 'proyectos_observaciones',
-                                 'area_id', 'financiamiento_id', 'estado_proyecto_id', 'etapa_proyecto_id',
-                                 'estado_postulacion_id', 'sector_id', 'lineamiento_estrategico_id', 'activo'];
-
             for (const key in labels) {
-                if (excludeKeys.includes(key)) continue;
+                // Excluimos campos de auditoría, hitos y observaciones que se muestran aparte
+                if (['user_id', 'user_nombre', 'user_email', 'actualizado_por', 'actualizado_por_nombre', 'actualizado_por_email', 'fecha_actualizacion', 'proyectos_hitos', 'proyectos_observaciones'].includes(key)) continue;
 
                 let value = proyecto[key];
-                // Mapeo especial para mostrar valores normalizados si faltan *_nombre
-                if (!value && key === 'area_nombre') value = 'Sin definir';
-                
                 if (key === 'monto') value = formatCurrency(value);
                 else if (key === 'fecha_postulacion' && value) value = formatDisplayDate(value);
                 else if (key === 'avance_total_porcentaje' && value) value = `${(parseFloat(value) > 1 ? parseFloat(value) : parseFloat(value)*100).toFixed(2)}%`;
@@ -1143,6 +1045,7 @@
             }
             html += '</div>';
 
+            // 2. Sección de HITOS (Tabla)
             const hitos = proyecto.proyectos_hitos || [];
             html += `
                 <div class="mt-8">
@@ -1150,7 +1053,14 @@
                     ${hitos.length > 0 ? `
                         <div class="overflow-x-auto border rounded-lg">
                             <table class="details-table">
-                                <thead><tr><th>Tipo Hito</th><th>Fecha</th><th>Observación</th><th>Creado Por</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th>Tipo Hito</th>
+                                        <th>Fecha</th>
+                                        <th>Observación</th>
+                                        <th>Creado Por</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     ${hitos.map(h => `
                                         <tr>
@@ -1167,6 +1077,7 @@
                 </div>
             `;
 
+            // 3. Sección de OBSERVACIONES (Tabla)
             const observaciones = proyecto.proyectos_observaciones || [];
             html += `
                 <div class="mt-6">
@@ -1174,7 +1085,13 @@
                     ${observaciones.length > 0 ? `
                         <div class="overflow-x-auto border rounded-lg">
                             <table class="details-table">
-                                <thead><tr><th>Fecha</th><th>Observación</th><th>Creado Por</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Observación</th>
+                                        <th>Creado Por</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     ${observaciones.map(o => `
                                         <tr>
@@ -1190,7 +1107,7 @@
                 </div>
             `;
 
-            // Auditoría
+            // 4. Sección de Auditoría (Conectada al nuevo Backend)
             html += `
                 <div class="mt-8 pt-4 border-t border-gray-200 bg-gray-50 rounded-lg p-4">
                     <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Auditoría del Sistema</h3>
@@ -1201,6 +1118,7 @@
                                 <i class="fas fa-user-circle text-blue-400"></i>
                                 ${proyecto.user_nombre || 'Desconocido'}
                             </div>
+                            <span class="text-xs text-gray-500 block ml-6">${proyecto.user_email || ''}</span>
                         </div>
                         <div>
                             <span class="block text-gray-400 text-xs">Actualizado por:</span>
@@ -1208,6 +1126,7 @@
                                 <i class="fas fa-edit text-green-400"></i>
                                 ${proyecto.actualizado_por_nombre || 'Desconocido'}
                             </div>
+                            <span class="text-xs text-gray-500 block ml-6">${proyecto.actualizado_por_email || ''}</span>
                         </div>
                         <div class="md:col-span-2 border-t border-gray-200 mt-2 pt-2">
                             <span class="block text-gray-400 text-xs">Última fecha de actualización:</span>
@@ -1261,11 +1180,6 @@
         }
 
         function openModal(proyecto = null) {
-            // Asegurarnos de que los catálogos estén cargados
-            if (catalogData.areas.length === 0) {
-                populateFormSelects();
-            }
-
             const modal = document.getElementById('proyectoModal');
             const form = document.getElementById('proyectoForm');
             const title = document.getElementById('modalTitle');
@@ -1273,20 +1187,13 @@
             if (proyecto) {
                 title.textContent = 'Editar Proyecto';
                 editingId = proyecto.id;
-                
-                // Limpiamos formulario primero
-                form.reset();
-
-                // Iterar sobre las claves del proyecto para llenar el formulario
                 Object.keys(proyecto).forEach(key => {
                     const input = form.elements[key];
                     if (input) {
-                        if (input.type === 'checkbox') {
-                            input.checked = (proyecto[key] === 'SI' || proyecto[key] === true);
-                        } else if (input.type === 'date') {
+                        if (input.type === 'checkbox') input.checked = (proyecto[key] === 'SI' || proyecto[key] === true);
+                        else if (input.type === 'date') {
                             input.value = formatDateForInput(proyecto[key]);
                         } else {
-                            // Para selects, el valor debe ser el ID
                             input.value = proyecto[key] || '';
                         }
                     }
@@ -1314,39 +1221,29 @@
             const formData = new FormData(e.target);
             const data = {};
             
+            // Recopilar datos del formulario
             for (let [key, value] of formData.entries()) {
                 const element = e.target.elements[key];
                 if (element.type === 'checkbox') {
                     data[key] = element.checked ? 'SI' : 'NO';
                 } else if (element.type === 'date') {
+                    // Enviar fecha como string estándar
                     data[key] = value;
                 } else {
-                    // Si es un select de ID, enviar como entero si está vacío no enviarlo (para evitar nulls si no es requerido)
-                    // Pero el backend parece manejar bien strings o integers. Lo enviamos tal cual.
-                    // Si el value es "" (cadena vacía), lo quitamos del payload para que el DB use NULL o Default si aplica
                     data[key] = value;
                 }
             }
 
-            // Limpiar campos vacíos para no enviar basura
+            // Eliminar campos vacíos
             Object.keys(data).forEach(key => { 
                 if (data[key] === '' || data[key] === null) delete data[key]; 
             });
 
-            // Eliminar campos de auditoría (Backend los pone)
+            // IMPORTANTE: No enviamos 'user_id', 'actualizado_por' ni 'fecha_actualizacion'
+            // El backend prohíbe estos campos y los asigna automáticamente.
             delete data['user_id'];
             delete data['actualizado_por'];
             delete data['fecha_actualizacion'];
-            delete data['user_nombre'];
-            delete data['actualizado_por_nombre'];
-            // Eliminar nombres display si es que se hubieran pegado
-            delete data['area_nombre'];
-            delete data['financiamiento_nombre'];
-            delete data['estado_nombre'];
-            delete data['etapa_nombre'];
-            delete data['estado_postulacion_nombre'];
-            delete data['sector_nombre'];
-            delete data['lineamiento_nombre'];
 
             const headers = getAuthHeaders();
             if (!headers) return;
@@ -1356,12 +1253,14 @@
                 let response;
                 
                 if (editingId) {
+                    // UPDATE
                     response = await fetch(`${API_BASE}/proyectos/${editingId}`, { 
                         method: 'PUT', 
                         headers: headers, 
                         body: JSON.stringify(data) 
                     });
                 } else {
+                    // CREATE
                     response = await fetch(`${API_BASE}/proyectos`, { 
                         method: 'POST', 
                         headers: headers, 

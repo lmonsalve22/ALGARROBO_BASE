@@ -131,79 +131,83 @@ function renderSidebar(containerId = "sidebarContainer") {
 
                 <li>
                     <a href="${pages.dashboard}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.dashboard)}">
-                        <i class="fas fa-tachometer-alt w-5"></i>
+                        <i class="fas fa-gauge-high w-5"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
 
                 <li>
                     <a href="${pages.proyecto}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.proyecto)}">
-                        <i class="fas fa-map-marked-alt w-5"></i>
+                        <i class="fas fa-diagram-project w-5"></i>
                         <span>Proyectos</span>
                     </a>
                 </li>
-                 <li>
+
+                <li>
                     <a href="${pages.documento}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.documento)}">
-                        <i class="fas fa-calendar-alt w-5"></i>
+                        <i class="fas fa-file-lines w-5"></i>
                         <span>Documentos</span>
                     </a>
                 </li>
+
                 <li>
                     <a href="${pages.geomapas}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.geomapas)}">
-                        <i class="fas fa-calendar-alt w-5"></i>
+                        <i class="fas fa-layer-group w-5"></i>
                         <span>GeoMapas</span>
                     </a>
                 </li>
 
-               
                 <li>
                     <a href="${pages.hitos}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.hitos)}">
-                        <i class="fas fa-calendar-alt w-5"></i>
+                        <i class="fas fa-flag-checkered w-5"></i>
                         <span>Hitos</span>
                     </a>
                 </li>
+
                 <li>
                     <a href="${pages.observacion}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.observacion)}">
-                        <i class="fas fa-calendar-alt w-5"></i>
+                        <i class="fas fa-eye w-5"></i>
                         <span>Observación</span>
                     </a>
                 </li>
 
-                 <li>
+                <li>
                     <a href="${pages.chat}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.chat)}">
-                        <i class="fas fa-calendar-alt w-5"></i>
+                        <i class="fas fa-comments w-5"></i>
                         <span>ChatBot</span>
                     </a>
                 </li>
 
                 <li>
                     <a href="${pages.mapa}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.mapa)}">
-                        <i class="fas fa-map-marked-alt w-5"></i>
+                        <i class="fas fa-map-location-dot w-5"></i>
                         <span>Mapa</span>
                     </a>
                 </li>
 
                 <li>
                     <a href="${pages.informe}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.informe)}">
-                        <i class="fas fa-chart-bar w-5"></i>
+                        <i class="fas fa-chart-line w-5"></i>
                         <span>Informes</span>
                     </a>
                 </li>
 
                 <li>
                     <a href="${pages.calendario}" class="nav-item flex items-center space-x-3 p-3 rounded-lg ${isActive(pages.calendario)}">
-                        <i class="fas fa-calendar-alt w-5"></i>
+                        <i class="fas fa-calendar-days w-5"></i>
                         <span>Calendario</span>
                     </a>
                 </li>
 
+
                
                  <li>
                     <a href="/ALGARROBO_BASE/frontend/geoportal/index.html" class="nav-item flex items-center space-x-3 p-3 rounded-lg">
-                        <i class="fas fa-calendar-alt w-5"></i>
+                        <i class="fas fa-globe-americas w-5"></i>
                         <span>Geoportal</span>
                     </a>
                 </li>
+
 
                 ${modulosHTML}
 

@@ -1,6 +1,56 @@
 CREATE TABLE proyectos (
     id SERIAL PRIMARY KEY,
 
+    user_id INT NOT NULL REFERENCES users(user_id),
+    actualizado_por INT NOT NULL REFERENCES users(user_id),
+
+    n_registro INT,
+
+    area_id INT REFERENCES areas(id),
+    lineamiento_estrategico_id INT REFERENCES lineamientos_estrategicos(id),
+
+    financiamiento_id INT REFERENCES financiamientos(id),
+    financiamiento_municipal VARCHAR(50),
+
+    nombre TEXT,
+    monto NUMERIC,
+
+    anno_elaboracion INT,
+    anno_ejecucion INT,
+
+    topografia TEXT,
+    planimetrias TEXT,
+    ingenieria TEXT,
+    perfil_tecnico_economico TEXT,
+    documentos TEXT,
+
+    avance_total_porcentaje NUMERIC(5,2),
+    avance_total_decimal NUMERIC(10,4),
+
+    estado_proyecto_id INT REFERENCES estados_proyecto(id),
+    etapa_proyecto_id INT REFERENCES etapas_proyecto(id),
+    estado_postulacion_id INT REFERENCES estados_postulacion(id),
+
+    fecha_postulacion DATE,
+    observaciones TEXT,
+
+    unidad_vecinal VARCHAR(150),
+    sector_id INT REFERENCES sectores(id),
+
+    aprobacion_dom VARCHAR(100),
+    aprobacion_serviu VARCHAR(100),
+
+    fecha_actualizacion TIMESTAMP DEFAULT NOW(),
+
+    latitud NUMERIC(12,6),
+    longitud NUMERIC(12,6),
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE proyectos_deprecated (
+    id SERIAL PRIMARY KEY,
+
     -- 🔗 Usuario dueño del proyecto
     user_id INT NOT NULL REFERENCES users(user_id),
 
@@ -207,6 +257,54 @@ INSERT INTO financiamiento_plazos
 VALUES
 ('FRIL', 'RECEPCION_OBSERVACIONES', 'RESPUESTA_OBSERVACIONES', 20, 'HABILES'),
 ('FRIL', 'APROBACION_CONVENIO', 'INICIO_LICITACION', 90, 'CORRIDOS');
+
+
+CREATE TABLE areas (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(150) UNIQUE NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE financiamientos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE etapas_proyecto (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(150) UNIQUE NOT NULL,
+    orden SMALLINT,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE estados_proyecto (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(150) UNIQUE NOT NULL,
+    color VARCHAR(30),
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE estados_postulacion (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(150) UNIQUE NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE sectores (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(200) UNIQUE NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE lineamientos_estrategicos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(300) UNIQUE NOT NULL,
+    activo BOOLEAN DEFAULT TRUE
+);
+
+
 
 
 
