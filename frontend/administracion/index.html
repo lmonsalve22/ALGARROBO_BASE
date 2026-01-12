@@ -1,135 +1,127 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Municipal de Algarrobo</title>
-    <!-- Fuente Google Fonts: Roboto -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Outfit & Roboto -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Unified Admin Styles -->
+    <link rel="stylesheet" href="../division/secplan/admin_general/styles/admin-styles.css">
+
     <style>
         :root {
-            --primary: #1565c0;       /* Azul Institucional */
+            --primary: #1565c0;
             --primary-dark: #0d47a1;
-            --accent: #f57c00;        /* Naranja Algarrobo */
+            --accent: #f57c00;
             --accent-hover: #ef6c00;
-            --bg-body: #f4f6f9;
+            --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --text-main: #333333;
-            --text-light: #666666;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --radius: 12px;
             --transition: all 0.3s ease;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Outfit', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* --- Header / Navbar --- */
-        header {
-            background-color: var(--bg-card);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 0.8rem 2rem;
-        }
-
-        .navbar {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: center; /* Centrado al quitar el acceso interno */
-            align-items: center;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--primary);
-        }
-
-        .brand i {
-            font-size: 1.5rem;
-            color: var(--accent);
         }
 
         /* --- Hero Section --- */
         .hero {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
             color: white;
-            padding: 3rem 1.5rem;
+            padding: 4rem 1.5rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .hero>* {
+            position: relative;
+            z-index: 1;
         }
 
         .hero h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
         }
 
         .hero p {
+            font-size: 1.125rem;
             opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto 2rem auto;
+            max-width: 700px;
+            margin: 0 auto 2.5rem auto;
             font-weight: 300;
         }
 
         .search-container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
             position: relative;
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 20px 12px 45px;
-            border-radius: 30px;
+            padding: 1rem 1.5rem 1rem 3.5rem;
+            border-radius: 9999px;
             border: none;
-            font-size: 1rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 1.125rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             outline: none;
             transition: var(--transition);
+            color: #1e293b;
         }
 
         .search-input:focus {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            transform: scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            transform: scale(1.02);
         }
 
         .search-icon {
             position: absolute;
-            left: 18px;
+            left: 1.5rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #888;
+            color: #94a3b8;
+            font-size: 1.25rem;
         }
 
         /* --- Quick Access Bar --- */
         .quick-access {
             max-width: 1200px;
-            margin: -25px auto 30px auto; /* Negative margin to pull up over hero */
+            margin: -2.5rem auto 3rem auto;
             padding: 0 1.5rem;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 1rem;
             flex-wrap: wrap;
             position: relative;
             z-index: 10;
@@ -147,7 +139,8 @@
             align-items: center;
             gap: 8px;
             transition: var(--transition);
-            text-decoration: none; /* Sin subrayado */
+            text-decoration: none;
+            /* Sin subrayado */
         }
 
         .btn-cta:hover {
@@ -160,7 +153,7 @@
         .btn-cta.secondary {
             background-color: white;
             color: var(--primary);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .btn-cta.secondary:hover {
@@ -196,14 +189,14 @@
             box-shadow: var(--shadow);
             overflow: hidden;
             transition: var(--transition);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
         }
 
         .card-header {
@@ -216,12 +209,40 @@
         }
 
         /* Colores específicos por departamento */
-        .card[data-type="SECPLAC"] .card-header { background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); color: white; }
-        .card[data-type="DOM"] .card-header { background: linear-gradient(to right, #43e97b 0%, #38f9d7 100%); color: white; }
-        .card[data-type="Seguridad"] .card-header { background: linear-gradient(to right, #ff0844 0%, #ffb199 100%); color: white; }
-        .card[data-type="Rentas"] .card-header { background: linear-gradient(to right, #667eea 0%, #764ba2 100%); color: white; }
-        .card[data-type="DIMAO"] .card-header { background: linear-gradient(to right, #89f7fe 0%, #66a6ff 100%); color: white; }
-        .card[data-type="DIDECO"] .card-header { background: linear-gradient(to right, #fdbb2d 0%, #22c1c3 100%); color: white; }
+        .card[data-type="SECPLAC"] .card-header {
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .card[data-type="DOM"] .card-header {
+            background: linear-gradient(to right, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .card[data-type="Seguridad"] .card-header {
+            background: linear-gradient(to right, #ff0844 0%, #ffb199 100%);
+            color: white;
+        }
+
+        .card[data-type="Rentas"] .card-header {
+            background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card[data-type="DIMAO"] .card-header {
+            background: linear-gradient(to right, #89f7fe 0%, #66a6ff 100%);
+            color: white;
+        }
+
+        .card[data-type="DIDECO"] .card-header {
+            background: linear-gradient(to right, #fdbb2d 0%, #22c1c3 100%);
+            color: white;
+        }
+
+        .card[data-type="Mantenedores"] .card-header {
+            background: linear-gradient(to right, #374151 0%, #111827 100%);
+            color: white;
+        }
 
         .card-header h3 {
             font-size: 1.1rem;
@@ -284,7 +305,7 @@
                 flex-direction: column;
                 gap: 10px;
             }
-            
+
             .hero h1 {
                 font-size: 1.6rem;
             }
@@ -292,50 +313,50 @@
             .quick-access {
                 margin-top: 0;
             }
-            
+
             .cards-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Header -->
-    <header>
-        <div class="navbar">
-            <div class="brand">
-                <i class="fa-solid fa-building-columns"></i>
-                <span>I. Municipalidad de Algarrobo</span>
-            </div>
-            <!-- Acceso Interno eliminado -->
-        </div>
-    </header>
+    <div id="headerRender"></div>
+    <script src="../script/layout.js"></script>
+    <script>
+        // Inicializar header
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderHeader === 'function') renderHeader();
+        });
+    </script>
 
     <!-- Hero Section -->
     <section class="hero">
         <h1>Portal de Información Municipal</h1>
         <p>Acceso centralizado a datos, geoportal e informes de las distintas direcciones.</p>
-        
+
         <div class="search-container">
             <i class="fa-solid fa-search search-icon"></i>
-            <input type="text" class="search-input" id="searchInput" placeholder="Buscar dirección, servicio o palabra clave...">
+            <input type="text" class="search-input" id="searchInput"
+                placeholder="Buscar dirección, servicio o palabra clave...">
         </div>
     </section>
 
     <!-- Quick Access Links -->
     <div class="quick-access">
-        <!-- Rellena los href con tus URLs reales -->
-        <a href="/ALGARROBO_BASE/frontend/geoportal/index.html" class="btn-cta">
+        <a href="../geoportal/index.html" class="btn-cta">
             <i class="fa-solid fa-map-location-dot"></i> Geoportal General
         </a>
         <a href="usuario.html" class="btn-cta secondary">
-            <i class="fa-solid fa-chart-line"></i> Usuarios
+            <i class="fa-solid fa-users"></i> Usuarios
         </a>
-        <a href="#" class="btn-cta secondary">
-            <i class="fa-solid fa-chart-line"></i> Dashboard Global
+        <a href="../division/secplan/admin_general/dashboard.html" class="btn-cta secondary">
+            <i class="fa-solid fa-chart-line"></i> SECPLAC
         </a>
-        <a href="#" class="btn-cta secondary">
+        <a href="../division/secplan/admin_general/calendario.html" class="btn-cta secondary">
             <i class="fa-solid fa-calendar-days"></i> Calendario
         </a>
     </div>
@@ -343,9 +364,32 @@
     <!-- Main Content -->
     <main>
         <h2 class="section-title">Seleccione una dirección para acceder a su información específica</h2>
-        
+
         <div class="cards-grid" id="cardsGrid">
-            
+
+            <!-- Mantenedores -->
+            <article class="card" data-type="Mantenedores">
+                <div class="card-header">
+                    <h3>Tablas Maestras</h3>
+                    <i class="fa-solid fa-cogs"></i>
+                </div>
+                <div class="card-body">
+                    <a href="mantenedor_areas.html" class="card-link"><i class="fa-solid fa-map"></i> Áreas</a>
+                    <a href="mantenedor_financiamientos.html" class="card-link"><i class="fa-solid fa-coins"></i>
+                        Financiamientos</a>
+                    <a href="mantenedor_etapas.html" class="card-link"><i class="fa-solid fa-layer-group"></i> Etapas
+                        Proyecto</a>
+                    <a href="mantenedor_estados_proyecto.html" class="card-link"><i
+                            class="fa-solid fa-traffic-light"></i> Estados Proyecto</a>
+                    <a href="mantenedor_estados_postulacion.html" class="card-link"><i
+                            class="fa-solid fa-clipboard-check"></i> Estados Postulación</a>
+                    <a href="mantenedor_sectores.html" class="card-link"><i class="fa-solid fa-draw-polygon"></i>
+                        Sectores</a>
+                    <a href="mantenedor_lineamientos.html" class="card-link"><i class="fa-solid fa-compass"></i>
+                        Lineamientos</a>
+                </div>
+            </article>
+
             <!-- SECPLAC -->
             <article class="card" data-type="SECPLAC">
                 <div class="card-header">
@@ -353,14 +397,20 @@
                     <i class="fa-solid fa-city"></i>
                 </div>
                 <div class="card-body">
-                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/dashboard.html" class="card-link"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/proyecto.html" class="card-link"><i class="fa-solid fa-database"></i> Proyecto</a>
-                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/mapa.html" class="card-link"><i class="fa-solid fa-map"></i> Mapas</a>
-                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/informe.html" class="card-link"><i class="fa-solid fa-file-invoice"></i> Informes</a>
-                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/calendario.html" class="card-link"><i class="fa-solid fa-file-invoice"></i> Calendario</a>
-                    
-                    <div style="height: 1px; background: #eee; margin: 5px 0;"></div>
-                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/ia.html" class="card-link"><i class="fa-solid fa-robot"></i> Asistente Virtual</a>
+                    <a href="../division/secplan/admin_general/dashboard.html" class="card-link"><i
+                            class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                    <a href="../division/secplan/admin_general/proyecto.html" class="card-link"><i
+                            class="fa-solid fa-database"></i> Proyecto</a>
+                    <a href="../division/secplan/admin_general/mapa.html" class="card-link"><i
+                            class="fa-solid fa-map"></i> Mapas</a>
+                    <a href="../division/secplan/admin_general/informe.html" class="card-link"><i
+                            class="fa-solid fa-file-invoice"></i> Informes</a>
+                    <a href="../division/secplan/admin_general/calendario.html" class="card-link"><i
+                            class="fa-solid fa-calendar-days"></i> Calendario</a>
+
+                    <div style="height: 1px; background: #f1f5f9; margin: 8px 0;"></div>
+                    <a href="../division/secplan/admin_general/chat.html" class="card-link"><i
+                            class="fa-solid fa-robot"></i> Asistente Virtual</a>
                 </div>
             </article>
 
@@ -459,12 +509,12 @@
 
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            
+
             cards.forEach(card => {
                 const headerText = card.querySelector('h3').textContent.toLowerCase();
                 const bodyText = card.textContent.toLowerCase();
-                
-                if(headerText.includes(term) || bodyText.includes(term)) {
+
+                if (headerText.includes(term) || bodyText.includes(term)) {
                     card.style.display = 'flex';
                 } else {
                     card.style.display = 'none';
@@ -473,4 +523,5 @@
         });
     </script>
 </body>
+
 </html>

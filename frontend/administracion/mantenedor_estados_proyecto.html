@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenedor Estados Proyecto - Portal Municipal</title>
+
+    <!-- Fuentes y Estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="../division/secplan/admin_general/styles/admin-styles.css">
+
+    <!-- Scripts Base -->
+    <script src="../script/router.js"></script>
+    <script src="../script/api.js"></script>
+    <script src="../script/utils.js"></script>
+</head>
+
+<body class="bg-slate-50 min-h-screen">
+    <div id="headerRender"></div>
+    <script src="../script/layout.js"></script>
+
+    <main class="container mx-auto p-4 md:p-8 max-w-6xl">
+        <!-- Header de Página -->
+        <div class="page-header flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Estados de Proyecto</h1>
+                <p class="text-slate-500 mt-1">Gestión de semáforos y estados de avance</p>
+            </div>
+            <a href="index.html"
+                class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all font-medium shadow-sm">
+                <i class="fas fa-arrow-left text-xs"></i> Volver al Portal
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Panel Lateral: Formulario -->
+            <aside class="lg:col-span-1">
+                <div class="card-modern sticky top-24">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
+                            <i class="fas fa-traffic-light"></i>
+                        </div>
+                        <h2 id="formTitle" class="text-xl font-bold text-slate-800">Nuevo Estado</h2>
+                    </div>
+
+                    <form id="crudForm" class="space-y-5">
+                        <input type="hidden" id="itemId">
+
+                        <div class="form-group flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-400 tracking-wider uppercase">Nombre del
+                                Estado</label>
+                            <input type="text" id="nombre" name="nombre"
+                                class="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500/20 outline-none transition-all bg-slate-50/50"
+                                placeholder="Ej: En ejecución" required>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-400 tracking-wider uppercase">Orden</label>
+                                <input type="number" id="orden" name="orden"
+                                    class="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500/20 outline-none transition-all bg-slate-50/50"
+                                    placeholder="0">
+                            </div>
+                            <div class="form-group flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-400 tracking-wider uppercase">Color</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="colorPicker"
+                                        class="w-10 h-10 rounded-lg border-2 border-white shadow-sm cursor-pointer"
+                                        onchange="document.getElementById('color').value = this.value">
+                                    <input type="text" id="color" name="color"
+                                        class="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500/20 outline-none transition-all bg-slate-50/50 text-sm font-mono"
+                                        placeholder="#000000">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="activo" name="activo" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500">
+                                </div>
+                            </label>
+                            <span class="text-sm font-medium text-slate-600">Estado Activo</span>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <button type="button" id="cancelBtn"
+                                class="hidden flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all font-bold text-sm">
+                                Cancelar
+                            </button>
+                            <button type="submit" id="submitBtn"
+                                class="flex-[2] px-4 py-2.5 bg-slate-800 text-white rounded-xl hover:bg-slate-900 shadow-lg shadow-slate-500/30 transition-all font-bold text-sm">
+                                <i class="fas fa-save mr-2"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Panel Principal: Lista -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Filtros -->
+                <div class="card-modern">
+                    <div class="relative w-full">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" placeholder="Filtrar estados..."
+                            class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-slate-500/10 outline-none transition-all text-slate-600">
+                    </div>
+                </div>
+
+                <!-- Tabla -->
+                <div class="card-modern !p-0 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 border-b border-slate-100">
+                                <tr>
+                                    <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Orden
+                                    </th>
+                                    <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Estado
+                                    </th>
+                                    <th class="p-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Color
+                                    </th>
+                                    <th
+                                        class="p-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
+                                        Estado Log.</th>
+                                    <th
+                                        class="p-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">
+                                        Opciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-50">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="loading" class="p-12 text-center">
+                        <div
+                            class="inline-block w-8 h-8 border-4 border-slate-500/20 border-t-slate-500 rounded-full animate-spin">
+                        </div>
+                        <p class="mt-3 text-slate-500 font-medium">Sincronizando datos...</p>
+                    </div>
+
+                    <div id="emptyState" class="p-12 text-center hidden">
+                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-traffic-light text-3xl text-slate-300"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">No hay registros</h3>
+                        <p class="text-slate-500">No se encontraron estados de proyecto registrados.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let items = [];
+        const form = document.getElementById('crudForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const formTitle = document.getElementById('formTitle');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+        });
+
+        async function init() {
+            await loadItems();
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = items.filter(item =>
+                    item.nombre.toLowerCase().includes(term) ||
+                    String(item.orden).includes(term)
+                );
+                renderTable(filtered);
+            });
+
+            form.addEventListener('submit', handleSave);
+            cancelBtn.addEventListener('click', resetForm);
+        }
+
+        async function loadItems() {
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('emptyState');
+            const tableBody = document.getElementById('tableBody');
+
+            tableBody.innerHTML = '';
+            loading.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            try {
+                items = await api.get('/estados_proyecto');
+                items.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+                renderTable(items);
+            } catch (error) {
+                showToast('Error cargando los datos', 'error');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/50 transition-colors group';
+
+                const statusBadge = item.activo ?
+                    '<span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold uppercase border border-emerald-100/50">Activo</span>' :
+                    '<span class="px-2.5 py-1 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-bold uppercase border border-slate-200/50">Inactivo</span>';
+
+                tr.innerHTML = `
+                    <td class="p-4 text-xs font-mono font-bold text-slate-400">#${item.orden || 0}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-700">${item.nombre}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                             <div class="h-6 w-6 rounded-full border border-slate-200 shadow-sm" style="background-color: ${item.color || '#ccc'}"></div>
+                             <span class="text-[10px] font-mono text-slate-400 uppercase">${item.color || '-'}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">${statusBadge}</td>
+                    <td class="p-4 text-right">
+                        <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick='editItem(${JSON.stringify(item)})' class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-800 hover:text-white transition-all">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button onclick="deleteItem(${item.id})" class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function editItem(item) {
+            document.getElementById('itemId').value = item.id;
+            document.getElementById('nombre').value = item.nombre;
+            document.getElementById('orden').value = item.orden;
+            document.getElementById('color').value = item.color || '';
+            document.getElementById('colorPicker').value = item.color || '#000000';
+            document.getElementById('activo').checked = item.activo;
+
+            formTitle.textContent = 'Editar Estado';
+            submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Actualizar';
+            cancelBtn.classList.remove('hidden');
+
+            document.getElementById('nombre').focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            form.reset();
+            document.getElementById('itemId').value = '';
+            formTitle.textContent = 'Nuevo Estado';
+            submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Guardar Cambios';
+            cancelBtn.classList.add('hidden');
+        }
+
+        async function handleSave(e) {
+            e.preventDefault();
+            const id = document.getElementById('itemId').value;
+            const originalHTML = submitBtn.innerHTML;
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                const formData = utils.serializeForm(e.target);
+                const body = {
+                    nombre: formData.nombre,
+                    orden: parseInt(formData.orden || 0),
+                    color: formData.color,
+                    activo: document.getElementById('activo').checked
+                };
+
+                if (id) {
+                    await api.put(`/estados_proyecto/${id}`, body);
+                    showToast('Estado actualizado correctamente');
+                } else {
+                    await api.post('/estados_proyecto', body);
+                    showToast('Estado creado correctamente');
+                }
+
+                resetForm();
+                await loadItems();
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHTML;
+            }
+        }
+
+        async function deleteItem(id) {
+            if (!confirm('¿Está seguro de desactivar este estado?')) return;
+
+            try {
+                await api.delete(`/estados_proyecto/${id}`);
+                showToast('Estado desactivado');
+                await loadItems();
+            } catch (error) {
+                showToast('Error al intentar desactivar', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

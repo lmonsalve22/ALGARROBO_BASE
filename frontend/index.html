@@ -1,328 +1,376 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geoportal Municipal - Inicio de Sesión</title>
-    
+    <title>Geoportal Municipal - Algarrobo</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9', // Sky 500
+                            600: '#0284c7', // Sky 600
+                            700: '#0369a1', // Sky 700
+                            900: '#0c4a6e', // Sky 900
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         body {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            /* Evitar scroll en login */
         }
-        
-        .login-container {
-            backdrop-filter: blur(10px);
-            background-color: rgba(255, 255, 255, 0.9);
+
+        /* Parallax Background */
+        .parallax-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('assets/algarrobo_coast.png');
+            /* Sea/Coast Image */
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            z-index: -1;
+            /* Parallax Effect via CSS */
+            background-attachment: fixed;
+            filter: brightness(0.85);
         }
-        
-        .login-input {
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 58, 138, 0.6) 100%);
+            z-index: -1;
+        }
+
+        /* Glassmorphism Panel */
+        .login-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Input Styles */
+        .form-input {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            background: #ffffff;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+            outline: none;
+        }
+
+        /* Button Gradient */
+        .btn-gradient {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
             transition: all 0.3s ease;
         }
-        
-        .login-input:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.4);
+            transform: translateY(-1px);
         }
-        
-        .login-button {
-            transition: all 0.3s ease;
+
+        /* Floating Logo */
+        .brand-logo {
+            animation: float 6s ease-in-out infinite;
         }
-        
-        .login-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
-        
-        .login-logo {
-            animation: float 3s ease-in-out infinite;
-        }
-        
+
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
-        
-        .alert {
-            animation: slideIn 0.3s ease-out;
+
+        .alert-slide {
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
-    <div class="login-container w-full max-w-md p-8 rounded-xl shadow-2xl">
-        <div class="text-center mb-8">
-            <div class="login-logo inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-full mb-4">
-                <i class="fas fa-city text-white text-3xl"></i>
-            </div>
-            <h1 class="text-2xl font-bold text-gray-800">Geoportal Municipal</h1>
-            <p class="text-gray-600 mt-2">Ilustre Municipalidad de Algarrobo</p>
-        </div>
-        
-        <div id="alertContainer" class="mb-4"></div>
-        
-        <form id="loginForm" class="space-y-6">
-            <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre de Usuario
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-user text-gray-400"></i>
+
+<body class="flex items-center justify-center min-h-screen relative">
+
+    <!-- Backgrounds -->
+    <div class="parallax-bg"></div>
+    <div class="overlay"></div>
+
+    <!-- Main Container -->
+    <div class="w-full max-w-md p-6 mx-4 relative z-10">
+
+        <!-- Login Card -->
+        <div class="login-card p-10">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4">
+                    <div
+                        class="brand-logo w-20 h-20 bg-gradient-to-br from-sky-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-sky-500/30 text-white transform rotate-3">
+                        <i class="fas fa-water text-3xl"></i>
                     </div>
-                    <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
-                        required
-                        class="login-input w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ingrese su nombre de usuario"
-                    >
                 </div>
+                <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Geoportal Municipal</h1>
+                <p class="text-slate-600 mt-2 font-medium">Ilustre Municipalidad de Algarrobo</p>
             </div>
-            
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                    Contraseña
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-lock text-gray-400"></i>
+
+            <div id="alertContainer" class="mb-6 empty:hidden"></div>
+
+            <form id="loginForm" class="space-y-5">
+                <!-- Username -->
+                <div>
+                    <label for="username" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Usuario</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-slate-400 group-focus-within:text-sky-500 transition-colors"></i>
+                        </div>
+                        <input type="text" id="username" name="username" required
+                            class="form-input w-full pl-10 pr-4 py-3 text-slate-700 placeholder-slate-400 font-medium"
+                            placeholder="Ingrese su nombre de usuario">
                     </div>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        required
-                        class="login-input w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ingrese su contraseña"
-                    >
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                        <button type="button" id="togglePassword" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password"
+                        class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Contraseña</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-slate-400 group-focus-within:text-sky-500 transition-colors"></i>
+                        </div>
+                        <input type="password" id="password" name="password" required
+                            class="form-input w-full pl-10 pr-10 py-3 text-slate-700 placeholder-slate-400 font-medium"
+                            placeholder="••••••••">
+                        <button type="button" id="togglePassword"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
                             <i class="fas fa-eye" id="toggleIcon"></i>
                         </button>
                     </div>
                 </div>
-            </div>
-            
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input 
-                        type="checkbox" 
-                        id="remember" 
-                        name="remember" 
-                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    >
-                    <label for="remember" class="ml-2 block text-sm text-gray-700">
-                        Recordarme
-                    </label>
+
+                <!-- Options -->
+                <div class="flex items-center justify-between pt-1">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember" name="remember"
+                            class="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500 cursor-pointer">
+                        <label for="remember"
+                            class="ml-2 block text-sm font-medium text-slate-600 cursor-pointer">Recordarme</label>
+                    </div>
+                    <a href="#" class="text-sm font-semibold text-sky-600 hover:text-sky-700 hover:underline">¿Olvidó su
+                        contraseña?</a>
                 </div>
-                <a href="#" class="text-sm text-blue-600 hover:text-blue-800">
-                    ¿Olvidó su contraseña?
-                </a>
-            </div>
-            
-            <div>
-                <button 
-                    type="submit" 
-                    id="loginButton"
-                    class="login-button w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
+
+                <!-- Action -->
+                <button type="submit" id="loginButton"
+                    class="btn-gradient w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm tracking-wide shadow-md flex items-center justify-center gap-2 group mt-2">
                     <span id="buttonText">Iniciar Sesión</span>
-                    <div id="spinner" class="hidden ml-2">
-                        <i class="fas fa-spinner fa-spin"></i>
+                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    <div id="spinner"
+                        class="hidden animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full">
                     </div>
                 </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="mt-8 pt-6 border-t border-slate-200/60 text-center">
+                <p class="text-xs text-slate-500 font-medium">
+                    &copy; 2026 Geoportal Municipal. Todos los derechos reservados.
+                </p>
             </div>
-        </form>
-        
-        <div class="mt-6 text-center">
-            <p class="text-sm text-gray-600">
-                ¿Necesita ayuda? Contacte al administrador del sistema
-            </p>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is already logged in
-            const token = localStorage.getItem('authToken');
-            /*
-            if (token) {
-                // Redirect to dashboard if token exists
-                window.location.href = 'frontend//ALGARROBO_BASE/frontend/division/secplan/dashboard.html';
-            }
-            */
-            
-            // Toggle password visibility
-            const togglePassword = document.getElementById('togglePassword');
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                
-                if (type === 'text') {
-                    toggleIcon.classList.remove('fa-eye');
-                    toggleIcon.classList.add('fa-eye-slash');
-                } else {
-                    toggleIcon.classList.remove('fa-eye-slash');
-                    toggleIcon.classList.add('fa-eye');
-                }
-            });
-            
-            // Handle form submission
-            const loginForm = document.getElementById('loginForm');
-            loginForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                const remember = document.getElementById('remember').checked;
-                
-                // Show loading state
-                const buttonText = document.getElementById('buttonText');
-                const spinner = document.getElementById('spinner');
-                const loginButton = document.getElementById('loginButton');
-                
-                buttonText.textContent = 'Iniciando sesión...';
-                spinner.classList.remove('hidden');
-                loginButton.disabled = true;
-                
-                // Clear any existing alerts
-                clearAlerts();
-                
-                // Make API call to login endpoint
-                fetch('https://186.67.61.251:8000/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: username,
-                        password: password
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Credenciales inválidas');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Store authentication data
-                    if (data.token) {
-                        // Save token to localStorage
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('isLoggedIn', 'true');
-                        console.log("datax",data)
-                        
-                        // Save user data for future reference
-                        if (data.user) {
-                            localStorage.setItem('userData', JSON.stringify(data.user));
-                        }
-                        
-                        if (remember) {
-                            localStorage.setItem('rememberUser', username);
-                        } else {
-                            localStorage.removeItem('rememberUser');
-                        }
-                        
-                        const division = data.user.division.nombre.toLowerCase();
-                        
-                        const rol = data.user.roles[0].nombre.toLowerCase();
-                        console.log("data2",data.user.division)
-                        let ruta = `/ALGARROBO_BASE/frontend/division/${division}/${rol}/dashboard.html`
-                        console.log("User",data.user.nivel_acceso)
-                        
-                        if (data.user.nivel_acceso == 10){
-                            ruta = `/ALGARROBO_BASE/frontend/administracion/index.html`;
-                        }
-                        //console.log(data)
-                        // Redirect to dashboard instead of index.html
-                        window.location.href = ruta;
-                        //window.location.href = '/ALGARROBO_BASE/frontend/division/secplan/dashboard.html';
-                    } else {
-                        throw new Error('Respuesta inválida del servidor');
-                    }
-                })
-                .catch(error => {
-                    // Show error message
-                    showAlert('error', error.message || 'Error al iniciar sesión. Inténtelo nuevamente.');
-                    
-                    // Reset button state
-                    buttonText.textContent = 'Iniciar Sesión';
-                    spinner.classList.add('hidden');
-                    loginButton.disabled = false;
-                });
-            });
-            
-            // Check for remembered username
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check previous session
             const rememberedUser = localStorage.getItem('rememberUser');
             if (rememberedUser) {
                 document.getElementById('username').value = rememberedUser;
                 document.getElementById('remember').checked = true;
             }
+
+            // Password Toggle
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                if (type === 'text') {
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                    toggleIcon.classList.add('text-sky-500');
+                } else {
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                    toggleIcon.classList.remove('text-sky-500');
+                }
+            });
+
+            // Form Submit
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const remember = document.getElementById('remember').checked;
+
+                // Loading State
+                const buttonText = document.getElementById('buttonText');
+                const spinner = document.getElementById('spinner');
+                const loginButton = document.getElementById('loginButton');
+                const arrowIcon = loginButton.querySelector('.fa-arrow-right');
+
+                buttonText.textContent = 'Verificando...';
+                spinner.classList.remove('hidden');
+                if (arrowIcon) arrowIcon.classList.add('hidden');
+                loginButton.disabled = true;
+                loginButton.classList.add('opacity-80', 'cursor-not-allowed');
+
+                clearAlerts();
+
+                fetch('https://186.67.61.251:8000/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: username, password: password })
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Credenciales inválidas');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.token) {
+                            localStorage.setItem('authToken', data.token);
+                            localStorage.setItem('isLoggedIn', 'true');
+                            if (data.user) localStorage.setItem('userData', JSON.stringify(data.user));
+
+                            if (remember) localStorage.setItem('rememberUser', username);
+                            else localStorage.removeItem('rememberUser');
+
+                            const division = data.user.division && data.user.division.nombre ? data.user.division.nombre.toLowerCase() : 'secplan'; // Fallback
+                            const roles = data.user.roles || [];
+                            const rol = roles.length > 0 ? roles[0].nombre.toLowerCase() : 'admin_general'; // Fallback
+
+                            let ruta = `division/${division}/${rol}/dashboard.html`;
+                            if (data.user.nivel_acceso == 10) {
+                                ruta = `administracion/index.html`;
+                            }
+
+                            // Fake delay for better UX
+                            setTimeout(() => {
+                                window.location.href = ruta;
+                            }, 500);
+                        } else {
+                            throw new Error('Respuesta del servidor inválida');
+                        }
+                    })
+                    .catch(error => {
+                        showAlert('error', error.message || 'Error de conexión');
+
+                        buttonText.textContent = 'Iniciar Sesión';
+                        spinner.classList.add('hidden');
+                        if (arrowIcon) arrowIcon.classList.remove('hidden');
+                        loginButton.disabled = false;
+                        loginButton.classList.remove('opacity-80', 'cursor-not-allowed');
+                    });
+            });
         });
-        
+
         function showAlert(type, message) {
             const alertContainer = document.getElementById('alertContainer');
             const alertDiv = document.createElement('div');
-            
-            if (type === 'error') {
-                alertDiv.className = 'alert bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded';
-                alertDiv.innerHTML = `
-                    <div class="flex">
-                        <div class="py-1">
-                            <i class="fas fa-exclamation-circle mr-2"></i>
-                        </div>
-                        <div>
-                            <p>${message}</p>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'success') {
-                alertDiv.className = 'alert bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded';
-                alertDiv.innerHTML = `
-                    <div class="flex">
-                        <div class="py-1">
-                            <i class="fas fa-check-circle mr-2"></i>
-                        </div>
-                        <div>
-                            <p>${message}</p>
-                        </div>
-                    </div>
-                `;
-            }
-            
+
+            const colors = type === 'error'
+                ? 'bg-red-50 text-red-700 border-red-200'
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+            const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
+
+            alertDiv.className = `alert-slide flex items-center p-4 mb-4 rounded-xl border ${colors} shadow-sm`;
+            alertDiv.innerHTML = `
+                <i class="fas ${icon} text-lg mr-3"></i>
+                <span class="text-sm font-medium">${message}</span>
+            `;
+
             alertContainer.appendChild(alertDiv);
-            
-            // Auto-dismiss after 5 seconds
+
             setTimeout(() => {
+                alertDiv.style.transition = 'opacity 0.5s ease';
                 alertDiv.style.opacity = '0';
-                setTimeout(() => {
-                    alertContainer.removeChild(alertDiv);
-                }, 300);
-            }, 5000);
+                setTimeout(() => alertContainer.removeChild(alertDiv), 500);
+            }, 4000);
         }
-        
+
         function clearAlerts() {
-            const alertContainer = document.getElementById('alertContainer');
-            while (alertContainer.firstChild) {
-                alertContainer.removeChild(alertContainer.firstChild);
-            }
+            document.getElementById('alertContainer').innerHTML = '';
         }
     </script>
 </body>
+
 </html>

@@ -1,605 +1,271 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mantenedor de Usuarios - Municipalidad de Algarrobo</title>
-    <!-- Fuente Google Fonts: Roboto -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Outfit & Roboto -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Unified Admin Styles -->
+    <link rel="stylesheet" href="../division/secplan/admin_general/styles/admin-styles.css">
+
+    <script src="../script/router.js"></script>
+    <script src="../script/api.js"></script>
+    <script src="../script/utils.js"></script>
+
     <style>
         :root {
-            --primary: #1565c0;       /* Azul Institucional */
-            --primary-dark: #0d47a1;
-            --accent: #f57c00;        /* Naranja Algarrobo */
-            --accent-hover: #ef6c00;
-            --bg-body: #f4f6f9;
-            --bg-card: #ffffff;
-            --text-main: #333333;
-            --text-light: #666666;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --radius: 12px;
-            --transition: all 0.3s ease;
-            --success: #2e7d32;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --accent: #f59e0b;
+            --bg-body: #f8fafc;
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Outfit', sans-serif;
             background-color: var(--bg-body);
-            color: var(--text-main);
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            color: #1e293b;
         }
 
-        /* --- Header / Navbar --- */
-        header {
-            background-color: var(--bg-card);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 0.8rem 2rem;
-        }
-
-        .navbar {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .brand i { font-size: 1.5rem; color: var(--accent); }
-        
-        .nav-link {
-            color: var(--text-main);
-            text-decoration: none;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: var(--transition);
-        }
-        
-        .nav-link:hover { color: var(--primary); }
-
-        /* --- Main Content --- */
         main {
             max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1.5rem 4rem 1.5rem;
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
         }
 
         .page-header {
+            margin-bottom: 2rem;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .page-title {
-            font-size: 1.8rem;
-            color: var(--primary-dark);
-            border-bottom: 3px solid var(--accent);
-            padding-bottom: 5px;
-            display: inline-block;
-        }
-
-        /* --- Cards & Forms --- */
-        .card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 2rem;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .card-header {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-            display: flex;
             align-items: center;
-            gap: 10px;
         }
 
-        .card-header h2 {
-            font-size: 1.3rem;
-            color: var(--text-main);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-group label {
-            font-weight: 500;
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-
-        .form-control {
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: var(--transition);
-            outline: none;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
-        }
-
-        /* --- Buttons --- */
-        .btn {
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: var(--transition);
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 2px 5px rgba(21, 101, 192, 0.3);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        /* --- Table Styles --- */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .card-modern {
             background: white;
-            min-width: 600px; /* Fuerza scroll en móviles */
-        }
-
-        thead {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        th, td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        tr:last-child td { border-bottom: none; }
-        tbody tr:hover { background-color: #f8f9fa; }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        
-        .badge-active { background-color: #e8f5e9; color: #2e7d32; }
-        .badge-inactive { background-color: #ffebee; color: #c62828; }
-
-        /* --- Footer --- */
-        footer {
-            background-color: #263238;
-            color: #b0bec5;
-            text-align: center;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
-            margin-top: auto;
-            font-size: 0.9rem;
-        }
-
-        /* --- Toast Notifications --- */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toast {
-            min-width: 300px;
-            padding: 15px 20px;
-            background: white;
-            border-left: 5px solid;
-            border-radius: 4px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideIn 0.3s ease forwards;
-            opacity: 0;
-            transform: translateX(100%);
-        }
-
-        .toast.success { border-color: var(--success); }
-        .toast.success i { color: var(--success); }
-        
-        .toast.error { border-color: var(--danger); }
-        .toast.error i { color: var(--danger); }
-
-        @keyframes slideIn {
-            to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateX(100%); }
-        }
-
-        /* --- Responsive --- */
-        @media (max-width: 768px) {
-            .navbar { flex-direction: column; gap: 10px; }
-            .form-grid { grid-template-columns: 1fr; }
-            .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
-<body>
 
-    <!-- Header -->
-    <header>
-        <div class="navbar">
-            <a href="#" class="brand">
-                <i class="fa-solid fa-building-columns"></i>
-                <span>I. Municipalidad de Algarrobo</span>
-            </a>
-            <nav>
-                <a href="index.html" class="nav-link">
-                    <i class="fa-solid fa-arrow-left"></i> Volver al Portal
-                </a>
-            </nav>
-        </div>
-    </header>
+<body>
+    <div id="headerRender"></div>
+    <script src="../script/layout.js"></script>
 
     <!-- Main Content -->
     <main>
         <div class="page-header">
-            <h1 class="page-title">Mantenedor de Usuarios</h1>
-            <div style="color: var(--text-light); font-size: 0.9rem;">
-                <i class="fa-solid fa-user-gear"></i> Gestión de accesos y roles
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 leading-tight">Gestión de Usuarios</h1>
+                <p class="text-gray-500">Administración centralizada de accesos y permisos</p>
             </div>
+            <a href="index.html"
+                class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-all font-medium">
+                <i class="fas fa-arrow-left"></i> Volver al Portal
+            </a>
         </div>
 
         <!-- Formulario de Creación -->
-        <section class="card">
-            <div class="card-header">
-                <i class="fa-solid fa-user-plus" style="color: var(--primary); font-size: 1.2rem;"></i>
-                <h2>Crear Nuevo Usuario</h2>
+        <section class="card-modern">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h2 class="text-xl font-bold">Crear Nuevo Usuario</h2>
             </div>
-            
+
             <form id="formUser">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" class="form-control" placeholder="ejemplo@algarrobo.cl" required>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-group flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-400 tracking-wider uppercase">Email
+                            Corporativo</label>
+                        <input type="email" id="email" name="email"
+                            class="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                            placeholder="ejemplo@algarrobo.cl" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="nombre">Nombre Completo</label>
-                        <input type="text" id="nombre" class="form-control" placeholder="Juan Pérez" required>
+                    <div class="form-group flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-400 tracking-wider uppercase">Nombre Completo</label>
+                        <input type="text" id="nombre" name="nombre"
+                            class="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                            placeholder="Nombre completo" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="password">Contraseña</label>
-                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="division_id">División</label>
-                        <select id="division_id" class="form-control">
-                            <option value="">-- Sin división --</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="role_id">Rol</label>
-                        <select id="role_id" class="form-control" required>
-                            <option value="">-- Seleccionar rol --</option>
-                        </select>
+                    <div class="form-group flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-400 tracking-wider uppercase">Contraseña</label>
+                        <input type="password" id="password" name="password"
+                            class="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                            placeholder="••••••••" required>
                     </div>
                 </div>
 
-                <div style="margin-top: 1.5rem; text-align: right;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-save"></i> Crear Usuario
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div class="form-group flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-400 tracking-wider uppercase">División
+                            Municipal</label>
+                        <select id="division_id" name="division_id"
+                            class="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all bg-white"></select>
+                    </div>
+
+                    <div class="form-group flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-400 tracking-wider uppercase">Rol de Acceso</label>
+                        <select id="role_id" name="nivel_acceso"
+                            class="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none transition-all bg-white"
+                            required></select>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button type="submit" id="submitBtn"
+                        class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all font-bold">
+                        <i class="fas fa-save"></i> Guardar Usuario
                     </button>
                 </div>
             </form>
         </section>
 
         <!-- Tabla de Usuarios -->
-        <section class="card">
-            <div class="card-header">
-                <i class="fa-solid fa-users" style="color: var(--accent); font-size: 1.2rem;"></i>
-                <h2>Listado de Usuarios</h2>
+        <section class="card-modern text-sky-800">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h2 class="text-xl font-bold">Listado de Usuarios</h2>
             </div>
 
-            <div class="table-container">
-                <table id="usersTable">
+            <div class="overflow-x-auto">
+                <table class="w-full">
                     <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>División</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
-                            <!-- Columna Acciones eliminada -->
+                        <tr class="text-left border-b border-gray-100">
+                            <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">ID</th>
+                            <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Usuario</th>
+                            <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">División</th>
+                            <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Rol</th>
+                            <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
+                                Estado</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Se llena vía JS -->
-                    </tbody>
+                    <tbody id="usersBody" class="divide-y divide-gray-50"></tbody>
                 </table>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2023 Ilustre Municipalidad de Algarrobo. Todos los derechos reservados.</p>
-    </footer>
-
-    <!-- Contenedor para Notificaciones -->
-    <div id="toast-container"></div>
-
     <script>
-        // --- Configuración ---
-        const API_URL = "https://186.67.61.251:8000/";
-        const TOKEN = localStorage.getItem("authToken");
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();
+        });
 
-        // --- Utilidad: Toast Notification (Reemplazo de alert) ---
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-            
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fa-solid ${icon}"></i>
-                <span>${message}</span>
-            `;
-
-            container.appendChild(toast);
-
-            // Eliminar después de 3 segundos
-            setTimeout(() => {
-                toast.style.animation = 'fadeOut 0.3s ease forwards';
-                toast.addEventListener('animationend', () => {
-                    toast.remove();
-                });
-            }, 3000);
+        async function initPage() {
+            try {
+                await Promise.all([loadDivisiones(), loadRoles(), loadUsers()]);
+            } catch (error) {
+                showToast("Error inicializando página", "error");
+            }
         }
 
-        // --- 1. Cargar Divisiones ---
         async function loadDivisiones() {
-            try {
-                const res = await fetch(API_URL + "/divisiones", {
-                    headers: { "Authorization": "Bearer " + TOKEN }
-                });
-
-                if (!res.ok) throw new Error("Error al cargar divisiones");
-
-                const divisiones = await res.json();
-                const select = document.getElementById("division_id");
-
-                divisiones.forEach(d => {
-                    const opt = document.createElement("option");
-                    opt.value = d.division_id;
-                    opt.textContent = d.nombre;
-                    select.appendChild(opt);
-                });
-            } catch (error) {
-                console.error(error);
-                showToast("No se pudieron cargar las divisiones", "error");
-            }
+            const data = await api.get('/divisiones');
+            const select = document.getElementById("division_id");
+            select.innerHTML = '<option value="">-- Sin división --</option>';
+            data.forEach(d => {
+                const opt = document.createElement("option");
+                opt.value = d.division_id;
+                opt.textContent = d.nombre;
+                select.appendChild(opt);
+            });
         }
 
-        // --- 2. Cargar Roles ---
         async function loadRoles() {
-            try {
-                const res = await fetch(API_URL + "/roles", {
-                    headers: { "Authorization": "Bearer " + TOKEN }
-                });
-
-                if (!res.ok) throw new Error("Error al cargar roles");
-
-                const roles = await res.json();
-                const select = document.getElementById("role_id");
-
-                roles.forEach(r => {
-                    const opt = document.createElement("option");
-                    opt.value = r.role_id;
-                    opt.textContent = r.nombre;
-                    select.appendChild(opt);
-                });
-            } catch (error) {
-                console.error(error);
-                showToast("No se pudieron cargar los roles", "error");
-            }
+            const data = await api.get('/roles');
+            const select = document.getElementById("role_id");
+            select.innerHTML = '<option value="" disabled selected>-- Seleccionar rol --</option>';
+            data.forEach(r => {
+                const opt = document.createElement("option");
+                opt.value = r.role_id;
+                opt.textContent = r.nombre;
+                select.appendChild(opt);
+            });
         }
 
-        // --- 3. Cargar Usuarios ---
         async function loadUsers() {
-            try {
-                const res = await fetch(API_URL + "/users", {
-                    headers: { "Authorization": "Bearer " + TOKEN }
-                });
+            const users = await api.get('/users');
+            const tbody = document.getElementById("usersBody");
+            tbody.innerHTML = "";
 
-                if (!res.ok) throw new Error("Error al obtener usuarios");
-
-                const users = await res.json();
-                const tbody = document.querySelector("#usersTable tbody");
-                tbody.innerHTML = "";
-
-                if (users.length === 0) {
-                    // Colspan actualizado de 6 a 5
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #888;">No hay usuarios registrados.</td></tr>`;
-                    return;
-                }
-
-                users.forEach(u => {
-                    const tr = document.createElement("tr");
-                    const statusBadge = u.activo ? 
-                        '<span class="badge badge-active">Activo</span>' : 
-                        '<span class="badge badge-inactive">Inactivo</span>';
-
-                    tr.innerHTML = `
-                        <td style="color: #666; font-size: 0.9em;">#${u.user_id}</td>
-                        <td>
-                            <div style="font-weight: 500;">${u.nombre}</div>
-                            <div style="font-size: 0.85em; color: #888;">${u.email}</div>
-                        </td>
-                        <td>${u.division || '<span style="color:#aaa; font-style:italic;">Sin asignar</span>'}</td>
-                        <td>${u.nivel_acceso || '-'}</td>
-                        <td>${statusBadge}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error(error);
-                showToast("Error al cargar la lista de usuarios", "error");
-            }
-        }
-
-        // --- 4. Crear Usuario ---
-        document.getElementById("formUser").addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            
-            // UI: Estado de carga
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-
-            const email = document.getElementById("email").value;
-            const nombre = document.getElementById("nombre").value;
-            const password = document.getElementById("password").value;
-            const division_id = document.getElementById("division_id").value || null;
-            const role_id = document.getElementById("role_id").value;
-
-            if (!role_id) {
-                showToast("Debe seleccionar un rol", "error");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+            if (users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-gray-400 italic">No hay usuarios registrados</td></tr>`;
                 return;
             }
 
+            users.forEach(u => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-gray-50/50 transition-colors";
+                const statusBadge = u.activo ?
+                    '<span class="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-100">Activo</span>' :
+                    '<span class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-red-100">Inactivo</span>';
+
+                tr.innerHTML = `
+                    <td class="px-4 py-4 text-xs font-mono text-gray-400">#${u.user_id}</td>
+                    <td class="px-4 py-4">
+                        <div class="font-bold text-gray-900">${u.nombre}</div>
+                        <div class="text-xs text-gray-500">${u.email}</div>
+                    </td>
+                    <td class="px-4 py-4 text-sm text-gray-600">${u.division || '<span class="text-gray-300 italic">Sin asignar</span>'}</td>
+                    <td class="px-4 py-4 text-sm font-medium text-blue-600">${u.nivel_acceso || '-'}</td>
+                    <td class="px-4 py-4 text-center">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById("formUser").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("submitBtn");
+            const originalHTML = btn.innerHTML;
+
             try {
-                // 1️⃣ Crear usuario
-                const res = await fetch(API_URL + "/users", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + TOKEN
-                    },
-                    body: JSON.stringify({
-                        email,
-                        nombre,
-                        password,
-                        division_id,
-                        nivel_acceso: String(role_id)
-                    })
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
+
+                const formData = utils.serializeForm(e.target);
+
+                // 1. Crear usuario
+                const result = await api.post('/users', {
+                    ...formData,
+                    nivel_acceso: String(formData.nivel_acceso)
                 });
 
-                const result = await res.json();
-
-                if (!res.ok || !result.user_id) {
-                    throw new Error(result.message || "Error creando usuario en el servidor");
-                }
-
-                const userId = result.user_id;
-
-                // 2️⃣ Asignar rol
-                await fetch(`${API_URL}/users/${userId}/roles`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + TOKEN
-                    },
-                    body: JSON.stringify({ roles: [parseInt(role_id)] })
+                // 2. Asignar rol
+                await api.put(`/users/${result.user_id}/roles`, {
+                    roles: [parseInt(formData.nivel_acceso)]
                 });
 
-                showToast("Usuario creado correctamente");
+                showToast("Usuario creado y rol asignado correctamente");
                 e.target.reset();
                 loadUsers();
-
             } catch (error) {
-                console.error(error);
-                showToast(error.message || "Error al crear usuario", "error");
+                showToast(error.message, "error");
             } finally {
-                // Restaurar botón
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
             }
         });
-
-        // --- Inicialización ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDivisiones();
-            loadRoles();
-            loadUsers();
-        });
-
     </script>
 </body>
+
+</html>
+</body>
+
 </html>

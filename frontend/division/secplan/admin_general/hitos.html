@@ -1,108 +1,273 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <script src="../../../script/router.js"></script> 
+    <script src="../../../script/router.js"></script>
+    <script src="../../../script/api.js"></script>
+    <script src="../../../script/utils.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Gestión de Hitos</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Unified Admin Styles -->
+    <link rel="stylesheet" href="styles/admin-styles.css">
+
     <style>
         /* Estilos generales heredados */
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
         /* Modal Base */
         .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); z-index: 1000; animation: fadeIn 0.2s;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.2s;
             backdrop-filter: blur(2px);
         }
-        .modal.active { display: flex; justify-content: center; align-items: center; }
-        
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         /* Contenido Modal Estándar */
         .modal-content {
-            background: white; border-radius: 12px; width: 95%; max-width: 600px;
-            max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s; position: relative;
-            display: flex; flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
 
         /* Contenido Modal Visor (Detalle) */
         .modal-content-viewer {
-            background: white; border-radius: 12px; width: 95%; max-width: 500px;
-            animation: slideUp 0.3s; position: relative;
+            background: white;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 500px;
+            animation: slideUp 0.3s;
+            position: relative;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
         }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-radius: 12px 12px 0 0; }
-        .modal-title { font-size: 1.25rem; font-weight: 600; color: #1e293b; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; transition: color 0.2s; }
-        .close-btn:hover { color: #1e293b; }
-        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #1e293b;
+        }
+
         /* Formularios y Filtros */
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem; color: #1e293b; }
-        input[type="text"], input[type="date"], select, textarea {
-            width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #1e293b;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.875rem;
             transition: all 0.2s;
         }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
 
         /* Toast Notification */
         .toast {
-            position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; background: white;
-            border-radius: 8px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            display: flex; align-items: center; gap: 0.75rem; transform: translateX(400px); transition: transform 0.3s; z-index: 2000;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 2000;
             border-left: 4px solid transparent;
         }
-        .toast.show { transform: translateX(0); }
-        .toast.success { border-left-color: #10b981; }
-        .toast.error { border-left-color: #ef4444; }
-        .toast.warning { border-left-color: #f59e0b; }
-        
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+
         .loading {
-            display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
         }
+
         .loading-dark {
-            display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%; border-top-color: #4f46e5; animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #4f46e5;
+            animation: spin 1s ease-in-out infinite;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .badge-success { background: #dcfce7; color: #166534; }
-        .badge-pending { background: #fef3c7; color: #92400e; }
-        .badge-info { background: #e0f2fe; color: #075985; }
-        
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-info {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Header -->
-     <div id="headerRender"></div>
-     
+    <div id="headerRender"></div>
+
     <div class="flex">
         <div id="asideRender"></div>
 
         <!-- Main Content -->
         <main class="flex-1 p-6">
             <div id="hitosView" class="view-content">
-                
+
                 <!-- Page Header -->
                 <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Gestión de Hitos</h2>
                         <p class="text-gray-600 text-sm">Bitácora y cronograma de proyectos SECPLAC</p>
                     </div>
-                    <button onclick="openCreateHitoModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2 text-sm font-medium">
+                    <button onclick="openCreateHitoModal()"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2 text-sm font-medium">
                         <i class="fas fa-plus"></i> Nuevo Hito Rápido
                     </button>
                 </div>
@@ -111,34 +276,40 @@
                 <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-emerald-500">
                     <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
                         <div class="w-full md:w-1/3">
-                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Buscar Proyecto</label>
+                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Buscar
+                                Proyecto</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fas fa-search text-gray-400"></i>
                                 </div>
-                                <input type="text" id="searchInput" 
-                                    class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm py-2" 
+                                <input type="text" id="searchInput"
+                                    class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm py-2"
                                     placeholder="Nombre, código o sector...">
                             </div>
                         </div>
 
                         <div class="flex flex-1 w-full gap-3">
                             <div class="flex-1">
-                                <label for="filterArea" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
-                                <select id="filterArea" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm py-2">
+                                <label for="filterArea"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                                <select id="filterArea"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm py-2">
                                     <option value="">Todas las áreas</option>
                                 </select>
                             </div>
                             <div class="flex-1">
-                                <label for="filterStatus" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                                <select id="filterStatus" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm py-2">
+                                <label for="filterStatus"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                <select id="filterStatus"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm py-2">
                                     <option value="">Todos los estados</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <button onclick="clearFilters()" class="mt-6 md:mt-0 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                            <button onclick="clearFilters()"
+                                class="mt-6 md:mt-0 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
                                 <i class="fas fa-times-circle"></i> Limpiar
                             </button>
                         </div>
@@ -151,15 +322,19 @@
                         <div class="flex-1 w-full">
                             <label for="projectSelect" class="block text-sm font-medium text-gray-700 mb-1">
                                 1. Seleccionar Proyecto
-                                <span id="projectCountBadge" class="ml-2 text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">0</span>
+                                <span id="projectCountBadge"
+                                    class="ml-2 text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">0</span>
                             </label>
-                            <select id="projectSelect" class="w-full py-3 px-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
+                            <select id="projectSelect"
+                                class="w-full py-3 px-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
                                 <option value="" disabled selected>-- Selecciona un proyecto --</option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-2">Al seleccionar, se cargará la bitácora de hitos asociada.</p>
+                            <p class="text-xs text-gray-500 mt-2">Al seleccionar, se cargará la bitácora de hitos
+                                asociada.</p>
                         </div>
                         <div class="w-full md:w-auto">
-                            <button onclick="loadProjects()" class="w-full md:w-auto px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                            <button onclick="loadProjects()"
+                                class="w-full md:w-auto px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
                                 <i class="fas fa-sync-alt"></i> Actualizar Lista
                             </button>
                         </div>
@@ -170,16 +345,25 @@
                 <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
                     <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                         <h3 class="font-semibold text-gray-800 text-sm">Historial de Registro (Sesión Actual)</h3>
-                        <span id="sessionCount" class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded-full">0</span>
+                        <span id="sessionCount"
+                            class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded-full">0</span>
                     </div>
                     <div class="overflow-x-auto max-h-48 overflow-y-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50 sticky top-0">
                                 <tr>
-                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hito</th>
-                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proyecto</th>
-                                    <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
+                                    <th
+                                        class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Estado</th>
+                                    <th
+                                        class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Hito</th>
+                                    <th
+                                        class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Proyecto</th>
+                                    <th
+                                        class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Hora</th>
                                 </tr>
                             </thead>
                             <tbody id="uploadLogBody" class="bg-white divide-y divide-gray-200">
@@ -196,18 +380,21 @@
                 <!-- SECCIÓN LISTADO DE HITOS DEL PROYECTO -->
                 <div id="projectHitosPanel" class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
                     <!-- Header del Panel -->
-                    <div class="px-6 py-4 border-b border-gray-200 bg-emerald-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div
+                        class="px-6 py-4 border-b border-gray-200 bg-emerald-50 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
                             <h3 class="font-bold text-emerald-900 flex items-center gap-2 text-lg">
-                                <i class="fas fa-list-ul"></i> 
-                                Bitácora de Hitos 
+                                <i class="fas fa-list-ul"></i>
+                                Bitácora de Hitos
                             </h3>
                             <p class="text-xs text-emerald-700 mt-1">
-                                Proyecto: <span id="selectedProjectNameDisplay" class="font-bold bg-white px-2 py-0.5 rounded border border-emerald-200"></span>
+                                Proyecto: <span id="selectedProjectNameDisplay"
+                                    class="font-bold bg-white px-2 py-0.5 rounded border border-emerald-200"></span>
                             </p>
                         </div>
                         <div class="flex gap-2">
-                             <button onclick="refreshHitos()" class="px-4 py-2 bg-white border border-emerald-200 text-emerald-700 text-xs font-bold uppercase rounded-lg hover:bg-emerald-50 transition shadow-sm flex items-center justify-center gap-2">
+                            <button onclick="refreshHitos()"
+                                class="px-4 py-2 bg-white border border-emerald-200 text-emerald-700 text-xs font-bold uppercase rounded-lg hover:bg-emerald-50 transition shadow-sm flex items-center justify-center gap-2">
                                 <i class="fas fa-sync-alt"></i> Refrescar
                             </button>
                         </div>
@@ -218,10 +405,18 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Hito</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observación</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Fecha</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Tipo Hito</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Observación</th>
+                                    <th
+                                        class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="projectHitosBody" class="bg-white divide-y divide-gray-200">
@@ -233,11 +428,13 @@
                             <p class="text-sm text-gray-500 mt-2">Cargando bitácora...</p>
                         </div>
                         <div id="hitosEmpty" class="hidden p-10 text-center">
-                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                            <div
+                                class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                                 <i class="fas fa-clipboard-list text-gray-300 text-2xl"></i>
                             </div>
                             <p class="text-gray-500 font-medium">Sin hitos registrados</p>
-                            <p class="text-gray-400 text-xs mt-1">Este proyecto aún no tiene eventos en su cronograma.</p>
+                            <p class="text-gray-400 text-xs mt-1">Este proyecto aún no tiene eventos en su cronograma.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -245,7 +442,7 @@
             </div>
         </main>
     </div>
-    
+
     <!-- MODAL DE CREAR HITO -->
     <div id="createHitoModal" class="modal">
         <div class="modal-content">
@@ -253,7 +450,7 @@
                 <h2 class="modal-title">Registrar Nuevo Hito</h2>
                 <button class="close-btn" onclick="closeCreateHitoModal()">&times;</button>
             </div>
-            
+
             <div class="p-6">
                 <form id="createHitoForm" onsubmit="handleCreateHito(event)">
                     <!-- Contexto Proyecto -->
@@ -261,7 +458,8 @@
                         <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Proyecto Destino</label>
                         <div class="flex items-center gap-2 mt-1">
                             <i class="fas fa-folder-open text-emerald-500"></i>
-                            <span id="modalProjectName" class="font-medium text-gray-800 text-sm">Ninguno seleccionado</span>
+                            <span id="modalProjectName" class="font-medium text-gray-800 text-sm">Ninguno
+                                seleccionado</span>
                             <input type="hidden" id="createProjectId" name="project_id">
                         </div>
                     </div>
@@ -281,7 +479,7 @@
                                 <option value="OTRO">Otro (Especificar en obs)</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="fechaHito">Fecha del Hito *</label>
                             <input type="date" id="fechaHito" name="fecha" required class="bg-white">
@@ -289,15 +487,22 @@
 
                         <div class="form-group">
                             <label for="obsHito">Observación</label>
-                            <textarea id="obsHito" name="observacion" rows="3" placeholder="Detalles adicionales, referencias o documentos..." class="bg-white"></textarea>
+                            <textarea id="obsHito" name="observacion" rows="3"
+                                placeholder="Detalles adicionales, referencias o documentos..."
+                                class="bg-white"></textarea>
                         </div>
                     </div>
                 </form>
             </div>
 
             <div class="modal-footer p-6 pt-0 flex justify-end gap-3">
-                <button type="button" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm" onclick="closeCreateHitoModal()">Cancelar</button>
-                <button type="button" onclick="document.getElementById('createHitoForm').dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}))" class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition shadow-md shadow-emerald-200 flex items-center font-medium text-sm" id="btnSubmitCreate">
+                <button type="button"
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium text-sm"
+                    onclick="closeCreateHitoModal()">Cancelar</button>
+                <button type="button"
+                    onclick="document.getElementById('createHitoForm').dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}))"
+                    class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition shadow-md shadow-emerald-200 flex items-center font-medium text-sm"
+                    id="btnSubmitCreate">
                     <span id="btnCreateText">Guardar Hito</span>
                 </button>
             </div>
@@ -321,7 +526,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="p-6">
                 <!-- Loading Overlay -->
                 <div id="viewerLoading" class="hidden text-center py-8">
@@ -333,28 +538,37 @@
                 <div id="viewerContent" class="hidden space-y-5">
                     <div class="flex items-center gap-4">
                         <div class="flex-1">
-                            <label class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Tipo</label>
-                            <div id="detailTipo" class="text-gray-800 font-semibold text-lg bg-gray-50 p-2 rounded border border-gray-200"></div>
+                            <label
+                                class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Tipo</label>
+                            <div id="detailTipo"
+                                class="text-gray-800 font-semibold text-lg bg-gray-50 p-2 rounded border border-gray-200">
+                            </div>
                         </div>
                         <div class="w-1/3">
-                            <label class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Fecha</label>
+                            <label
+                                class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Fecha</label>
                             <div id="detailFecha" class="text-gray-800 font-medium"></div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Observación</label>
-                        <div id="detailObs" class="text-gray-700 bg-gray-50 p-3 rounded border border-gray-200 min-h-[80px] whitespace-pre-wrap text-sm leading-relaxed"></div>
+                        <label
+                            class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1 block">Observación</label>
+                        <div id="detailObs"
+                            class="text-gray-700 bg-gray-50 p-3 rounded border border-gray-200 min-h-[80px] whitespace-pre-wrap text-sm leading-relaxed">
+                        </div>
                     </div>
 
                     <div class="pt-4 border-t border-gray-100 flex justify-between items-center">
                         <div class="flex flex-col">
                             <span class="text-[10px] text-gray-400 uppercase font-bold">Registrado por</span>
                             <span id="detailCreador" class="text-sm text-gray-600 font-medium flex items-center gap-1">
-                                <i class="fas fa-user-circle text-gray-400"></i> <span class="loading-dark" style="width:12px; height:12px; border-width:1px;"></span>
+                                <i class="fas fa-user-circle text-gray-400"></i> <span class="loading-dark"
+                                    style="width:12px; height:12px; border-width:1px;"></span>
                             </span>
                         </div>
-                        <div class="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full text-xs font-bold">
+                        <div
+                            class="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full text-xs font-bold">
                             <i class="fas fa-database"></i> BD Central
                         </div>
                     </div>
@@ -375,7 +589,7 @@
     <script>
         // --- CONFIGURACIÓN ---
         const API_BASE = 'https://186.67.61.251:8000';
-        let allProjects = []; 
+        let allProjects = [];
 
         function getAuthHeaders() {
             const token = localStorage.getItem('authToken');
@@ -395,17 +609,17 @@
         // Usamos Intl.DateTimeFormat con timeZone: 'UTC' para evitar desfases de zona horaria
         function formatDisplayDate(dateString) {
             if (!dateString) return "Sin fecha registrada";
-            
+
             const dateObj = new Date(dateString);
-            
+
             // Chequear si la fecha es válida
             if (isNaN(dateObj.getTime())) return "Fecha inválida";
 
             // Forzar zona horaria UTC para mostrar exactamente lo que envía el servidor
             return new Intl.DateTimeFormat('es-CL', {
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
                 day: 'numeric',
                 timeZone: 'UTC'
             }).format(dateObj);
@@ -425,19 +639,19 @@
             }).format(dateObj);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadProjects();
-            
+
             // Listeners de filtros
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterStatus').addEventListener('change', applyFilters);
 
             // Listener para cargar hitos cuando se selecciona un proyecto
-            document.getElementById('projectSelect').addEventListener('change', function(e) {
+            document.getElementById('projectSelect').addEventListener('change', function (e) {
                 const pid = e.target.value;
                 const projectName = e.target.options[e.target.selectedIndex].text;
-                
+
                 if (pid) {
                     loadProjectHitos(pid, projectName);
                 } else {
@@ -465,7 +679,7 @@
                 if (!response.ok) throw new Error('Error al cargar proyectos');
 
                 allProjects = await response.json();
-                
+
                 updateFilterOptions();
                 applyFilters();
                 select.disabled = false;
@@ -500,13 +714,13 @@
             const selectedArea = document.getElementById('filterArea').value;
             const selectedStatus = document.getElementById('filterStatus').value;
 
-            const dataForAreas = allProjects.filter(p => 
+            const dataForAreas = allProjects.filter(p =>
                 (selectedStatus === '' || p.estado_proyecto === selectedStatus)
             );
             const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
             populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
 
-            const dataForStatus = allProjects.filter(p => 
+            const dataForStatus = allProjects.filter(p =>
                 (selectedArea === '' || p.area === selectedArea)
             );
             const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
@@ -521,7 +735,7 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
             const filteredProjects = allProjects.filter(proyecto => {
-                const matchesSearch = 
+                const matchesSearch =
                     (proyecto.nombre && proyecto.nombre.toLowerCase().includes(searchTerm)) ||
                     (proyecto.codigo && proyecto.codigo.toLowerCase().includes(searchTerm)) ||
                     (proyecto.sector && proyecto.sector.toLowerCase().includes(searchTerm));
@@ -545,22 +759,22 @@
         function renderProjectOptions(projectList) {
             const select = document.getElementById('projectSelect');
             const countBadge = document.getElementById('projectCountBadge');
-            
+
             const currentVal = select.value;
-            
+
             select.innerHTML = '<option value="" disabled selected>-- Selecciona un proyecto --</option>';
-            
+
             projectList.forEach(p => {
                 const option = document.createElement('option');
                 option.value = p.id;
-                const label = p.codigo 
-                    ? `[${p.codigo}] ${p.nombre || 'Sin nombre'}` 
+                const label = p.codigo
+                    ? `[${p.codigo}] ${p.nombre || 'Sin nombre'}`
                     : `${p.nombre || 'Sin nombre'}`;
                 option.textContent = label;
                 select.appendChild(option);
             });
 
-            if(currentVal) {
+            if (currentVal) {
                 select.value = currentVal;
             }
 
@@ -575,9 +789,6 @@
             const loading = document.getElementById('hitosLoading');
             const empty = document.getElementById('hitosEmpty');
             const nameDisplay = document.getElementById('selectedProjectNameDisplay');
-            
-            const headers = getAuthHeaders();
-            if (!headers) return;
 
             panel.classList.remove('hidden');
             nameDisplay.textContent = projectName;
@@ -586,16 +797,7 @@
             empty.classList.add('hidden');
 
             try {
-                // Endpoint: GET /proyectos/<pid>/hitos
-                const response = await fetch(`${API_BASE}/proyectos/${pid}/hitos`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) throw new Error('Error al obtener hitos');
-
-                const data = await response.json();
-                // El backend devuelve { proyecto_id, total, hitos: [...] }
+                const data = await api.get(`/proyectos/${pid}/hitos`);
                 const hitos = data.hitos || [];
 
                 loading.classList.add('hidden');
@@ -606,46 +808,26 @@
                     hitos.forEach(hito => {
                         const tr = document.createElement('tr');
                         tr.className = "hover:bg-gray-50 transition";
-                        
-                        // USO DE FUNCIÓN CORREGIDA PARA FORMATO GMT
-                        const fechaStr = formatShortDate(hito.fecha);
-                        
-                        // Truncar observación
-                        let obsShort = hito.observacion ? hito.observacion.substring(0, 45) + (hito.observacion.length > 45 ? '...' : '') : '-';
-                        
-                        // Icono según tipo
-                        let iconClass = 'fa-flag text-gray-500';
+                        const fechaStr = utils.formatDate(hito.fecha);
+                        const obsShort = hito.observacion ? hito.observacion.substring(0, 45) + (hito.observacion.length > 45 ? '...' : '') : '-';
+
+                        let iconClass = 'fa-flag text-gray-400';
                         let bgClass = 'bg-gray-100 text-gray-600';
-                        
-                        if(hito.tipo_hito.includes('APROBACION')) {
+                        if (hito.tipo_hito.includes('APROBACION')) {
                             iconClass = 'fa-check-circle text-emerald-600';
                             bgClass = 'bg-emerald-100 text-emerald-700';
-                        } else if(hito.tipo_hito.includes('OBSERVACION')) {
-                            iconClass = 'fa-comment-dots text-blue-500';
-                            bgClass = 'bg-blue-100 text-blue-700';
                         }
 
-                        const tipoDisplay = hito.tipo_hito.replace(/_/g, ' ');
-
                         tr.innerHTML = `
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-gray-100 text-gray-500 py-1 px-2 rounded text-xs border border-gray-200 font-mono">
-                                        ${fechaStr}
-                                    </span>
-                                </div>
-                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono text-xs">${fechaStr}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                 <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${bgClass}">
-                                    <i class="fas ${iconClass}"></i>
-                                    ${tipoDisplay}
+                                    <i class="fas ${iconClass}"></i> ${hito.tipo_hito.replace(/_/g, ' ')}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate text-xs" title="${hito.observacion || ''}">
-                                ${obsShort}
-                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate text-xs" title="${hito.observacion || ''}">${obsShort}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <button onclick="openHitoViewer(${hito.id})" class="text-emerald-600 hover:text-emerald-900 transition mx-1 p-2 rounded-full hover:bg-emerald-50" title="Ver detalles">
+                                <button onclick="openHitoViewer(${hito.id})" class="text-emerald-600 hover:text-emerald-900 transition mx-1 p-2 rounded-full hover:bg-emerald-50">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </td>
@@ -657,7 +839,59 @@
                 console.error('Error cargando hitos:', error);
                 loading.classList.add('hidden');
                 showToast('Error al cargar lista de hitos', 'error');
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 text-sm">Error de carga de datos</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500 text-sm">Error de carga</td></tr>';
+            }
+        }
+
+        async function openHitoViewer(hitoId) {
+            const modal = document.getElementById('viewerModal');
+            const content = document.getElementById('viewerContent');
+            const loading = document.getElementById('viewerLoading');
+
+            document.getElementById('viewerHitoId').textContent = `ID: ${hitoId}`;
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            modal.classList.add('active');
+
+            try {
+                const data = await api.get(`/hitos/${hitoId}/detalle`);
+                document.getElementById('detailTipo').textContent = data.tipo_hito.replace(/_/g, ' ');
+                document.getElementById('detailFecha').textContent = utils.formatDate(data.fecha);
+                document.getElementById('detailObs').textContent = data.observacion || 'Sin observaciones.';
+                document.getElementById('detailCreador').innerHTML = `<i class="fas fa-user text-gray-400"></i> ${data.creado_por_nombre || 'Desconocido'}`;
+
+                loading.classList.add('hidden');
+                content.classList.remove('hidden');
+            } catch (error) {
+                showToast(error.message, 'error');
+                closeViewerModal();
+            }
+        }
+
+        async function handleCreateHito(e) {
+            e.preventDefault();
+            const pid = document.getElementById('createProjectId').value;
+            const data = utils.serializeForm(e.target);
+
+            const btn = document.getElementById('btnSubmitCreate');
+            const originalText = document.getElementById('btnCreateText').textContent;
+
+            try {
+                btn.disabled = true;
+                document.getElementById('btnCreateText').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
+
+                await api.post(`/proyectos/${pid}/hitos`, data);
+
+                showToast("Hito registrado exitosamente");
+                addToLog(pid, data.tipo_hito, "success");
+                closeCreateHitoModal();
+                loadProjectHitos(pid, document.getElementById('projectSelect').options[document.getElementById('projectSelect').selectedIndex].text);
+            } catch (error) {
+                showToast(error.message, "error");
+                addToLog(pid, data.tipo_hito, "error");
+            } finally {
+                btn.disabled = false;
+                document.getElementById('btnCreateText').textContent = originalText;
             }
         }
 
@@ -668,180 +902,29 @@
             if (pid) loadProjectHitos(pid, projectName);
         }
 
-        // --- LÓGICA DEL VISOR (DETALLE) ---
-
-        function openHitoViewer(hitoId) {
-            const modal = document.getElementById('viewerModal');
-            const loading = document.getElementById('viewerLoading');
-            const content = document.getElementById('viewerContent');
-            const idDisplay = document.getElementById('viewerHitoId');
-
-            idDisplay.textContent = `ID: ${hitoId}`;
-            loading.classList.remove('hidden');
-            content.classList.add('hidden');
-            modal.classList.add('active');
-
-            const headers = getAuthHeaders();
-            
-            // Endpoint: GET /hitos/<id>/detalle
-            fetch(`${API_BASE}/hitos/${hitoId}/detalle`, {
-                headers: headers
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("No se pudo cargar el detalle");
-                return res.json();
-            })
-            .then(data => {
-                // Actualizar UI con los datos recibidos de Python
-                document.getElementById('detailTipo').textContent = data.tipo_hito.replace(/_/g, ' ');
-                
-                // USO DE FUNCIÓN CORREGIDA AQUÍ
-                document.getElementById('detailFecha').textContent = formatDisplayDate(data.fecha);
-                
-                document.getElementById('detailObs').textContent = data.observacion || 'Sin observaciones registradas.';
-                
-                // Mostrar creador si existe (campo añadido en el endpoint actualizado)
-                const creadorEl = document.getElementById('detailCreador');
-                if(data.creado_por) {
-                     // Asumimos que creado_por es un ID o nombre, el snippet de Python usa ID
-                    creadorEl.innerHTML = `<i class="fas fa-user-check text-emerald-500"></i> Usuario ID: ${data.creado_por}`;
-                } else {
-                    creadorEl.innerHTML = `<i class="fas fa-user text-gray-400"></i> Desconocido`;
-                }
-
-                loading.classList.add('hidden');
-                content.classList.remove('hidden');
-            })
-            .catch(err => {
-                console.error(err);
-                loading.innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p class="text-sm">${err.message}</p></div>`;
-                loading.classList.remove('hidden');
-                content.classList.add('hidden');
-            });
-        }
-
-        function closeViewerModal() {
-            const modal = document.getElementById('viewerModal');
-            modal.classList.remove('active');
-        }
-
-        // --- GESTIÓN DEL MODAL DE CREAR ---
-
-        function openCreateHitoModal() {
-            const projectId = document.getElementById('projectSelect').value;
-            const select = document.getElementById('projectSelect');
-            const projectText = select.options[select.selectedIndex]?.text;
-
-            if (!projectId) {
-                showToast("Debes seleccionar un proyecto primero", "warning");
-                const selectContainer = document.getElementById('projectSelect').closest('.bg-white');
-                selectContainer.classList.add('ring-2', 'ring-red-400', 'ring-opacity-50');
-                setTimeout(() => selectContainer.classList.remove('ring-2', 'ring-red-400', 'ring-opacity-50'), 1000);
-                return;
-            }
-
-            document.getElementById('createProjectId').value = projectId;
-            document.getElementById('modalProjectName').textContent = projectText;
-            
-            document.getElementById('createHitoForm').reset();
-            // Set default date to today (formato YYYY-MM-DD para input date)
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('fechaHito').value = today;
-
-            document.getElementById('createHitoModal').classList.add('active');
-        }
-
-        function closeCreateHitoModal() {
-            document.getElementById('createHitoModal').classList.remove('active');
-        }
-
-        async function handleCreateHito(e) {
-            // Prevenir submit por defecto si viene del evento, o manejar manualmente
-            if(e) e.preventDefault();
-            
-            const pid = document.getElementById('createProjectId').value;
-            const tipo_hito = document.getElementById('tipoHito').value;
-            const fecha = document.getElementById('fechaHito').value;
-            const observacion = document.getElementById('obsHito').value;
-
-            if (!tipo_hito || !fecha) {
-                showToast("Tipo de hito y fecha son obligatorios", "warning");
-                return;
-            }
-
-            const payload = {
-                tipo_hito: tipo_hito,
-                fecha: fecha,
-                observacion: observacion
-            };
-
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
-            const btn = document.getElementById('btnSubmitCreate');
-            const originalText = document.getElementById('btnCreateText').textContent;
-            btn.disabled = true;
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
-            document.getElementById('btnCreateText').innerHTML = '<span class="loading"></span> Guardando...';
-
-            try {
-                // Endpoint: POST /proyectos/<pid>/hitos
-                const res = await fetch(`${API_BASE}/proyectos/${pid}/hitos`, {
-                    method: "POST",
-                    headers: headers,
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    showToast(data.message || "Hito registrado exitosamente", "success");
-                    addToLog(pid, tipo_hito, "success");
-                    closeCreateHitoModal();
-                    // Refrescar lista
-                    const select = document.getElementById('projectSelect');
-                    loadProjectHitos(pid, select.options[select.selectedIndex].text);
-                } else {
-                    console.error("Error Server:", data);
-                    // Mostrar mensaje exacto del backend
-                    showToast(`Error: ${data.message || 'Ocurrió un problema'}`, "error");
-                    addToLog(pid, tipo_hito, "error");
-                }
-
-            } catch (error) {
-                console.error('Error de Red:', error);
-                showToast('Error de conexión al registrar hito', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                document.getElementById('btnCreateText').textContent = originalText;
-            }
-        }
-
         // --- UTILIDADES VISUALES (LOG) ---
 
         function addToLog(projectId, itemName, status) {
             const tbody = document.getElementById('uploadLogBody');
             const countBadge = document.getElementById('sessionCount');
-            
-            // Limpiar mensaje de "vacío" si existe
+
             if (tbody.querySelector('td[colspan]')) {
                 tbody.innerHTML = '';
             }
 
             const now = new Date();
-            const timeString = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
-            
+            const timeString = now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
             const tr = document.createElement('tr');
             tr.className = "hover:bg-gray-50 transition animate-fadeIn border-l-2 " + (status === 'success' ? 'border-emerald-500' : 'border-red-500');
-            
-            const badgeClass = status === 'success' ? 'badge-success' : 'badge-pending'; // reusing pending as error color style
+
+            const badgeClass = status === 'success' ? 'badge-success' : 'badge-pending';
             const icon = status === 'success' ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
             const statusText = status === 'success' ? 'Éxito' : 'Error';
 
             const select = document.getElementById('projectSelect');
-            const projectName = (status === 'success') 
-                ? (Array.from(select.options).find(o => o.value == projectId)?.text || `#${projectId}`) 
+            const projectName = (status === 'success')
+                ? (Array.from(select.options).find(o => o.value == projectId)?.text || `#${projectId}`)
                 : `#${projectId}`;
 
             const itemDisplay = itemName.replace(/_/g, ' ');
@@ -854,51 +937,20 @@
                 <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[150px]">${projectName}</td>
                 <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-mono text-xs">${timeString}</td>
             `;
-            
+
             tbody.insertBefore(tr, tbody.firstChild);
 
             let currentCount = parseInt(countBadge.textContent);
             countBadge.textContent = currentCount + 1;
         }
 
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
-
-            // Reset classes
-            toast.className = `toast ${type}`;
-            toastMsg.textContent = message;
-
-            let iconHtml = '';
-            if (type === 'success') iconHtml = '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
-            else if (type === 'error') iconHtml = '<i class="fas fa-times-circle text-red-500 text-xl"></i>';
-            else iconHtml = '<i class="fas fa-exclamation-circle text-yellow-500 text-xl"></i>';
-            
-            toastIcon.innerHTML = iconHtml;
-
-            toast.classList.add('show');
-            
-            // Limpiar timeout anterior si existe para evitar parpadeos rápidos
-            if (window.toastTimeout) clearTimeout(window.toastTimeout);
-            
-            window.toastTimeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 4000);
-        }
-
-        // Cerrar modales al hacer clic fuera
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const createModal = document.getElementById('createHitoModal');
             const viewerModal = document.getElementById('viewerModal');
-            
-            if (event.target === createModal) {
-                closeCreateHitoModal();
-            }
-            if (event.target === viewerModal) {
-                closeViewerModal();
-            }
+            if (event.target === createModal) closeCreateHitoModal();
+            if (event.target === viewerModal) closeViewerModal();
         }
     </script>
 </body>
+
 </html>

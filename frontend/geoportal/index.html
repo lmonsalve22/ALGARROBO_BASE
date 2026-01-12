@@ -1,724 +1,220 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geoportal Institucional</title>
-    <!-- Cargamos FontAwesome para los iconos -->
+    <title>Geoportal Institucional - Portal Municipal</title>
+
+    <!-- Fuentes y Estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="../division/secplan/admin_general/styles/admin-styles.css">
+
+    <!-- Scripts Base -->
     <script src="../script/router.js"></script>
+    <script src="../script/api.js"></script>
+    <script src="../script/utils.js"></script>
+
     <style>
-        /* --- VARIABLES CSS (Nueva Paleta Corporativa) --- */
-        :root {
-            /* Colores Principales */
-            --primary: #007B5E;
-            --primary-dark: #006644;
-            --primary-light: #e0f2f1;
-            
-            /* Colores de Acento */
-            --accent: #005C4A;
-            --accent-danger: #C70039; /* Rojo para errores/eliminar */
-            
-            /* Textos y Fondos */
-            --text-main: #333333;
-            --text-muted: #64748b;
-            --bg-body: #F8F9FA;
-            --bg-card: #ffffff;
-            --bg-sidebar: #004d40; /* Verde oscuro profundo para sidebar */
-            
-            /* Efectos y Bordes */
-            --border: #e2e8f0;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --radius: 16px;
-            --header-height: 70px;
-            --sidebar-width: 260px;
-            --transition-speed: 0.3s;
-        }
-
-        /* --- RESET & BASE --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- HEADER CON GRADIENTE ANIMADO --- */
-        header {
-            height: var(--header-height);
-            /* Gradiente animado usando los colores corporativos */
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            background-size: 200% 200%;
-            animation: gradientShift 8s ease infinite;
-            
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-            z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 123, 94, 0.2);
-            position: relative;
-        }
-
-        /* Animación suave del fondo */
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 1.5rem;
-            letter-spacing: -0.5px;
-            transition: transform var(--transition-speed) ease;
-            text-decoration: none;
-            color: white;
-        }
-
-        .brand:hover {
-            transform: scale(1.02);
-        }
-
-        .brand svg {
-            width: 32px;
-            height: 32px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        /* --- LAYOUT GENERAL --- */
-        .app-container {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - var(--header-height));
-        }
-
-        /* --- SIDEBAR (Simplificada y Estilizada) --- */
-        aside {
-            width: var(--sidebar-width);
-            background-color: var(--bg-sidebar);
-            color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            flex-direction: column;
-            padding: 24px 0;
-            transition: width 0.3s ease;
-            box-shadow: 4px 0 24px rgba(0,0,0,0.05);
-            z-index: 20;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 14px 28px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border-left: 4px solid transparent;
-            font-weight: 500;
-        }
-
-        .nav-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding-left: 32px; /* Micro-interacción de movimiento */
-        }
-
-        .nav-item.active {
-            background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
-            color: white;
-            border-left-color: #4DB6AC; /* Un verde claro para resaltar activo */
-        }
-
-        .nav-item svg {
-            margin-right: 14px;
-            width: 20px;
-            height: 20px;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-item:hover svg {
-            transform: translateX(3px);
-        }
-
-        /* --- MAIN CONTENT --- */
-        main {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .page-header {
-            margin-bottom: 32px;
-            animation: fadeInDown 0.6s ease-out;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 8px;
-        }
-
-        .page-subtitle {
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
-
-        /* --- STATS BAR --- */
-        .stats-container {
-            display: flex;
-            gap: 24px;
-            margin-bottom: 40px;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            padding: 24px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            min-width: 200px;
-            transition: transform 0.2s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        /* --- GRID DE MAPAS --- */
-        .map-grid {
+        /* Ajustes específicos para el Geoportal */
+        .geoportal-layout {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 32px;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 65px);
         }
 
-        /* --- TARJETA DE MAPA (Estilo Moderno) --- */
-        .map-card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            position: relative;
+        .map-card-custom {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .map-card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow-hover);
-            border-color: rgba(0, 123, 94, 0.3);
+        .map-card-custom:hover {
+            transform: translateY(-8px) scale(1.02);
         }
 
-        .map-preview {
-            height: 180px;
-            background-color: #e2e8f0;
-            position: relative;
-            overflow: hidden;
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .map-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .map-card:hover .map-preview img {
-            transform: scale(1.05);
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
         }
 
-        .map-content {
-            padding: 24px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(to bottom, #ffffff, #fafafa);
-        }
-
-        .map-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .map-desc {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-            margin-bottom: 24px;
-            flex: 1;
-        }
-
-        .map-action {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            text-align: center;
-            transition: background-color 0.2s, box-shadow 0.2s;
-        }
-
-        .map-action:hover {
-            background-color: var(--primary-dark);
-            box-shadow: 0 4px 12px rgba(0, 123, 94, 0.4);
-        }
-
-        /* --- ESTADOS: EMPTY & ERROR --- */
-        .state-message {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            border: 1px dashed var(--border);
-            animation: fadeIn 0.5s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .state-icon {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 20px;
-            opacity: 0.6; /* Un poco más visible */
-            color: var(--text-muted);
-        }
-
-        .state-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 10px;
-        }
-
-        .state-text {
-            color: var(--text-muted);
-            margin-bottom: 24px;
-            max-width: 450px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.6;
-        }
-
-        .btn-retry {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: var(--text-main);
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: opacity 0.2s;
-            border: none;
-        }
-        
-        .btn-retry:hover {
-            opacity: 0.8;
-        }
-
-        /* Estilo específico para error (diferenciar visualmente del vacío) */
-        .state-message.error {
-            border-color: rgba(199, 0, 57, 0.3);
-            background-color: #fff5f7;
-        }
-        .state-message.error .state-icon {
-            color: var(--accent-danger);
-            opacity: 1;
-        }
-        .state-message.error .state-title {
-            color: var(--accent-danger);
-        }
-
-        /* --- SKELETON LOADING --- */
-        .skeleton {
-            background: #f1f5f9;
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 6px;
-        }
-
-        .skeleton-card {
-            background: white;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            height: 380px;
-            display: flex;
-            flex-direction: column;
-        }
-        .skeleton-img { height: 180px; width: 100%; }
-        .skeleton-content { padding: 24px; }
-        .skeleton-text { height: 20px; margin-bottom: 12px; width: 90%; }
-        .skeleton-text-sm { height: 16px; width: 70%; margin-bottom: 24px; }
-        .skeleton-btn { height: 48px; margin-top: auto; width: 100%; border-radius: 8px; }
-
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- BOTON LOGOUT --- */
-        .logout-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border-radius: 999px;
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            line-height: 1;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            transition: 
-                background 0.25s ease,
-                box-shadow 0.25s ease,
-                transform 0.2s ease,
-                border-color 0.25s ease;
-        }
-
-        .logout-btn i {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-            line-height: 1;
-            margin: 0;
-            transform: translateY(-0.5px);
-            transition: transform 0.25s ease;
-        }
-
-        .logout-btn span {
-            display: flex;
-            align-items: center;
-            line-height: 1;
-        }
-
-        .logout-btn:hover {
-            background: linear-gradient(135deg, #C70039, #8f0026);
-            border-color: rgba(255, 255, 255, 0.45);
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
-        }
-
-        .logout-btn:hover i {
-            transform: translate(2px, -0.5px);
-        }
-
-        .logout-btn:active {
-            transform: scale(0.96);
-        }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 768px) {
-            .app-container { flex-direction: column; height: auto; }
-            aside {
-                width: 100%;
-                flex-direction: row;
-                overflow-x: auto;
-                padding: 0;
-                background: white;
-                border-bottom: 1px solid var(--border);
+        @media (max-width: 1024px) {
+            .geoportal-layout {
+                grid-template-columns: 1fr;
             }
-            .nav-item {
-                color: var(--text-muted);
-                padding: 16px;
-                border-left: none;
-                border-bottom: 3px solid transparent;
-                white-space: nowrap;
+
+            .geoportal-sidebar {
+                display: none;
             }
-            .nav-item.active {
-                background-color: transparent;
-                color: var(--primary);
-                border-bottom-color: var(--primary);
-                border-left: none;
-            }
-            .nav-item:hover {
-                background-color: transparent;
-                padding-left: 16px;
-                color: var(--primary);
-            }
-            .nav-item:hover svg { transform: none; }
-            header { padding: 0 20px; }
-            main { padding: 20px; }
         }
     </style>
 </head>
-<body>
 
-    <header>
-        <a href="/ALGARROBO_BASE/frontend/index.html" class="brand">
-            <!-- Icono Geoportal -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
-            Geoportal 2
-        </a>
-        
-        <div class="user-profile">
-            <a href="#" onclick="logout()" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Salir</span>
-            </a>
-        </div>
-    </header>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Header renderizado por layout.js -->
+    <div id="headerRender"></div>
+    <script src="../script/layout.js"></script>
 
-    <div class="app-container">
-        <aside>
-            <a href="/ALGARROBO_BASE/frontend/index.html" class="nav-item active">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                Inicio
-            </a>
-        </aside>
-
-        <main>
-            <div class="page-header">
-                <h1 class="page-title">Panel de Mapas</h1>
-                <p class="page-subtitle">Visualización y gestión de capas cartográficas institucionales.</p>
+    <div class="geoportal-layout">
+        <!-- Sidebar Local del Geoportal -->
+        <aside class="geoportal-sidebar bg-white border-r border-slate-200 p-6 space-y-8">
+            <div>
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Exploración</h3>
+                <nav class="space-y-1">
+                    <a href="#"
+                        class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-xl font-bold text-sm transition-all">
+                        <i class="fas fa-layer-group text-xs"></i>
+                        Panel de Mapas
+                    </a>
+                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/dashboard.html"
+                        class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 rounded-xl font-medium text-sm transition-all">
+                        <i class="fas fa-chart-pie text-xs"></i>
+                        Dashboard SECPLAN
+                    </a>
+                </nav>
             </div>
 
-            <!-- Barra de estadísticas -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-label">Mapas Disponibles</div>
-                    <div class="stat-value" id="estado">-</div>
+            <div
+                class="p-4 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl text-white shadow-xl shadow-blue-500/20">
+                <i class="fas fa-info-circle mb-3 opacity-50"></i>
+                <h4 class="font-bold text-sm mb-1">Privacidad y Capas</h4>
+                <p class="text-[10px] leading-relaxed opacity-80">Las capas mostradas dependen de su nivel de acceso
+                    institucional.</p>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="p-4 md:p-8 overflow-y-auto max-h-[calc(100vh-65px)] custom-scrollbar">
+            <!-- Header de Sección -->
+            <div class="page-header flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Biblioteca de Mapas</h1>
+                    <p class="text-slate-500 mt-1">Acceso a visores cartográficos y capas de información geográfica</p>
+                </div>
+                <div class="flex items-center gap-4 bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Mapas Disponibles</span>
+                        <span id="mapCount" class="text-lg font-bold text-blue-600">-</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fas fa-map"></i>
+                    </div>
                 </div>
             </div>
 
             <!-- Grid de Mapas -->
-            <div id="listaMapas" class="map-grid">
-                <!-- El contenido se inyectará aquí con JS -->
+            <div id="listaMapas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Se cargan dinámicamente -->
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="py-20 text-center">
+                <div
+                    class="inline-block w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin">
+                </div>
+                <p class="mt-4 text-slate-400 font-medium">Sincronizando capas cartográficas...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="py-20 text-center hidden">
+                <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-map-marked-alt text-4xl text-slate-300"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">No se encontraron mapas</h3>
+                <p class="text-slate-500 max-w-sm mx-auto">Su perfil de usuario no cuenta con capas asignadas en este
+                    momento. Contacte al administrador de SIG.</p>
             </div>
         </main>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN PARA PRUEBAS ---
-        // Cambia a 'true' para probar el mensaje de "Sin mapas"
-        const FORZAR_ESTADO_VACIO = false; 
-        
-        document.addEventListener("DOMContentLoaded", () => {
-            cargarMapasPorRol();
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
         });
 
-        async function cargarMapasPorRol() {
-            const BASE_URL = "https://186.67.61.251:8000";
-            
-            // Simulación de userData si no existe
-            //const userData = window.userData || { nivel_acceso: 1 }; 
-            const ROLE_ID = userData.nivel_acceso; 
-            
-            const token = localStorage.getItem("authToken") || "mock-token";
+        async function init() {
+            await cargarMapas();
+        }
 
-            const estadoEl = document.getElementById("estado");
+        async function cargarMapas() {
             const listaEl = document.getElementById("listaMapas");
+            const loading = document.getElementById("loading");
+            const emptyState = document.getElementById("emptyState");
+            const mapCountEl = document.getElementById("mapCount");
 
-            // 1. Mostrar estado de carga (Skeletons)
-            mostrarSkeletons(listaEl);
+            listaEl.innerHTML = "";
+            loading.classList.remove("hidden");
+            emptyState.classList.add("hidden");
 
             try {
-                // Si forzamos estado vacío para pruebas
-                if (FORZAR_ESTADO_VACIO) {
-                    throw new Error("SIMULACION_VACIA");
-                }
+                // Obtener nivel de acceso del usuario
+                const user = typeof userData !== 'undefined' ? userData : JSON.parse(localStorage.getItem('user_data') || '{}');
+                const roleId = user.nivel_acceso || 1;
 
-                let data;
-                
-                try {
-                    // Intentamos conectar a la API real
-                    const response = await fetch(`${BASE_URL}/mapas/por-rol/${ROLE_ID}`, {
-                        method: "GET",
-                        headers: {
-                            "Authorization": token,
-                            "Content-Type": "application/json"
-                        }
-                    });
+                // Intentar cargar mapas desde la API
+                const data = await api.get(`/mapas/por-rol/${roleId}`);
 
-                    if (!response.ok) throw new Error("Error en la respuesta del servidor");
-                    
-                    // AQUÍ ESTÁ EL CAMBIO CLAVE
-                    // response.json() puede devolver {}, null o { total: 0 }
-                    data = await response.json();
-
-                } catch (apiError) {
-                    console.warn("Fallo de API o red. Usando modo demo (o si estás en local).", apiError);
-                    
-                    // DATOS DE DEMO PARA PRUEBAS LOCALES
-                    // Puedes cambiar 'total: 0' aquí para probar el estado vacío sin API
-                    data = {
-                        total: 2,
-                        mapas: [
-                            { id: 101, nombre: "Catastro Urbano", descripcion: "#" },
-                            { id: 102, nombre: "Redes Agua Potable", descripcion: "#" }
-                        ]
-                    };
-                    
-                    // Simular pequeño retardo
-                    await new Promise(r => setTimeout(r, 800));
-                }
-
-                // --- VALIDACIÓN ROBUSTA DE DATOS VACÍOS ---
-                // Independientemente de si la API devolvió 200 OK pero sin datos:
-                
-                // 1. Asegurar que mapas sea un array (evitar crash si viene null o undefined)
+                // Procesar datos
                 const mapasList = Array.isArray(data.mapas) ? data.mapas : [];
-                
-                // 2. Determinar el total real (prefiero el campo 'total', si no existe, cuento el array)
-                const totalMapas = (data.total !== undefined) ? data.total : mapasList.length;
+                const total = data.total || mapasList.length;
 
-                // 3. Actualizar contador UI
-                estadoEl.textContent = totalMapas;
+                mapCountEl.textContent = total;
 
-                // 4. LÓGICA DE ESTADO VACÍA
-                // Si total es 0 O el array está vacío, mostramos el estado vacío.
-                // Esto cubre el caso: API OK (200) pero { total: 0, mapas: [] }
-                if (totalMapas === 0 || mapasList.length === 0) {
-                    mostrarEstadoVacio(listaEl);
+                if (total === 0) {
+                    emptyState.classList.remove("hidden");
                     return;
                 }
 
-                // Si hay datos, renderizamos
-                listaEl.innerHTML = "";
+                // Renderizar tarjetas
                 mapasList.forEach((mapa, index) => {
                     const card = crearTarjetaMapa(mapa, index);
                     listaEl.appendChild(card);
                 });
 
             } catch (error) {
-                // Manejo específico para la simulación vacía
-                if (error.message === "SIMULACION_VACIA") {
-                    estadoEl.textContent = "0";
-                    listaEl.innerHTML = "";
-                    mostrarEstadoVacio(listaEl);
-                    return;
-                }
-
-                // Errores reales de red o código
-                console.error(error);
-                estadoEl.textContent = "Error";
-                mostrarError(listaEl, error.message);
+                console.error("Error cargando mapas:", error);
+                // Si falla la API, mostrar mensaje de error o modo demo
+                showToast("Error al cargar la biblioteca de mapas", "error");
+                emptyState.classList.remove("hidden");
+            } finally {
+                loading.classList.add("hidden");
             }
-        }
-
-        // --- FUNCIONES DE UI ---
-
-        function mostrarSkeletons(container) {
-            container.innerHTML = "";
-            for(let i=0; i<3; i++) {
-                const div = document.createElement("div");
-                div.className = "skeleton-card";
-                div.innerHTML = `
-                    <div class="skeleton skeleton-img"></div>
-                    <div class="skeleton-content">
-                        <div class="skeleton skeleton-text"></div>
-                        <div class="skeleton skeleton-text-sm"></div>
-                        <div class="skeleton skeleton-btn"></div>
-                    </div>
-                `;
-                container.appendChild(div);
-            }
-        }
-
-        function mostrarEstadoVacio(container) {
-            container.innerHTML = `
-                <div class="state-message">
-                    <svg class="state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 00-.553-.894L15 7m0 13V7" />
-                    </svg>
-                    <h3 class="state-title">No hay mapas disponibles</h3>
-                    <p class="state-text">Su cuenta de usuario está activa, pero actualmente no tiene permisos asignados para visualizar capas cartográficas en este momento.</p>
-                </div>
-            `;
-        }
-
-        function mostrarError(container, mensaje) {
-            container.innerHTML = `
-                <div class="state-message error">
-                    <svg class="state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <h3 class="state-title">Error de Conexión</h3>
-                    <p class="state-text">${mensaje || "Hubo un problema al intentar comunicarse con el servidor."}</p>
-                    <button onclick="location.reload()" class="btn-retry">Reintentar</button>
-                </div>
-            `;
         }
 
         function crearTarjetaMapa(mapa, index) {
             const article = document.createElement("article");
-            article.className = "map-card";
+            article.className = "card-modern !p-0 overflow-hidden map-card-custom group";
 
-            const imgSrc = `https://picsum.photos/seed/mapa${mapa.id || index}/400/200`;
+            // Imagen aleatoria coherente para el visor
+            const seed = mapa.id || index;
+            const imgSrc = `https://picsum.photos/seed/map${seed}/600/300`;
 
             article.innerHTML = `
-                <div class="map-preview">
-                    <img src="${imgSrc}" alt="Vista previa ${mapa.nombre}" loading="lazy">
+                <div class="relative h-48 overflow-hidden">
+                    <img src="${imgSrc}" alt="${mapa.nombre}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent flex items-end p-6">
+                        <span class="px-2 py-1 bg-blue-500 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider mb-2">Visor Activo</span>
+                    </div>
                 </div>
-                <div class="map-content">
-                    <h3 class="map-title">${mapa.nombre}</h3>
-                    <p class="map-desc">Acceda a la visualización interactiva de esta capa cartográfica.</p>
-                    <a href="${mapa.descripcion}" class="map-action" target="_blank">
-                        Abrir Mapa
+                <div class="p-6 bg-white">
+                    <h3 class="text-xl font-bold text-slate-800 mb-2 truncate group-hover:text-blue-600 transition-colors">${mapa.nombre}</h3>
+                    <p class="text-sm text-slate-500 line-clamp-2 mb-6 leading-relaxed">
+                        Explora la información geográfica detallada correspondiente a la capa de ${mapa.nombre.toLowerCase()}.
+                    </p>
+                    <a href="${mapa.descripcion}" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 bg-slate-50 text-slate-700 rounded-xl font-bold text-sm hover:bg-blue-600 hover:text-white hover:shadow-lg transition-all">
+                        <i class="fas fa-external-link-alt text-xs"></i>
+                        Explorar Mapa
                     </a>
                 </div>
             `;
@@ -726,4 +222,5 @@
         }
     </script>
 </body>
+
 </html>

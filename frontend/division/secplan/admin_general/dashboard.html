@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    
-    <script src="../../../script/router.js"></script>    
+
+    <script src="../../../script/router.js"></script>
+    <script src="../../../script/api.js"></script>
+    <script src="../../../script/utils.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Algarrobo</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
+    <!-- Unified Admin Styles -->
+    <link rel="stylesheet" href="styles/admin-styles.css">
+
     <style>
         .sidebar-transition {
             transition: transform 0.3s ease-in-out;
         }
+
         .card-hover {
             transition: all 0.3s ease;
         }
+
         .card-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
+
         .status-badge {
             padding: 0.25rem 0.5rem;
             border-radius: 0.25rem;
@@ -36,11 +45,12 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Header -->
-     <div id="headerRender">
-     </div>
-     
+    <div id="headerRender">
+    </div>
+
     <div class="flex">
         <div id="asideRender">
 
@@ -121,7 +131,8 @@
                                 <p class="text-blue-100">Proyectos Activos</p>
                                 <p class="text-3xl font-bold" id="activeProjectsCount">0</p>
                                 <p class="text-sm text-blue-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i><span id="projectsChange">0%</span> vs mes anterior
+                                    <i class="fas fa-arrow-up mr-1"></i><span id="projectsChange">0%</span> vs mes
+                                    anterior
                                 </p>
                             </div>
                             <i class="fas fa-chart-pie text-4xl text-blue-200"></i>
@@ -133,7 +144,8 @@
                                 <p class="text-green-100">Inversión Total</p>
                                 <p class="text-3xl font-bold" id="totalInvestment">$0</p>
                                 <p class="text-sm text-green-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i><span id="investmentChange">0%</span> vs año anterior
+                                    <i class="fas fa-arrow-up mr-1"></i><span id="investmentChange">0%</span> vs año
+                                    anterior
                                 </p>
                             </div>
                             <i class="fas fa-dollar-sign text-4xl text-green-200"></i>
@@ -145,7 +157,8 @@
                                 <p class="text-purple-100">Tasa de Avance</p>
                                 <p class="text-3xl font-bold" id="progressRate">0%</p>
                                 <p class="text-sm text-purple-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i><span id="progressChange">0%</span> vs mes anterior
+                                    <i class="fas fa-arrow-up mr-1"></i><span id="progressChange">0%</span> vs mes
+                                    anterior
                                 </p>
                             </div>
                             <i class="fas fa-tasks text-4xl text-purple-200"></i>
@@ -191,14 +204,14 @@
     </div>
 
     <script src="../../../script/layout.js"></script>
-    
+
     <script>
         // Variables globales para los gráficos
         let areaChart = null;
         let statusChart = null;
-        
+
         // Verificar si el usuario está logueado al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             //checkLoginStatus();
             loadDashboardData();
         });
@@ -206,76 +219,33 @@
         // Función para cargar datos del dashboard desde la API
         async function loadDashboardData() {
             try {
-                // URL de la API
-                const BASE_URL = 'https://186.67.61.251:8000';
-                
-                // Obtener el token de autenticación
-                const token = localStorage.getItem('authToken');
-                
-                // Realizar la petición a la API
-                const response = await fetch(`${BASE_URL}/proyectos`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': token,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Error al obtener los datos de proyectos');
-                }
-                
-                const projects = await response.json();
-                
-                // Procesar los datos y actualizar el dashboard
+                const projects = await api.get('/proyectos');
                 updateDashboardWithRealData(projects);
-                
             } catch (error) {
-                console.error('Error:', error);
-                // Mostrar mensaje de error en el dashboard
-                document.getElementById('recentProjects').innerHTML = `
-                    <div class="text-center py-4">
-                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
-                        <p class="text-gray-500 mt-2">Error al cargar los datos: ${error.message}</p>
-                    </div>
-                `;
+                console.error('Error cargando dashboard:', error);
+                showToast('Error al cargar datos del panel', 'error');
+                document.getElementById('recentProjects').innerHTML = `<p class="text-center text-red-500 p-4">Error de conexión</p>`;
             }
         }
 
         // Función para actualizar el dashboard con los datos reales
         function updateDashboardWithRealData(projects) {
             // 1. Actualizar tarjetas de estadísticas principales
-            
-            // Proyectos Activos
-            const activeProjects = projects.length;
-            document.getElementById('activeProjectsCount').textContent = activeProjects;
-            document.getElementById('projectsChange').textContent = Math.floor(Math.random() * 20) + '%'; // Simulación
-            
-            // Inversión Total
-            const totalInvestment = projects.reduce((sum, project) => {
-                const amount = parseFloat(project.monto) || 0;
-                return sum + amount;
-            }, 0);
-            document.getElementById('totalInvestment').textContent = formatCurrency(totalInvestment);
-            document.getElementById('investmentChange').textContent = Math.floor(Math.random() * 15) + '%'; // Simulación
-            
-            // Tasa de Avance
-            const totalProgress = projects.reduce((sum, project) => {
-                const progress = parseFloat(project.avance_total_decimal) || 0;
-                return sum + progress;
-            }, 0);
+            document.getElementById('activeProjectsCount').textContent = projects.length;
+            document.getElementById('projectsChange').textContent = '+5%'; // Simulado
+
+            const totalInvestment = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            document.getElementById('totalInvestment').textContent = utils.formatCompactNumber(totalInvestment);
+            document.getElementById('investmentChange').textContent = '+12%'; // Simulado
+
+            const totalProgress = projects.reduce((sum, p) => sum + (parseFloat(p.avance_total_decimal) || 0), 0);
             const averageProgress = projects.length > 0 ? (totalProgress / projects.length) * 100 : 0;
             document.getElementById('progressRate').textContent = averageProgress.toFixed(0) + '%';
-            document.getElementById('progressChange').textContent = Math.floor(Math.random() * 10) + '%'; // Simulación
-            
-            // Beneficiarios (simulado)
-            const beneficiaries = Math.floor(totalInvestment / 1000000) * 50; // Estimación simple
-            document.getElementById('beneficiaries').textContent = formatNumber(beneficiaries);
-            
-            // 2. Actualizar gráficos
+
+            const beneficiaries = Math.floor(totalInvestment / 1000000) * 50;
+            document.getElementById('beneficiaries').textContent = beneficiaries.toLocaleString('es-CL');
+
             updateCharts(projects);
-            
-            // 3. Actualizar lista de proyectos recientes
             updateRecentProjects(projects);
         }
 
@@ -287,223 +257,106 @@
                 const area = project.area || 'Sin clasificar';
                 projectsByArea[area] = (projectsByArea[area] || 0) + 1;
             });
-            
+
+            // Ordenar claves alfabéticamente
+            const areaKeys = Object.keys(projectsByArea).sort();
+            const areaValues = areaKeys.map(key => projectsByArea[key]);
+
             // Agrupar proyectos por estado
             const projectsByStatus = {};
             projects.forEach(project => {
                 const status = project.estado_proyecto || 'Sin estado';
                 projectsByStatus[status] = (projectsByStatus[status] || 0) + 1;
             });
-            
+
+            // Ordenar claves alfabéticamente
+            const statusKeys = Object.keys(projectsByStatus).sort();
+            const statusValues = statusKeys.map(key => projectsByStatus[key]);
+
             // Actualizar gráfico de áreas
             const areaCtx = document.getElementById('areaChart');
             if (areaCtx) {
-                // Destruir el gráfico anterior si existe
-                if (areaChart) {
-                    areaChart.destroy();
-                }
-                
+                if (areaChart) areaChart.destroy();
+
                 areaChart = new Chart(areaCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: Object.keys(projectsByArea),
+                        labels: areaKeys,
                         datasets: [{
-                            data: Object.values(projectsByArea),
+                            data: areaValues,
                             backgroundColor: [
-                                '#3B82F6',
-                                '#10B981',
-                                '#F59E0B',
-                                '#8B5CF6',
-                                '#EF4444',
-                                '#EC4899',
-                                '#14B8A6',
-                                '#F97316'
+                                '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6',
+                                '#EF4444', '#EC4899', '#14B8A6', '#F97316'
                             ]
                         }]
                     },
                     options: {
                         responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
+                        plugins: { legend: { position: 'bottom' } }
                     }
                 });
             }
-            
+
             // Actualizar gráfico de estados
             const statusCtx = document.getElementById('statusChart');
             if (statusCtx) {
-                // Destruir el gráfico anterior si existe
-                if (statusChart) {
-                    statusChart.destroy();
-                }
-                
+                if (statusChart) statusChart.destroy();
+
                 statusChart = new Chart(statusCtx, {
                     type: 'bar',
                     data: {
-                        labels: Object.keys(projectsByStatus),
+                        labels: statusKeys,
                         datasets: [{
                             label: 'Proyectos',
-                            data: Object.values(projectsByStatus),
+                            data: statusValues,
                             backgroundColor: '#3B82F6'
                         }]
                     },
                     options: {
                         responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
+                        scales: { y: { beginAtZero: true } }
                     }
                 });
             }
         }
 
-        // Función para actualizar la lista de proyectos recientes
         function updateRecentProjects(projects) {
-            // Ordenar proyectos por fecha de actualización (más recientes primero)
             const sortedProjects = [...projects].sort((a, b) => {
-                const dateA = new Date(a.fecha_actualizacion);
-                const dateB = new Date(b.fecha_actualizacion);
+                const dateA = new Date(a.fecha_actualizacion || 0);
+                const dateB = new Date(b.fecha_actualizacion || 0);
                 return dateB - dateA;
             });
-            
-            // Tomar los 5 proyectos más recientes
+
             const recentProjects = sortedProjects.slice(0, 5);
-            
-            // Generar HTML para los proyectos recientes
             const projectsHtml = recentProjects.map(project => {
-                // Determinar el color del estado
-                let statusClass = 'bg-gray-100 text-gray-800';
-                if (project.estado_proyecto === 'Ejecución') {
-                    statusClass = 'bg-green-100 text-green-800';
-                } else if (project.estado_proyecto === 'Diseño') {
-                    statusClass = 'bg-blue-100 text-blue-800';
-                } else if (project.estado_proyecto === 'Licitación') {
-                    statusClass = 'bg-yellow-100 text-yellow-800';
-                }
-                
-                // Determinar el ícono según el área
-                let icon = 'fa-folder';
-                if (project.area === 'Vialidad') {
-                    icon = 'fa-road';
-                } else if (project.area === 'Educación') {
-                    icon = 'fa-school';
-                } else if (project.area === 'Salud') {
-                    icon = 'fa-hospital';
-                } else if (project.area === 'Espacios Públicos') {
-                    icon = 'fa-tree';
-                }
-                
-                // Calcular tiempo transcurrido desde la última actualización
-                const updateDate = new Date(project.fecha_actualizacion);
-                const now = new Date();
-                const diffTime = Math.abs(now - updateDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                let timeAgo = 'Actualizado hoy';
-                if (diffDays === 1) {
-                    timeAgo = 'Actualizado ayer';
-                } else if (diffDays > 1 && diffDays < 7) {
-                    timeAgo = `Actualizado hace ${diffDays} días`;
-                } else if (diffDays >= 7 && diffDays < 30) {
-                    const weeks = Math.floor(diffDays / 7);
-                    timeAgo = `Actualizado hace ${weeks} semana${weeks > 1 ? 's' : ''}`;
-                } else {
-                    const months = Math.floor(diffDays / 30);
-                    timeAgo = `Actualizado hace ${months} mes${months > 1 ? 'es' : ''}`;
-                }
-                
+                const statusClass = utils.getStatusClass(project.estado_proyecto || '');
                 return `
                     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg card-hover">
                         <div class="flex items-center space-x-4">
-                            <div class="bg-blue-100 p-3 rounded-full">
-                                <i class="fas ${icon} text-blue-600"></i>
+                            <div class="bg-indigo-100 p-3 rounded-full">
+                                <i class="fas fa-folder text-indigo-600"></i>
                             </div>
                             <div>
-                                <p class="font-semibold">${project.nombre}</p>
-                                <p class="text-sm text-gray-600">${project.area || 'Sin área'} - ${formatCurrency(parseFloat(project.monto) || 0)}</p>
+                                <p class="font-semibold text-gray-800">${project.nombre}</p>
+                                <p class="text-sm text-gray-500">${project.area || 'General'} • ${utils.formatCurrency(project.monto)}</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="status-badge ${statusClass}">${project.estado_proyecto || 'Sin estado'}</span>
-                            <p class="text-sm text-gray-500 mt-1">${timeAgo}</p>
+                            <span class="status-badge ${statusClass}">${project.estado_proyecto || 'S/E'}</span>
                         </div>
                     </div>
                 `;
             }).join('');
-            
-            // Actualizar el DOM
+
             document.getElementById('recentProjects').innerHTML = projectsHtml;
         }
 
-        // Función para formatear moneda
-        function formatCurrency(amount) {
-            if (amount >= 1000000000) {
-                return '$' + (amount / 1000000000).toFixed(1) + 'B';
-            } else if (amount >= 1000000) {
-                return '$' + (amount / 1000000).toFixed(1) + 'M';
-            } else if (amount >= 1000) {
-                return '$' + (amount / 1000).toFixed(1) + 'K';
-            } else {
-                return '$' + amount.toFixed(0);
-            }
-        }
-
-        // Función para formatear números
-        function formatNumber(num) {
-            if (num >= 1000) {
-                return (num / 1000).toFixed(1) + 'K';
-            } else {
-                return num.toFixed(0);
-            }
-        }
-
-        
-
-        
-
-        // Change role
         function changeRole(role) {
-            currentRole = role;
-            const roleNames = {
-                'admin': 'Administrador',
-                'alcalde': 'Alcalde',
-                'secplac': 'SECPLAC',
-                'public': 'Vista Pública'
-            };
-            document.getElementById('currentRole').textContent = roleNames[role];
-            document.getElementById('userMenu').classList.add('hidden');
-            console.log(localStorage)
-            // Guardar el rol en localStorage
             localStorage.setItem('userRole', role);
-            
-            // Aquí se implementaría la lógica para cambiar la vista según el rol
-            if (role === 'public') {
-                alert('Modo público activado - Se ocultará información sensible');
-            }
-            
-            // Recargar los datos con el nuevo rol
+            showToast(`Rol cambiado a ${role}`, 'info');
             loadDashboardData();
         }
-
-        // Toggle notifications
-        function toggleNotifications() {
-            // Implement notification panel
-            alert('Panel de notificaciones - En desarrollo');
-        }
-
-        // Close menus when clicking outside
-        document.addEventListener('click', function(event) {
-            const userMenu = document.getElementById('userMenu');
-            const userButton = event.target.closest('button[onclick="toggleUserMenu()"]');
-            
-            if (!userButton && !userMenu.contains(event.target)) {
-                userMenu.classList.add('hidden');
-            }
-        });
     </script>
 </body>
+
 </html>
