@@ -572,6 +572,8 @@
 
         // --- 1. LÓGICA DE PROYECTOS (Geoportal) ---
 
+        // --- 1. LÓGICA DE PROYECTOS (Geoportal) ---
+
         function getAuthHeaders() {
             const token = localStorage.getItem('authToken');
             return {
@@ -580,16 +582,42 @@
             };
         }
 
+        async function loadCatalogs() {
+            try {
+                const [areas, estados, financiamientos] = await Promise.all([
+                    fetch(`${API_BASE}/areas`, { headers: getAuthHeaders() }).then(r => r.json()).catch(() => []),
+                    fetch(`${API_BASE}/estados_proyecto`, { headers: getAuthHeaders() }).then(r => r.json()).catch(() => []),
+                    fetch(`${API_BASE}/financiamientos`, { headers: getAuthHeaders() }).then(r => r.json()).catch(() => [])
+                ]);
+
+                AppState.catalogs = {
+                    areas: areas.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')),
+                    estados: estados.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')),
+                    financiamientos: financiamientos.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
+                };
+
+                populateDropdowns();
+            } catch (e) {
+                console.error("Error loading catalogs", e);
+            }
+        }
+
         async function loadProjects() {
             try {
                 DOM.projectsLoading.classList.remove('hidden');
-                const response = await fetch(`${API_BASE}/proyectos`, {
+                // Initiate calls in parallel
+                const pProjects = fetch(`${API_BASE}/proyectos`, {
                     method: 'GET',
                     headers: getAuthHeaders()
+                }).then(r => {
+                    if (!r.ok) throw new Error(`Error API: ${r.status}`);
+                    return r.json();
                 });
 
-                if (!response.ok) throw new Error(`Error API: ${response.status}`);
-                AppState.allProjects = await response.json();
+                // Wait for catalogs first (or parallel, but we need catalogs for dropdowns)
+                if (!AppState.catalogs) await loadCatalogs();
+
+                AppState.allProjects = await pProjects;
                 AppState.filterProject = AppState.allProjects;
 
                 initFilters();
@@ -610,37 +638,41 @@
             DOM.filterArea.addEventListener('change', applyFilters);
             DOM.filterStatus.addEventListener('change', applyFilters);
             DOM.filterFinancing.addEventListener('change', applyFilters);
-            populateDropdowns();
+            // Dropdowns already populated by loadCatalogs -> populateDropdowns
             applyFilters();
         }
 
         function populateDropdowns() {
-            const areas = [...new Set(AppState.allProjects.map(p => p.area).filter(Boolean))].sort();
-            const statuses = [...new Set(AppState.allProjects.map(p => p.estado_proyecto).filter(Boolean))].sort();
-            const financings = [...new Set(AppState.allProjects.map(p => p.financiamiento).filter(Boolean))].sort();
+            if (!AppState.catalogs) return;
 
-            fillSelect(DOM.filterArea, areas, "Todas las áreas");
-            fillSelect(DOM.filterStatus, statuses, "Todos los estados");
-            fillSelect(DOM.filterFinancing, financings, "Todo el financiamiento");
+            fillSelect(DOM.filterArea, AppState.catalogs.areas.map(a => a.nombre), "Todas las áreas");
+            fillSelect(DOM.filterStatus, AppState.catalogs.estados.map(e => e.nombre), "Todos los estados");
+            fillSelect(DOM.filterFinancing, AppState.catalogs.financiamientos.map(f => f.nombre), "Todo el financiamiento");
         }
 
         function fillSelect(selectEl, options, defaultLabel) {
+            const current = selectEl.value;
             selectEl.innerHTML = `<option value="">${defaultLabel}</option>`;
             options.forEach(opt => selectEl.innerHTML += `<option value="${opt}">${opt}</option>`);
+            if (options.includes(current)) selectEl.value = current;
         }
 
         function applyFilters() {
-            const txt = DOM.filterSearch.value.toLowerCase();
+            const txt = DOM.filterSearch.value.toLowerCase().trim();
             const area = DOM.filterArea.value;
             const status = DOM.filterStatus.value;
             const fin = DOM.filterFinancing.value;
 
             const filtered = AppState.allProjects.filter(p => {
-                const matchTxt = (p.nombre && p.nombre.toLowerCase().includes(txt)) ||
-                    (p.codigo && p.codigo.toLowerCase().includes(txt));
-                const matchArea = area === "" || p.area === area;
-                const matchStatus = status === "" || p.estado_proyecto === status;
-                const matchFin = fin === "" || p.financiamiento === fin;
+                const pNombre = p.nombre ? p.nombre.toLowerCase() : "";
+                const pCodigo = p.codigo ? p.codigo.toLowerCase() : "";
+
+                const matchTxt = !txt || pNombre.includes(txt) || pCodigo.includes(txt);
+                // Use *_nombre properties matching proyecto.html schema
+                const matchArea = area === "" || (p.area_nombre || p.area) == area;
+                const matchStatus = status === "" || (p.estado_nombre || p.estado_proyecto) == status;
+                const matchFin = fin === "" || (p.financiamiento_nombre || p.financiamiento) == fin;
+
                 return matchTxt && matchArea && matchStatus && matchFin;
             });
             AppState.filterProject = filtered;
