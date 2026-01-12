@@ -1020,7 +1020,7 @@
 
         // --- LÓGICA DEL VISOR (LEAFLET) ---
 
-        function openMapViewer(geomapaId, mapName) {
+        async function openMapViewer(geomapaId, mapName) {
             const modal = document.getElementById('viewerModal');
             const loading = document.getElementById('viewerLoading');
             const nameDisplay = document.getElementById('viewerMapName');
@@ -1031,24 +1031,15 @@
 
             document.getElementById('btnViewerExport').onclick = () => exportCurrentGeoJSON(mapName);
 
-            const headers = getAuthHeaders();
-
-            fetch(`${API_BASE}/geomapas/${geomapaId}/geojson`, {
-                headers: headers
-            })
-                .then(res => {
-                    if (!res.ok) throw new Error("No se pudo cargar el geojson");
-                    return res.json();
-                })
-                .then(geojson => {
-                    currentMapData = geojson;
-                    initMap(geojson);
-                    loading.classList.add('hidden');
-                })
-                .catch(err => {
-                    console.error(err);
-                    loading.innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>${err.message}</p></div>`;
-                });
+            try {
+                const geojson = await api.get(`/geomapas/${geomapaId}/geojson`);
+                currentMapData = geojson;
+                initMap(geojson);
+                loading.classList.add('hidden');
+            } catch (err) {
+                console.error(err);
+                loading.innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>${err.message}</p></div>`;
+            }
         }
 
         function initMap(geojsonData) {

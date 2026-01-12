@@ -591,17 +591,27 @@
         const API_BASE = 'https://186.67.61.251:8000';
         let allProjects = [];
 
-        function getAuthHeaders() {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                console.error("No se encontró token.");
-                showToast("Sesión no iniciada", "error");
-                return null;
+        function openCreateHitoModal() {
+            const pid = document.getElementById('projectSelect').value;
+            if (!pid) {
+                showToast("Selecciona un proyecto primero", "warning");
+                return;
             }
-            return {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
+            const select = document.getElementById('projectSelect');
+            const projectName = select.options[select.selectedIndex].text;
+
+            document.getElementById('createProjectId').value = pid;
+            document.getElementById('modalProjectName').textContent = projectName;
+            document.getElementById('createHitoModal').classList.add('active');
+        }
+
+        function closeCreateHitoModal() {
+            document.getElementById('createHitoModal').classList.remove('active');
+            document.getElementById('createHitoForm').reset();
+        }
+
+        function closeViewerModal() {
+            document.getElementById('viewerModal').classList.remove('active');
         }
 
         // --- UTILIDAD PARA FECHAS GMT (FIX INVALID DATE) ---
@@ -663,22 +673,12 @@
         // --- LÓGICA DE PROYECTOS (REUTILIZADA) ---
 
         async function loadProjects() {
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
             const select = document.getElementById('projectSelect');
             select.innerHTML = '<option value="" disabled selected>Cargando proyectos...</option>';
             select.disabled = true;
 
             try {
-                const response = await fetch(`${API_BASE}/proyectos`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) throw new Error('Error al cargar proyectos');
-
-                allProjects = await response.json();
+                allProjects = await api.get('/proyectos');
 
                 updateFilterOptions();
                 applyFilters();
@@ -687,8 +687,8 @@
 
             } catch (error) {
                 console.error('Error:', error);
-                showToast('Error al conectar con el servidor', 'error');
-                select.innerHTML = '<option value="" disabled selected>Error de conexión</option>';
+                showToast('Error al cargar proyectos', 'error');
+                select.innerHTML = '<option value="" disabled selected>Error de carga</option>';
             }
         }
 

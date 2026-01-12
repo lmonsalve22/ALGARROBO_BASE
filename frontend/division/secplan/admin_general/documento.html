@@ -863,7 +863,7 @@
 
         // --- LÓGICA DEL VISOR ---
 
-        function openViewer(docId, docName) {
+        async function openViewer(docId, docName) {
             const modal = document.getElementById('viewerModal');
             const iframe = document.getElementById('docViewerFrame');
             const loading = document.getElementById('viewerLoading');
@@ -879,36 +879,27 @@
 
             modal.classList.add('active');
 
-            // Obtener token y hacer fetch
-            const token = localStorage.getItem("authToken");
+            try {
+                const blob = await api.getBlob(`/documentos/${docId}/view`);
 
-            fetch(`${API_BASE}/documentos/${docId}/view`, {
-                headers: { "Authorization": "Bearer " + token }
-            })
-                .then(res => {
-                    if (!res.ok) throw new Error("No se pudo cargar el documento");
-                    return res.blob();
-                })
-                .then(blob => {
-                    // Liberar URL anterior si existe
-                    if (currentViewerBlobUrl) {
-                        URL.revokeObjectURL(currentViewerBlobUrl);
-                    }
-                    const url = URL.createObjectURL(blob);
-                    currentViewerBlobUrl = url;
+                // Liberar URL anterior si existe
+                if (currentViewerBlobUrl) {
+                    URL.revokeObjectURL(currentViewerBlobUrl);
+                }
+                const url = URL.createObjectURL(blob);
+                currentViewerBlobUrl = url;
 
-                    // Asignar al iframe
-                    iframe.src = url;
+                // Asignar al iframe
+                iframe.src = url;
 
-                    // Ocultar loading cuando el iframe empieza a cargar contenido
-                    iframe.onload = () => {
-                        loading.classList.add('hidden');
-                    };
-                })
-                .catch(err => {
-                    console.error(err);
-                    loading.innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>${err.message}</p></div>`;
-                });
+                // Ocultar loading cuando el iframe empieza a cargar contenido
+                iframe.onload = () => {
+                    loading.classList.add('hidden');
+                };
+            } catch (err) {
+                console.error(err);
+                loading.innerHTML = `<div class="text-red-500 text-center"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>${err.message}</p></div>`;
+            }
         }
 
         function closeViewerModal() {

@@ -939,9 +939,6 @@
                 observacion: observacion
             };
 
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
             const btn = document.getElementById('btnSubmitCreate');
             const originalText = document.getElementById('btnCreateText').textContent;
             btn.disabled = true;
@@ -949,29 +946,18 @@
             document.getElementById('btnCreateText').innerHTML = '<span class="loading"></span> Guardando...';
 
             try {
-                const res = await fetch(`${API_BASE}/proyectos/${pid}/observaciones`, {
-                    method: "POST",
-                    headers: headers,
-                    body: JSON.stringify(payload)
-                });
+                const data = await api.post(`/proyectos/${pid}/observaciones`, payload);
 
-                const data = await res.json();
-
-                if (res.ok) {
-                    showToast(data.message || "Observación registrada exitosamente", "success");
-                    addToLog(pid, "Nueva Observación", "success");
-                    closeCreateObservacionModal();
-                    const select = document.getElementById('projectSelect');
-                    loadProjectObservaciones(pid, select.options[select.selectedIndex].text);
-                } else {
-                    console.error("Error Server:", data);
-                    showToast(`Error: ${data.message || 'Ocurrió un problema'}`, "error");
-                    addToLog(pid, "Error Observación", "error");
-                }
+                showToast(data.message || "Observación registrada exitosamente", "success");
+                addToLog(pid, "Nueva Observación", "success");
+                closeCreateObservacionModal();
+                const select = document.getElementById('projectSelect');
+                loadProjectObservaciones(pid, select.options[select.selectedIndex].text);
 
             } catch (error) {
-                console.error('Error de Red:', error);
-                showToast('Error de conexión al registrar observación', 'error');
+                console.error('Error:', error);
+                showToast(error.message || 'Error al registrar observación', 'error');
+                addToLog(pid, "Error Observación", "error");
             } finally {
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-not-allowed');

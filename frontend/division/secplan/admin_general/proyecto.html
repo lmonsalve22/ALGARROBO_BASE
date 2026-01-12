@@ -878,6 +878,14 @@
             }
         }
 
+        function populateFilterSelects() {
+            // Llenar filtros de la barra superior con los nombres únicos de los catálogos
+            populateSelectOptions('filterArea', catalogData.areas.map(a => a.nombre), 'Todas');
+            populateSelectOptions('filterFinancing', catalogData.financiamientos.map(f => f.nombre), 'Todos');
+            populateSelectOptions('filterStatus', catalogData.estados_proyecto.map(e => e.nombre), 'Todos');
+            // Profesionales se llenarán dinámicamente desde los proyectos cargados
+        }
+
         function populateFormSelects() {
             // Helper para llenar un select
             const fillSelect = (elementId, data, defaultText) => {
@@ -952,9 +960,6 @@
         });
 
         async function loadProjects() {
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
             try {
                 const tableBody = document.getElementById('projectsTableBody');
                 tableBody.innerHTML = `
@@ -968,22 +973,7 @@
                     </tr>
                 `;
 
-                const response = await fetch(`${API_BASE}/proyectos`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401 || response.status === 403) {
-                        localStorage.removeItem('authToken');
-                        showToast("Sesión expirada. Por favor, inicia sesión de nuevo.", "warning");
-                    } else {
-                        throw new Error('Error al cargar proyectos');
-                    }
-                    return;
-                }
-
-                proyectos = await response.json();
+                proyectos = await api.get('/proyectos');
 
                 // Ordenar: Fechas desde la más reciente a la más antigua (Descendente), luego alfabéticamente
                 proyectos.sort((a, b) => {
@@ -993,8 +983,6 @@
                     if (diff !== 0) return diff;
                     return (a.nombre || '').localeCompare(b.nombre || '');
                 });
-
-                console.log("Datos organizados:", proyectos);
 
                 updateFilterOptions();
                 applyFilters();
@@ -1217,7 +1205,7 @@
             const executionCount = proyectosData.filter(p => p.estado_nombre === 'Ejecución').length;
             document.getElementById('executionProjects').textContent = executionCount;
             const totalAmount = proyectosData.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
-            document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+            document.getElementById('totalAmount').textContent = utils.formatCurrency(totalAmount);
             const avgProgress = proyectosData.length > 0
                 ? proyectosData.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / proyectosData.length
                 : 0;
@@ -1292,7 +1280,7 @@
                 // Mapeo especial para mostrar valores normalizados si faltan *_nombre
                 if (!value && key === 'area_nombre') value = 'Sin definir';
 
-                if (key === 'monto') value = formatCurrency(value);
+                if (key === 'monto') value = utils.formatCurrency(value);
                 else if (key === 'fecha_postulacion' && value) value = formatDisplayDate(value);
                 else if (key === 'avance_total_porcentaje' && value) value = `${(parseFloat(value) > 1 ? parseFloat(value) : parseFloat(value) * 100).toFixed(2)}%`;
 
@@ -1392,26 +1380,19 @@
         async function deleteProject(id) {
             if (!confirm('¿Está seguro de que desea eliminar este proyecto? Esta acción no se puede deshacer.')) return;
 
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
             try {
-                showLoading(true, 'Eliminando...');
-                const response = await fetch(`${API_BASE}/proyectos/${id}`, {
-                    method: 'DELETE',
-                    headers: headers
-                });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || errorData.detail || 'Error al eliminar el proyecto');
-                }
+                // showLoading es opcional si existe, si no usamos un alternativo
+                if (typeof showLoading === 'function') showLoading(true, 'Eliminando...');
+
+                await api.delete(`/proyectos/${id}`);
+
                 showToast('Proyecto eliminado exitosamente', 'success');
                 loadProjects();
             } catch (error) {
                 console.error('Error:', error);
                 showToast(error.message || 'Error al eliminar el proyecto', 'error');
             } finally {
-                showLoading(false);
+                if (typeof showLoading === 'function') showLoading(false);
             }
         }
 
