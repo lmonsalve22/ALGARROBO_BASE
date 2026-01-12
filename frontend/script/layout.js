@@ -196,6 +196,12 @@ function renderSidebar(containerId = "sidebarContainer") {
                     </a>
                 </li>
                 <li>
+                    <a href="${pages.observacion}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.observacion)}">
+                        <i class="fas fa-layer-group w-5 text-center"></i>
+                        <span class="font-medium">Observaciones</span>
+                    </a>
+                </li>
+                <li>
                     <a href="${pages.hitos}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.hitos)}">
                         <i class="fas fa-flag-checkered w-5 text-center"></i>
                         <span class="font-medium">Hitos</span>

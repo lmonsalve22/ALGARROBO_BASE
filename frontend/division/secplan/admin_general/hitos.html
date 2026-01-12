@@ -715,15 +715,15 @@
             const selectedStatus = document.getElementById('filterStatus').value;
 
             const dataForAreas = allProjects.filter(p =>
-                (selectedStatus === '' || p.estado_proyecto === selectedStatus)
+                (selectedStatus === '' || p.estado_nombre === selectedStatus)
             );
-            const uniqueAreas = [...new Set(dataForAreas.map(p => p.area).filter(Boolean))].sort();
+            const uniqueAreas = [...new Set(dataForAreas.map(p => p.area_nombre).filter(Boolean))].sort();
             populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
 
             const dataForStatus = allProjects.filter(p =>
-                (selectedArea === '' || p.area === selectedArea)
+                (selectedArea === '' || p.area_nombre === selectedArea)
             );
-            const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_proyecto).filter(Boolean))].sort();
+            const uniqueStatus = [... new Set(dataForStatus.map(p => p.estado_nombre).filter(Boolean))].sort();
             populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
         }
 
@@ -740,8 +740,8 @@
                     (proyecto.codigo && proyecto.codigo.toLowerCase().includes(searchTerm)) ||
                     (proyecto.sector && proyecto.sector.toLowerCase().includes(searchTerm));
 
-                const matchesArea = selectedArea === '' || proyecto.area === selectedArea;
-                const matchesStatus = selectedStatus === '' || proyecto.estado_proyecto === selectedStatus;
+                const matchesArea = selectedArea === '' || proyecto.area_nombre === selectedArea;
+                const matchesStatus = selectedStatus === '' || proyecto.estado_nombre === selectedStatus;
 
                 return matchesSearch && matchesArea && matchesStatus;
             });

@@ -12,7 +12,7 @@ const API_CONFIG = {
 };
 
 const api = {
-    async request(endpoint, options = {}) {
+    async request(endpoint, options = {}, responseType = 'json') {
         const url = endpoint.startsWith('http') ? endpoint : `${API_CONFIG.BASE_URL}${endpoint}`;
 
         const headers = {
@@ -52,6 +52,16 @@ const api = {
                 throw new Error(errorData.detail || errorData.message || `Error ${response.status}`);
             }
 
+            if (responseType === 'blob') {
+                return await response.blob();
+            }
+            if (responseType === 'text') {
+                return await response.text();
+            }
+            if (responseType === 'raw') {
+                return response;
+            }
+
             return await response.json();
         } catch (error) {
             console.error(`API Error (${endpoint}):`, error);
@@ -61,6 +71,10 @@ const api = {
 
     get(endpoint, options = {}) {
         return this.request(endpoint, { ...options, method: 'GET' });
+    },
+
+    getBlob(endpoint, options = {}) {
+        return this.request(endpoint, { ...options, method: 'GET' }, 'blob');
     },
 
     post(endpoint, data, options = {}) {

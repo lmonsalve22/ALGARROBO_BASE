@@ -522,7 +522,7 @@
             generateBtn.disabled = true;
 
             // Mostrar mensaje de generación
-            showNotification(`Generando informe ${reportType} para período ${reportPeriod}...`, 'info');
+            showToast(`Generando informe ${reportType} para período ${reportPeriod}...`, 'info');
 
             // Simular generación de informe
             setTimeout(() => {
@@ -540,7 +540,7 @@
                 // Añadir a la lista de informes recientes
                 addRecentReport(reportType, reportPeriod, reportFormat);
 
-                showNotification(`Informe ${reportType} generado correctamente`, 'success');
+                showToast(`Informe ${reportType} generado correctamente`, 'success');
             }, 2000);
         }
 

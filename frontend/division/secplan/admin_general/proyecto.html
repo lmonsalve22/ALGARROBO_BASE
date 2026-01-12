@@ -135,7 +135,7 @@
             background: rgba(255, 255, 255, 0.98);
             border-radius: 1.5rem;
             width: 95%;
-            max-width: 900px;
+            max-width: 1400px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -504,7 +504,7 @@
                             </div>
 
                             <!-- Filtro Profesional -->
-                            <div>
+                            <div style="display: none;">
                                 <label for="filterProfessional"
                                     class="block text-sm font-semibold text-gray-700 mb-2">Profesional</label>
                                 <select id="filterProfessional"
@@ -811,18 +811,29 @@
 
     <!-- Modal para ver detalles del proyecto -->
     <div id="viewProjectModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Detalles del Proyecto</h2>
-                <button class="close-btn" onclick="closeViewModal()">&times;</button>
+        <div class="modal-content" style="max-width: 1400px;">
+            <div class="modal-header"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 1.5rem 1.5rem 0 0; padding: 2rem;">
+                <div>
+                    <h2 class="modal-title"
+                        style="color: white; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">Detalles del
+                        Proyecto</h2>
+                    <p style="opacity: 0.9; font-size: 0.875rem;">Información completa y detallada</p>
+                </div>
+                <button class="close-btn" onclick="closeViewModal()"
+                    style="color: white; font-size: 2rem; background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
             </div>
-            <div id="viewProjectDetails" class="space-y-4">
+            <div id="viewProjectDetails" class="p-6" style="background: #fafbfc;">
                 <!-- Los detalles del proyecto se cargarán aquí dinámicamente -->
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer"
+                style="background: #f8f9fa; border-radius: 0 0 1.5rem 1.5rem; padding: 1.5rem 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
                 <button type="button"
-                    class="px-5 py-2.5 rounded-xl bg-slate-800 text-white hover:bg-slate-900 font-medium transition-all shadow-lg shadow-slate-500/30"
+                    class="px-6 py-3 rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 text-white hover:from-slate-800 hover:to-slate-950 font-medium transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                     onclick="closeViewModal()">
+                    <i class="fas fa-times"></i>
                     Cerrar
                 </button>
             </div>
@@ -1015,13 +1026,18 @@
         }
 
         function getProfessionalsFromProject(p) {
-            return [
+            const profs = [
                 p.profesional_1,
                 p.profesional_2,
                 p.profesional_3,
                 p.profesional_4,
                 p.profesional_5
             ].filter(Boolean);
+            // Temporary debugging - remove after fixing
+            if (profs.length > 0) {
+                console.log('Found professionals:', profs, 'in project:', p.nombre);
+            }
+            return profs;
         }
 
         function updateFilterOptions() {
@@ -1071,6 +1087,7 @@
             );
             const allProfessionalsList = dataForProfessionals.flatMap(getProfessionalsFromProject);
             const uniqueProfessionals = [...new Set(allProfessionalsList)].sort();
+            console.log('Total professionals found:', allProfessionalsList.length, 'Unique:', uniqueProfessionals.length, 'List:', uniqueProfessionals);
             populateSelectOptions('filterProfessional', uniqueProfessionals, 'Todos los profesionales', selectedProfessional);
         }
 
@@ -1263,106 +1280,373 @@
                 observaciones: "Observaciones Generales"
             };
 
-            let html = '<div class="space-y-3">';
-
-            // Iteramos sobre las claves del objeto proyecto. Mostramos solo las que tienen etiqueta en 'labels'
-            // y excluyendo IDs técnicos y auditoría
-            const excludeKeys = ['user_id', 'user_nombre', 'user_email',
-                'actualizado_por', 'actualizado_por_nombre', 'actualizado_por_email',
-                'fecha_actualizacion', 'proyectos_hitos', 'proyectos_observaciones',
-                'area_id', 'financiamiento_id', 'estado_proyecto_id', 'etapa_proyecto_id',
-                'estado_postulacion_id', 'sector_id', 'lineamiento_estrategico_id', 'activo'];
-
-            for (const key in labels) {
-                if (excludeKeys.includes(key)) continue;
-
-                let value = proyecto[key];
-                // Mapeo especial para mostrar valores normalizados si faltan *_nombre
-                if (!value && key === 'area_nombre') value = 'Sin definir';
-
-                if (key === 'monto') value = utils.formatCurrency(value);
-                else if (key === 'fecha_postulacion' && value) value = formatDisplayDate(value);
-                else if (key === 'avance_total_porcentaje' && value) value = `${(parseFloat(value) > 1 ? parseFloat(value) : parseFloat(value) * 100).toFixed(2)}%`;
-
-                const displayValue = (value === null || value === undefined || value === '') ? '-' : value;
-                html += `
-                    <div class="flex justify-between py-2 border-b border-gray-100">
-                        <span class="font-semibold text-gray-700 w-1/3 text-sm">${labels[key]}:</span>
-                        <span class="text-gray-900 text-right w-2/3 break-words text-sm">${displayValue}</span>
-                    </div>
-                `;
-            }
-            html += '</div>';
-
-            const hitos = proyecto.proyectos_hitos || [];
-            html += `
-                <div class="mt-8">
-                    <h3 class="text-md font-bold text-gray-800 mb-3 border-l-4 border-blue-500 pl-3 uppercase tracking-wide">Hitos del Proyecto</h3>
-                    ${hitos.length > 0 ? `
-                        <div class="overflow-x-auto border rounded-lg">
-                            <table class="details-table">
-                                <thead><tr><th>Tipo Hito</th><th>Fecha</th><th>Observación</th><th>Creado Por</th></tr></thead>
-                                <tbody>
-                                    ${hitos.map(h => `
-                                        <tr>
-                                            <td class="font-medium text-gray-900">${h.tipo_hito || '-'}</td>
-                                            <td class="text-gray-600 whitespace-nowrap">${formatDisplayDate(h.fecha)}</td>
-                                            <td class="text-gray-600">${h.observacion || '-'}</td>
-                                            <td class="text-xs text-gray-500">${h.creado_por || '-'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+            // Modern sectioned layout
+            let html = `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <!-- Header Section -->
+                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b border-gray-200">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">${proyecto.nombre || 'Sin nombre'}</h3>
+                                <div class="flex flex-wrap gap-3">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
+                                        <i class="fas fa-hashtag mr-1.5"></i> ${proyecto.codigo || 'N/A'}
+                                    </span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                        <i class="fas fa-folder mr-1.5"></i> ${proyecto.area_nombre || 'Sin área'}
+                                    </span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                        <i class="fas fa-tasks mr-1.5"></i> ${proyecto.estado_nombre || 'Sin estado'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-500 mb-1">Monto Total</div>
+                                <div class="text-2xl font-bold text-indigo-600">${utils.formatCurrency(proyecto.monto)}</div>
+                            </div>
                         </div>
-                    ` : `<div class="text-sm text-gray-500 italic bg-gray-50 p-3 rounded border">No hay hitos registrados.</div>`}
+                    </div>
+
+                    <!-- Main Content Grid -->
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- Left Column -->
+                            <div class="space-y-6">
+                                <!-- Información General -->
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-info-circle text-indigo-500"></i>
+                                        Información General
+                                    </h4>
+                                    <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">N° de Registro:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.n_registro || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Etapa del Proyecto:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.etapa_nombre || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Estado de Postulación:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.estado_postulacion_nombre || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Avance Total:</span>
+                                            <span class="text-sm font-semibold text-indigo-600">${proyecto.avance_total_porcentaje ? `${(parseFloat(proyecto.avance_total_porcentaje) > 1 ? parseFloat(proyecto.avance_total_porcentaje) : parseFloat(proyecto.avance_total_porcentaje) * 100).toFixed(1)}%` : '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">¿Es Prioridad?:</span>
+                                            <span class="text-sm font-semibold ${proyecto.es_prioridad === 'SI' ? 'text-red-600' : 'text-gray-900'}">
+                                                ${proyecto.es_prioridad === 'SI' ? '✓ Sí' : 'No'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Financiamiento -->
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-dollar-sign text-green-500"></i>
+                                        Financiamiento
+                                    </h4>
+                                    <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Tipo:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.financiamiento_nombre || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Financiamiento Municipal:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.financiamiento_municipal || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Año de Elaboración:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.anno_elaboracion || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Año de Ejecución:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.anno_ejecucion || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2">
+                                            <span class="text-sm font-medium text-gray-600">Fecha de Postulación:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.fecha_postulacion ? formatDisplayDate(proyecto.fecha_postulacion) : '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ubicación -->
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-map-marker-alt text-red-500"></i>
+                                        Ubicación y Territorio
+                                    </h4>
+                                    <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Lineamiento Estratégico:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.lineamiento_nombre || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Sector:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.sector_nombre || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Unidad Vecinal:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.unidad_vecinal || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Coordenadas:</span>
+                                            <span class="text-sm font-mono text-gray-900">${proyecto.latitud && proyecto.longitud ? `${proyecto.latitud}, ${proyecto.longitud}` : '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="space-y-6">
+                                <!-- Profesionales -->
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-users text-blue-500"></i>
+                                        Profesionales a Cargo
+                                    </h4>
+                                    <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Profesional 1:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.profesional_1 || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Profesional 2:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.profesional_2 || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2">
+                                            <span class="text-sm font-medium text-gray-600">Dupla Profesionales:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.dupla_profesionales || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Documentación -->
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-file-alt text-purple-500"></i>
+                                        Documentación y Técnica
+                                    </h4>
+                                    <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Documentos:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.documentos || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Planimetrías:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.planimetrias || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Topografía:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.topografia || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Ingeniería:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.ingenieria || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Perfil Técnico Económico:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.perfil_tecnico_economico || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Aprobación DOM:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.aprobacion_dom || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2">
+                                            <span class="text-sm font-medium text-gray-600">Aprobación SERVIU:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.aprobacion_serviu || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Observaciones Generales -->
+                                ${proyecto.observaciones ? `
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-comment-alt text-amber-500"></i>
+                                        Observaciones Generales
+                                    </h4>
+                                    <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                                        <p class="text-sm text-gray-700 leading-relaxed">${proyecto.observaciones}</p>
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
-            const observaciones = proyecto.proyectos_observaciones || [];
+            const hitos = proyecto.hitos || [];
+            html += `
+                <div class="mt-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 p-5">
+                            <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                                <div class="bg-white bg-opacity-20 p-2 rounded-lg">
+                                    <i class="fas fa-flag-checkered"></i>
+                                </div>
+                                Hitos del Proyecto
+                                <span class="ml-auto bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">${hitos.length} hito${hitos.length !== 1 ? 's' : ''}</span>
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            ${hitos.length > 0 ? `
+                                <div class="space-y-4">
+                                    ${hitos.map((h, index) => `
+                                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-100 hover:shadow-md transition-all">
+                                            <div class="flex items-start gap-4">
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg">
+                                                        ${index + 1}
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1 space-y-2">
+                                                    <div class="flex items-center gap-3 flex-wrap">
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">
+                                                            <i class="fas fa-bookmark mr-1.5"></i>
+                                                            ${h.tipo_hito || 'Sin tipo'}
+                                                        </span>
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300">
+                                                            <i class="fas fa-calendar mr-1.5"></i>
+                                                            ${formatDisplayDate(h.fecha)}
+                                                        </span>
+                                                    </div>
+                                                    ${h.observacion ? `
+                                                        <div class="bg-white rounded-lg p-3 mt-2">
+                                                            <p class="text-sm text-gray-700 leading-relaxed">${h.observacion}</p>
+                                                        </div>
+                                                    ` : '<p class="text-sm text-gray-500 italic">Sin observación</p>'}
+                                                    ${h.creado_por ? `
+                                                        <div class="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                                            <i class="fas fa-user"></i>
+                                                            Creado por: <span class="font-medium">${h.creado_por}</span>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div class="text-center py-12">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                                        <i class="fas fa-flag-checkered text-2xl"></i>
+                                    </div>
+                                    <p class="text-gray-500 font-medium">No hay hitos registrados</p>
+                                    <p class="text-gray-400 text-sm mt-1">Los hitos del proyecto aparecerán aquí</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const observaciones = proyecto.observaciones || [];
             html += `
                 <div class="mt-6">
-                    <h3 class="text-md font-bold text-gray-800 mb-3 border-l-4 border-orange-500 pl-3 uppercase tracking-wide">Observaciones del Proyecto</h3>
-                    ${observaciones.length > 0 ? `
-                        <div class="overflow-x-auto border rounded-lg">
-                            <table class="details-table">
-                                <thead><tr><th>Fecha</th><th>Observación</th><th>Creado Por</th></tr></thead>
-                                <tbody>
-                                    ${observaciones.map(o => `
-                                        <tr>
-                                            <td class="text-gray-600 whitespace-nowrap">${formatDisplayDate(o.fecha)}</td>
-                                            <td class="text-gray-800">${o.observacion || '-'}</td>
-                                            <td class="text-xs text-gray-500">${o.creado_por || '-'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="bg-gradient-to-r from-orange-500 to-amber-500 p-5">
+                            <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                                <div class="bg-white bg-opacity-20 p-2 rounded-lg">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                Observaciones del Proyecto
+                                <span class="ml-auto bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">${observaciones.length} observación${observaciones.length !== 1 ? 'es' : ''}</span>
+                            </h3>
                         </div>
-                    ` : `<div class="text-sm text-gray-500 italic bg-gray-50 p-3 rounded border">No hay observaciones registradas.</div>`}
+                        <div class="p-6">
+                            ${observaciones.length > 0 ? `
+                                <div class="space-y-4">
+                                    ${observaciones.map((o, index) => `
+                                        <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-100 hover:shadow-md transition-all">
+                                            <div class="flex items-start gap-4">
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-lg">
+                                                        ${index + 1}
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-3 mb-3">
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300">
+                                                            <i class="fas fa-calendar mr-1.5"></i>
+                                                            ${formatDisplayDate(o.fecha)}
+                                                        </span>
+                                                        ${o.creado_por ? `
+                                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-600 text-white">
+                                                                <i class="fas fa-user mr-1.5"></i>
+                                                                ${o.creado_por}
+                                                            </span>
+                                                        ` : ''}
+                                                    </div>
+                                                    <div class="bg-white rounded-lg p-4">
+                                                        <p class="text-sm text-gray-800 leading-relaxed">${o.observacion || 'Sin observación'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div class="text-center py-12">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                                        <i class="fas fa-comments text-2xl"></i>
+                                    </div>
+                                    <p class="text-gray-500 font-medium">No hay observaciones registradas</p>
+                                    <p class="text-gray-400 text-sm mt-1">Las observaciones del proyecto aparecerán aquí</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
                 </div>
             `;
 
             // Auditoría
             html += `
-                <div class="mt-8 pt-4 border-t border-gray-200 bg-gray-50 rounded-lg p-4">
-                    <h3 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Auditoría del Sistema</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="block text-gray-400 text-xs">Creado por:</span>
-                            <div class="font-medium text-gray-800 flex items-center gap-2">
-                                <i class="fas fa-user-circle text-blue-400"></i>
-                                ${proyecto.user_nombre || 'Desconocido'}
+                <div class="mt-8">
+                    <div class="bg-gradient-to-r from-gray-700 to-gray-900 rounded-2xl shadow-lg p-6 text-white">
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                            <i class="fas fa-shield-alt"></i>
+                            Auditoría del Sistema
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white bg-opacity-10 rounded-xl p-4 backdrop-blur">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs opacity-75">Creado por</div>
+                                        <div class="font-semibold">${proyecto.user_nombre || 'Desconocido'}</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <span class="block text-gray-400 text-xs">Actualizado por:</span>
-                            <div class="font-medium text-gray-800 flex items-center gap-2">
-                                <i class="fas fa-edit text-green-400"></i>
-                                ${proyecto.actualizado_por_nombre || 'Desconocido'}
+                            <div class="bg-white bg-opacity-10 rounded-xl p-4 backdrop-blur">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                                        <i class="fas fa-user-edit"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs opacity-75">Actualizado por</div>
+                                        <div class="font-semibold">${proyecto.actualizado_por_nombre || 'Desconocido'}</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="md:col-span-2 border-t border-gray-200 mt-2 pt-2">
-                            <span class="block text-gray-400 text-xs">Última fecha de actualización:</span>
-                            <span class="font-medium text-gray-800 text-xs md:text-sm">${formatDisplayDate(proyecto.fecha_actualizacion)}</span>
+                            <div class="bg-white bg-opacity-10 rounded-xl p-4 backdrop-blur">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs opacity-75">Última actualización</div>
+                                        <div class="font-semibold text-sm">${formatDisplayDate(proyecto.fecha_actualizacion)}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
