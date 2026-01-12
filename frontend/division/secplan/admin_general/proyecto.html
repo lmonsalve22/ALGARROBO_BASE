@@ -1464,14 +1464,14 @@
                                 </div>
 
                                 <!-- Observaciones Generales -->
-                                ${proyecto.observaciones ? `
+                                ${proyecto.observaciones && proyecto.observaciones.length > 0 ? `
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                         <i class="fas fa-comment-alt text-amber-500"></i>
                                         Observaciones Generales
                                     </h4>
                                     <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
-                                        <p class="text-sm text-gray-700 leading-relaxed">${proyecto.observaciones}</p>
+                                        <p class="text-sm text-gray-700 leading-relaxed">${proyecto.observaciones[proyecto.observaciones.length - 1]?.observacion || 'Sin observación'}</p>
                                     </div>
                                 </div>
                                 ` : ''}
@@ -1547,6 +1547,7 @@
             `;
 
             const observaciones = proyecto.observaciones || [];
+            const lastObservacion = observaciones.length > 0 ? observaciones[observaciones.length - 1] : null;
             html += `
                 <div class="mt-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -1555,41 +1556,36 @@
                                 <div class="bg-white bg-opacity-20 p-2 rounded-lg">
                                     <i class="fas fa-comments"></i>
                                 </div>
-                                Observaciones del Proyecto
-                                <span class="ml-auto bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">${observaciones.length} observación${observaciones.length !== 1 ? 'es' : ''}</span>
+                                Última Observación
                             </h3>
                         </div>
                         <div class="p-6">
-                            ${observaciones.length > 0 ? `
-                                <div class="space-y-4">
-                                    ${observaciones.map((o, index) => `
-                                        <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-100 hover:shadow-md transition-all">
-                                            <div class="flex items-start gap-4">
-                                                <div class="flex-shrink-0">
-                                                    <div class="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-lg">
-                                                        ${index + 1}
-                                                    </div>
-                                                </div>
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-3 mb-3">
-                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300">
-                                                            <i class="fas fa-calendar mr-1.5"></i>
-                                                            ${formatDisplayDate(o.fecha)}
-                                                        </span>
-                                                        ${o.creado_por ? `
-                                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-600 text-white">
-                                                                <i class="fas fa-user mr-1.5"></i>
-                                                                ${o.creado_por}
-                                                            </span>
-                                                        ` : ''}
-                                                    </div>
-                                                    <div class="bg-white rounded-lg p-4">
-                                                        <p class="text-sm text-gray-800 leading-relaxed">${o.observacion || 'Sin observación'}</p>
-                                                    </div>
-                                                </div>
+                            ${lastObservacion ? `
+                                <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-100">
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center">
+                                                <i class="fas fa-comment-dots text-lg"></i>
                                             </div>
                                         </div>
-                                    `).join('')}
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-3">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-300">
+                                                    <i class="fas fa-calendar mr-1.5"></i>
+                                                    ${formatDisplayDate(lastObservacion.fecha)}
+                                                </span>
+                                                ${lastObservacion.creado_por ? `
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-600 text-white">
+                                                        <i class="fas fa-user mr-1.5"></i>
+                                                        ${lastObservacion.creado_por}
+                                                    </span>
+                                                ` : ''}
+                                            </div>
+                                            <div class="bg-white rounded-lg p-4">
+                                                <p class="text-sm text-gray-800 leading-relaxed">${lastObservacion.observacion || 'Sin observación'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             ` : `
                                 <div class="text-center py-12">
