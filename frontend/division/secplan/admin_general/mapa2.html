@@ -271,7 +271,6 @@
         let currentFilter = 'all';
 
         // Colores para cada área (puedes expandir esto según sea necesario)
-        // Asegúrate de que estos nombres coincidan con los devueltos por la API en 'area_nombre'
         const areaColors = {
             'Vialidad': '#3B82F6',
             'Saneamiento': '#06B6D4',
@@ -298,19 +297,10 @@
                 return 'No especificado';
             }
             if (key.includes('fecha')) {
-                // Intentar parsear fecha, si falla devolver valor original
-                try {
-                    return new Date(value).toLocaleDateString('es-CL');
-                } catch (e) {
-                    return value;
-                }
+                return new Date(value).toLocaleDateString('es-CL');
             }
             if (key.includes('monto')) {
-                try {
-                    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
-                } catch (e) {
-                    return value;
-                }
+                return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
             }
             return value;
         }
@@ -385,7 +375,6 @@
             markers = [];
 
             // Filtrar proyectos que tengan latitud y longitud
-            // Asumimos que la tabla proyectos sigue teniendo latitud y longitud como columnas directas
             const validProjects = allProjects.filter(project => project.latitud && project.longitud);
 
             // Añadir marcadores de proyectos con popups mejorados
@@ -399,7 +388,6 @@
                 
                 // Iterar sobre todas las claves del objeto proyecto
                 Object.keys(project).forEach(key => {
-                    // Omitir mostrar algunos campos técnicos si se desea
                     const value = formatValue(key, project[key]);
                     popupContent += `<div class="popup-info"><strong>${formatKey(key)}:</strong> ${value}</div>`;
                 });
@@ -411,8 +399,7 @@
                 </div>`;
                 
                 // Crear icono personalizado según el área
-                // CAMBIO: Usamos project.area_nombre en lugar de project.area
-                const iconColor = getAreaColor(project.area_nombre);
+                const iconColor = getAreaColor(project.area);
                 const customIcon = L.divIcon({
                     html: `<div style="background-color: ${iconColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`,
                     iconSize: [20, 20],
@@ -429,8 +416,7 @@
                     });
                 
                 // Guardar referencia al área del proyecto para filtrado
-                // CAMBIO: Guardamos area_nombre en lugar de area
-                marker.area = project.area_nombre;
+                marker.area = project.area;
                 marker.projectId = project.id;
                 markers.push(marker);
             });
@@ -452,8 +438,7 @@
             filterContainer.appendChild(allButton);
 
             // Obtener áreas únicas de los proyectos
-            // CAMBIO: Usamos area_nombre en lugar de area
-            const uniqueAreas = [...new Set(allProjects.map(p => p.area_nombre))].sort();
+            const uniqueAreas = [...new Set(allProjects.map(p => p.area))].sort();
 
             // Crear un botón para cada área única
             uniqueAreas.forEach(area => {
@@ -468,10 +453,9 @@
         // Actualizar tarjetas de estadísticas
         function updateStatsCards() {
             const totalProjectsCount = allProjects.length;
-            // CAMBIO: Filtramos por area_nombre en lugar de area
-            const vialidadCount = allProjects.filter(p => p.area_nombre === 'Vialidad').length;
-            const saneamientoCount = allProjects.filter(p => p.area_nombre === 'Saneamiento').length;
-            const espaciosPublicosCount = allProjects.filter(p => p.area_nombre === 'Espacios Públicos').length;
+            const vialidadCount = allProjects.filter(p => p.area === 'Vialidad').length;
+            const saneamientoCount = allProjects.filter(p => p.area === 'Saneamiento').length;
+            const espaciosPublicosCount = allProjects.filter(p => p.area === 'Espacios Públicos').length;
 
             document.getElementById('totalProjects').textContent = totalProjectsCount;
             document.getElementById('vialidadProjects').textContent = vialidadCount;
@@ -493,8 +477,7 @@
                 div.innerHTML = '<div class="legend-title">Áreas de Proyecto</div>';
                 
                 // Obtener áreas únicas de los proyectos para la leyenda
-                // CAMBIO: Usamos area_nombre
-                const uniqueAreas = [...new Set(allProjects.map(p => p.area_nombre))].sort();
+                const uniqueAreas = [...new Set(allProjects.map(p => p.area))].sort();
                 
                 uniqueAreas.forEach(area => {
                     const color = getAreaColor(area);
@@ -582,8 +565,7 @@
             
             let filteredProjects = allProjects;
             if (filterArea !== 'all') {
-                // CAMBIO: Filtrar por area_nombre
-                filteredProjects = allProjects.filter(project => project.area_nombre === filterArea);
+                filteredProjects = allProjects.filter(project => project.area === filterArea);
             }
             
             // Filtrar proyectos que tengan latitud y longitud para mostrar en la lista
@@ -594,8 +576,7 @@
                 projectCard.className = 'bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition';
                 projectCard.onclick = () => focusProjectOnMap(project.id);
                 
-                // CAMBIO: Usar area_nombre
-                const areaColor = getAreaColor(project.area_nombre);
+                const areaColor = getAreaColor(project.area);
                 
                 projectCard.innerHTML = `
                     <div class="flex items-start space-x-3">
@@ -604,10 +585,10 @@
                         </div>
                         <div class="flex-1">
                             <h4 class="font-semibold text-gray-800">${project.nombre}</h4>
-                            <p class="text-sm text-gray-600">${project.area_nombre}</p>
+                            <p class="text-sm text-gray-600">${project.area}</p>
                             <div class="mt-2 flex justify-between items-center">
-                                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">${project.estado_nombre || 'Sin estado'}</span>
-                                <span class="text-xs text-gray-500">${parseFloat(project.avance_total_porcentaje || 0) * 100}% avance</span>
+                                <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">${project.estado_proyecto}</span>
+                                <span class="text-xs text-gray-500">${parseFloat(project.avance_total_porcentaje) * 100}% avance</span>
                             </div>
                         </div>
                     </div>
@@ -653,7 +634,6 @@
             
             // Iterar sobre todas las claves del objeto proyecto y mostrarlas
             Object.keys(project).forEach(key => {
-                // Omitir visualizar IDs técnicos si es necesario, o mostrar todo
                 const detailItem = document.createElement('div');
                 detailItem.className = 'detail-item';
                 
