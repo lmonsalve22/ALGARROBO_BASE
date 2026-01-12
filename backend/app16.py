@@ -1135,7 +1135,7 @@ def get_proyectos(current_user_id):
                             )
                         ) FILTER (WHERE h.id IS NOT NULL),
                         '[]'
-                    ) AS hitos,
+                    ) AS hitos_lista,
 
                     /* 🔽 OBSERVACIONES */
                     COALESCE(
@@ -1149,7 +1149,7 @@ def get_proyectos(current_user_id):
                             )
                         ) FILTER (WHERE o.id IS NOT NULL),
                         '[]'
-                    ) AS observaciones
+                    ) AS observaciones_lista
 
                 FROM proyectos p
                 INNER JOIN users u ON u.user_id = p.user_id
