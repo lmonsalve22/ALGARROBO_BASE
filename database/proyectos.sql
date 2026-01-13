@@ -31,6 +31,13 @@ CREATE TABLE proyectos (
     etapa_proyecto_id INT REFERENCES etapas_proyecto(id),
     estado_postulacion_id INT REFERENCES estados_postulacion(id),
 
+    dupla_profesionales TEXT,
+    profesional_1 VARCHAR(150),
+    profesional_2 VARCHAR(150),
+    profesional_3 VARCHAR(150),
+    profesional_4 VARCHAR(150),
+    profesional_5 VARCHAR(150),
+
     fecha_postulacion DATE,
     observaciones TEXT,
 
@@ -303,6 +310,46 @@ CREATE TABLE lineamientos_estrategicos (
     nombre VARCHAR(300) UNIQUE NOT NULL,
     activo BOOLEAN DEFAULT TRUE
 );
+
+
+CREATE TABLE calendario_eventos (
+    id SERIAL PRIMARY KEY,
+    -- =================================
+    -- Datos visibles en el calendario
+    -- =================================
+    titulo VARCHAR(200) NOT NULL,
+    descripcion TEXT,
+    fecha_inicio TIMESTAMP NOT NULL,
+    fecha_termino TIMESTAMP,
+    todo_el_dia BOOLEAN DEFAULT TRUE,
+    -- =================================
+    -- Origen del evento (CLAVE)
+    -- =================================
+    origen_tipo VARCHAR(50),
+    origen_id INT,
+    -- Ej:
+    -- hito        → proyectos_hitos.id
+    -- observacion → proyectos_observaciones.id
+    -- manual      → NULL
+    -- =================================
+    -- Metadatos
+    -- =================================
+    ubicacion VARCHAR(200),
+    activo BOOLEAN DEFAULT TRUE,
+    -- =================================
+    -- Auditoría
+    -- =================================
+    creado_por INT NOT NULL REFERENCES users(user_id),
+    creado_en TIMESTAMP DEFAULT NOW(),
+    -- =================================
+    -- Integridad
+    -- =================================
+    UNIQUE (origen_tipo, origen_id)
+);
+
+
+
+
 
 
 

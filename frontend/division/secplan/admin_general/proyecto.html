@@ -504,7 +504,7 @@
                             </div>
 
                             <!-- Filtro Profesional -->
-                            <div style="display: none;">
+                            <div>
                                 <label for="filterProfessional"
                                     class="block text-sm font-semibold text-gray-700 mb-2">Profesional</label>
                                 <select id="filterProfessional"
@@ -579,233 +579,264 @@
 
     <!-- Modal para crear/editar proyectos -->
     <div id="proyectoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Nuevo Proyecto</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <form id="proyectoForm">
-                <fieldset>
-                    <legend>Información General</legend>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="nombre">Nombre del Proyecto *</label>
-                            <input type="text" id="nombre" name="nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="codigo">Código</label>
-                            <input type="text" id="codigo" name="codigo">
-                        </div>
-                        <div class="form-group" style="display: none;">
-                            <label for="n_registro">N° Registro</label>
-                            <input type="number" id="n_registro" name="n_registro">
-                        </div>
-                        <!-- MODIFICADO: Select Dinámico para Área -->
-                        <div class="form-group">
-                            <label for="area_id">Área</label>
-                            <select id="area_id" name="area_id">
-                                <option value="">Seleccione Área</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Estado y Avance</legend>
-                    <div class="form-grid">
-                        <!-- MODIFICADO: Select Dinámico para Estado Proyecto -->
-                        <div class="form-group">
-                            <label for="estado_proyecto_id">Estado Proyecto</label>
-                            <select id="estado_proyecto_id" name="estado_proyecto_id">
-                                <option value="">Seleccione Estado</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                        </div>
-                        <!-- MODIFICADO: Select Dinámico para Etapa Proyecto -->
-                        <div class="form-group">
-                            <label for="etapa_proyecto_id">Etapa Proyecto</label>
-                            <select id="etapa_proyecto_id" name="etapa_proyecto_id">
-                                <option value="">Seleccione Etapa</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                        </div>
-                        <!-- MODIFICADO: Select Dinámico para Estado Postulación -->
-                        <div class="form-group">
-                            <label for="estado_postulacion_id">Estado Postulación</label>
-                            <select id="estado_postulacion_id" name="estado_postulacion_id">
-                                <option value="">Seleccione Estado</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="avance_total_porcentaje">Avance Total (%)</label>
-                            <input type="number" id="avance_total_porcentaje" name="avance_total_porcentaje" step="0.01"
-                                min="0" max="100">
-                        </div>
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="es_prioridad" name="es_prioridad" value="SI">
-                                <label for="es_prioridad" style="margin-bottom: 0;">¿Es Prioridad?</label>
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Financiamiento</legend>
-                    <div class="form-grid">
-                        <!-- MODIFICADO: Select Dinámico para Financiamiento -->
-                        <div class="form-group">
-                            <label for="financiamiento_id">Financiamiento</label>
-                            <select id="financiamiento_id" name="financiamiento_id">
-                                <option value="">Seleccione Financiamiento</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="monto">Monto ($) </label>
-                            <input type="number" id="monto" name="monto" step="1" min="0">
-                        </div>
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="financiamiento_municipal" name="financiamiento_municipal"
-                                    value="SI">
-                                <label for="financiamiento_municipal" style="margin-bottom: 0;">¿Financiamiento
-                                    Municipal?</label>
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Fechas y Plazos</legend>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="anno_elaboracion">Año Elaboración</label>
-                            <input type="number" id="anno_elaboracion" name="anno_elaboracion" min="2000" max="2100">
-                        </div>
-                        <div class="form-group">
-                            <label for="anno_ejecucion">Año Ejecución</label>
-                            <input type="number" id="anno_ejecucion" name="anno_ejecucion" min="2000" max="2100">
-                        </div>
-                        <div class="form-group">
-                            <label for="fecha_postulacion">Fecha Postulación</label>
-                            <input type="date" id="fecha_postulacion" name="fecha_postulacion">
-                        </div>
-                        <!-- Campo fecha_actualización se mantiene oculto, el backend lo maneja -->
-                        <div class="form-group" style="display: none;">
-                            <label for="fecha_actualizacion">Fecha Actualización</label>
-                            <input type="date" id="fecha_actualizacion" name="fecha_actualizacion">
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Ubicación y Territorio</legend>
-                    <div class="form-grid">
-                        <!-- MODIFICADO: Select Dinámico para Lineamiento -->
-                        <div class="form-group">
-                            <label for="lineamiento_estrategico_id">Lineamiento Estratégico</label>
-                            <select id="lineamiento_estrategico_id" name="lineamiento_estrategico_id">
-                                <option value="">Seleccione Lineamiento</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                        </div>
-                        <!-- MODIFICADO: Select Dinámico para Sector -->
-                        <div class="form-group">
-                            <label for="sector_id">Sector</label>
-                            <select id="sector_id" name="sector_id">
-                                <option value="">Seleccione Sector</option>
-                                <!-- Se llena dinámicamente -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="unidad_vecinal">Unidad Vecinal</label>
-                            <input type="text" id="unidad_vecinal" name="unidad_vecinal">
-                        </div>
-                        <div class="form-group">
-                            <label for="latitud">Latitud</label>
-                            <input type="number" id="latitud" name="latitud" step="any">
-                        </div>
-                        <div class="form-group">
-                            <label for="longitud">Longitud</label>
-                            <input type="number" id="longitud" name="longitud" step="any">
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Profesionales a Cargo</legend>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="profesional_1">Profesional 1</label>
-                            <input type="text" id="profesional_1" name="profesional_1">
-                        </div>
-                        <div class="form-group">
-                            <label for="profesional_2">Profesional 2</label>
-                            <input type="text" id="profesional_2" name="profesional_2">
-                        </div>
-                        <div class="form-group">
-                            <label for="dupla_profesionales">Dupla Profesionales</label>
-                            <input type="text" id="dupla_profesionales" name="dupla_profesionales">
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Documentación y Técnica</legend>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="documentos">Documentos (Estado)</label>
-                            <input type="text" id="documentos" name="documentos">
-                        </div>
-                        <div class="form-group">
-                            <label for="planimetrias">Planimetrías (Estado)</label>
-                            <input type="text" id="planimetrias" name="planimetrias">
-                        </div>
-                        <div class="form-group">
-                            <label for="topografia">Topografía (Estado)</label>
-                            <input type="text" id="topografia" name="topografia">
-                        </div>
-                        <div class="form-group">
-                            <label for="ingenieria">Ingeniería</label>
-                            <input type="text" id="ingenieria" name="ingenieria">
-                        </div>
-                        <div class="form-group">
-                            <label for="perfil_tecnico_economico">Perfil Técnico Económico</label>
-                            <input type="text" id="perfil_tecnico_economico" name="perfil_tecnico_economico">
-                        </div>
-                        <div class="form-group">
-                            <label for="aprobacion_dom">Aprobación DOM</label>
-                            <input type="text" id="aprobacion_dom" name="aprobacion_dom">
-                        </div>
-                        <div class="form-group">
-                            <label for="aprobacion_serviu">Aprobación SERVIU</label>
-                            <input type="text" id="aprobacion_serviu" name="aprobacion_serviu">
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset style="display: none;">
-                    <legend>Observaciones</legend>
-                    <div class="form-group">
-                        <label for="observaciones">Observaciones Generales</label>
-                        <textarea id="observaciones" name="observaciones" rows="4"></textarea>
-                    </div>
-                </fieldset>
-
-                <div class="modal-footer">
-                    <button type="button"
-                        class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium transition-all"
-                        onclick="closeModal()">Cancelar</button>
-                    <button type="submit"
-                        class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-medium shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
-                        id="submitBtn">
-                        <span id="submitText">Guardar</span>
-                    </button>
+        <div class="modal-content" style="max-width: 1400px;">
+            <div class="modal-header"
+                style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); color: white; border-radius: 1.5rem 1.5rem 0 0; padding: 2rem;">
+                <div>
+                    <h2 class="modal-title" id="modalTitle"
+                        style="color: white; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="fas fa-folder-plus" id="modalIcon"></i>
+                        <span id="modalTitleText">Nuevo Proyecto</span>
+                    </h2>
+                    <p id="modalSubtitle" style="opacity: 0.9; font-size: 0.875rem;">Complete los campos para registrar
+                        un nuevo proyecto</p>
                 </div>
-            </form>
+                <button class="close-btn" onclick="closeModal()"
+                    style="color: white; font-size: 2rem; background: rgba(255,255,255,0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
+            </div>
+            <div style="background: #fafbfc; padding: 2rem; max-height: 60vh; overflow-y: auto;">
+                <form id="proyectoForm">
+                    <fieldset>
+                        <legend>Información General</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="nombre">Nombre del Proyecto *</label>
+                                <input type="text" id="nombre" name="nombre" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="codigo">Código</label>
+                                <input type="text" id="codigo" name="codigo">
+                            </div>
+                            <div class="form-group" style="display: none;">
+                                <label for="n_registro">N° Registro</label>
+                                <input type="number" id="n_registro" name="n_registro">
+                            </div>
+                            <!-- MODIFICADO: Select Dinámico para Área -->
+                            <div class="form-group">
+                                <label for="area_id">Área</label>
+                                <select id="area_id" name="area_id">
+                                    <option value="">Seleccione Área</option>
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Estado y Avance</legend>
+                        <div class="form-grid">
+                            <!-- MODIFICADO: Select Dinámico para Estado Proyecto -->
+                            <div class="form-group">
+                                <label for="estado_proyecto_id">Estado Proyecto</label>
+                                <select id="estado_proyecto_id" name="estado_proyecto_id">
+                                    <option value="">Seleccione Estado</option>
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+                            <!-- MODIFICADO: Select Dinámico para Etapa Proyecto -->
+                            <div class="form-group">
+                                <label for="etapa_proyecto_id">Etapa Proyecto</label>
+                                <select id="etapa_proyecto_id" name="etapa_proyecto_id">
+                                    <option value="">Seleccione Etapa</option>
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+                            <!-- MODIFICADO: Select Dinámico para Estado Postulación -->
+                            <div class="form-group">
+                                <label for="estado_postulacion_id">Estado Postulación</label>
+                                <select id="estado_postulacion_id" name="estado_postulacion_id">
+                                    <option value="">Seleccione Estado</option>
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="avance_total_porcentaje">Avance Total (%)</label>
+                                <input type="number" id="avance_total_porcentaje" name="avance_total_porcentaje"
+                                    step="0.01" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="es_prioridad" name="es_prioridad" value="SI">
+                                    <label for="es_prioridad" style="margin-bottom: 0;">¿Es Prioridad?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Financiamiento</legend>
+                        <div class="form-grid">
+                            <!-- MODIFICADO: Select Dinámico para Financiamiento -->
+                            <div class="form-group">
+                                <label for="financiamiento_id">Financiamiento</label>
+                                <select id="financiamiento_id" name="financiamiento_id">
+                                    <option value="">Seleccione Financiamiento</option>
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="monto">Monto ($) </label>
+                                <input type="number" id="monto" name="monto" step="1" min="0">
+                            </div>
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="financiamiento_municipal" name="financiamiento_municipal"
+                                        value="SI">
+                                    <label for="financiamiento_municipal" style="margin-bottom: 0;">¿Financiamiento
+                                        Municipal?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Fechas y Plazos</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="anno_elaboracion">Año Elaboración</label>
+                                <input type="number" id="anno_elaboracion" name="anno_elaboracion" min="2000"
+                                    max="2100">
+                            </div>
+                            <div class="form-group">
+                                <label for="anno_ejecucion">Año Ejecución</label>
+                                <input type="number" id="anno_ejecucion" name="anno_ejecucion" min="2000" max="2100">
+                            </div>
+                            <div class="form-group">
+                                <label for="fecha_postulacion">Fecha Postulación</label>
+                                <input type="date" id="fecha_postulacion" name="fecha_postulacion">
+                            </div>
+                            <!-- Campo fecha_actualización se mantiene oculto, el backend lo maneja -->
+                            <div class="form-group">
+                                <label for="fecha_actualizacion">Fecha Actualización</label>
+                                <input type="date" id="fecha_actualizacion" name="fecha_actualizacion">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Ubicación y Territorio</legend>
+                        <div class="form-grid">
+                            <!-- MODIFICADO: Select Dinámico para Lineamiento -->
+                            <div class="form-group">
+                                <label for="lineamiento_estrategico_id">Lineamiento Estratégico</label>
+                                <select id="lineamiento_estrategico_id" name="lineamiento_estrategico_id">
+                                    <option value="">Seleccione Lineamiento</option>
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+                            <!-- MODIFICADO: Select Dinámico para Sector -->
+                            <div class="form-group">
+                                <label for="sector_id">Sector</label>
+                                <select id="sector_id" name="sector_id">
+                                    <option value="">Seleccione Sector</option>
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="unidad_vecinal">Unidad Vecinal</label>
+                                <input type="text" id="unidad_vecinal" name="unidad_vecinal">
+                            </div>
+                            <div class="form-group">
+                                <label for="latitud">Latitud</label>
+                                <input type="number" id="latitud" name="latitud" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="longitud">Longitud</label>
+                                <input type="number" id="longitud" name="longitud" step="any">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Profesionales a Cargo</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="profesional_1">Profesional 1</label>
+                                <input type="text" id="profesional_1" name="profesional_1">
+                            </div>
+                            <div class="form-group">
+                                <label for="profesional_2">Profesional 2</label>
+                                <input type="text" id="profesional_2" name="profesional_2">
+                            </div>
+                            <div class="form-group">
+                                <label for="profesional_3">Profesional 3</label>
+                                <input type="text" id="profesional_3" name="profesional_3">
+                            </div>
+                            <div class="form-group">
+                                <label for="profesional_4">Profesional 4</label>
+                                <input type="text" id="profesional_4" name="profesional_4">
+                            </div>
+                            <div class="form-group">
+                                <label for="profesional_5">Profesional 5</label>
+                                <input type="text" id="profesional_5" name="profesional_5">
+                            </div>
+                            <div class="form-group">
+                                <label for="dupla_profesionales">Dupla Profesionales</label>
+                                <input type="text" id="dupla_profesionales" name="dupla_profesionales">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Documentación y Técnica</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="documentos">Documentos (Estado)</label>
+                                <input type="text" id="documentos" name="documentos">
+                            </div>
+                            <div class="form-group">
+                                <label for="planimetrias">Planimetrías (Estado)</label>
+                                <input type="text" id="planimetrias" name="planimetrias">
+                            </div>
+                            <div class="form-group">
+                                <label for="topografia">Topografía (Estado)</label>
+                                <input type="text" id="topografia" name="topografia">
+                            </div>
+                            <div class="form-group">
+                                <label for="ingenieria">Ingeniería</label>
+                                <input type="text" id="ingenieria" name="ingenieria">
+                            </div>
+                            <div class="form-group">
+                                <label for="perfil_tecnico_economico">Perfil Técnico Económico</label>
+                                <input type="text" id="perfil_tecnico_economico" name="perfil_tecnico_economico">
+                            </div>
+                            <div class="form-group">
+                                <label for="aprobacion_dom">Aprobación DOM</label>
+                                <input type="text" id="aprobacion_dom" name="aprobacion_dom">
+                            </div>
+                            <div class="form-group">
+                                <label for="aprobacion_serviu">Aprobación SERVIU</label>
+                                <input type="text" id="aprobacion_serviu" name="aprobacion_serviu">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset style="display: none;">
+                        <legend>Observaciones</legend>
+                        <div class="form-group">
+                            <label for="observaciones">Observaciones Generales</label>
+                            <textarea id="observaciones" name="observaciones" rows="4"></textarea>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+            <div class="modal-footer"
+                style="background: #f8f9fa; border-radius: 0 0 1.5rem 1.5rem; padding: 1.5rem 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button"
+                    class="px-6 py-3 rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 text-white hover:from-slate-800 hover:to-slate-950 font-medium transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                    onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="submit" form="proyectoForm"
+                    class="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 font-medium transition-all shadow-lg shadow-indigo-500/30 hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                    id="submitBtn">
+                    <i class="fas fa-save"></i>
+                    <span id="submitText">Guardar</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -816,7 +847,8 @@
                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 1.5rem 1.5rem 0 0; padding: 2rem;">
                 <div>
                     <h2 class="modal-title"
-                        style="color: white; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">Detalles del
+                        style="color: white; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">Detalles
+                        del
                         Proyecto</h2>
                     <p style="opacity: 0.9; font-size: 0.875rem;">Información completa y detallada</p>
                 </div>
@@ -1033,10 +1065,6 @@
                 p.profesional_4,
                 p.profesional_5
             ].filter(Boolean);
-            // Temporary debugging - remove after fixing
-            if (profs.length > 0) {
-                console.log('Found professionals:', profs, 'in project:', p.nombre);
-            }
             return profs;
         }
 
@@ -1087,7 +1115,6 @@
             );
             const allProfessionalsList = dataForProfessionals.flatMap(getProfessionalsFromProject);
             const uniqueProfessionals = [...new Set(allProfessionalsList)].sort();
-            console.log('Total professionals found:', allProfessionalsList.length, 'Unique:', uniqueProfessionals.length, 'List:', uniqueProfessionals);
             populateSelectOptions('filterProfessional', uniqueProfessionals, 'Todos los profesionales', selectedProfessional);
         }
 
@@ -1418,6 +1445,18 @@
                                             <span class="text-sm font-medium text-gray-600">Profesional 2:</span>
                                             <span class="text-sm font-semibold text-gray-900">${proyecto.profesional_2 || '-'}</span>
                                         </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Profesional 3:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.profesional_3 || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Profesional 4:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.profesional_4 || '-'}</span>
+                                        </div>
+                                        <div class="flex justify-between py-2 border-b border-gray-200">
+                                            <span class="text-sm font-medium text-gray-600">Profesional 5:</span>
+                                            <span class="text-sm font-semibold text-gray-900">${proyecto.profesional_5 || '-'}</span>
+                                        </div>
                                         <div class="flex justify-between py-2">
                                             <span class="text-sm font-medium text-gray-600">Dupla Profesionales:</span>
                                             <span class="text-sm font-semibold text-gray-900">${proyecto.dupla_profesionales || '-'}</span>
@@ -1696,10 +1735,17 @@
 
             const modal = document.getElementById('proyectoModal');
             const form = document.getElementById('proyectoForm');
-            const title = document.getElementById('modalTitle');
+            const titleText = document.getElementById('modalTitleText');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalSubtitle = document.getElementById('modalSubtitle');
+            const submitText = document.getElementById('submitText');
 
             if (proyecto) {
-                title.textContent = 'Editar Proyecto';
+                // Modo edición
+                titleText.textContent = 'Editar Proyecto';
+                modalIcon.className = 'fas fa-edit';
+                modalSubtitle.textContent = 'Modifique los campos necesarios para actualizar el proyecto';
+                submitText.textContent = 'Actualizar';
                 editingId = proyecto.id;
 
                 // Limpiamos formulario primero
@@ -1720,7 +1766,11 @@
                     }
                 });
             } else {
-                title.textContent = 'Nuevo Proyecto';
+                // Modo nuevo proyecto
+                titleText.textContent = 'Nuevo Proyecto';
+                modalIcon.className = 'fas fa-folder-plus';
+                modalSubtitle.textContent = 'Complete los campos para registrar un nuevo proyecto';
+                submitText.textContent = 'Guardar';
                 editingId = null;
                 form.reset();
             }

@@ -93,4 +93,83 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_actualizar_proyecto_desde_evento();
 
 
+CREATE OR REPLACE FUNCTION trg_sync_hito_to_calendario()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO calendario_eventos (
+        titulo,
+        descripcion,
+        fecha_inicio,
+        fecha_termino,
+        todo_el_dia,
+        origen_tipo,
+        origen_id,
+        creado_por
+    )
+    VALUES (
+        'Hito: ' || NEW.tipo_hito,
+        NEW.observacion,
+        NEW.fecha::timestamp,
+        NULL,
+        TRUE,
+        'proyectos_hitos',
+        NEW.id,
+        NEW.creado_por
+    )
+    ON CONFLICT (origen_tipo, origen_id)
+    DO UPDATE SET
+        titulo = EXCLUDED.titulo,
+        descripcion = EXCLUDED.descripcion,
+        fecha_inicio = EXCLUDED.fecha_inicio,
+        activo = TRUE;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER sync_hito_calendario
+AFTER INSERT ON proyectos_hitos
+FOR EACH ROW
+EXECUTE FUNCTION trg_sync_hito_to_calendario();
+
+CREATE OR REPLACE FUNCTION trg_sync_observacion_to_calendario()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO calendario_eventos (
+        titulo,
+        descripcion,
+        fecha_inicio,
+        fecha_termino,
+        todo_el_dia,
+        origen_tipo,
+        origen_id,
+        creado_por
+    )
+    VALUES (
+        'Observación de proyecto',
+        NEW.observacion,
+        NEW.fecha::timestamp,
+        NULL,
+        TRUE,
+        'proyectos_observaciones',
+        NEW.id,
+        NEW.creado_por
+    )
+    ON CONFLICT (origen_tipo, origen_id)
+    DO UPDATE SET
+        descripcion = EXCLUDED.descripcion,
+        fecha_inicio = EXCLUDED.fecha_inicio,
+        activo = TRUE;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER sync_observacion_calendario
+AFTER INSERT ON proyectos_observaciones
+FOR EACH ROW
+EXECUTE FUNCTION trg_sync_observacion_to_calendario();
+
+
+
 
