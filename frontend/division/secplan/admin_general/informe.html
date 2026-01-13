@@ -7,10 +7,31 @@
     <script src="../../../script/utils.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geoportal Municipal - Algarrobo</title>
+    <title>Informes - Geoportal Municipal</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#ec4899',
+                        accent: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,6 +41,7 @@
 
     <!-- jsPDF para generar PDFs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <!-- SheetJS para generar Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -28,65 +50,376 @@
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
+        /* ========================================
+           INFORMES - DISEÑO PREMIUM
+           ======================================== */
+
+        :root {
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-info: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         }
 
-        .card-hover {
-            transition: all 0.3s ease;
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 95%, 1) 0, transparent 50%);
+            color: #1e293b;
+            min-height: 100vh;
         }
 
-        .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        /* Glass Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
         }
 
-        /* Estilos para las tarjetas de métricas */
-        .metric-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Report Cards Grid */
+        .report-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
-        /* Estilos para las tarjetas de informes */
+        /* Report Card */
         .report-card {
-            transition: all 0.3s ease;
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #f1f5f9;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--card-gradient, var(--gradient-primary));
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
         .report-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2);
+            border-color: transparent;
         }
 
-        /* Estilos para los filtros de informe */
-        .report-filters {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .report-card:hover::before {
+            opacity: 1;
         }
 
-        /* Estilos para los contenedores de gráficos */
+        .report-card.selected {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .report-card.selected::before {
+            opacity: 1;
+        }
+
+        /* Icon Circles */
+        .icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .icon-circle.blue {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #2563eb;
+        }
+
+        .icon-circle.green {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #059669;
+        }
+
+        .icon-circle.yellow {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #d97706;
+        }
+
+        .icon-circle.purple {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            color: #7c3aed;
+        }
+
+        .icon-circle.red {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
+        }
+
+        .icon-circle.cyan {
+            background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+            color: #0891b2;
+        }
+
+        .icon-circle.pink {
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+            color: #db2777;
+        }
+
+        .icon-circle.indigo {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4f46e5;
+        }
+
+        .icon-circle.emerald {
+            background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%);
+            color: #047857;
+        }
+
+        .icon-circle.orange {
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            color: #ea580c;
+        }
+
+        /* Header Gradient */
+        .header-gradient {
+            background: var(--gradient-primary);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-gradient::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: rotate(-15deg);
+        }
+
+        /* Metric Cards */
+        .metric-card-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .metric-card-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metric-card-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Preview Panel */
+        .preview-panel {
+            background: white;
+            border-radius: 1rem;
+            border: 2px dashed #e2e8f0;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-panel.has-content {
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Chart Container */
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 280px;
         }
 
-        /* Estilo para el spinner de carga */
+        /* Loading Spinner */
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid white;
             width: 20px;
             height: 20px;
-            animation: spin 1s linear infinite;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
             display: inline-block;
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+            to {
                 transform: rotate(360deg);
             }
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6366f1;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid #6366f1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: #6366f1;
+            color: white;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(150%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header .icon-box {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        /* Animate */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Report type specific gradients */
+        [data-type="portfolio"] .report-card {
+            --card-gradient: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        [data-type="status"] .report-card {
+            --card-gradient: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        [data-type="area"] .report-card {
+            --card-gradient: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        [data-type="financial"] .report-card {
+            --card-gradient: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        [data-type="progress"] .report-card {
+            --card-gradient: linear-gradient(135deg, #06b6d4, #0891b2);
+        }
+
+        [data-type="priority"] .report-card {
+            --card-gradient: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        [data-type="professionals"] .report-card {
+            --card-gradient: linear-gradient(135deg, #ec4899, #db2777);
+        }
+
+        [data-type="sector"] .report-card {
+            --card-gradient: linear-gradient(135deg, #14b8a6, #0d9488);
+        }
+
+        [data-type="timeline"] .report-card {
+            --card-gradient: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        [data-type="comparison"] .report-card {
+            --card-gradient: linear-gradient(135deg, #f97316, #ea580c);
         }
     </style>
 </head>
@@ -101,361 +434,538 @@
 
         <!-- Main Content -->
         <main class="flex-1 p-6">
-            <!-- Reports View -->
-            <div id="reportsView" class="view-content">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Informes Municipales</h2>
-                    <p class="text-gray-600">Análisis detallados y reportes de gestión de proyectos</p>
-                </div>
-
-                <!-- Report Filters -->
-                <div class="report-filters rounded-lg shadow p-6 mb-6 text-white">
-                    <h3 class="text-lg font-semibold mb-4">Filtros de Informe</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Tipo de Informe</label>
-                            <select id="reportType" onchange="updateReportPreview()"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                                <option value="executive">Ejecutivo</option>
-                                <option value="detailed">Detallado</option>
-                                <option value="financial">Financiero</option>
-                                <option value="progress">Avance</option>
-                                <option value="custom">Personalizado</option>
-                            </select>
+            <!-- Page Header -->
+            <div class="header-gradient mb-8 animate-fade-in">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur">
+                            <i class="fas fa-file-chart-line text-2xl"></i>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2">Período</label>
-                            <select id="reportPeriod" onchange="updateReportPreview()"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                                <option value="monthly">Mensual</option>
-                                <option value="quarterly">Trimestral</option>
-                                <option value="semester">Semestral</option>
-                                <option value="yearly">Anual</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Área</label>
-                            <select id="reportArea" onchange="updateReportPreview()"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                                <option value="all">Todas</option>
-                                <option value="Saneamiento">Saneamiento</option>
-                                <option value="Vialidad">Vialidad</option>
-                                <option value="Espacios Públicos">Espacios Públicos</option>
-                                <option value="Educación">Educación</option>
-                                <option value="Salud">Salud</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Formato</label>
-                            <select id="reportFormat"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800">
-                                <option value="pdf">PDF</option>
-                                <option value="excel">Excel</option>
-                            </select>
+                            <h1 class="text-3xl font-bold">Centro de Informes</h1>
+                            <p class="text-white/80">Genera reportes detallados de la cartera de proyectos municipales
+                            </p>
                         </div>
                     </div>
-                    <div class="mt-4 flex gap-3">
-                        <button id="generateBtn" onclick="generateReport()"
-                            class="px-6 py-2 bg-white text-purple-700 rounded-md hover:bg-gray-100 font-medium transition">
-                            <i class="fas fa-file-alt mr-2"></i>Generar Informe
-                        </button>
-                        <button onclick="scheduleReport()"
-                            class="px-6 py-2 bg-purple-800 text-white rounded-md hover:bg-purple-900 font-medium transition">
-                            <i class="fas fa-clock mr-2"></i>Programar
-                        </button>
-                        <button onclick="saveReportTemplate()"
-                            class="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium transition">
-                            <i class="fas fa-save mr-2"></i>Guardar Plantilla
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Key Metrics -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="metric-card text-white rounded-lg shadow p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100 text-sm">Inversión Total</p>
-                                <p class="text-3xl font-bold">$25.3B</p>
-                                <p class="text-sm text-purple-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i>8% vs período anterior
-                                </p>
-                            </div>
-                            <i class="fas fa-dollar-sign text-4xl text-purple-200"></i>
+                    <div class="flex flex-wrap gap-4 mt-6">
+                        <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-2 flex items-center gap-2">
+                            <i class="fas fa-database"></i>
+                            <span id="totalProjects">0</span> proyectos cargados
                         </div>
-                    </div>
-                    <div class="metric-card text-white rounded-lg shadow p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100 text-sm">Proyectos Activos</p>
-                                <p class="text-3xl font-bold">92</p>
-                                <p class="text-sm text-purple-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i>12% vs período anterior
-                                </p>
-                            </div>
-                            <i class="fas fa-project-diagram text-4xl text-purple-200"></i>
-                        </div>
-                    </div>
-                    <div class="metric-card text-white rounded-lg shadow p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100 text-sm">Tasa Ejecución</p>
-                                <p class="text-3xl font-bold">87%</p>
-                                <p class="text-sm text-purple-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i>5% vs período anterior
-                                </p>
-                            </div>
-                            <i class="fas fa-chart-line text-4xl text-purple-200"></i>
-                        </div>
-                    </div>
-                    <div class="metric-card text-white rounded-lg shadow p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100 text-sm">Beneficiarios</p>
-                                <p class="text-3xl font-bold">15.2K</p>
-                                <p class="text-sm text-purple-100 mt-2">
-                                    <i class="fas fa-users mr-1"></i>Estimado
-                                </p>
-                            </div>
-                            <i class="fas fa-user-friends text-4xl text-purple-200"></i>
+                        <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-2 flex items-center gap-2">
+                            <i class="fas fa-clock"></i>
+                            Última actualización: <span id="lastUpdate">-</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Report Types -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="report-card bg-white rounded-lg shadow p-6 cursor-pointer"
-                        onclick="selectReportType('executive')">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-blue-100 p-3 rounded-full mr-4">
-                                <i class="fas fa-chart-pie text-blue-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold">Informe Ejecutivo</h3>
-                                <p class="text-sm text-gray-600">Resumen para autoridades</p>
-                            </div>
+            <!-- Quick Stats -->
+            <div class="metric-card-container mb-8 animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Inversión Total</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statInversion">$0</p>
                         </div>
-                        <p class="text-gray-700 text-sm">Informe resumido con KPIs principales, estado general de
-                            proyectos y métricas clave para toma de decisiones estratégicas.</p>
-                        <div class="mt-4 flex justify-between items-center">
-                            <span class="text-xs text-gray-500">Última generación: 2 días atrás</span>
-                            <button class="text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-arrow-right"></i>
+                        <div class="icon-circle green">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">En Ejecución</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statEjecucion">0</p>
+                        </div>
+                        <div class="icon-circle blue">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Avance Promedio</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statAvance">0%</p>
+                        </div>
+                        <div class="icon-circle purple">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Prioritarios</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statPrioritarios">0</p>
+                        </div>
+                        <div class="icon-circle red">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Types Section -->
+            <div class="section-header animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="icon-box">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">Tipos de Informes</h2>
+                    <p class="text-gray-500 text-sm">Selecciona el tipo de informe que deseas generar</p>
+                </div>
+            </div>
+
+            <div class="report-cards-grid mb-8 animate-fade-in" style="animation-delay: 0.3s;"
+                id="reportCardsContainer">
+                <!-- 1. Portfolio General -->
+                <div class="report-card" data-type="portfolio" onclick="selectReport('portfolio')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle blue">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Cartera de Proyectos</h3>
+                            <p class="text-sm text-gray-500">Resumen ejecutivo general</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Visión completa de todos los proyectos con KPIs principales, distribución por área y estado
+                        general.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-indigo-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 2. Por Estado -->
+                <div class="report-card" data-type="status" onclick="selectReport('status')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle green">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Por Estado</h3>
+                            <p class="text-sm text-gray-500">Clasificación por etapa</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Análisis de proyectos agrupados por estado: En diseño, Aprobado, En ejecución, Completado, etc.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-emerald-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 3. Por Área -->
+                <div class="report-card" data-type="area" onclick="selectReport('area')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle purple">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Por Área</h3>
+                            <p class="text-sm text-gray-500">Distribución sectorial</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Desglose por áreas: Vialidad, Saneamiento, Espacios Públicos, Educación, Salud y otras.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-purple-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 4. Financiero -->
+                <div class="report-card" data-type="financial" onclick="selectReport('financial')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle yellow">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Financiero</h3>
+                            <p class="text-sm text-gray-500">Análisis presupuestario</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Detalle de inversiones, fuentes de financiamiento, montos por proyecto y ejecución
+                        presupuestaria.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-amber-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 5. Avance -->
+                <div class="report-card" data-type="progress" onclick="selectReport('progress')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle cyan">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Avance de Proyectos</h3>
+                            <p class="text-sm text-gray-500">Progreso y rendimiento</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Porcentaje de avance de cada proyecto, comparativa con metas y alertas de retraso.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-cyan-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 6. Prioritarios -->
+                <div class="report-card" data-type="priority" onclick="selectReport('priority')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle red">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Proyectos Prioritarios</h3>
+                            <p class="text-sm text-gray-500">Alta prioridad</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Listado de proyectos marcados como prioritarios con seguimiento detallado y alertas.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-red-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 7. Profesionales -->
+                <div class="report-card" data-type="professionals" onclick="selectReport('professionals')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle pink">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Carga por Profesional</h3>
+                            <p class="text-sm text-gray-500">Distribución de trabajo</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Proyectos asignados a cada profesional, carga de trabajo y distribución de responsabilidades.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-pink-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 8. Por Sector -->
+                <div class="report-card" data-type="sector" onclick="selectReport('sector')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle emerald">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Por Sector/Territorio</h3>
+                            <p class="text-sm text-gray-500">Distribución geográfica</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Proyectos agrupados por sector territorial, unidad vecinal y ubicación geográfica.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-teal-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 9. Cronograma -->
+                <div class="report-card" data-type="timeline" onclick="selectReport('timeline')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle indigo">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Cronograma / Timeline</h3>
+                            <p class="text-sm text-gray-500">Planificación temporal</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Línea de tiempo de proyectos, hitos programados, fechas de inicio y término planificadas.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-indigo-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+
+                <!-- 10. Comparativo -->
+                <div class="report-card" data-type="comparison" onclick="selectReport('comparison')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="icon-circle orange">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">Comparativo Anual</h3>
+                            <p class="text-sm text-gray-500">Análisis histórico</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Comparación de métricas entre años de elaboración y ejecución, tendencias y evolución.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-gray-400">
+                        <span><i class="fas fa-file-pdf mr-1"></i>PDF / Excel</span>
+                        <span class="text-orange-500 font-medium">Generar →</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generation Panel -->
+            <div class="glass-panel rounded-2xl p-6 mb-8 animate-fade-in" style="animation-delay: 0.4s;"
+                id="generationPanel">
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Options -->
+                    <div class="lg:w-1/3">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-cog mr-2 text-indigo-500"></i>Opciones de Generación
+                        </h3>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Informe</label>
+                                <select id="reportType" onchange="updatePreview()"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                                    <option value="portfolio">Cartera de Proyectos</option>
+                                    <option value="status">Por Estado</option>
+                                    <option value="area">Por Área</option>
+                                    <option value="financial">Financiero</option>
+                                    <option value="progress">Avance de Proyectos</option>
+                                    <option value="priority">Proyectos Prioritarios</option>
+                                    <option value="professionals">Carga por Profesional</option>
+                                    <option value="sector">Por Sector/Territorio</option>
+                                    <option value="timeline">Cronograma / Timeline</option>
+                                    <option value="comparison">Comparativo Anual</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Área (Opcional)</label>
+                                <select id="reportArea"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                                    <option value="">Todas las áreas</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Año de Filtro
+                                    (Opcional)</label>
+                                <select id="reportYear"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                                    <option value="">Todos los años</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Formato de Salida</label>
+                                <div class="flex gap-3">
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="format" value="pdf" checked class="sr-only peer">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-xl text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all">
+                                            <i class="fas fa-file-pdf text-2xl text-red-500 mb-2"></i>
+                                            <p class="font-medium text-gray-700">PDF</p>
+                                        </div>
+                                    </label>
+                                    <label class="flex-1 cursor-pointer">
+                                        <input type="radio" name="format" value="excel" class="sr-only peer">
+                                        <div
+                                            class="p-4 border-2 border-gray-200 rounded-xl text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-50 transition-all">
+                                            <i class="fas fa-file-excel text-2xl text-green-500 mb-2"></i>
+                                            <p class="font-medium text-gray-700">Excel</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button onclick="generateReport()" id="generateBtn"
+                                class="w-full btn-primary py-4 text-lg justify-center">
+                                <i class="fas fa-file-download"></i>
+                                Generar y Descargar
                             </button>
                         </div>
                     </div>
 
-                    <div class="report-card bg-white rounded-lg shadow p-6 cursor-pointer"
-                        onclick="selectReportType('detailed')">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-green-100 p-3 rounded-full mr-4">
-                                <i class="fas fa-file-alt text-green-600 text-xl"></i>
+                    <!-- Preview -->
+                    <div class="lg:w-2/3">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-eye mr-2 text-indigo-500"></i>Vista Previa del Informe
+                        </h3>
+                        <div class="preview-panel" id="previewPanel">
+                            <div class="flex-1 flex items-center justify-center text-gray-400 p-8">
+                                <div class="text-center">
+                                    <i class="fas fa-file-alt text-6xl mb-4 opacity-30"></i>
+                                    <p class="text-lg font-medium">Selecciona un tipo de informe</p>
+                                    <p class="text-sm">La vista previa se mostrará aquí</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="text-lg font-semibold">Informe Detallado</h3>
-                                <p class="text-sm text-gray-600">Análisis completo</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-700 text-sm">Reporte exhaustivo con detalles de cada proyecto, avances,
-                            presupuestos, plazos y responsables asignados.</p>
-                        <div class="mt-4 flex justify-between items-center">
-                            <span class="text-xs text-gray-500">Última generación: 1 semana atrás</span>
-                            <button class="text-green-600 hover:text-green-800">
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="report-card bg-white rounded-lg shadow p-6 cursor-pointer"
-                        onclick="selectReportType('financial')">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-yellow-100 p-3 rounded-full mr-4">
-                                <i class="fas fa-coins text-yellow-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold">Informe Financiero</h3>
-                                <p class="text-sm text-gray-600">Estado presupuestario</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-700 text-sm">Análisis financiero detallado con ejecución presupuestaria,
-                            flujo de caja, costos proyectados y desviaciones.</p>
-                        <div class="mt-4 flex justify-between items-center">
-                            <span class="text-xs text-gray-500">Última generación: 3 días atrás</span>
-                            <button class="text-yellow-600 hover:text-yellow-800">
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Charts Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Evolución de Proyectos</h3>
-                        <div class="chart-container">
-                            <canvas id="projectEvolutionChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Distribución Presupuestaria</h3>
-                        <div class="chart-container">
-                            <canvas id="budgetDistributionChart"></canvas>
-                        </div>
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-fade-in" style="animation-delay: 0.5s;">
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-indigo-500"></i>
+                        Distribución por Estado
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
                     </div>
                 </div>
-
-                <!-- Recent Reports -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">Informes Recientes</h3>
-                        <button onclick="viewAllReports()" class="text-blue-600 hover:text-blue-800 text-sm">
-                            Ver todos <i class="fas fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                    <div class="space-y-3">
-                        <div
-                            class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                            <div class="flex items-center space-x-4">
-                                <i class="fas fa-file-pdf text-red-500 text-xl"></i>
-                                <div>
-                                    <p class="font-medium">Informe Ejecutivo - Septiembre 2025</p>
-                                    <p class="text-sm text-gray-600">Generado por: Admin | 2 días atrás</p>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="downloadReport('executive_sept_2025')"
-                                    class="text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-download"></i>
-                                </button>
-                                <button onclick="viewReport('executive_sept_2025')"
-                                    class="text-green-600 hover:text-green-800">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button onclick="shareReport('executive_sept_2025')"
-                                    class="text-gray-600 hover:text-gray-800">
-                                    <i class="fas fa-share"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                            <div class="flex items-center space-x-4">
-                                <i class="fas fa-file-excel text-green-500 text-xl"></i>
-                                <div>
-                                    <p class="font-medium">Reporte Financiero Q3-2025</p>
-                                    <p class="text-sm text-gray-600">Generado por: Finanzas | 1 semana atrás</p>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="downloadReport('financial_q3_2025')"
-                                    class="text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-download"></i>
-                                </button>
-                                <button onclick="viewReport('financial_q3_2025')"
-                                    class="text-green-600 hover:text-green-800">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button onclick="shareReport('financial_q3_2025')"
-                                    class="text-gray-600 hover:text-gray-800">
-                                    <i class="fas fa-share"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                            <div class="flex items-center space-x-4">
-                                <i class="fas fa-file-excel text-green-500 text-xl"></i>
-                                <div>
-                                    <p class="font-medium">Reporte de Avance de Proyectos</p>
-                                    <p class="text-sm text-gray-600">Generado por: SECPLAC | 2 semanas atrás</p>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="downloadReport('progress_sept_2025')"
-                                    class="text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-download"></i>
-                                </button>
-                                <button onclick="viewReport('progress_sept_2025')"
-                                    class="text-green-600 hover:text-green-800">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button onclick="shareReport('progress_sept_2025')"
-                                    class="text-gray-600 hover:text-gray-800">
-                                    <i class="fas fa-share"></i>
-                                </button>
-                            </div>
-                        </div>
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-indigo-500"></i>
+                        Inversión por Área
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="areaChart"></canvas>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle text-green-500" id="toastIcon"></i>
+        <span id="toastMessage"></span>
+    </div>
+
     <script src="../../../script/layout.js"></script>
     <script>
-        // Verificar si el usuario está logueado al cargar la página
+        // ========================================
+        // ESTADO GLOBAL
+        // ========================================
+        let proyectos = [];
+        let catalogData = { areas: [], estados_proyecto: [], financiamientos: [] };
+        let selectedReportType = 'portfolio';
+        let statusChart = null;
+        let areaChart = null;
+
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
         document.addEventListener('DOMContentLoaded', function () {
             checkLoginStatus();
-            initializeCharts();
+            loadData();
         });
 
-        // Inicializar gráficos
-        function initializeCharts() {
-            // Gráfico de evolución de proyectos
-            const evolutionCtx = document.getElementById('projectEvolutionChart');
-            if (evolutionCtx) {
-                new Chart(evolutionCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'],
-                        datasets: [{
-                            label: 'Proyectos Iniciados',
-                            data: [5, 8, 12, 15, 18, 22, 25, 28, 32],
-                            borderColor: '#3B82F6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }, {
-                            label: 'Proyectos Completados',
-                            data: [2, 3, 5, 7, 9, 12, 14, 16, 18],
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
+        async function loadData() {
+            try {
+                // Cargar proyectos
+                proyectos = await api.get('/proyectos');
 
-            // Gráfico de distribución presupuestaria
-            const budgetCtx = document.getElementById('budgetDistributionChart');
-            if (budgetCtx) {
-                new Chart(budgetCtx, {
+                // Cargar catálogos
+                const [areas, estados, financiamientos] = await Promise.all([
+                    api.get('/areas').catch(() => []),
+                    api.get('/estados_proyecto').catch(() => []),
+                    api.get('/financiamientos').catch(() => [])
+                ]);
+
+                catalogData.areas = areas;
+                catalogData.estados_proyecto = estados;
+                catalogData.financiamientos = financiamientos;
+
+                // Actualizar UI
+                updateStats();
+                populateFilters();
+                initializeCharts();
+                updatePreview();
+
+                // Actualizar fecha
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleDateString('es-CL');
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                showToast('Error al cargar datos', 'error');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalProjects').textContent = proyectos.length;
+
+            // Inversión total
+            const totalInversion = proyectos.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            document.getElementById('statInversion').textContent = formatCurrency(totalInversion);
+
+            // En ejecución
+            const enEjecucion = proyectos.filter(p =>
+                p.estado_nombre && p.estado_nombre.toLowerCase().includes('ejecución')
+            ).length;
+            document.getElementById('statEjecucion').textContent = enEjecucion;
+
+            // Avance promedio
+            const avgProgress = proyectos.length > 0
+                ? proyectos.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / proyectos.length
+                : 0;
+            const displayProgress = avgProgress > 1 ? avgProgress : avgProgress * 100;
+            document.getElementById('statAvance').textContent = displayProgress.toFixed(1) + '%';
+
+            // Prioritarios
+            const prioritarios = proyectos.filter(p => p.es_prioridad === 'SI').length;
+            document.getElementById('statPrioritarios').textContent = prioritarios;
+        }
+
+        function populateFilters() {
+            // Áreas
+            const areaSelect = document.getElementById('reportArea');
+            catalogData.areas.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area.id;
+                option.textContent = area.nombre;
+                areaSelect.appendChild(option);
+            });
+
+            // Años
+            const yearSelect = document.getElementById('reportYear');
+            const years = [...new Set(proyectos.map(p => p.anno_elaboracion).filter(Boolean))].sort((a, b) => b - a);
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        }
+
+        // ========================================
+        // GRÁFICOS
+        // ========================================
+        function initializeCharts() {
+            // Agrupar por estado
+            const estadoCounts = {};
+            proyectos.forEach(p => {
+                const estado = p.estado_nombre || 'Sin estado';
+                estadoCounts[estado] = (estadoCounts[estado] || 0) + 1;
+            });
+
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                if (statusChart) statusChart.destroy();
+                statusChart = new Chart(statusCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Vialidad', 'Espacios Públicos', 'Saneamiento', 'Educación', 'Salud'],
+                        labels: Object.keys(estadoCounts),
                         datasets: [{
-                            data: [38, 24, 18, 12, 8],
+                            data: Object.values(estadoCounts),
                             backgroundColor: [
-                                '#3B82F6',
-                                '#10B981',
-                                '#06B6D4',
-                                '#8B5CF6',
-                                '#EF4444'
+                                '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
+                                '#8b5cf6', '#06b6d4', '#ec4899', '#6366f1'
                             ]
                         }]
                     },
@@ -463,8 +973,45 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                position: 'bottom'
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+
+            // Agrupar por área con montos
+            const areaMounts = {};
+            proyectos.forEach(p => {
+                const area = p.area_nombre || 'Sin área';
+                areaMounts[area] = (areaMounts[area] || 0) + (parseFloat(p.monto) || 0);
+            });
+
+            const areaCtx = document.getElementById('areaChart');
+            if (areaCtx) {
+                if (areaChart) areaChart.destroy();
+                areaChart = new Chart(areaCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(areaMounts),
+                        datasets: [{
+                            label: 'Inversión ($)',
+                            data: Object.values(areaMounts),
+                            backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: value => formatCurrencyShort(value)
+                                }
                             }
                         }
                     }
@@ -472,237 +1019,320 @@
             }
         }
 
-        // Datos de ejemplo para los informes
-        const reportData = {
-            executive: {
-                title: 'Informe Ejecutivo',
-                sections: [
-                    { title: 'Resumen Ejecutivo', content: 'Este informe presenta un resumen de los proyectos municipales en curso.' },
-                    { title: 'Métricas Clave', content: 'Inversión total: $25.3B, Proyectos activos: 92, Tasa de ejecución: 87%' },
-                    { title: 'Recomendaciones', content: 'Se recomienda priorizar los proyectos de saneamiento para el próximo trimestre.' }
-                ]
-            },
-            detailed: {
-                title: 'Informe Detallado',
-                sections: [
-                    { title: 'Introducción', content: 'Análisis detallado del estado actual de todos los proyectos municipales.' },
-                    { title: 'Proyectos por Área', content: 'Vialidad: 35 proyectos, Espacios Públicos: 22 proyectos, Saneamiento: 18 proyectos...' },
-                    { title: 'Análisis de Riesgos', content: 'Se identificaron 5 proyectos con riesgo de retraso debido a factores climáticos.' }
-                ]
-            },
-            financial: {
-                title: 'Informe Financiero',
-                sections: [
-                    { title: 'Ejecución Presupuestaria', content: 'Presupuesto asignado: $30B, Ejecutado: $26.1B (87%)' },
-                    { title: 'Análisis de Costos', content: 'Costos directos: $20B, Costos indirectos: $6.1B' },
-                    { title: 'Proyecciones', content: 'Se proyecta una desviación del 3% para el próximo trimestre.' }
-                ]
-            },
-            progress: {
-                title: 'Informe de Avance',
-                sections: [
-                    { title: 'Avance General', content: 'Progreso promedio de todos los proyectos: 68%' },
-                    { title: 'Proyectos Destacados', content: 'Mejora de Plaza Central: 95%, Nuevo Acueducto: 78%' },
-                    { title: 'Próximos Hitos', content: 'Inauguración Parque Norte: 15 Oct, Inicio Repavimentación Av. Principal: 22 Oct' }
-                ]
-            }
-        };
+        // ========================================
+        // SELECCIÓN DE INFORME
+        // ========================================
+        function selectReport(type) {
+            selectedReportType = type;
+            document.getElementById('reportType').value = type;
 
-        // Funciones para informes
-        function generateReport() {
-            const reportType = document.getElementById('reportType').value;
-            const reportPeriod = document.getElementById('reportPeriod').value;
-            const reportArea = document.getElementById('reportArea').value;
-            const reportFormat = document.getElementById('reportFormat').value;
+            // Actualizar selección visual
+            document.querySelectorAll('.report-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-type="${type}"]`)?.classList.add('selected');
 
-            // Mostrar spinner en el botón
-            const generateBtn = document.getElementById('generateBtn');
-            const originalContent = generateBtn.innerHTML;
-            generateBtn.innerHTML = '<span class="spinner"></span>Generando...';
-            generateBtn.disabled = true;
+            updatePreview();
 
-            // Mostrar mensaje de generación
-            showToast(`Generando informe ${reportType} para período ${reportPeriod}...`, 'info');
-
-            // Simular generación de informe
-            setTimeout(() => {
-                // Restaurar botón
-                generateBtn.innerHTML = originalContent;
-                generateBtn.disabled = false;
-
-                // Generar y descargar el informe según el formato
-                if (reportFormat === 'pdf') {
-                    generatePDFReport(reportType, reportPeriod, reportArea);
-                } else if (reportFormat === 'excel') {
-                    generateExcelReport(reportType, reportPeriod, reportArea);
-                }
-
-                // Añadir a la lista de informes recientes
-                addRecentReport(reportType, reportPeriod, reportFormat);
-
-                showToast(`Informe ${reportType} generado correctamente`, 'success');
-            }, 2000);
+            // Scroll al panel
+            document.getElementById('generationPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function generatePDFReport(reportType, reportPeriod, reportArea) {
+        function updatePreview() {
+            const type = document.getElementById('reportType').value;
+            const previewPanel = document.getElementById('previewPanel');
+
+            const reportTitles = {
+                portfolio: 'Cartera de Proyectos',
+                status: 'Proyectos por Estado',
+                area: 'Proyectos por Área',
+                financial: 'Informe Financiero',
+                progress: 'Avance de Proyectos',
+                priority: 'Proyectos Prioritarios',
+                professionals: 'Carga por Profesional',
+                sector: 'Distribución por Sector',
+                timeline: 'Cronograma de Proyectos',
+                comparison: 'Comparativo Anual'
+            };
+
+            const filteredProjects = getFilteredProjects();
+            const stats = calculateReportStats(type, filteredProjects);
+
+            previewPanel.classList.add('has-content');
+            previewPanel.innerHTML = `
+                <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
+                    <h4 class="text-xl font-bold text-gray-800">${reportTitles[type] || 'Informe'}</h4>
+                    <p class="text-sm text-gray-500">Municipalidad de Algarrobo • ${new Date().toLocaleDateString('es-CL')}</p>
+                </div>
+                <div class="p-6 flex-1 overflow-auto">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-blue-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-blue-600">${stats.total}</p>
+                            <p class="text-xs text-gray-500">Proyectos</p>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-green-600">${formatCurrencyShort(stats.inversion)}</p>
+                            <p class="text-xs text-gray-500">Inversión</p>
+                        </div>
+                        <div class="bg-purple-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-purple-600">${stats.avance}%</p>
+                            <p class="text-xs text-gray-500">Avance Prom.</p>
+                        </div>
+                        <div class="bg-amber-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-amber-600">${stats.areas}</p>
+                            <p class="text-xs text-gray-500">Áreas</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                            Este informe incluirá ${stats.total} proyectos con un total de inversión de ${formatCurrency(stats.inversion)}.
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            <i class="fas fa-file-alt text-gray-400 mr-2"></i>
+                            El documento generado contendrá tablas detalladas, gráficos y métricas relevantes.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getFilteredProjects() {
+            let filtered = [...proyectos];
+
+            const areaId = document.getElementById('reportArea').value;
+            const year = document.getElementById('reportYear').value;
+
+            if (areaId) {
+                filtered = filtered.filter(p => p.area_id == areaId);
+            }
+            if (year) {
+                filtered = filtered.filter(p => p.anno_elaboracion == year);
+            }
+
+            return filtered;
+        }
+
+        function calculateReportStats(type, projects) {
+            const total = projects.length;
+            const inversion = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            const avgProgress = total > 0
+                ? projects.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / total
+                : 0;
+            const areas = new Set(projects.map(p => p.area_nombre).filter(Boolean)).size;
+
+            return {
+                total,
+                inversion,
+                avance: (avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1),
+                areas
+            };
+        }
+
+        // ========================================
+        // GENERACIÓN DE INFORMES
+        // ========================================
+        async function generateReport() {
+            const format = document.querySelector('input[name="format"]:checked').value;
+            const type = document.getElementById('reportType').value;
+
+            const btn = document.getElementById('generateBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span>Generando...';
+            btn.disabled = true;
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                if (format === 'pdf') {
+                    generatePDF(type);
+                } else {
+                    generateExcel(type);
+                }
+
+                showToast('Informe generado correctamente', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error al generar informe', 'error');
+            } finally {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+
+        function generatePDF(type) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            // Obtener datos del informe
-            const data = reportData[reportType] || reportData.executive;
+            const filteredProjects = getFilteredProjects();
+            const reportTitles = {
+                portfolio: 'Cartera de Proyectos',
+                status: 'Proyectos por Estado',
+                area: 'Proyectos por Área',
+                financial: 'Informe Financiero',
+                progress: 'Avance de Proyectos',
+                priority: 'Proyectos Prioritarios',
+                professionals: 'Carga por Profesional',
+                sector: 'Distribucion por Sector',
+                timeline: 'Cronograma de Proyectos',
+                comparison: 'Comparativo Anual'
+            };
 
-            // Configurar fuentes (usar fuentes que soportan caracteres especiales)
-            doc.setFont('helvetica');
+            // Header
+            doc.setFillColor(99, 102, 241);
+            doc.rect(0, 0, 210, 40, 'F');
 
-            // Título
-            doc.setFontSize(18);
-            doc.text(data.title, 20, 20);
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(20);
+            doc.text('Geoportal Municipal', 20, 20);
+            doc.setFontSize(14);
+            doc.text(reportTitles[type] || 'Informe', 20, 30);
 
             // Metadatos
-            doc.setFontSize(12);
-            doc.text(`Tipo: ${reportType}`, 20, 30);
-            doc.text(`Período: ${reportPeriod}`, 20, 37);
-            doc.text(`Área: ${reportArea}`, 20, 44);
-            doc.text(`Fecha: ${new Date().toLocaleDateString('es-ES')}`, 20, 51);
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-CL')}`, 20, 50);
+            doc.text(`Total Proyectos: ${filteredProjects.length}`, 20, 56);
 
-            // Contenido
-            let yPosition = 65;
-            data.sections.forEach(section => {
-                doc.setFontSize(14);
-                doc.text(section.title, 20, yPosition);
-                yPosition += 10;
+            const totalInversion = filteredProjects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            doc.text(`Inversion Total: ${formatCurrency(totalInversion)}`, 20, 62);
 
-                doc.setFontSize(11);
-                const lines = doc.splitTextToSize(section.content, 170);
-                doc.text(lines, 20, yPosition);
-                yPosition += lines.length * 5 + 10;
+            // Tabla de proyectos
+            const tableData = filteredProjects.slice(0, 30).map(p => [
+                (p.nombre || '').substring(0, 40),
+                p.area_nombre || '-',
+                p.estado_nombre || '-',
+                formatCurrencyShort(p.monto || 0),
+                `${parseFloat(p.avance_total_porcentaje || 0).toFixed(0)}%`
+            ]);
+
+            doc.autoTable({
+                startY: 70,
+                head: [['Proyecto', 'Area', 'Estado', 'Monto', 'Avance']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [99, 102, 241] },
+                styles: { fontSize: 8, cellPadding: 3 },
+                columnStyles: {
+                    0: { cellWidth: 60 },
+                    1: { cellWidth: 35 },
+                    2: { cellWidth: 35 },
+                    3: { cellWidth: 30 },
+                    4: { cellWidth: 20 }
+                }
             });
 
-            // Pie de página
-            doc.setFontSize(10);
-            doc.text('Geoportal Municipal - Ilustre Municipalidad de Algarrobo', 20, 280);
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(128);
+                doc.text(
+                    `Municipalidad de Algarrobo - Pagina ${i} de ${pageCount}`,
+                    105, 290, { align: 'center' }
+                );
+            }
 
-            // Guardar el PDF
-            const fileName = `informe_${reportType}_${reportPeriod}_${Date.now()}.pdf`;
-            doc.save(fileName);
-
-            return fileName;
+            doc.save(`informe_${type}_${Date.now()}.pdf`);
         }
 
-        function generateExcelReport(reportType, reportPeriod, reportArea) {
-            // Obtener datos del informe
-            const data = reportData[reportType] || reportData.executive;
-
-            // Crear libro de trabajo
+        function generateExcel(type) {
+            const filteredProjects = getFilteredProjects();
             const wb = XLSX.utils.book_new();
 
-            // Crear hoja de cálculo
-            const wsData = [
-                ['Geoportal Municipal - Ilustre Municipalidad de Algarrobo'],
+            const reportTitles = {
+                portfolio: 'Cartera de Proyectos',
+                status: 'Proyectos por Estado',
+                area: 'Proyectos por Area',
+                financial: 'Informe Financiero',
+                progress: 'Avance de Proyectos',
+                priority: 'Proyectos Prioritarios',
+                professionals: 'Carga por Profesional',
+                sector: 'Distribucion por Sector',
+                timeline: 'Cronograma de Proyectos',
+                comparison: 'Comparativo Anual'
+            };
+
+            // Hoja de resumen
+            const summaryData = [
+                ['GEOPORTAL MUNICIPAL - ALGARROBO'],
+                [reportTitles[type] || 'Informe'],
                 [''],
-                ['Tipo de Informe:', reportType],
-                ['Período:', reportPeriod],
-                ['Área:', reportArea],
-                ['Fecha de Generación:', new Date().toLocaleDateString('es-ES')],
-                [''],
-                [data.title],
+                ['Fecha de generacion:', new Date().toLocaleDateString('es-CL')],
+                ['Total proyectos:', filteredProjects.length],
+                ['Inversion total:', filteredProjects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0)],
                 ['']
             ];
 
-            // Añadir secciones
-            data.sections.forEach(section => {
-                wsData.push([section.title]);
-                wsData.push([section.content]);
-                wsData.push(['']);
-            });
+            const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen');
 
-            // Añadir métricas adicionales
-            wsData.push(['Métricas Clave']);
-            wsData.push(['Inversión Total', '$25.3B']);
-            wsData.push(['Proyectos Activos', '92']);
-            wsData.push(['Tasa de Ejecución', '87%']);
-            wsData.push(['Beneficiarios', '15.2K']);
+            // Hoja de datos
+            const headers = ['ID', 'Nombre', 'Codigo', 'Area', 'Estado', 'Financiamiento', 'Monto', 'Avance %', 'Prioridad', 'Ano Elaboracion'];
+            const projectData = filteredProjects.map(p => [
+                p.id,
+                p.nombre || '',
+                p.codigo || '',
+                p.area_nombre || '',
+                p.estado_nombre || '',
+                p.financiamiento_nombre || '',
+                parseFloat(p.monto) || 0,
+                parseFloat(p.avance_total_porcentaje) || 0,
+                p.es_prioridad || 'NO',
+                p.anno_elaboracion || ''
+            ]);
 
-            // Crear hoja de cálculo a partir de los datos
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-            // Ajustar anchos de columna
-            const colWidths = [
-                { wch: 30 }, // Columna A
-                { wch: 40 }  // Columna B
+            const dataWs = XLSX.utils.aoa_to_sheet([headers, ...projectData]);
+            dataWs['!cols'] = [
+                { wch: 6 }, { wch: 40 }, { wch: 15 }, { wch: 20 },
+                { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 },
+                { wch: 10 }, { wch: 12 }
             ];
-            ws['!cols'] = colWidths;
+            XLSX.utils.book_append_sheet(wb, dataWs, 'Proyectos');
 
-            // Añadir hoja al libro
-            XLSX.utils.book_append_sheet(wb, ws, 'Informe');
-
-            // Generar y descargar el archivo Excel
-            const fileName = `informe_${reportType}_${reportPeriod}_${Date.now()}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-
-            return fileName;
+            XLSX.writeFile(wb, `informe_${type}_${Date.now()}.xlsx`);
         }
 
-        function scheduleReport() {
-            const reportType = document.getElementById('reportType').value;
-            const reportPeriod = document.getElementById('reportPeriod').value;
-
-            showToast(`Programando informe ${reportType} para período ${reportPeriod}...`, 'info');
-
-            setTimeout(() => {
-                showToast('Informe programado correctamente', 'success');
-            }, 1500);
+        // ========================================
+        // UTILIDADES
+        // ========================================
+        function formatCurrency(value) {
+            if (!value && value !== 0) return '$0';
+            return new Intl.NumberFormat('es-CL', {
+                style: 'currency',
+                currency: 'CLP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
         }
 
-        function saveReportTemplate() {
-            showToast('Guardando plantilla de informe...', 'info');
-
-            setTimeout(() => {
-                showToast('Plantilla guardada correctamente', 'success');
-            }, 1500);
+        function formatCurrencyShort(value) {
+            if (!value && value !== 0) return '$0';
+            if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
+            if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+            if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+            return `$${value}`;
         }
 
-        function selectReportType(type) {
-            document.getElementById('reportType').value = type;
-            updateReportPreview();
-            document.querySelector('.report-filters').scrollIntoView({ behavior: 'smooth' });
-        }
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
 
-        function updateReportPreview() {
-            const reportType = document.getElementById('reportType').value;
-            const reportPeriod = document.getElementById('reportPeriod').value;
-            const reportArea = document.getElementById('reportArea').value;
-            console.log('Actualizando vista previa:', { reportType, reportPeriod, reportArea });
-        }
+            msg.textContent = message;
 
-        function downloadReport(reportId) {
-            showToast(`Descargando informe ${reportId}...`, 'info');
-            setTimeout(() => {
-                showToast('Informe descargado correctamente', 'success');
-            }, 1000);
-        }
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle text-green-500';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle text-red-500';
+            } else {
+                icon.className = 'fas fa-info-circle text-blue-500';
+            }
 
-        function viewReport(reportId) {
-            showToast(`Abriendo informe ${reportId}...`, 'info');
-            setTimeout(() => {
-                showToast('Informe abierto correctamente', 'success');
-            }, 1000);
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
-
-        function shareReport(reportId) {
-            showToast(`Preparando para compartir informe ${reportId}...`, 'info');
-            setTimeout(() => {
-                showToast('Enlace de informe copiado al portapapeles', 'success');
-            }, 1500);
-        }
-
-        function viewAllReports() {
-            showToast('Abriendo todos los informes...', 'info');
-        }
-
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') { /* close modals if any */ }
-        });
     </script>
 </body>
 
