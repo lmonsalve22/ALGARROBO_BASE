@@ -43,7 +43,6 @@
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-
         :root {
             --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
             --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -401,15 +400,15 @@
 </head>
 
 <body class="bg-gray-50">
-    
+
     <div id="headerRender"></div>
 
     <div class="flex">
-        
+
         <div id="asideRender"></div>
 
         <main class="flex-1 p-6">
-            
+
             <div class="header-gradient mb-8 animate-fade-in">
                 <div class="relative z-10">
                     <div class="flex items-center gap-4 mb-4">
@@ -494,7 +493,7 @@
 
             <div class="report-cards-grid mb-8 animate-fade-in" style="animation-delay: 0.3s;"
                 id="reportCardsContainer">
-                
+
                 <div class="report-card" data-type="portfolio" onclick="selectReport('portfolio')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle blue">
@@ -691,7 +690,7 @@
             <div class="glass-panel rounded-2xl p-6 mb-8 animate-fade-in" style="animation-delay: 0.4s;"
                 id="generationPanel">
                 <div class="flex flex-col lg:flex-row gap-6">
-                    
+
                     <div class="lg:w-1/3">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">
                             <i class="fas fa-cog mr-2 text-indigo-500"></i>Opciones de Generación
@@ -809,6 +808,64 @@
 
     <script src="../../../script/layout.js"></script>
     <script>
+        // Configuración de IA para Resumen Ejecutivo
+        const API_KEY = getKey("gfhrsdfsdfseweretfghtddfdf");
+        const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+        const MODEL_NAME = "GLM-4.6V-Flash";
+
+        async function fetchAIExecutiveSummary(projects, title) {
+            const totalMonto = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+
+            // Muestra limitada para no exceder tokens
+            const summaryData = projects.slice(0, 50).map(p => ({
+                n: p.nombre,
+                e: p.estado_nombre || p.estado_proyecto,
+                m: parseInt(p.monto) || 0,
+                a: p.area_nombre || p.area
+            }));
+
+            const prompt = `Eres un experto analista de gestión pública.
+Genera un Resumen Ejecutivo Estratégico para el informe: "${title}".
+DATOS GENERALES:
+- Cantidad Proyectos: ${projects.length}
+- Inversión Total: $${new Intl.NumberFormat('es-CL').format(totalMonto)}
+- Muestra de datos: ${JSON.stringify(summaryData)}
+
+INSTRUCCIONES:
+Redacta un análisis de media página (aprox 300 palabras/2000 caracteres) que incluya:
+1. Introducción al estado de la cartera.
+2. Análisis de distribución de recursos.
+3. Principales hallazgos o alertas basa en los estados de proyecto.
+4. Conclusión breve.
+
+Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos saltos de linea.`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_NAME,
+                        messages: [
+                            { role: "system", content: "Eres un asistente de análisis de datos para SECPLAN." },
+                            { role: "user", content: prompt }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) throw new Error("Error en API IA");
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (e) {
+                console.error("Error generando resumen IA:", e);
+                return "No se pudo generar el Resumen Inteligente debido a un error de conexión con el servicio de IA.\n\nPor favor consulte los detalles estadísticos en las páginas siguientes.";
+            }
+        }
+
 
         let proyectos = [];
         let catalogData = { areas: [], estados_proyecto: [], financiamientos: [] };
@@ -823,7 +880,7 @@
 
         async function loadData() {
             try {
-                
+
                 proyectos = await api.get('/proyectos');
 
                 const [areas, estados, financiamientos] = await Promise.all([
@@ -871,7 +928,7 @@
         }
 
         function populateFilters() {
-            
+
             const areaSelect = document.getElementById('reportArea');
             catalogData.areas.forEach(area => {
                 const option = document.createElement('option');
@@ -891,7 +948,7 @@
         }
 
         function initializeCharts() {
-            
+
             const estadoCounts = {};
             proyectos.forEach(p => {
                 const estado = p.estado_nombre || 'Sin estado';
@@ -1073,15 +1130,44 @@
 
             const btn = document.getElementById('generateBtn');
             const originalContent = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner"></span>Generando...';
-            btn.disabled = true;
 
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
                 if (format === 'pdf') {
-                    generatePDF(type);
+                    // Feedback visual específico para IA
+                    btn.innerHTML = '<span class="spinner"></span> Generando Resumen IA...';
+                    btn.disabled = true;
+
+                    // Obtener proyectos filtrados para pasarlos a la IA
+                    const filteredProjects = getFilteredProjects(); // Reutiliza la lógica de filtro
+
+                    // Obtener titulo
+                    const reportTitles = {
+                        portfolio: 'Cartera de Proyectos',
+                        status: 'Proyectos por Estado',
+                        area: 'Proyectos por Area',
+                        financial: 'Informe Financiero',
+                        progress: 'Avance de Proyectos',
+                        priority: 'Proyectos Prioritarios',
+                        professionals: 'Carga por Profesional',
+                        sector: 'Distribucion Territorial',
+                        timeline: 'Cronograma',
+                        comparison: 'Comparativo Anual'
+                    };
+                    const title = reportTitles[type] || 'Informe';
+
+                    // Llamada a la IA
+                    const aiSummary = await fetchAIExecutiveSummary(filteredProjects, title);
+
+                    btn.innerHTML = '<span class="spinner"></span> Generando PDF...';
+
+                    // Generar PDF con el resumen
+                    generatePDF(type, aiSummary);
+
                 } else {
+                    btn.innerHTML = '<span class="spinner"></span> Generando Excel...';
+                    btn.disabled = true;
+                    // Pequeña pausa para que se renderice el spinner
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     generateExcel(type);
                 }
 
@@ -1095,7 +1181,7 @@
             }
         }
 
-        function generatePDF(type) {
+        function generatePDF(type, aiSummaryText = "") {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -1149,6 +1235,32 @@
             doc.text(`Inversion Total: ${formatCurrency(totalInversion)}`, 105, 250, { align: 'center' });
             doc.text(`Avance Promedio: ${(avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1)}%`, 105, 260, { align: 'center' });
 
+            // PAGINA 2: RESUMEN IA
+            if (aiSummaryText) {
+                doc.addPage();
+
+                // Fondo encabezado
+                doc.setFillColor(79, 70, 229);
+                doc.rect(0, 0, 210, 30, 'F');
+
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(16);
+                doc.text('RESUMEN EJECUTIVO (IA)', 20, 20);
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+
+                const splitText = doc.splitTextToSize(aiSummaryText, 170);
+                doc.text(splitText, 20, 45);
+
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text('Este resumen ha sido generado automáticamente por Inteligencia Artificial (ZhipuAI GLM-4) basado en los datos actuales.', 105, 285, { align: 'center' });
+            }
+
+            // PAGINA 3: ESTADÍSTICAS GENERALES
             doc.addPage();
             let y = 20;
 
@@ -1156,7 +1268,7 @@
             doc.rect(0, 0, 210, 25, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(14);
-            doc.text('RESUMEN EJECUTIVO', 20, 16);
+            doc.text('ESTADÍSTICAS GENERALES', 20, 16);
             doc.setTextColor(0, 0, 0);
 
             y = 35;
@@ -1392,7 +1504,7 @@
                         ]);
                     break;
 
-                default: 
+                default:
                     tableHeaders = [['Proyecto', 'Area', 'Estado', 'Monto', 'Avance']];
                     tableBody = filteredProjects.map(p => [
                         (p.nombre || '').substring(0, 40),
@@ -1411,7 +1523,7 @@
                 headStyles: { fillColor: [99, 102, 241], fontStyle: 'bold' },
                 styles: { fontSize: 8, cellPadding: 3 },
                 didDrawPage: function (data) {
-                    
+
                     if (data.pageNumber > 1) {
                         doc.setFillColor(99, 102, 241);
                         doc.rect(0, 0, 210, 25, 'F');

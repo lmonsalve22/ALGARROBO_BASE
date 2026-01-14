@@ -18,7 +18,6 @@
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
@@ -90,7 +89,7 @@
 
         .message-wrapper.user .message-content {
             background-color: #4f46e5;
-            
+
             color: white;
             border-bottom-right-radius: 0.25rem;
             box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
@@ -310,7 +309,7 @@
     <div id="headerRender"></div>
 
     <div class="flex flex-1 overflow-hidden">
-        
+
         <div id="asideRender"></div>
 
         <main class="flex-1 flex flex-col p-6 overflow-hidden relative">
@@ -342,7 +341,7 @@
                     </div>
 
                     <div class="flex flex-1 w-full gap-3">
-                        
+
                         <div class="flex-1">
                             <label for="filterArea"
                                 class="block text-xs font-semibold text-gray-500 uppercase mb-1">Área</label>
@@ -401,7 +400,7 @@
                     </div>
 
                     <div id="projectListContainer" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scroll">
-                        
+
                     </div>
 
                     <div class="p-3 border-t border-gray-100 text-xs text-gray-400 bg-gray-50 rounded-b-lg">
@@ -410,7 +409,7 @@
                 </div>
 
                 <div class="w-2/3 chat-container">
-                    
+
                     <div
                         class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
                         <div class="flex items-center gap-2">
@@ -435,7 +434,7 @@
                     </div>
 
                     <div class="messages-area custom-scroll" id="messagesArea">
-                        
+
                         <div class="message-wrapper bot">
                             <div class="avatar"><i class="fas fa-robot"></i></div>
                             <div class="flex-1">
@@ -490,17 +489,18 @@
 
     <script>
 
-        const API_KEY = "1dbcda64e67c4d31a7e9e5565efc5cae.M5ZIv5sFPbdOwgKw";
+        //const API_KEY = "1dbcda64e67c4d31a7e9e5565efc5cae.M5ZIv5sFPbdOwgKw";
+        const API_KEY = getKey("gfhrsdfsdfseweretfghtddfdf");
         const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
         const MODEL_NAME = "GLM-4.6V-Flash";
 
         const CHAT_CONFIG = {
-            
+
             MAX_HISTORY_LENGTH: 7,
             MAX_INPUT_LENGTH: 500,
-            
+
             MAX_TEXT_PAYLOAD_LENGTH: 80000,
-            
+
             MAX_PROJECTS_SUMMARY: 100
         };
 
@@ -514,10 +514,10 @@
             chatHistory: [],
             recognition: null,
             synthesis: window.speechSynthesis,
-            filterProject: [], 
+            filterProject: [],
             isMarked: false,
-            projectMarket: null,  
-            projectRawText: null, 
+            projectMarket: null,
+            projectRawText: null,
             textCharsCount: 0
         };
 
@@ -571,7 +571,7 @@
         async function loadProjects() {
             try {
                 DOM.projectsLoading.classList.remove('hidden');
-                
+
                 const pProjects = fetch(`${API_BASE}/proyectos`, {
                     method: 'GET',
                     headers: getAuthHeaders()
@@ -603,7 +603,7 @@
             DOM.filterArea.addEventListener('change', applyFilters);
             DOM.filterStatus.addEventListener('change', applyFilters);
             DOM.filterFinancing.addEventListener('change', applyFilters);
-            
+
             applyFilters();
         }
 
@@ -633,7 +633,7 @@
                 const pCodigo = p.codigo ? p.codigo.toLowerCase() : "";
 
                 const matchTxt = !txt || pNombre.includes(txt) || pCodigo.includes(txt);
-                
+
                 const matchArea = area === "" || (p.area_nombre || p.area) == area;
                 const matchStatus = status === "" || (p.estado_nombre || p.estado_proyecto) == status;
                 const matchFin = fin === "" || (p.financiamiento_nombre || p.financiamiento) == fin;
@@ -908,7 +908,7 @@
         }
 
         async function fetchZhipuResponse(userMessage, context) {
-            
+
             AppState.chatHistory.push({ role: "user", content: userMessage });
 
             let systemPrompt = "";
@@ -1026,7 +1026,7 @@ Tu análisis aquí
                     { role: "system", content: systemPrompt },
                     ...recentHistory
                 ],
-                temperature: 0.1, 
+                temperature: 0.1,
             };
 
             const response = await fetch(API_URL, {

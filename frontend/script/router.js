@@ -86,3 +86,35 @@ document.addEventListener('click', function (event) {
         userMenu.classList.add('hidden');
     }
 });
+
+
+function strToBytes(str) {
+    return new TextEncoder().encode(str);
+}
+
+function bytesToStr(bytes) {
+    return new TextDecoder().decode(bytes);
+}
+
+function getKey(seed) {
+    const OFUSCADO = "VgAMFkZXBBFdUEpXQwFFXRZXA19NXV1XXQdQBVpDFlBIIwMkGxUkEgJcIRAXAUBcBQ=="; // <-- generado antes
+
+    const data = Uint8Array.from(
+        atob(OFUSCADO),
+        c => c.charCodeAt(0)
+    );
+
+    const s = strToBytes(seed);
+    const out = new Uint8Array(data.length);
+
+    for (let i = 0; i < data.length; i++) {
+        out[i] = data[i] ^ s[i % s.length];
+    }
+
+    return bytesToStr(out);
+}
+
+
+
+
+
