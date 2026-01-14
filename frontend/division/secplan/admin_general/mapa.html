@@ -9,16 +9,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Algarrobo</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
@@ -35,14 +31,12 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Estilos para el mapa */
         #map {
             height: 600px;
             width: 100%;
             border-radius: 0.5rem;
         }
 
-        /* Estilos para los popups personalizados */
         .custom-popup {
             font-family: 'Arial', sans-serif;
         }
@@ -82,7 +76,6 @@
             background-color: #2563eb;
         }
 
-        /* Estilos para los filtros del mapa */
         .filter-button {
             transition: all 0.2s;
         }
@@ -101,7 +94,6 @@
             transform: translateY(-1px);
         }
 
-        /* Estilos para la leyenda */
         .legend {
             background: white;
             padding: 10px;
@@ -128,12 +120,11 @@
             margin-right: 8px;
         }
 
-        /* Estilos para el panel de detalles */
         #projectDetailsPanel {
             position: fixed;
             top: 0;
             right: -400px;
-            /* Oculto por defecto */
+            
             width: 400px;
             height: 100%;
             background-color: white;
@@ -146,7 +137,7 @@
 
         #projectDetailsPanel.show {
             right: 0;
-            /* Visible */
+            
         }
 
         .close-panel-btn {
@@ -178,27 +169,25 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header -->
+    
     <div id="headerRender">
     </div>
 
     <div class="flex">
-        <!-- Sidebar -->
+        
         <div id="asideRender">
 
         </div>
 
-        <!-- Main Content -->
         <main class="flex-1 p-6">
-            <!-- Map View -->
+            
             <div id="mapView" class="view-content">
-                <!-- Page Header -->
+                
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Mapa de Proyectos</h2>
                     <p class="text-gray-600">Visualización geográfica de todos los proyectos municipales</p>
                 </div>
 
-                <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white rounded-lg shadow p-4 card-hover">
                         <div class="flex items-center justify-between">
@@ -246,55 +235,48 @@
                     </div>
                 </div>
 
-                <!-- Map Container -->
                 <div class="bg-white rounded-lg shadow p-4">
-                    <!-- Map Filters -->
+                    
                     <div id="mapFilters" class="mb-4 flex flex-wrap gap-2">
-                        <!-- Los botones de filtro se generarán dinámicamente aquí -->
+                        
                         <button onclick="filterMapByArea('all')"
                             class="filter-button active px-4 py-2 rounded">Todos</button>
                     </div>
 
-                    <!-- Map -->
                     <div id="map"></div>
                 </div>
 
-                <!-- Projects List -->
                 <div class="mt-6 bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold mb-4">Proyectos en Mapa</h3>
                     <div id="mapProjectsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Projects will be loaded here -->
+                        
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Panel de Detalles del Proyecto -->
     <div id="projectDetailsPanel">
         <button class="close-panel-btn" onclick="closeProjectDetails()">&times;</button>
         <h2 class="text-xl font-bold mb-4">Detalles del Proyecto</h2>
         <div id="projectDetailsContent">
-            <!-- El contenido se cargará aquí dinámicamente -->
+            
         </div>
     </div>
 
     <script src="../../../script/layout.js"></script>
-    <!-- Leaflet JS -->
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Definir la URL base de la API
+        
         const BASE_URL = 'https://186.67.61.251:8000';
 
-        // Variables globales para el mapa y los datos
         let map;
         let markers = [];
-        let allProjects = []; // Almacenará todos los proyectos de la API
+        let allProjects = []; 
         let currentFilter = 'all';
 
-        // Colores para cada área (puedes expandir esto según sea necesario)
-        // Asegúrate de que estos nombres coincidan con los devueltos por la API en 'area_nombre'
         const areaColors = {
             'Vialidad': '#3B82F6',
             'Saneamiento': '#06B6D4',
@@ -302,26 +284,23 @@
             'Educación': '#8B5CF6',
             'Salud': '#EF4444',
             'Planificación': '#F59E0B',
-            'default': '#6B7280' // Color por defecto si el área no está en la lista
+            'default': '#6B7280' 
         };
 
-        // Función para obtener el color de un área
         function getAreaColor(area) {
             return areaColors[area] || areaColors['default'];
         }
 
-        // Función para formatear claves (ej: "anno_ejecucion" -> "Año Ejecución")
         function formatKey(key) {
             return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
-        // Función para formatear el valor (ej: manejar nulos, fechas, etc.)
         function formatValue(key, value) {
             if (value === null || value === '-') {
                 return 'No especificado';
             }
             if (key.includes('fecha')) {
-                // Intentar parsear fecha, si falla devolver valor original
+                
                 try {
                     return new Date(value).toLocaleDateString('es-CL');
                 } catch (e) {
@@ -338,27 +317,25 @@
             return value;
         }
 
-        // Función asíncrona para obtener los proyectos de la API
         async function fetchProjects() {
             try {
-                // Obtener el token de autenticación desde localStorage
+                
                 const token = localStorage.getItem('authToken');
 
                 if (!token) {
                     throw new Error('Token de autenticación no encontrado. Por favor, inicie sesión nuevamente.');
                 }
 
-                // Realizar la petición a la API con el token en los headers
                 const response = await fetch(`${BASE_URL}/proyectos`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': token, // El token se pasa aquí
+                        'Authorization': token, 
                         'Content-Type': 'application/json'
                     }
                 });
 
                 if (!response.ok) {
-                    // Si el token es inválido o ha expirado, el servidor responderá con 401 o 403
+                    
                     if (response.status === 401 || response.status === 403) {
                         throw new Error('No autorizado. Su sesión ha expirado o el token es inválido.');
                     }
@@ -370,14 +347,14 @@
                 initializeApp();
             } catch (error) {
                 console.error("No se pudieron cargar los proyectos:", error);
-                // Mostrar un mensaje de error más específico al usuario
+                
                 const mapContainer = document.getElementById('map');
                 if (mapContainer) {
                     mapContainer.innerHTML = `<div class="flex justify-center items-center h-full text-center p-4"><p class="text-red-500 font-semibold">Error al cargar los proyectos.</p><p class="text-gray-600">${error.message}</p></div>`;
                 }
-                // Opcional: Redirigir al login si el error es de autenticación
+                
                 if (error.message.includes('No autorizado') || error.message.includes('Token de autenticación no encontrado')) {
-                    // Limpiar el token inválido y redirigir
+                    
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('authToken');
                     window.location.href = '../../index.html';
@@ -385,7 +362,6 @@
             }
         }
 
-        // Función para inicializar la aplicación después de cargar los datos
         function initializeApp() {
             initializeMap();
             createFilterButtons();
@@ -393,36 +369,28 @@
             loadMapProjectsList();
         }
 
-        // Inicializar mapa
         function initializeMap() {
-            // Crear mapa centrado en Algarrobo (ajusta las coordenadas si es necesario)
+            
             map = L.map('map').setView([-33.366677, -71.673103], 13);
 
-            // Añadir capa de tiles de OpenStreetMap
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Limpiar marcadores existentes
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
 
-            // Filtrar proyectos que tengan latitud y longitud
-            // Asumimos que la tabla proyectos sigue teniendo latitud y longitud como columnas directas
             const validProjects = allProjects.filter(project => project.latitud && project.longitud);
 
-            // Añadir marcadores de proyectos con popups mejorados
             validProjects.forEach(project => {
                 const lat = parseFloat(project.latitud);
                 const lng = parseFloat(project.longitud);
 
-                // Crear contenido del popup con todas las propiedades
                 let popupContent = `<div class="popup-content">`;
                 popupContent += `<div class="popup-title">${project.nombre}</div>`;
 
-                // Iterar sobre todas las claves del objeto proyecto
                 Object.keys(project).forEach(key => {
-                    // Omitir mostrar algunos campos técnicos si se desea
+                    
                     const value = formatValue(key, project[key]);
                     popupContent += `<div class="popup-info"><strong>${formatKey(key)}:</strong> ${value}</div>`;
                 });
@@ -433,8 +401,6 @@
                     </button>
                 </div>`;
 
-                // Crear icono personalizado según el área
-                // CAMBIO: Usamos project.area_nombre en lugar de project.area
                 const iconColor = getAreaColor(project.area_nombre);
                 const customIcon = L.divIcon({
                     html: `<div style="background-color: ${iconColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`,
@@ -451,34 +417,26 @@
                         className: 'custom-popup'
                     });
 
-                // Guardar referencia al área del proyecto para filtrado
-                // CAMBIO: Guardamos area_nombre en lugar de area
                 marker.area = project.area_nombre;
                 marker.projectId = project.id;
                 markers.push(marker);
             });
 
-            // Añadir leyenda al mapa
             addLegend();
         }
 
-        // Crear botones de filtro dinámicamente
         function createFilterButtons() {
             const filterContainer = document.getElementById('mapFilters');
-            filterContainer.innerHTML = ''; // Limpiar botones existentes
+            filterContainer.innerHTML = ''; 
 
-            // Añadir botón "Todos"
             const allButton = document.createElement('button');
             allButton.textContent = 'Todos';
             allButton.className = 'filter-button active px-4 py-2 rounded';
             allButton.onclick = () => filterMapByArea('all');
             filterContainer.appendChild(allButton);
 
-            // Obtener áreas únicas de los proyectos
-            // CAMBIO: Usamos area_nombre en lugar de area
             const uniqueAreas = [...new Set(allProjects.map(p => p.area_nombre))].sort();
 
-            // Crear un botón para cada área única
             uniqueAreas.forEach(area => {
                 const button = document.createElement('button');
                 button.textContent = area;
@@ -488,10 +446,9 @@
             });
         }
 
-        // Actualizar tarjetas de estadísticas
         function updateStatsCards() {
             const totalProjectsCount = allProjects.length;
-            // CAMBIO: Filtramos por area_nombre en lugar de area
+            
             const vialidadCount = allProjects.filter(p => p.area_nombre === 'Vialidad').length;
             const saneamientoCount = allProjects.filter(p => p.area_nombre === 'Saneamiento').length;
             const espaciosPublicosCount = allProjects.filter(p => p.area_nombre === 'Espacios Públicos').length;
@@ -502,9 +459,8 @@
             document.getElementById('espaciosPublicosProjects').textContent = espaciosPublicosCount;
         }
 
-        // Añadir leyenda al mapa
         function addLegend() {
-            // Eliminar leyenda existente si la hay
+            
             if (window.mapLegend) {
                 map.removeControl(window.mapLegend);
             }
@@ -515,8 +471,6 @@
                 const div = L.DomUtil.create('div', 'legend');
                 div.innerHTML = '<div class="legend-title">Áreas de Proyecto</div>';
 
-                // Obtener áreas únicas de los proyectos para la leyenda
-                // CAMBIO: Usamos area_nombre
                 const uniqueAreas = [...new Set(allProjects.map(p => p.area_nombre))].sort();
 
                 uniqueAreas.forEach(area => {
@@ -536,20 +490,17 @@
             legend.addTo(map);
         }
 
-        // Filtrar marcadores por área
         function filterMapByArea(area) {
-            // Actualizar botones de filtro
+            
             document.querySelectorAll('.filter-button').forEach(button => {
                 button.classList.remove('active');
             });
             event.target.classList.add('active');
 
-            // Ocultar todos los marcadores
             markers.forEach(marker => {
                 map.removeLayer(marker);
             });
 
-            // Mostrar solo los marcadores del área seleccionada
             if (area === 'all') {
                 markers.forEach(marker => {
                     marker.addTo(map);
@@ -562,30 +513,24 @@
                 });
             }
 
-            // Actualizar lista de proyectos
             loadMapProjectsList(area);
         }
 
-        // Restablecer vista del mapa
         function resetMapView() {
             map.setView([-33.366677, -71.673103], 13);
 
-            // Restablecer filtros
             document.querySelectorAll('.filter-button').forEach(button => {
                 button.classList.remove('active');
             });
             document.querySelector('.filter-button').classList.add('active');
 
-            // Mostrar todos los marcadores
             markers.forEach(marker => {
                 marker.addTo(map);
             });
 
-            // Actualizar lista de proyectos
             loadMapProjectsList('all');
         }
 
-        // Toggle pantalla completa
         function toggleMapFullscreen() {
             const mapContainer = document.getElementById('map');
 
@@ -598,18 +543,16 @@
             }
         }
 
-        // Cargar lista de proyectos en el mapa
         function loadMapProjectsList(filterArea = 'all') {
             const listContainer = document.getElementById('mapProjectsList');
             listContainer.innerHTML = '';
 
             let filteredProjects = allProjects;
             if (filterArea !== 'all') {
-                // CAMBIO: Filtrar por area_nombre
+                
                 filteredProjects = allProjects.filter(project => project.area_nombre === filterArea);
             }
 
-            // Filtrar proyectos que tengan latitud y longitud para mostrar en la lista
             const validProjects = filteredProjects.filter(project => project.latitud && project.longitud);
 
             validProjects.forEach(project => {
@@ -617,7 +560,6 @@
                 projectCard.className = 'bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition';
                 projectCard.onclick = () => focusProjectOnMap(project.id);
 
-                // CAMBIO: Usar area_nombre
                 const areaColor = getAreaColor(project.area_nombre);
 
                 projectCard.innerHTML = `
@@ -640,7 +582,6 @@
             });
         }
 
-        // Enfocar un proyecto en el mapa
         function focusProjectOnMap(projectId) {
             const project = allProjects.find(p => p.id === projectId);
             if (project && project.latitud && project.longitud) {
@@ -648,7 +589,6 @@
                 const lng = parseFloat(project.longitud);
                 map.setView([lat, lng], 16);
 
-                // Encontrar y abrir el popup del marcador
                 markers.forEach(marker => {
                     if (marker.projectId === projectId) {
                         marker.openPopup();
@@ -657,7 +597,6 @@
             }
         }
 
-        // Mostrar detalles del proyecto en el panel lateral
         function showProjectDetailsFromMap(projectId) {
             const project = allProjects.find(p => p.id === projectId);
             if (!project) return;
@@ -665,18 +604,15 @@
             const panel = document.getElementById('projectDetailsPanel');
             const content = document.getElementById('projectDetailsContent');
 
-            // Limpiar contenido anterior
             content.innerHTML = '';
 
-            // Añadir título del proyecto
             const title = document.createElement('h3');
             title.className = 'text-lg font-bold mb-4';
             title.textContent = project.nombre;
             content.appendChild(title);
 
-            // Iterar sobre todas las claves del objeto proyecto y mostrarlas
             Object.keys(project).forEach(key => {
-                // Omitir visualizar IDs técnicos si es necesario, o mostrar todo
+                
                 const detailItem = document.createElement('div');
                 detailItem.className = 'detail-item';
 
@@ -692,17 +628,14 @@
                 content.appendChild(detailItem);
             });
 
-            // Mostrar el panel
             panel.classList.add('show');
         }
 
-        // Cerrar el panel de detalles
         function closeProjectDetails() {
             const panel = document.getElementById('projectDetailsPanel');
             panel.classList.remove('show');
         }
 
-        // Formatear número con separadores de miles
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
@@ -713,7 +646,6 @@
             location.reload();
         }
 
-        // Verificar si el usuario está logueado al cargar la página y luego cargar los proyectos
         document.addEventListener('DOMContentLoaded', function () {
             checkLoginStatus();
             fetchProjects();

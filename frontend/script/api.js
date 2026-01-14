@@ -1,8 +1,4 @@
 
-/**
- * API Wrapper - Geoportal Municipal
- * Centraliza las peticiones fetch y el manejo de tokens.
- */
 
 const API_CONFIG = {
     BASE_URL: "https://186.67.61.251:8000",
@@ -19,7 +15,6 @@ const api = {
             'Authorization': API_CONFIG.token ? `Bearer ${API_CONFIG.token}` : ''
         };
 
-        // Si no es FormData, añadir Content-Type por defecto
         if (!(options.body instanceof FormData)) {
             headers['Content-Type'] = 'application/json';
         }
@@ -35,7 +30,6 @@ const api = {
         try {
             const response = await fetch(url, config);
 
-            // Manejo de expiración de sesión (401 Unauthorized)
             if (response.status === 401) {
                 console.warn("Sesión expirada o inválida");
                 if (typeof logout === 'function') {

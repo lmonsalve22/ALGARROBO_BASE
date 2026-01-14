@@ -219,10 +219,12 @@ CREATE TABLE proyectos_hitos (
     id SERIAL PRIMARY KEY,
     proyecto_id INT NOT NULL REFERENCES proyectos(id),
 
-    tipo_hito VARCHAR(100) NOT NULL,
-
     fecha DATE NOT NULL,
     observacion TEXT,
+
+    categoria_calendario INT REFERENCES hitoscalendario(id),
+
+    categoria_hito INT REFERENCES hitoscalendario(id),
 
     creado_por INT NOT NULL REFERENCES users(user_id),
     creado_en TIMESTAMP NOT NULL DEFAULT now()
@@ -322,6 +324,7 @@ CREATE TABLE calendario_eventos (
     fecha_inicio TIMESTAMP NOT NULL,
     fecha_termino TIMESTAMP,
     todo_el_dia BOOLEAN DEFAULT TRUE,
+    categoria_calendario INT REFERENCES hitoscalendario(id),
     -- =================================
     -- Origen del evento (CLAVE)
     -- =================================
@@ -336,6 +339,7 @@ CREATE TABLE calendario_eventos (
     -- =================================
     ubicacion VARCHAR(200),
     activo BOOLEAN DEFAULT TRUE,
+    categoria_calendario INT REFERENCES hitoscalendario(id),
     -- =================================
     -- Auditoría
     -- =================================
@@ -346,6 +350,46 @@ CREATE TABLE calendario_eventos (
     -- =================================
     UNIQUE (origen_tipo, origen_id)
 );
+
+
+CREATE TABLE hitoscalendario (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(150) UNIQUE NOT NULL,
+    is_hito BOOLEAN DEFAULT TRUE
+);
+
+INSERT INTO hitoscalendario (nombre, is_hito) VALUES
+-- Tipos de Hito (select tipo_hito)
+('RECEPCION_OBSERVACIONES', TRUE),
+('RESPUESTA_OBSERVACIONES', TRUE),
+('APROBACION_CONVENIO', TRUE),
+('INICIO_LICITACION', TRUE),
+('APROBACION_URS', TRUE),
+('APROBACION_NIVEL_CENTRAL', TRUE),
+('OTRO', TRUE),
+
+-- Hitos de proyectos
+('HITO_INICIO_PROYECTO', TRUE),
+('HITO_TERMINO_PROYECTO', TRUE),
+('ENTREGA_IMPORTANTE', TRUE),
+('INAUGURACION', TRUE),
+('POSTULACION_FONDO', TRUE),
+('VENCIMIENTO_PERMISO', TRUE),
+('PLAZO_RENDICION', TRUE),
+
+-- Calendario / gestión
+('FECHA_ADMINISTRATIVA', FALSE),
+('REUNION_COORDINACION', FALSE),
+('REUNION_EQUIPO', FALSE),
+('VISITA_TERRENO', FALSE),
+('COORDINACION_CONTRATISTA', FALSE),
+
+-- Eventos
+('EVENTO_MUNICIPAL', FALSE),
+('CEREMONIA', FALSE),
+('EVENTO_COMUNITARIO_PROYECTO', FALSE)
+ON CONFLICT (nombre) DO NOTHING;
+
 
 
 

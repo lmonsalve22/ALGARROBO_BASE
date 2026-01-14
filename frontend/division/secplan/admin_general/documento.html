@@ -9,17 +9,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Gestión Documental</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        /* Estilos generales */
+        
         .card-hover {
             transition: all 0.3s ease;
         }
@@ -29,7 +26,6 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Modal Base */
         .modal {
             display: none;
             position: fixed;
@@ -48,7 +44,6 @@
             align-items: center;
         }
 
-        /* Contenido Modal Estándar (Subir) */
         .modal-content {
             background: white;
             border-radius: 12px;
@@ -61,7 +56,6 @@
             position: relative;
         }
 
-        /* Contenido Modal Visor (Grande) */
         .modal-content-viewer {
             background: white;
             border-radius: 12px;
@@ -103,7 +97,6 @@
             color: #1e293b;
         }
 
-        /* Formularios y Filtros */
         .form-group {
             margin-bottom: 1.25rem;
         }
@@ -135,7 +128,6 @@
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        /* Custom File Input */
         .file-upload-wrapper {
             position: relative;
             width: 100%;
@@ -164,7 +156,6 @@
             cursor: pointer;
         }
 
-        /* Toast Notification */
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -264,12 +255,10 @@
             color: #92400e;
         }
 
-        /* Transición suave para la tabla de documentos */
         .fade-in {
             animation: fadeIn 0.4s ease-in-out;
         }
 
-        /* Estilos específicos del visor */
         #docViewerFrame {
             width: 100%;
             height: 100%;
@@ -294,26 +283,23 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header -->
+    
     <div id="headerRender"></div>
 
     <div class="flex">
         <div id="asideRender"></div>
 
-        <!-- Main Content -->
         <main class="flex-1 p-6">
             <div id="documentsView" class="view-content">
 
-                <!-- Page Header -->
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión Documental</h2>
                     <p class="text-gray-600">Repositorio central de archivos SECPLAC</p>
                 </div>
 
-                <!-- BARRA DE FILTROS -->
                 <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-indigo-500">
                     <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
-                        <!-- Buscador -->
+                        
                         <div class="w-full md:w-1/3">
                             <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Buscar
                                 Proyecto</label>
@@ -327,7 +313,6 @@
                             </div>
                         </div>
 
-                        <!-- Filtros Select Conectados -->
                         <div class="flex flex-1 w-full gap-3">
                             <div class="flex-1">
                                 <label for="filterArea"
@@ -347,7 +332,6 @@
                             </div>
                         </div>
 
-                        <!-- Botón Limpiar -->
                         <div>
                             <button onclick="clearFilters()"
                                 class="mt-6 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
@@ -357,7 +341,6 @@
                     </div>
                 </div>
 
-                <!-- Project Selector Card -->
                 <div class="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
                     <div class="flex flex-col md:flex-row gap-4 items-end">
                         <div class="flex-1 w-full">
@@ -382,10 +365,8 @@
                     </div>
                 </div>
 
-                <!-- Actions & Recent Activity -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-                    <!-- Upload Action Area -->
                     <div class="lg:col-span-1">
                         <div class="bg-white rounded-lg shadow p-6 h-full flex flex-col items-center justify-center text-center border border-dashed border-gray-300 hover:border-indigo-500 transition cursor-pointer group"
                             onclick="openUploadModal()">
@@ -402,7 +383,6 @@
                         </div>
                     </div>
 
-                    <!-- Recent Uploads Log -->
                     <div class="lg:col-span-2">
                         <div class="bg-white rounded-lg shadow overflow-hidden h-full">
                             <div
@@ -442,10 +422,9 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN LISTADO DE DOCUMENTOS DEL PROYECTO -->
                 <div id="projectDocumentsPanel"
                     class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
-                    <!-- Header del Panel -->
+                    
                     <div
                         class="px-6 py-4 border-b border-gray-200 bg-indigo-50 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
@@ -466,7 +445,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabla de Documentos -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -492,7 +470,7 @@
                                 </tr>
                             </thead>
                             <tbody id="projectDocsBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Se llena con JS -->
+                                
                             </tbody>
                         </table>
                         <div id="docsLoading" class="hidden p-8 text-center">
@@ -510,7 +488,6 @@
         </main>
     </div>
 
-    <!-- MODAL DE SUBIDA DE ARCHIVO -->
     <div id="uploadModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -519,7 +496,7 @@
             </div>
 
             <form id="uploadForm" onsubmit="handleUpload(event)">
-                <!-- Contexto Proyecto -->
+                
                 <div class="form-group p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <label class="text-xs text-gray-500 uppercase">Proyecto Destino</label>
                     <div class="flex items-center gap-2">
@@ -529,7 +506,6 @@
                     </div>
                 </div>
 
-                <!-- Archivo -->
                 <div class="form-group">
                     <label>Archivo *</label>
                     <div class="file-upload-wrapper">
@@ -540,7 +516,6 @@
                     </div>
                 </div>
 
-                <!-- Tipo y Descripción -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label for="uploadType">Tipo de Documento</label>
@@ -573,7 +548,6 @@
         </div>
     </div>
 
-    <!-- NUEVO MODAL VISOR DE DOCUMENTOS -->
     <div id="viewerModal" class="modal">
         <div class="modal-content-viewer">
             <div class="modal-header">
@@ -597,19 +571,17 @@
             </div>
 
             <div class="flex-1 relative bg-gray-800 overflow-hidden">
-                <!-- Loading Overlay -->
+                
                 <div id="viewerLoading" class="viewer-loading-overlay">
                     <div class="loading-dark mb-3"></div>
                     <p class="text-sm text-gray-500">Cargando documento...</p>
                 </div>
 
-                <!-- Iframe contenedor -->
                 <iframe id="docViewerFrame" src="about:blank"></iframe>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast">
         <span id="toastIcon"></span>
         <span id="toastMessage" class="font-medium text-gray-800"></span>
@@ -618,10 +590,10 @@
     <script src="../../../script/layout.js"></script>
 
     <script>
-        // --- CONFIGURACIÓN ---
+        
         const API_BASE = 'https://186.67.61.251:8000';
-        let allProjects = []; // Lista maestra de proyectos
-        let currentViewerBlobUrl = null; // Para limpiar memoria
+        let allProjects = []; 
+        let currentViewerBlobUrl = null; 
 
         function getAuthHeaders() {
             const token = localStorage.getItem('authToken');
@@ -638,12 +610,10 @@
         document.addEventListener('DOMContentLoaded', function () {
             loadProjects();
 
-            // Listeners de filtros
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterStatus').addEventListener('change', applyFilters);
 
-            // Listener para cargar documentos cuando se selecciona un proyecto
             document.getElementById('projectSelect').addEventListener('change', function (e) {
                 const pid = e.target.value;
                 const projectName = e.target.options[e.target.selectedIndex].text;
@@ -655,8 +625,6 @@
                 }
             });
         });
-
-        // --- LÓGICA DE FILTROS Y PROYECTOS ---
 
         async function loadProjects() {
             const headers = getAuthHeaders();
@@ -777,8 +745,6 @@
             countBadge.textContent = projectList.length;
         }
 
-        // --- LÓGICA DE LISTADO Y VISUALIZACIÓN ---
-
         async function loadProjectDocuments(pid, projectName) {
             const panel = document.getElementById('projectDocumentsPanel');
             const tbody = document.getElementById('projectDocsBody');
@@ -815,7 +781,6 @@
                         const tr = document.createElement('tr');
                         tr.className = "hover:bg-gray-50 transition";
 
-                        // Icono según tipo
                         let typeIcon = 'fa-file';
                         let typeColor = 'text-gray-400';
                         if (doc.tipo_documento) {
@@ -861,20 +826,16 @@
             }
         }
 
-        // --- LÓGICA DEL VISOR ---
-
         async function openViewer(docId, docName) {
             const modal = document.getElementById('viewerModal');
             const iframe = document.getElementById('docViewerFrame');
             const loading = document.getElementById('viewerLoading');
             const nameDisplay = document.getElementById('viewerFileName');
 
-            // Actualizar UI
             nameDisplay.textContent = docName;
             loading.classList.remove('hidden');
-            iframe.src = "about:blank"; // Limpiar anterior
+            iframe.src = "about:blank"; 
 
-            // Guardar referencia para descarga opcional
             document.getElementById('btnViewerDownload').onclick = () => downloadDocumentById(docId, docName);
 
             modal.classList.add('active');
@@ -882,17 +843,14 @@
             try {
                 const blob = await api.getBlob(`/documentos/${docId}/view`);
 
-                // Liberar URL anterior si existe
                 if (currentViewerBlobUrl) {
                     URL.revokeObjectURL(currentViewerBlobUrl);
                 }
                 const url = URL.createObjectURL(blob);
                 currentViewerBlobUrl = url;
 
-                // Asignar al iframe
                 iframe.src = url;
 
-                // Ocultar loading cuando el iframe empieza a cargar contenido
                 iframe.onload = () => {
                     loading.classList.add('hidden');
                 };
@@ -908,14 +866,13 @@
 
             modal.classList.remove('active');
 
-            // Limpiar iframe para detener reproducción de audio/video si existiera
             setTimeout(() => {
                 iframe.src = "about:blank";
                 if (currentViewerBlobUrl) {
                     URL.revokeObjectURL(currentViewerBlobUrl);
                     currentViewerBlobUrl = null;
                 }
-            }, 300); // Esperar a que termine la transición CSS
+            }, 300); 
         }
 
         function downloadDocumentById(docId, fileName) {
@@ -943,8 +900,6 @@
                     showToast("No se pudo descargar el archivo", "error");
                 });
         }
-
-        // --- DESCARGA ZIP Y UTILIDADES ---
 
         async function downloadProjectZip() {
             const pid = document.getElementById('projectSelect').value;
@@ -999,8 +954,6 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
         }
-
-        // --- GESTIÓN DEL MODAL DE SUBIDA ---
 
         function openUploadModal() {
             const projectId = document.getElementById('projectSelect').value;
@@ -1066,8 +1019,6 @@
                 document.getElementById('btnUploadText').textContent = originalText;
             }
         }
-
-        // --- UTILIDADES VISUALES (LOG) ---
 
         function addToLog(projectId, fileName, status) {
             const tbody = document.getElementById('uploadLogBody');

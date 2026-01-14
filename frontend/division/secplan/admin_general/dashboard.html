@@ -11,16 +11,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Algarrobo</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
@@ -47,7 +43,7 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header -->
+    
     <div id="headerRender">
     </div>
 
@@ -55,69 +51,9 @@
         <div id="asideRender">
 
         </div>
-        <!-- Sidebar
-        <aside id="sidebar" class="w-64 bg-white shadow-lg h-screen sticky top-0 sidebar-transition z-30">
-            <nav class="p-4">
-                <ul class="space-y-2">
-                    <li>
-                        <a href="dashboard.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
-                            <i class="fas fa-tachometer-alt w-5"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="proyecto.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
-                            <i class="fas fa-map-marked-alt w-5"></i>
-                            <span>Proyectos</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="mapa.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
-                            <i class="fas fa-map-marked-alt w-5"></i>
-                            <span>Mapa</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="informe.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
-                            <i class="fas fa-chart-bar w-5"></i>
-                            <span>Informes</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="calendario.html"  class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
-                            <i class="fas fa-calendar-alt w-5"></i>
-                            <span>Calendario</span>
-                        </a>
-                    </li>
 
-                    <li class="pt-4 mt-4 border-t">
-                        <p class="text-xs text-gray-500 uppercase font-semibold px-3">Módulos</p>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
-                            <i class="fas fa-road w-5"></i>
-                            <span>Vialidad</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
-                            <i class="fas fa-tint w-5"></i>
-                            <span>Saneamiento</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700">
-                            <i class="fas fa-tree w-5"></i>
-                            <span>Espacios Públicos</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-        -->
-        <!-- Main Content -->
         <main class="flex-1 p-6">
-            <!-- Dashboard View -->
+            
             <div id="dashboardView" class="view-content">
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Dashboard Principal</h2>
@@ -192,7 +128,7 @@
                 <div class="mt-6 bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold mb-4">Proyectos Recientes</h3>
                     <div id="recentProjects" class="space-y-4">
-                        <!-- Los proyectos se cargarán dinámicamente aquí -->
+                        
                         <div class="text-center py-4">
                             <i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i>
                             <p class="text-gray-500 mt-2">Cargando proyectos...</p>
@@ -206,17 +142,15 @@
     <script src="../../../script/layout.js"></script>
 
     <script>
-        // Variables globales para los gráficos
+        
         let areaChart = null;
         let statusChart = null;
 
-        // Verificar si el usuario está logueado al cargar la página
         document.addEventListener('DOMContentLoaded', function () {
-            //checkLoginStatus();
+            
             loadDashboardData();
         });
 
-        // Función para cargar datos del dashboard desde la API
         async function loadDashboardData() {
             try {
                 const projects = await api.get('/proyectos');
@@ -228,15 +162,14 @@
             }
         }
 
-        // Función para actualizar el dashboard con los datos reales
         function updateDashboardWithRealData(projects) {
-            // 1. Actualizar tarjetas de estadísticas principales
+            
             document.getElementById('activeProjectsCount').textContent = projects.length;
-            document.getElementById('projectsChange').textContent = '+5%'; // Simulado
+            document.getElementById('projectsChange').textContent = '+5%'; 
 
             const totalInvestment = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
             document.getElementById('totalInvestment').textContent = utils.formatCompactNumber(totalInvestment);
-            document.getElementById('investmentChange').textContent = '+12%'; // Simulado
+            document.getElementById('investmentChange').textContent = '+12%'; 
 
             const totalProgress = projects.reduce((sum, p) => sum + (parseFloat(p.avance_total_decimal) || 0), 0);
             const averageProgress = projects.length > 0 ? (totalProgress / projects.length) * 100 : 0;
@@ -249,31 +182,26 @@
             updateRecentProjects(projects);
         }
 
-        // Función para actualizar los gráficos
         function updateCharts(projects) {
-            // Agrupar proyectos por área
+            
             const projectsByArea = {};
             projects.forEach(project => {
                 const area = project.area || 'Sin clasificar';
                 projectsByArea[area] = (projectsByArea[area] || 0) + 1;
             });
 
-            // Ordenar claves alfabéticamente
             const areaKeys = Object.keys(projectsByArea).sort();
             const areaValues = areaKeys.map(key => projectsByArea[key]);
 
-            // Agrupar proyectos por estado
             const projectsByStatus = {};
             projects.forEach(project => {
                 const status = project.estado_proyecto || 'Sin estado';
                 projectsByStatus[status] = (projectsByStatus[status] || 0) + 1;
             });
 
-            // Ordenar claves alfabéticamente
             const statusKeys = Object.keys(projectsByStatus).sort();
             const statusValues = statusKeys.map(key => projectsByStatus[key]);
 
-            // Actualizar gráfico de áreas
             const areaCtx = document.getElementById('areaChart');
             if (areaCtx) {
                 if (areaChart) areaChart.destroy();
@@ -297,7 +225,6 @@
                 });
             }
 
-            // Actualizar gráfico de estados
             const statusCtx = document.getElementById('statusChart');
             if (statusCtx) {
                 if (statusChart) statusChart.destroy();

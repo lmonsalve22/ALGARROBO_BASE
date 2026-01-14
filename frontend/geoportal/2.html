@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Algarrobo | Plataforma de Datos Geoespaciales</title>
 
-    <!-- Leaflet CSS (Última versión) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
 
-    <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- Variables de Diseño (Nueva Paleta de Colores) --- */
+        
         :root {
             --primary-color: #007B5E;
             --secondary-color: #006644;
@@ -28,7 +26,6 @@
             --transition-speed: 0.3s;
         }
 
-        /* --- Estilos Generales y Reset --- */
         * {
             margin: 0;
             padding: 0;
@@ -81,7 +78,6 @@
             color: var(--accent-color);
         }
 
-        /* --- Header Optimizado con Gradiente Animado y Efecto Corporativo --- */
         .main-header {
             position: fixed;
             top: 0;
@@ -122,7 +118,6 @@
             box-shadow: none;
         }
 
-        /* Línea indicadora en la parte inferior del header */
         .main-header::after {
             content: '';
             position: absolute;
@@ -206,7 +201,6 @@
             transition: all var(--transition-speed) ease;
         }
 
-        /* Animación subrayado deslizante mejorada */
         .main-nav a::after {
             content: '';
             position: absolute;
@@ -222,7 +216,6 @@
             width: 100%;
         }
 
-        /* Efecto de resplandor al pasar el ratón */
         .main-nav a:hover {
             text-shadow: 0 0 5px rgba(255,255,255,0.5);
         }
@@ -239,7 +232,6 @@
             transform: scale(1.1);
         }
 
-        /* Botón flotante corporativo para mostrar/ocultar header */
         .header-toggle {
             position: fixed;
             top: 20px;
@@ -276,7 +268,6 @@
             transform: scale(0.95) rotate(-5deg);
         }
 
-        /* Efecto de pulso para llamar la atención */
         .header-toggle.pulse {
             animation: pulse 2s infinite;
         }
@@ -298,7 +289,6 @@
             transition: transform var(--transition-speed) ease;
         }
 
-        /* Indicador de estado del header */
         .header-indicator {
             position: fixed;
             top: 85px;
@@ -320,7 +310,6 @@
             transform: translateY(0);
         }
 
-        /* --- Contenedor Principal del Mapa --- */
         .map-container {
             position: relative;
             height: 100vh;
@@ -334,7 +323,6 @@
             z-index: 1;
         }
 
-        /* Asegurar que los controles de Leaflet sean visibles */
         .leaflet-control-container {
             z-index: 999;
         }
@@ -347,7 +335,6 @@
             right: 10px !important;
         }
 
-        /* --- Panel de Control de Capas Mejorado con Glassmorphism --- */
         .layers-panel {
             position: absolute;
             top: 20px;
@@ -480,7 +467,6 @@
             font-size: 0.9rem;
         }
 
-        /* --- Panel de Información Mejorado con Glassmorphism --- */
         .info-panel {
             position: absolute;
             bottom: 20px;
@@ -560,7 +546,6 @@
             border-bottom: none;
         }
 
-        /* --- Barra de Herramientas Simplificada con Microinteracciones --- */
         .toolbar {
             position: absolute;
             top: 20px;
@@ -634,7 +619,6 @@
             color: var(--white);
         }
 
-        /* --- Barra de Búsqueda Mejorada con Tooltips --- */
         .search-container {
             position: absolute;
             top: 80px;
@@ -719,7 +703,6 @@
             transform: translateX(5px);
         }
 
-        /* --- Indicador de Carga Personalizado --- */
         .loading-indicator {
             position: absolute;
             top: 50%;
@@ -743,7 +726,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- Animación de Carga Temática Personalizada --- */
         .custom-loader {
             width: 80px;
             height: 40px;
@@ -795,7 +777,6 @@
             }
         }
 
-        /* --- Escala y Norte --- */
         .map-scale {
             position: absolute;
             bottom: 20px;
@@ -826,7 +807,6 @@
             background-color: rgba(255, 255, 255, 0.4);
         }
 
-        /* --- Footer con Degradado --- */
         .main-footer {
             background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
             background-size: 200% 200%;
@@ -835,7 +815,7 @@
             text-align: center;
             padding: 2rem 0;
             margin-top: 5rem;
-            display: none; /* Oculto para centrar la atención en el mapa */
+            display: none; 
         }
 
         .main-footer p {
@@ -848,7 +828,6 @@
             font-weight: 600;
         }
 
-        /* --- Tooltips Enriquecidos --- */
         .tooltip {
             position: relative;
             display: inline-block;
@@ -888,7 +867,6 @@
             opacity: 1;
         }
 
-        /* --- Popups Estilizados --- */
         .leaflet-popup-content-wrapper {
             background-color: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
@@ -928,7 +906,6 @@
             color: var(--dark-gray);
         }
 
-        /* --- Efecto Parallax Sutil --- */
         .parallax-container {
             position: absolute;
             top: 0;
@@ -950,7 +927,6 @@
             will-change: transform;
         }
 
-        /* --- Diseño Responsivo (Mobile) --- */
         @media (max-width: 768px) {
             .main-header .container {
                 flex-wrap: wrap;
@@ -1012,8 +988,7 @@
             .tool-button:last-child {
                 border-right: none;
             }
-            
-            /* Ajustes para controles en móvil */
+
             .leaflet-top {
                 top: 60px !important;
             }
@@ -1033,7 +1008,6 @@
 </head>
 <body>
 
-    <!-- ==================== HEADER ==================== -->
     <header class="main-header" id="main-header">
         <div class="container">
             <a href="index.html" class="logo">
@@ -1053,25 +1027,20 @@
         </div>
     </header>
 
-    <!-- Botón flotante corporativo para mostrar/ocultar header -->
-    <!-- El icono inicial es 'ojo tachado' porque el header está visible y la acción es ocultarlo -->
     <div class="header-toggle pulse" id="header-toggle">
         <i class="fas fa-eye-slash"></i>
     </div>
 
-    <!-- Indicador de estado del header -->
     <div class="header-indicator" id="header-indicator">Header visible</div>
 
-    <!-- ==================== MAPA Y CONTROLES ==================== -->
     <div class="map-container">
-        <!-- Efecto Parallax Sutil -->
+        
         <div class="parallax-container">
             <div class="parallax-element" id="parallax-element"></div>
         </div>
         
         <div id="map"></div>
-        
-        <!-- Barra de Herramientas Simplificada -->
+
         <div class="toolbar" id="toolbar">
             <div class="tooltip">
                 <button class="tool-button" id="home-button" title="Inicio">
@@ -1110,8 +1079,7 @@
                 <span class="tooltiptext">Actualizar todas las capas</span>
             </div>
         </div>
-        
-        <!-- Barra de Búsqueda -->
+
         <div class="search-container" id="search-container">
             <input type="text" class="search-input" id="search-input" placeholder="Buscar dirección o lugar...">
             <button class="search-button" id="search-button">
@@ -1119,8 +1087,7 @@
             </button>
             <div class="search-results" id="search-results"></div>
         </div>
-        
-        <!-- Panel de Control de Capas -->
+
         <div class="layers-panel" id="layers-panel">
             <div class="panel-header" id="layers-panel-header">
                 <div class="panel-title">Capas</div>
@@ -1129,7 +1096,7 @@
                 </div>
             </div>
             <div class="panel-content">
-                <!-- Capas Base -->
+                
                 <div class="layer-group">
                     <div class="layer-group-title">
                         <i class="fas fa-layer-group"></i>
@@ -1150,15 +1117,14 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Capas Temáticas -->
+
                 <div class="layer-group">
                     <div class="layer-group-title">
                         <i class="fas fa-layer-group"></i>
                         Capas Temáticas
                     </div>
                     <div class="layer-group-content" id="thematic-layers-container">
-                        <!-- Las capas temáticas se cargarán dinámicamente aquí -->
+                        
                         <div class="layer-item">
                             <div class="custom-loader">
                                 <div class="wave"></div>
@@ -1173,8 +1139,7 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Panel de Información -->
+
         <div class="info-panel" id="info-panel">
             <div class="info-panel-header" id="info-panel-header">
                 <div class="panel-title">Información</div>
@@ -1188,38 +1153,31 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Indicador de Carga -->
+
         <div class="loading-indicator" id="loading-indicator">
             <div class="loading-spinner"></div>
         </div>
-        
-        <!-- Escala y Norte -->
+
         <div class="map-north">
             <i class="fas fa-location-arrow" style="transform: rotate(0deg);"></i>
         </div>
         <div class="map-scale" id="map-scale"></div>
     </div>
 
-    <!-- ==================== FOOTER ==================== -->
     <footer class="main-footer">
         <div class="container">
             <p>&copy; 2024 Geoportal Algarrobo. Municipalidad de Algarrobo, Chile. Todos los derechos reservados. Desarrollado con <i class="fas fa-heart" style="color: var(--accent2-color);"></i> usando <a href="https://leafletjs.com/" target="_blank">Leaflet</a>.</p>
         </div>
     </footer>
 
-    <!-- Leaflet JS (Última versión) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
 
-    <!-- Script para inicializar el mapa y la funcionalidad -->
     <script>
-        // --- INICIALIZACIÓN DEL MAPA ---
-        // Coordenadas iniciales y nivel de zoom (Algarrobo, Chile)
+
         const map = L.map('map').setView([-33.3549, -71.6559], 13);
 
-        // Capas base
         const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19
@@ -1235,25 +1193,20 @@
             maxZoom: 17
         });
 
-        // Añadir la capa base inicial
         osmLayer.addTo(map);
 
-        // Grupo de capas base
         const baseLayers = {
             "OpenStreetMap": osmLayer,
             "Satélite": satelliteLayer,
             "Terreno": terrainLayer
         };
 
-        // Grupo de capas temáticas (vacío inicialmente)
         const thematicLayers = {};
 
-        // --- CONTROL DE CAPAS ---
         const layerControl = L.control.layers(baseLayers, thematicLayers, {
             position: 'topright'
         }).addTo(map);
 
-        // --- FUNCIONALIDAD DEL PANEL DE CAPAS ---
         const layersPanel = document.getElementById('layers-panel');
         const layersPanelHeader = document.getElementById('layers-panel-header');
         const infoPanel = document.getElementById('info-panel');
@@ -1263,60 +1216,51 @@
         const headerIndicator = document.getElementById('header-indicator');
         const thematicLayersContainer = document.getElementById('thematic-layers-container');
 
-        // Toggle del panel de capas
         layersPanelHeader.addEventListener('click', () => {
             layersPanel.classList.toggle('collapsed');
         });
 
-        // Toggle del panel de información
         infoPanelHeader.addEventListener('click', () => {
             infoPanel.classList.toggle('collapsed');
         });
 
-        // Toggle del header con iconos de ojo mejorados
         headerToggle.addEventListener('click', () => {
             mainHeader.classList.toggle('collapsed');
             const icon = headerToggle.querySelector('i');
             
             if (mainHeader.classList.contains('collapsed')) {
-                // El header está oculto, así que el botón debe mostrarlo
+                
                 icon.className = 'fas fa-eye';
                 headerIndicator.textContent = 'Header oculto';
                 headerIndicator.classList.add('show');
             } else {
-                // El header está visible, así que el botón debe ocultarlo
+                
                 icon.className = 'fas fa-eye-slash';
                 headerIndicator.textContent = 'Header visible';
                 headerIndicator.classList.add('show');
             }
-            
-            // Ocultar el indicador después de 2 segundos
+
             setTimeout(() => {
                 headerIndicator.classList.remove('show');
             }, 2000);
-            
-            // Quitar la clase de pulso cuando se interactúa con el botón
+
             headerToggle.classList.remove('pulse');
         });
 
-        // Auto-colapsar header después de 5 segundos con animación suave
         setTimeout(() => {
             mainHeader.classList.add('collapsed');
             const icon = headerToggle.querySelector('i');
-            icon.className = 'fas fa-eye'; // Cambiar a icono de 'ojo' para mostrar
+            icon.className = 'fas fa-eye'; 
             headerIndicator.textContent = 'Header auto-ocultado';
             headerIndicator.classList.add('show');
-            
-            // Ocultar el indicador después de 3 segundos
+
             setTimeout(() => {
                 headerIndicator.classList.remove('show');
             }, 3000);
-            
-            // Añadir efecto de pulso para llamar la atención
+
             headerToggle.classList.add('pulse');
         }, 5000);
 
-        // Toggle de grupos de capas
         document.querySelectorAll('.layer-group-title').forEach(title => {
             title.addEventListener('click', () => {
                 const group = title.parentElement;
@@ -1324,14 +1268,12 @@
             });
         });
 
-        // Cambio de capa base con transición suave
         document.querySelectorAll('input[name="base-layer"]').forEach(input => {
             input.addEventListener('change', () => {
                 if (input.checked) {
-                    // Mostrar indicador de carga
-                    showLoading();
                     
-                    // Eliminar todas las capas base actuales con fade out
+                    showLoading();
+
                     map.eachLayer(layer => {
                         if (layer instanceof L.TileLayer) {
                             layer.setOpacity(0);
@@ -1340,8 +1282,7 @@
                             }, 300);
                         }
                     });
-                    
-                    // Añadir la nueva capa base con fade in
+
                     setTimeout(() => {
                         let newLayer;
                         if (input.id === 'osm') {
@@ -1354,8 +1295,7 @@
                         
                         newLayer.setOpacity(0);
                         newLayer.addTo(map);
-                        
-                        // Animación de fadeIn
+
                         let opacity = 0;
                         const fadeInInterval = setInterval(() => {
                             opacity += 0.1;
@@ -1370,13 +1310,11 @@
             });
         });
 
-        // --- CONFIGURACIÓN DE CAPAS TEMÁTICAS DINÁMICAS ---
-        // Definición de las capas temáticas con sus URLs y configuración
         const thematicLayersConfig = [
                         {
                 id: 'proyectos1',
                 name: 'Proyectos',
-                //url: 'https://raw.githubusercontent.com/Sud-Austral/ALGARROBO_WEB/refs/heads/main/data/PREDIOS.json',
+                
                 url: 'https://raw.githubusercontent.com/Sud-Austral/ALGARROBO_WEB/refs/heads/main/data/proyectos.geojson',
                 type: 'geojson',
                 style: {
@@ -1391,17 +1329,14 @@
         
         ];
 
-        // --- FUNCIÓN PARA CARGAR CAPAS DINÁMICAMENTE ---
         function loadThematicLayers() {
-            // Mostrar indicador de carga
+            
             showLoading();
-            
-            // Limpiar el contenedor de capas temáticas
+
             thematicLayersContainer.innerHTML = '';
-            
-            // Cargar cada capa temática
+
             thematicLayersConfig.forEach(layerConfig => {
-                // Crear el elemento HTML para la capa
+                
                 const layerItem = document.createElement('div');
                 layerItem.className = 'layer-item';
                 
@@ -1418,14 +1353,13 @@
                 layerItem.appendChild(checkbox);
                 layerItem.appendChild(label);
                 thematicLayersContainer.appendChild(layerItem);
-                
-                // Agregar evento para mostrar/ocultar la capa
+
                 checkbox.addEventListener('change', function() {
                     if (this.checked) {
                         loadLayer(layerConfig);
                     } else {
                         if (thematicLayers[layerConfig.name]) {
-                            // Transición de fade out al ocultar la capa
+                            
                             const layer = thematicLayers[layerConfig.name];
                             if (layer instanceof L.GeoJSON) {
                                 layer.eachLayer(subLayer => {
@@ -1442,19 +1376,16 @@
                         }
                     }
                 });
-                
-                // Si la capa debe estar visible por defecto, cargarla
+
                 if (layerConfig.visible) {
                     checkbox.checked = true;
                     loadLayer(layerConfig);
                 }
             });
-            
-            // Ocultar indicador de carga
+
             hideLoading();
         }
 
-        // --- FUNCIÓN PARA CARGAR UNA CAPA ESPECÍFICA ---
         function loadLayer(layerConfig) {
             showLoading();
             
@@ -1469,7 +1400,7 @@
                     let layer;
                     
                     if (layerConfig.type === 'geojson') {
-                        // Crear la capa GeoJSON
+                        
                         layer = L.geoJSON(data, {
                             style: layerConfig.style,
                             pointToLayer: function (feature, latlng) {
@@ -1479,17 +1410,14 @@
                                 return L.marker(latlng);
                             },
                             onEachFeature: function (feature, layer) {
-                                // Agregar popup con información de la característica
+                                
                                 if (feature.properties) {
                                     let popupContent = '<div class="popup-content">';
-                                    
-                                    // Si hay un nombre de propiedad, mostrarlo primero
+
                                     if (feature.properties.nombre) {
                                         popupContent += `<h3 class="popup-title">${feature.properties.nombre}</h3>`;
                                     }
-                                    
-                                   
-                                    // Mostrar todas las propiedades
+
                                     popupContent += '<div class="popup-details">';
                                     for (const key in feature.properties) {
                                         if (key !== 'nombre') {
@@ -1507,8 +1435,7 @@
                             }
                         });
                     }
-                    
-                    // Añadir la capa al mapa con fade in
+
                     if (layer instanceof L.GeoJSON) {
                         layer.eachLayer(subLayer => {
                             if (subLayer.setStyle) {
@@ -1523,8 +1450,7 @@
                     }
                     
                     layer.addTo(map);
-                    
-                    // Animación de fadeIn
+
                     let opacity = 0;
                     const fadeInInterval = setInterval(() => {
                         opacity += 0.1;
@@ -1545,11 +1471,9 @@
                             clearInterval(fadeInInterval);
                         }
                     }, 30);
-                    
-                    // Almacenar la capa en el objeto de capas temáticas
+
                     thematicLayers[layerConfig.name] = layer;
-                    
-                    // CORRECCIÓN: Usar addOverlay en lugar de addLayer
+
                     layerControl.addOverlay(layer, layerConfig.name);
                     
                     hideLoading();
@@ -1557,8 +1481,7 @@
                 .catch(error => {
                     console.error(error);
                     hideLoading();
-                    
-                    // Mostrar mensaje de error
+
                     const featureInfo = document.getElementById('feature-info');
                     featureInfo.innerHTML = `
                         <div class="error-message">
@@ -1567,18 +1490,15 @@
                             <p><strong>Detalles:</strong> ${error.message}</p>
                         </div>
                     `;
-                    
-                    // Desmarcar el checkbox
+
                     document.getElementById(layerConfig.id).checked = false;
                 });
         }
 
-        // --- FUNCIÓN PARA ACTUALIZAR TODAS LAS CAPAS ---
         function refreshAllLayers() {
-            // Mostrar indicador de carga
-            showLoading();
             
-            // Eliminar todas las capas temáticas del mapa con fade out
+            showLoading();
+
             Object.keys(thematicLayers).forEach(layerName => {
                 const layer = thematicLayers[layerName];
                 if (layer instanceof L.GeoJSON) {
@@ -1595,22 +1515,18 @@
                     map.removeLayer(thematicLayers[layerName]);
                     delete thematicLayers[layerName];
                 });
-                
-                // CORRECCIÓN: Actualizar el control de capas correctamente
+
                 layerControl.remove();
                 const newLayerControl = L.control.layers(baseLayers, thematicLayers, {
                     position: 'topright'
                 }).addTo(map);
-                
-                // Desmarcar todos los checkboxes
+
                 document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
                     checkbox.checked = false;
                 });
-                
-                // Ocultar indicador de carga
+
                 hideLoading();
-                
-                // Mostrar mensaje de éxito
+
                 const featureInfo = document.getElementById('feature-info');
                 featureInfo.innerHTML = `
                     <div class="success-message">
@@ -1621,8 +1537,6 @@
             }, 300);
         }
 
-        // --- FUNCIONALIDAD DE BARRA DE HERRAMIENTAS ---
-        // Botón de inicio para ir a index.html
         document.getElementById('home-button').addEventListener('click', () => {
             window.location.href = 'index.html';
         });
@@ -1638,43 +1552,36 @@
         document.getElementById('home').addEventListener('click', () => {
             map.setView([-33.3549, -71.6559], 13);
         });
-        
-        // Herramienta de impresión
+
         document.getElementById('print').addEventListener('click', () => {
             window.print();
         });
-        
-        // Herramienta de actualización de capas
+
         document.getElementById('refresh-layers').addEventListener('click', () => {
             refreshAllLayers();
         });
-        
-        // --- FUNCIONALIDAD DE BÚSQUEDA ---
+
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
         const searchResults = document.getElementById('search-results');
-        
-        // CORRECCIÓN: Implementar búsqueda de direcciones usando Nominatim
+
         function performSearch() {
             const query = searchInput.value.toLowerCase().trim() + ",Algarrobo";
-            //console.log(query)
+            
             if (query === '') {
                 searchResults.style.display = 'none';
                 return;
             }
-            
-            // Mostrar indicador de carga
+
             showLoading();
-            
-            // Primero, buscar direcciones usando Nominatim
+
             const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=cl`;
             
             fetch(nominatimUrl)
                 .then(response => response.json())
                 .then(data => {
                     const results = [];
-                    
-                    // Procesar resultados de Nominatim
+
                     data.forEach(item => {
                         results.push({
                             name: item.display_name,
@@ -1683,15 +1590,14 @@
                             type: 'address'
                         });
                     });
-                    
-                    // Buscar en las capas cargadas
+
                     Object.keys(thematicLayers).forEach(layerName => {
                         const layer = thematicLayers[layerName];
                         
                         if (layer instanceof L.GeoJSON) {
                             layer.eachLayer(featureLayer => {
                                 if (featureLayer.feature && featureLayer.feature.properties) {
-                                    // Buscar en todas las propiedades
+                                    
                                     for (const key in featureLayer.feature.properties) {
                                         const value = String(featureLayer.feature.properties[key]).toLowerCase();
                                         if (value.includes(query)) {
@@ -1701,15 +1607,14 @@
                                                 layerName: layerName,
                                                 type: 'feature'
                                             });
-                                            break; // No necesitamos añadir el mismo resultado varias veces
+                                            break; 
                                         }
                                     }
                                 }
                             });
                         }
                     });
-                    
-                    // Ocultar indicador de carga
+
                     hideLoading();
                     
                     if (results.length > 0) {
@@ -1720,26 +1625,23 @@
                             resultItem.textContent = result.name;
                             resultItem.addEventListener('click', () => {
                                 if (result.type === 'address') {
-                                    // Centrar el mapa en la dirección
-                                    map.setView([result.lat, result.lng], 16);
                                     
-                                    // Añadir un marcador temporal
+                                    map.setView([result.lat, result.lng], 16);
+
                                     const tempMarker = L.marker([result.lat, result.lng]).addTo(map);
                                     tempMarker.bindPopup(result.name).openPopup();
-                                    
-                                    // Eliminar el marcador después de cerrar el popup
+
                                     tempMarker.on('popupclose', function() {
                                         map.removeLayer(tempMarker);
                                     });
                                 } else if (result.type === 'feature') {
-                                    // Centrar el mapa en el resultado
+                                    
                                     if (result.layer.getBounds) {
                                         map.fitBounds(result.layer.getBounds());
                                     } else if (result.layer.getLatLng) {
                                         map.setView(result.layer.getLatLng(), 16);
                                     }
-                                    
-                                    // Abrir el popup
+
                                     result.layer.openPopup();
                                 }
                                 
@@ -1768,38 +1670,34 @@
                 performSearch();
             }
         });
-        
-        // Cerrar resultados de búsqueda al hacer clic fuera
+
         document.addEventListener('click', (event) => {
             if (!searchInput.contains(event.target) && !searchResults.contains(event.target)) {
                 searchResults.style.display = 'none';
             }
         });
-        
-        // --- MOSTRAR INFORMACIÓN DE ELEMENTOS AL HACER CLIC ---
+
         map.on('click', function(e) {
             const featureInfo = document.getElementById('feature-info');
-            
-            // Verificar si se hizo clic en una capa
+
             let clickedLayer = false;
-            
-            // Iterar sobre todas las capas temáticas
+
             Object.values(thematicLayers).forEach(layerGroup => {
                 if (layerGroup instanceof L.GeoJSON) {
                     layerGroup.eachLayer(layer => {
                         if (layer instanceof L.Marker || layer instanceof L.Polygon || layer instanceof L.Polyline) {
-                            // Para polígonos y polilíneas
+                            
                             if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
                                 if (layer.getBounds().contains(e.latlng)) {
                                     clickedLayer = true;
                                     layer.openPopup();
                                 }
                             }
-                            // Para marcadores
+                            
                             else if (layer instanceof L.Marker) {
                                 const markerLatLng = layer.getLatLng();
                                 const distance = e.latlng.distanceTo(markerLatLng);
-                                if (distance < 100) { // 100 metros de tolerancia
+                                if (distance < 100) { 
                                     clickedLayer = true;
                                     layer.openPopup();
                                 }
@@ -1808,8 +1706,7 @@
                     });
                 }
             });
-            
-            // Si no se hizo clic en ninguna capa, mostrar información de coordenadas
+
             if (!clickedLayer) {
                 featureInfo.innerHTML = `
                     <table class="feature-table">
@@ -1833,45 +1730,33 @@
                 `;
             }
         });
-        
-        // --- ESCALA Y ORIENTACIÓN ---
+
         L.control.scale({
             position: 'bottomright',
             metric: true,
             imperial: false
         }).addTo(map);
-        
-        // Actualizar la orientación del norte al mover el mapa
-        // Se elimina la función que causa el error de getBearing
-        // La brújula ahora permanecerá fija apuntando al norte geográfico
-        
-        // --- FUNCIONALIDAD DEL MENÚ MÓVIL ---
+
         const menuToggle = document.querySelector('.menu-toggle');
         const mainNav = document.querySelector('.main-nav');
         
         menuToggle.addEventListener('click', () => {
             mainNav.classList.toggle('active');
         });
-        
-        // --- NAVEGACIÓN ENTRE SECCIONES ---
+
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                
-                // Eliminar clase activa de todos los enlaces
+
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                
-                // Añadir clase activa al enlace actual
+
                 this.classList.add('active');
-                
-                // Aquí podrías cargar diferentes vistas o secciones
-                // Por ahora, solo mostramos una alerta para demostrar la funcionalidad
+
                 const section = this.textContent;
                 console.log(`Navegando a la sección: ${section}`);
             });
         });
-        
-        // --- INDICADOR DE CARGA ---
+
         function showLoading() {
             document.getElementById('loading-indicator').style.display = 'block';
         }
@@ -1879,8 +1764,7 @@
         function hideLoading() {
             document.getElementById('loading-indicator').style.display = 'none';
         }
-        
-        // --- EFECTO PARALLAX SUTIL ---
+
         document.addEventListener('mousemove', (e) => {
             const parallaxElement = document.getElementById('parallax-element');
             const x = (e.clientX / window.innerWidth - 0.5) * 20;
@@ -1888,23 +1772,19 @@
             
             parallaxElement.style.transform = `translate(${x}px, ${y}px)`;
         });
-        
-        // --- EVENTO DE CARGA COMPLETA CON ANIMACIONES DE ENTRADA ---
+
         window.addEventListener('load', () => {
-            // Cargar las capas temáticas dinámicamente
-            loadThematicLayers();
             
-            // Animación inicial del mapa
+            loadThematicLayers();
+
             setTimeout(() => {
                 map.flyTo([-33.3549, -71.6559], 14, {
                     duration: 2
                 });
             }, 1000);
-            
-            // Ocultar indicador de carga
+
             hideLoading();
-            
-            // Animaciones de entrada para los elementos
+
             setTimeout(() => {
                 document.getElementById('main-header').classList.add('loaded');
                 document.getElementById('header-toggle').classList.add('loaded');

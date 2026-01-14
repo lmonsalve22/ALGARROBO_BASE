@@ -1,9 +1,8 @@
 
 function renderHeader(containerId = "headerRender") {
     const container = document.getElementById(containerId);
-    if (!container) return; // Silent fail if container doesn't exist
+    if (!container) return;
 
-    // Obtener datos de usuario de localStorage
     let user = typeof userData !== 'undefined' ? userData : null;
     if (!user) {
         try {
@@ -18,13 +17,11 @@ function renderHeader(containerId = "headerRender") {
     const roleName = user?.roles?.[0]?.nombre || user?.role || user?.nivel_acceso || "Invitado";
     const avatarInitial = (userName.charAt(0) || "U").toUpperCase();
 
-    // Nueva apariencia atractiva (Glassmorphism + Gradientes + Clean UI)
     container.innerHTML = `
     <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300 font-['Outfit']">
         <div class="px-6 py-3">
             <div class="flex justify-between items-center">
-                
-                <!-- Logo & Brand -->
+
                 <div class="flex items-center gap-4">
                     <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/dashboard.html" class="group flex items-center gap-3">
                         <div class="relative w-10 h-10">
@@ -40,10 +37,8 @@ function renderHeader(containerId = "headerRender") {
                     </a>
                 </div>
 
-                <!-- Right Toolbar -->
                 <div class="flex items-center gap-3 md:gap-6">
-                    
-                    <!-- Notifications -->
+
                     <button onclick="toggleNotifications()" class="relative p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group">
                         <i class="fas fa-bell text-xl"></i>
                         <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full group-hover:scale-110 transition-transform"></span>
@@ -51,7 +46,6 @@ function renderHeader(containerId = "headerRender") {
 
                     <div class="h-8 w-px bg-gray-200 hidden md:block"></div>
 
-                    <!-- User Profile Dropdown -->
                     <div class="relative">
                         <button onclick="toggleUserMenu()" class="flex items-center gap-3 p-1 pl-3 pr-2 rounded-full hover:bg-gray-100/80 border border-transparent hover:border-gray-200 transition-all duration-200 group">
                             <div class="text-right hidden md:block">
@@ -66,10 +60,8 @@ function renderHeader(containerId = "headerRender") {
                             <i class="fas fa-chevron-down text-xs text-gray-400 mr-2 group-hover:mt-1 transition-all"></i>
                         </button>
 
-                        <!-- Enhanced Dropdown -->
                         <div id="userMenu" class="hidden absolute right-0 mt-4 w-72 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 py-2 origin-top-right transform transition-all duration-200 z-50">
-                            
-                            <!-- Header del Menu -->
+
                             <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
                                 <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Cuenta Activa</p>
                                 <div class="flex items-center gap-3 mt-3">
@@ -83,12 +75,7 @@ function renderHeader(containerId = "headerRender") {
                                 </div>
                             </div>
 
-                            <a href="#" class="group flex items-center gap-4 px-6 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors">
-                                <span class="w-8 h-8 rounded-lg bg-gray-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                                    <i class="fas fa-cog"></i>
-                                </span>
-                                <span class="font-medium">Configuración</span>
-                            </a>
+
 
                             <a href="#" onclick="logout()" class="group flex items-center gap-4 px-6 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors">
                                 <span class="w-8 h-8 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors">
@@ -109,7 +96,6 @@ function renderSidebar(containerId = "sidebarContainer") {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Validación básica de userData
     let user = typeof userData !== 'undefined' ? userData : null;
     if (!user) {
         try {
@@ -134,7 +120,6 @@ function renderSidebar(containerId = "sidebarContainer") {
         observacion: "observacion.html"
     };
 
-    // Estilo activo más moderno
     const linkClasses = (file) =>
         currentPath === file
             ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
@@ -232,8 +217,7 @@ function renderSidebar(containerId = "sidebarContainer") {
                          <span class="font-medium">Geoportal</span>
                      </a>
                 </li>
-                 
-                <!-- Herramientas -->
+
                 <li class="pt-4">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-3">Herramientas</p>
                 </li>
@@ -253,8 +237,6 @@ function renderSidebar(containerId = "sidebarContainer") {
     `;
 }
 
-
-// Notificación Toast Global
 function showToast(message, type = 'success') {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -287,15 +269,39 @@ function showToast(message, type = 'success') {
 
     container.appendChild(toast);
 
-    // Animación de entrada
     setTimeout(() => toast.style.transform = 'translateX(0)', 10);
 
-    // Auto-eliminar
     setTimeout(() => {
         toast.style.transform = 'translateX(120%)';
         setTimeout(() => toast.remove(), 300);
     }, 4000);
 }
+
+function toggleUserMenu() {
+    var menu = document.getElementById('userMenu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+
+function toggleNotifications() {
+    console.log('Notificaciones clicked');
+}
+
+function logout() {
+    localStorage.removeItem('userData');
+    localStorage.removeItem('user_data');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    window.location.href = '/ALGARROBO_BASE/frontend/index.html';
+}
+
+document.addEventListener('click', function (e) {
+    var userMenu = document.getElementById('userMenu');
+    if (userMenu && !e.target.closest('#userMenu') && !e.target.closest('[onclick*="toggleUserMenu"]')) {
+        userMenu.classList.add('hidden');
+    }
+});
 
 renderHeader("headerRender")
 renderSidebar("asideRender")

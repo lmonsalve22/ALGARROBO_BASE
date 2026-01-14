@@ -9,25 +9,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente Inteligente Geoportal - ZhipuAI Integration</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Marked.js para Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        /* --- Estilos Generales --- */
+        
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
-        /* Scrollbar personalizada */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
         }
@@ -45,7 +40,6 @@
             background: #94a3b8;
         }
 
-        /* --- Estilos Chat --- */
         .chat-container {
             height: 100%;
             display: flex;
@@ -96,7 +90,7 @@
 
         .message-wrapper.user .message-content {
             background-color: #4f46e5;
-            /* Indigo 600 */
+            
             color: white;
             border-bottom-right-radius: 0.25rem;
             box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
@@ -140,7 +134,6 @@
             justify-content: flex-end;
         }
 
-        /* Markdown Styles dentro del Chat */
         .markdown-body h1,
         .markdown-body h2,
         .markdown-body h3 {
@@ -186,7 +179,6 @@
             padding: 0;
         }
 
-        /* Sugerencias */
         .suggestion-chips {
             display: flex;
             flex-wrap: wrap;
@@ -214,7 +206,6 @@
             transform: translateY(-1px);
         }
 
-        /* Animaciones */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -227,13 +218,11 @@
             }
         }
 
-        /* Proyecto Lista */
         .project-card-selected {
             background-color: #eff6ff !important;
             border-color: #4f46e5 !important;
         }
 
-        /* Toast Notification */
         #toast-container {
             position: fixed;
             bottom: 20px;
@@ -269,7 +258,6 @@
             }
         }
 
-        /* Loading Dots */
         .typing-indicator span {
             display: inline-block;
             width: 6px;
@@ -319,14 +307,12 @@
 
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
 
-    <!-- Header inyectado por layout.js -->
     <div id="headerRender"></div>
 
     <div class="flex flex-1 overflow-hidden">
-        <!-- Aside/Sidebar inyectado por layout.js -->
+        
         <div id="asideRender"></div>
 
-        <!-- Main Content -->
         <main class="flex-1 flex flex-col p-6 overflow-hidden relative">
 
             <div class="mb-6 flex justify-between items-center">
@@ -339,11 +325,9 @@
                 </div>
             </div>
 
-            <!-- 1. Barra de Filtros -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4 flex-shrink-0">
                 <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
 
-                    <!-- Buscador -->
                     <div class="w-full md:w-1/4">
                         <label for="filterSearch"
                             class="block text-xs font-semibold text-gray-500 uppercase mb-1">Buscar</label>
@@ -357,9 +341,8 @@
                         </div>
                     </div>
 
-                    <!-- Filtros Select -->
                     <div class="flex flex-1 w-full gap-3">
-                        <!-- Área -->
+                        
                         <div class="flex-1">
                             <label for="filterArea"
                                 class="block text-xs font-semibold text-gray-500 uppercase mb-1">Área</label>
@@ -369,7 +352,6 @@
                             </select>
                         </div>
 
-                        <!-- Estado -->
                         <div class="flex-1">
                             <label for="filterStatus"
                                 class="block text-xs font-semibold text-gray-500 uppercase mb-1">Estado</label>
@@ -379,7 +361,6 @@
                             </select>
                         </div>
 
-                        <!-- Financiamiento -->
                         <div class="flex-1">
                             <label for="filterFinancing"
                                 class="block text-xs font-semibold text-gray-500 uppercase mb-1">Financiamiento</label>
@@ -390,7 +371,6 @@
                         </div>
                     </div>
 
-                    <!-- Acciones -->
                     <div class="flex gap-2">
                         <button onclick="clearFilters()"
                             class="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition">
@@ -404,10 +384,8 @@
                 </div>
             </div>
 
-            <!-- 2. Contenedor Flex: Lista Proyectos (Izq) + Chat (Der) -->
             <div class="flex gap-4 flex-1 min-h-0">
 
-                <!-- Columna Izquierda: Lista de Proyectos -->
                 <div class="w-1/3 bg-white rounded-lg shadow border border-gray-200 flex flex-col relative">
                     <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center rounded-t-lg">
                         <span class="font-semibold text-gray-700 text-sm">Proyectos Disponibles</span>
@@ -423,7 +401,7 @@
                     </div>
 
                     <div id="projectListContainer" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scroll">
-                        <!-- Items renderizados por JS -->
+                        
                     </div>
 
                     <div class="p-3 border-t border-gray-100 text-xs text-gray-400 bg-gray-50 rounded-b-lg">
@@ -431,9 +409,8 @@
                     </div>
                 </div>
 
-                <!-- Columna Derecha: Chat UI (Lógica ZhipuAI) -->
                 <div class="w-2/3 chat-container">
-                    <!-- Header Chat -->
+                    
                     <div
                         class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
                         <div class="flex items-center gap-2">
@@ -457,9 +434,8 @@
                         </div>
                     </div>
 
-                    <!-- Área de Mensajes -->
                     <div class="messages-area custom-scroll" id="messagesArea">
-                        <!-- Mensaje de Bienvenida -->
+                        
                         <div class="message-wrapper bot">
                             <div class="avatar"><i class="fas fa-robot"></i></div>
                             <div class="flex-1">
@@ -475,7 +451,6 @@
                         </div>
                     </div>
 
-                    <!-- Indicador escribiendo / Procesando -->
                     <div id="typingIndicator" class="hidden px-4 py-2 bg-gray-50 flex items-center gap-2">
                         <div
                             class="message-content py-2 px-4 text-xs text-gray-500 bg-gray-100 border-0 shadow-none flex items-center gap-2">
@@ -484,7 +459,6 @@
                         </div>
                     </div>
 
-                    <!-- Input Chat -->
                     <div class="p-4 bg-white border-t border-gray-100">
                         <form id="chatForm" class="flex items-end gap-2">
                             <button type="button" id="voiceButton"
@@ -512,45 +486,41 @@
         </main>
     </div>
 
-    <!-- Contenedor de Toasts -->
     <div id="toast-container"></div>
 
-    <!-- Script de Funcionalidad Unificada -->
     <script>
-        // --- CONFIGURACIÓN ZHIPU AI ---
+
         const API_KEY = "1dbcda64e67c4d31a7e9e5565efc5cae.M5ZIv5sFPbdOwgKw";
         const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
         const MODEL_NAME = "GLM-4.6V-Flash";
 
-        // Configuración Chat
         const CHAT_CONFIG = {
-            MAX_HISTORY_LENGTH: 10,
+            
+            MAX_HISTORY_LENGTH: 7,
             MAX_INPUT_LENGTH: 500,
-            // Límite de seguridad para el texto de documentos
-            MAX_TEXT_PAYLOAD_LENGTH: 80000
+            
+            MAX_TEXT_PAYLOAD_LENGTH: 80000,
+            
+            MAX_PROJECTS_SUMMARY: 100
         };
 
-        // --- CONFIGURACIÓN BACKEND ---
         const API_BASE = 'https://186.67.61.251:8000';
 
-        // NUEVO ENDPOINT PARA TEXTO COMPLETO
         const ENDPOINT_PROJECT_TEXT = (projectId) => `${API_BASE}/proyectos/${projectId}/documentos/texto`;
 
-        // Estado de la Aplicación
         const AppState = {
             allProjects: [],
             selectedIds: new Set(),
             chatHistory: [],
             recognition: null,
             synthesis: window.speechSynthesis,
-            filterProject: [], // Lista de proyectos filtrados visibles en UI
+            filterProject: [], 
             isMarked: false,
-            projectMarket: null,  // Proyecto seleccionado individualmente
-            projectRawText: null, // Texto de los documentos del proyecto seleccionado
+            projectMarket: null,  
+            projectRawText: null, 
             textCharsCount: 0
         };
 
-        // Referencias DOM
         const DOM = {
             projectListContainer: document.getElementById('projectListContainer'),
             filterSearch: document.getElementById('filterSearch'),
@@ -569,10 +539,6 @@
             chatContextBadge: document.getElementById('chatContextBadge'),
             selectedCountMsg: document.getElementById('selectedCountMsg')
         };
-
-        // --- 1. LÓGICA DE PROYECTOS (Geoportal) ---
-
-        // --- 1. LÓGICA DE PROYECTOS (Geoportal) ---
 
         function getAuthHeaders() {
             const token = localStorage.getItem('authToken');
@@ -605,7 +571,7 @@
         async function loadProjects() {
             try {
                 DOM.projectsLoading.classList.remove('hidden');
-                // Initiate calls in parallel
+                
                 const pProjects = fetch(`${API_BASE}/proyectos`, {
                     method: 'GET',
                     headers: getAuthHeaders()
@@ -614,7 +580,6 @@
                     return r.json();
                 });
 
-                // Wait for catalogs first (or parallel, but we need catalogs for dropdowns)
                 if (!AppState.catalogs) await loadCatalogs();
 
                 AppState.allProjects = await pProjects;
@@ -638,7 +603,7 @@
             DOM.filterArea.addEventListener('change', applyFilters);
             DOM.filterStatus.addEventListener('change', applyFilters);
             DOM.filterFinancing.addEventListener('change', applyFilters);
-            // Dropdowns already populated by loadCatalogs -> populateDropdowns
+            
             applyFilters();
         }
 
@@ -668,7 +633,7 @@
                 const pCodigo = p.codigo ? p.codigo.toLowerCase() : "";
 
                 const matchTxt = !txt || pNombre.includes(txt) || pCodigo.includes(txt);
-                // Use *_nombre properties matching proyecto.html schema
+                
                 const matchArea = area === "" || (p.area_nombre || p.area) == area;
                 const matchStatus = status === "" || (p.estado_nombre || p.estado_proyecto) == status;
                 const matchFin = fin === "" || (p.financiamiento_nombre || p.financiamiento) == fin;
@@ -792,8 +757,6 @@
             return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumSignificantDigits: 3 }).format(num);
         }
 
-        // --- 2. LÓGICA DE CHAT (ZhipuAI Integration) ---
-
         function initChat() {
             DOM.chatForm.addEventListener('submit', sendMessage);
             DOM.chatInput.addEventListener('input', updateCharCounter);
@@ -811,7 +774,6 @@
             DOM.charCounter.style.color = len > CHAT_CONFIG.MAX_INPUT_LENGTH ? 'red' : 'inherit';
         }
 
-        // --- Voice Recognition ---
         function initializeVoiceRecognition() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 DOM.voiceButton.hidden = true;
@@ -848,7 +810,6 @@
             }
         }
 
-        // --- LÓGICA: Fetch de Texto Completo ---
         async function fetchProjectText(projectId) {
             if (AppState.projectRawText && AppState.projectMarket && AppState.projectMarket.id === projectId) {
                 return AppState.projectRawText;
@@ -889,7 +850,6 @@
             }
         }
 
-        // --- Core Chat Logic ---
         async function sendMessage(e) {
             if (e) e.preventDefault();
 
@@ -913,8 +873,7 @@
                 let response;
 
                 if (AppState.isMarked && AppState.projectMarket) {
-                    // --- MODO CONTEXTO: PROYECTO SELECCIONADO ---
-                    // Usa: AppState.projectMarket + Documentos
+
                     DOM.typingText.textContent = "Extrayendo y leyendo contenido de documentos...";
 
                     const rawTextContent = await fetchProjectText(AppState.projectMarket.id);
@@ -926,8 +885,7 @@
                     });
 
                 } else {
-                    // --- MODO GENERAL: SIN PROYECTO ---
-                    // Usa: AppState.filterProject (Lista de proyectos visibles)
+
                     DOM.typingText.textContent = "Analizando lista de proyectos...";
 
                     response = await fetchZhipuResponse(text, {
@@ -950,133 +908,125 @@
         }
 
         async function fetchZhipuResponse(userMessage, context) {
+            
             AppState.chatHistory.push({ role: "user", content: userMessage });
 
             let systemPrompt = "";
 
             if (context.mode === 'project_context') {
-                // --- LÓGICA PARA MODO PROYECTO ---
-                // Usamos SOLO el proyecto seleccionado y sus documentos
+
                 let textToInject = context.documentText || "No hay contenido de documentos.";
 
                 if (textToInject.length > CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) {
-                    console.warn(`Texto largo (${textToInject.length} chars). Truncando...`);
-                    textToInject = textToInject.substring(0, CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) + "\n\n[... Contenido truncado ...]";
+                    textToInject = textToInject.substring(0, CHAT_CONFIG.MAX_TEXT_PAYLOAD_LENGTH) + "\n\n[... Contenido truncado por límite de tokens ...]";
                 }
 
-                const projectJSON = JSON.stringify(context.projectData);
+                const p = context.projectData;
+                const projectSummary = `
+- ID: ${p.id}
+- Nombre: ${p.nombre || 'Sin nombre'}
+- Código: ${p.codigo || 'N/A'}
+- Área: ${p.area_nombre || p.area || 'Sin área'}
+- Estado: ${p.estado_nombre || p.estado_proyecto || 'Sin estado'}
+- Monto: $${(p.monto || 0).toLocaleString('es-CL')} CLP
+- Financiamiento: ${p.financiamiento_nombre || p.financiamiento || 'No especificado'}
+- Es Prioridad: ${p.es_prioridad || 'No'}
+- Avance: ${p.avance_total_porcentaje || 0}%`;
 
-                systemPrompt = `Eres un asistente experto en análisis de proyectos municipales.
-Estás analizando UN ÚNICO PROYECTO seleccionado y sus documentos.
+                systemPrompt = `Eres un asistente experto en proyectos municipales de Chile.
 
-DATOS DEL PROYECTO SELECCIONADO:
- ${projectJSON}
+CONTEXTO: Estás analizando UN ÚNICO PROYECTO seleccionado por el usuario.
 
-CONTENIDO DE LOS DOCUMENTOS:
- ${textToInject}
+## DATOS DEL PROYECTO:
+${projectSummary}
 
-INSTRUCCIONES:
-1. Responde basándote estrictamente en el "CONTENIDO DE LOS DOCUMENTOS" y los datos del proyecto provistos.
-2. Ignora cualquier otro proyecto que exista en la base de datos.
-3. Si el usuario pregunta algo general sin relación con el texto del documento, usa los datos del proyecto.
-4. Responde siempre en español y usa formato Markdown.
+## DOCUMENTOS DEL PROYECTO:
+${textToInject}
 
-Formato de salida requerido:
+## INSTRUCCIONES:
+1. Responde SOLO sobre este proyecto específico
+2. Usa la información de los documentos cuando sea relevante
+3. Si no encuentras la información, indícalo claramente
+4. Responde en español con formato Markdown
+5. Sé conciso pero informativo
+
+## FORMATO DE RESPUESTA:
 [RESPUESTA]
-... (tu respuesta detallada) ...
+Tu respuesta aquí
 [/RESPUESTA]
 [PREGUNTAS]
-1. Pregunta
-2. Pregunta
-3. Pregunta
+1. Pregunta sugerida 1
+2. Pregunta sugerida 2
+3. Pregunta sugerida 3
 [/PREGUNTAS]`;
 
             } else {
-                console.log(context.filteredProjects)
-                const totalProyectos = context.filteredProjects.length; // Calculado por JS
-                // --- LÓGICA PARA MODO GENERAL ---
-                // Usamos AppState.filterProject (Lista de proyectos filtrados)
-                const projectsTableMarkdown = (() => {
-                    const headers = [
-                        "ID",
-                        "Nombre",
-                        "Área",
-                        "Estado",
-                        "Monto",
-                        "Es Prioridad",
-                        "Financiamiento Municipal",
-                        "Financiamiento"
-                    ];
 
-                    let table = `| ${headers.join(" | ")} |\n`;
-                    table += `| ${headers.map(() => "---").join(" | ")} |\n`;
+                const projects = context.filteredProjects || [];
+                const totalProyectos = projects.length;
 
-                    context.filteredProjects.forEach(p => {
-                        table += `| ${p.id ?? ""} | ${p.nombre ?? ""} | ${p.area ?? ""} | ${p.estado_proyecto ?? ""} | ${p.monto ?? ""} | ${p.es_prioridad ?? ""} | ${p.financiamiento_municipal ?? ""} | ${p.financiamiento ?? ""} |\n`;
-                    });
-
-                    return table;
-                })();
-                console.log(projectsTableMarkdown)
-
-                // Mapeamos la lista a un JSON simple para ahorrar tokens pero mantener datos clave
-                const projectsListJSON = JSON.stringify(context.filteredProjects.map(p => ({
+                const projectsData = projects.slice(0, CHAT_CONFIG.MAX_PROJECTS_SUMMARY).map(p => ({
                     id: p.id,
-                    nombre: p.nombre,
-                    area: p.area,
-                    estado: p.estado_proyecto,
-                    monto: p.monto,
-                    es_prioridad: p.es_prioridad,
-                    financiamiento_municipal: p.financiamiento_municipal,
-                    financiamiento: p.financiamiento
-                })), null, 0);
+                    nombre: p.nombre || '',
+                    area: p.area_nombre || p.area || '',
+                    estado: p.estado_nombre || p.estado_proyecto || '',
+                    monto: p.monto || 0,
+                    financiamiento: p.financiamiento_nombre || p.financiamiento || '',
+                    prioridad: p.es_prioridad || 'NO',
+                    sector: p.sector || '',
+                    avance: p.avance_total_porcentaje || 0
+                }));
 
-                systemPrompt = `Eres un asistente útil del Geoportal Municipal.
-Actualmente NO hay ningún proyecto seleccionado específicamente.
+                const projectsJSON = JSON.stringify(projectsData, null, 0);
 
+                systemPrompt = `Eres un analista de datos experto del Geoportal Municipal de Algarrobo, Chile.
+
+TOTAL DE PROYECTOS EN LA LISTA: ${totalProyectos}
+
+DATOS DE PROYECTOS (formato JSON):
+${projectsJSON}
+${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `\n[NOTA: Se muestran ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} de ${projects.length} proyectos]` : ''}
+
+CAMPOS DISPONIBLES:
+- id: Identificador único
+- nombre: Nombre del proyecto
+- area: Área municipal (ej: Cultura, Salud, Educación, Vialidad, Espacios Públicos)
+- estado: Estado actual (ej: Diseño, Ejecución, Licitación, Terminado)
+- monto: Presupuesto en pesos chilenos (CLP)
+- financiamiento: Fuente de fondos (ej: FNDR, PMU, Municipal)
+- prioridad: SI o NO
+- sector: Ubicación geográfica
+- avance: Porcentaje de avance (0-100)
 
 INSTRUCCIONES:
-1. Responde a preguntas utilizando la "LISTA DE PROYECTOS FILTRADOS" como fuente de verdad.
-2. Puedes contar proyectos, buscar por estado, área o montos dentro de esta lista.
-3. Si el usuario pregunta detalles profundos de documentos, invítalo a seleccionar un proyecto específico de la lista.
-4. Responde siempre en español y usa formato Markdown.
-5. Antes de dar la respuesta final, explica brevemente: 'Procesando lista... encontrados X proyectos
-6. Considera que los valores de los proyectos estan en pesos chilenos (CLP)
-7. Los campos que tiene la tabla de base de datos son: 
-    id:Identificador numérico único o correlativo del proyecto en la lista.            
-    nombre:Título o nombre descriptivo del proyecto,
-    area:Categoría macro o departamento al que pertenece la iniciativa (Ej: Planificación, Espacios Públicos y equipamiento, Vialidad, Salud, Educación),
-    estado:Fase actual en la que se encuentra el proyecto (Ej: Diseño, En preparación, En ejecución, Licitación, Adjudicado, Ejecutado, Aprobado).,
-    monto:Presupuesto estimado o asignado al proyecto (en pesos chilenos, según el contexto de los datos).,
-    es_prioridad:Indicador que señala si el proyecto es considerado prioritario por la municipalidad (valores: Sí, No),
-    financiamiento_municipal:Indica si el proyecto utiliza fondos propios del municipio (valores: Sí, No).,
-    financiamiento:Fuente de financiamiento externo o fondo específico (Ej: FNDR, PMU, PMB, GORE, FRIL, Circular 33, Sectorial).
-8   - Primero enumera internamente todos los proyectos que cumplen la condición
-    - Luego cuenta esa enumeración
-    - Finalmente entrega el total   
-LISTA DE PROYECTOS FILTRADOS (VISIBLES EN PANTALLA):
- ${projectsTableMarkdown}
-NOTA: Hay exactamente ${totalProyectos} proyectos en esta lista. Usa este número como referencia.
+1. Analiza los datos JSON para responder la pregunta del usuario
+2. Para conteos: recorre el array y cuenta los elementos que cumplen la condición
+3. Para búsquedas: filtra por el campo relevante (usa coincidencia parcial para texto)
+4. Para sumas/promedios: calcula sobre el campo numérico correspondiente
+5. Si la pregunta es ambigua, pide aclaración
+6. Responde en español, sé preciso y conciso
+7. Si necesitan detalles de documentos, sugiéreles seleccionar un proyecto específico
 
-Formato de salida requerido:
+FORMATO DE RESPUESTA:
 [RESPUESTA]
-... (tu respuesta detallada) ...
+Tu análisis aquí
 [/RESPUESTA]
 [PREGUNTAS]
-1. Pregunta
-2. Pregunta
-3. Pregunta
+1. Pregunta de seguimiento
+2. Otra pregunta útil
+3. Tercera sugerencia
 [/PREGUNTAS]`;
             }
+
+            const recentHistory = AppState.chatHistory.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH);
 
             const requestBody = {
                 model: MODEL_NAME,
                 messages: [
                     { role: "system", content: systemPrompt },
-                    ...AppState.chatHistory.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH)
+                    ...recentHistory
                 ],
-                temperature: 0,
-                //max_tokens: 5500   // 👈 límite de tokens de salida
+                temperature: 0.1, 
             };
 
             const response = await fetch(API_URL, {
@@ -1096,7 +1046,6 @@ Formato de salida requerido:
             const data = await response.json();
             const rawContent = data.choices[0].message.content;
 
-            // Parsear respuesta
             let respuestaFinal = "";
             let preguntasFinal = [];
 

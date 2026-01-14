@@ -1,12 +1,5 @@
-/**
- * Admin General - Unified Styles
- * Estilos compartidos para todas las vistas del módulo de administración SECPLAN.
- * Utilizar con Tailwind CSS como base.
- */
 
-/* ============================== */
-/*         FUENTES & BASE         */
-/* ============================== */
+
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -52,9 +45,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============================== */
-/*       GLASSMORPHISM & CARDS    */
-/* ============================== */
 .glass-panel {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
@@ -103,9 +93,6 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
-/* ============================== */
-/*          ANIMATIONS            */
-/* ============================== */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -136,9 +123,6 @@ body {
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
 .fade-in { animation: fadeIn 0.4s ease-in-out; }
 
-/* ============================== */
-/*            MODALS              */
-/* ============================== */
 .modal {
     display: none;
     position: fixed;
@@ -234,9 +218,6 @@ body {
     background: var(--color-gray-100);
 }
 
-/* ============================== */
-/*           FORMS                */
-/* ============================== */
 .form-group {
     margin-bottom: 1.25rem;
 }
@@ -274,7 +255,6 @@ body {
     color: var(--color-gray-400);
 }
 
-/* File Upload */
 .file-upload-wrapper {
     position: relative;
     width: 100%;
@@ -303,9 +283,6 @@ body {
     cursor: pointer;
 }
 
-/* ============================== */
-/*          BUTTONS               */
-/* ============================== */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -377,9 +354,6 @@ body {
     border-radius: var(--radius-lg);
 }
 
-/* ============================== */
-/*          TABLES                */
-/* ============================== */
 .table-container {
     background: white;
     border-radius: var(--radius-xl);
@@ -427,9 +401,6 @@ body {
     border-bottom: none;
 }
 
-/* ============================== */
-/*          BADGES                */
-/* ============================== */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -469,9 +440,6 @@ body {
     border: 1px solid var(--color-gray-200);
 }
 
-/* ============================== */
-/*        TOAST NOTIFICATIONS     */
-/* ============================== */
 .toast {
     position: fixed;
     bottom: 2rem;
@@ -509,9 +477,6 @@ body {
     border-left-color: var(--color-primary);
 }
 
-/* ============================== */
-/*          LOADERS               */
-/* ============================== */
 .loading {
     display: inline-block;
     width: 20px;
@@ -538,9 +503,6 @@ body {
     border-width: 4px;
 }
 
-/* ============================== */
-/*        TABLE LOADING STATE     */
-/* ============================== */
 .table-loading {
     display: flex;
     flex-direction: column;
@@ -562,9 +524,6 @@ body {
     color: var(--color-gray-300);
 }
 
-/* ============================== */
-/*         ACTION BUTTONS         */
-/* ============================== */
 .action-btn {
     width: 2rem;
     height: 2rem;
@@ -602,16 +561,10 @@ body {
     background: #fee2e2;
 }
 
-/* ============================== */
-/*        SIDEBAR TRANSITION      */
-/* ============================== */
 .sidebar-transition {
     transition: transform 0.3s ease-in-out;
 }
 
-/* ============================== */
-/*        STATUS BADGES           */
-/* ============================== */
 .status-badge {
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
@@ -619,17 +572,11 @@ body {
     font-weight: 600;
 }
 
-/* ============================== */
-/*      KPI CARDS GRADIENTS       */
-/* ============================== */
 .kpi-gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
 .kpi-gradient-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
 .kpi-gradient-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
 .kpi-gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
 
-/* ============================== */
-/*        PROGRESS BARS           */
-/* ============================== */
 .progress-bar {
     height: 0.5rem;
     background: var(--color-gray-200);
@@ -644,9 +591,6 @@ body {
     transition: width 0.6s ease;
 }
 
-/* ============================== */
-/*       VIEWER SPECIFIC          */
-/* ============================== */
 .viewer-loading-overlay {
     position: absolute;
     top: 0;
@@ -668,9 +612,6 @@ body {
     display: block;
 }
 
-/* ============================== */
-/*        UTILITIES               */
-/* ============================== */
 .text-gradient {
     background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
     -webkit-background-clip: text;

@@ -34,7 +34,6 @@ function verificarRutaPermitida(user) {
     const rutasPermitidas = diccionarioRutas[nivelAcceso] || [];
     const pathNormalizado = path.replace(/\/+$/, "");
 
-    // Permitir acceso si la ruta está en el diccionario o si es una subruta permitida
     return rutasPermitidas.some(ruta =>
         pathNormalizado.includes(ruta.replace(/\/+$/, ""))
     );
@@ -55,11 +54,6 @@ function checkLoginStatus() {
         window.location.href = `${BASE}/frontend/index.html`;
         return [null, null];
     }
-
-    // Opcional: Verificar permisos de ruta
-    // if (!verificarRutaPermitida(userData)) {
-    //     console.warn("Acceso no autorizado a esta ruta");
-    // }
 
     return [token, userData];
 }
@@ -82,10 +76,8 @@ function toggleNotifications() {
     console.log("Notificaciones - En desarrollo");
 }
 
-// Global execution
 const [token, userData] = checkLoginStatus();
 
-// Event listeners globales
 document.addEventListener('click', function (event) {
     const userMenu = document.getElementById('userMenu');
     const userButton = event.target.closest('button[onclick="toggleUserMenu()"]');

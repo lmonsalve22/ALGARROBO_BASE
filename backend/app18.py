@@ -1163,7 +1163,6 @@ def get_proyectos(current_user_id):
                         json_agg(
                             DISTINCT jsonb_build_object(
                                 'id', h.id,
-                                'tipo_hito', h.tipo_hito,
                                 'fecha', h.fecha,
                                 'observacion', h.observacion,
                                 'creado_por', h.creado_por,
@@ -2233,104 +2232,54 @@ def view_geomapa_geojson(current_user_id, geomapa_id):
 # Hitos
 @app.route("/proyectos/<int:pid>/hitos", methods=["POST"])
 @session_required
-def crear_hito(current_user_id, pid):
-    conn = None
-    try:
-        data = request.get_json()
+def create_proyecto_hito(current_user_id, pid):
+    data = request.get_json()
 
-        if not data or "tipo_hito" not in data or "fecha" not in data:
-            return jsonify({"message": "tipo_hito y fecha son requeridos"}), 400
-
-        tipo_hito = data["tipo_hito"]
-        fecha = data["fecha"]  # YYYY-MM-DD
-        observacion = data.get("observacion")
-
-        conn = get_db_connection()
-        if not conn:
-            return jsonify({"message": "Error conexión BD"}), 500
-
-        with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO proyectos_hitos (
-                    proyecto_id,
-                    tipo_hito,
-                    fecha,
-                    observacion,
-                    creado_por
-                )
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING id
-            """, (
-                pid,
-                tipo_hito,
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute("""
+            INSERT INTO proyectos_hitos (
+                proyecto_id,
                 fecha,
                 observacion,
-                current_user_id
-            ))
+                categoria_hito,
+                creado_por
+            )
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (
+            pid,
+            data["fecha"],
+            data.get("observacion"),
+            data.get("categoria_hito"),
+            current_user_id
+        ))
+        hito_id = cur.fetchone()[0]
 
-            hito_id = cur.fetchone()[0]
+    conn.commit()
+    release_db_connection(conn)
 
-        conn.commit()
+    return jsonify({"id": hito_id}), 201
 
-        log_auditoria(
-            current_user_id,
-            "crear_hito",
-            f"Creó hito {hito_id} ({tipo_hito}) en proyecto {pid}"
-        )
-
-        return jsonify({
-            "message": "Hito creado correctamente",
-            "hito_id": hito_id
-        }), 201
-
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        logger.error(f"Error crear_hito: {e}")
-        traceback.print_exc()
-        return jsonify({"message": "Error interno"}), 500
-    finally:
-        if conn:
-            release_db_connection(conn)
 
 @app.route("/proyectos/<int:pid>/hitos", methods=["GET"])
-def listar_hitos_proyecto(pid):
-    conn = None
-    try:
-        conn = get_db_connection()
-        if not conn:
-            return jsonify({"message": "Error conexión BD"}), 500
+@session_required
+def get_proyecto_hitos(current_user_id, pid):
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute("""
+            SELECT
+                h.*,
+                hc.nombre AS categoria_nombre
+            FROM proyectos_hitos h
+            LEFT JOIN hitoscalendario hc ON hc.id = h.categoria_hito
+            WHERE h.proyecto_id = %s
+            ORDER BY h.fecha
+        """, (pid,))
+        rows = cur.fetchall()
 
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            #ORDER BY fecha ASC, creado_en ASC
-            cur.execute("""
-                SELECT
-                    id,
-                    proyecto_id,
-                    tipo_hito,
-                    fecha,
-                    observacion,
-                    creado_por,
-                    creado_en
-                FROM proyectos_hitos
-                WHERE proyecto_id = %s                
-            """, (pid,))
-
-            hitos = cur.fetchall()
-
-        return jsonify({
-            "proyecto_id": pid,
-            "total": len(hitos),
-            "hitos": hitos
-        })
-
-    except Exception as e:
-        logger.error(f"Error listando hitos proyecto {pid}: {e}")
-        traceback.print_exc()
-        return jsonify({"message": "Error interno"}), 500
-    finally:
-        if conn:
-            release_db_connection(conn)
+    release_db_connection(conn)
+    return jsonify(rows)
 
 @app.route("/hitos/<int:hito_id>", methods=["GET"])
 @session_required
@@ -2344,7 +2293,6 @@ def get_hito_metadata(current_user_id, hito_id):
                 SELECT
                     id,
                     proyecto_id,
-                    tipo_hito,
                     fecha,
                     observacion,
                     creado_por,
@@ -2377,7 +2325,6 @@ def view_hito_detalle(current_user_id, hito_id):
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute("""
                 SELECT
-                    tipo_hito,
                     fecha,
                     observacion,
                     creado_por
@@ -2574,124 +2521,67 @@ def view_observacion_detalle(current_user_id, observacion_id):
         if conn:
             release_db_connection(conn)
 
-@app.route("/calendario_eventos", methods=["GET"])
-@session_required
-def get_calendario_eventos(current_user_id):
-    conn = None
-    try:
-        conn = get_db_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("""
-                SELECT
-                    ce.*,
-                    u.nombre AS creado_por_nombre,
-                    u.email AS creado_por_email
-                FROM calendario_eventos ce
-                INNER JOIN users u ON u.user_id = ce.creado_por
-                WHERE ce.activo = TRUE
-                ORDER BY ce.fecha_inicio
-            """)
-            eventos = cur.fetchall()
-
-        return jsonify(eventos)
-
-    finally:
-        if conn:
-            release_db_connection(conn)
-
-
-@app.route("/calendario_eventos/<int:evento_id>", methods=["GET"])
-@session_required
-def get_calendario_evento(current_user_id, evento_id):
-    conn = None
-    try:
-        conn = get_db_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("""
-                SELECT
-                    ce.*,
-                    u.nombre AS creado_por_nombre,
-                    u.email AS creado_por_email
-                FROM calendario_eventos ce
-                INNER JOIN users u ON u.user_id = ce.creado_por
-                WHERE ce.id = %s
-            """, (evento_id,))
-            evento = cur.fetchone()
-
-        if not evento:
-            return jsonify({"message": "Evento no encontrado"}), 404
-
-        return jsonify(evento)
-
-    finally:
-        if conn:
-            release_db_connection(conn)
-
-
 @app.route("/calendario_eventos", methods=["POST"])
 @session_required
 def create_calendario_evento(current_user_id):
-    conn = None
-    try:
-        data = request.get_json()
+    data = request.get_json()
 
-        required = ["titulo", "fecha_inicio"]
-        if not data or not all(k in data for k in required):
-            return jsonify({"message": "Datos incompletos"}), 400
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute("""
+            INSERT INTO calendario_eventos (
+                titulo,
+                descripcion,
+                fecha_inicio,
+                fecha_termino,
+                todo_el_dia,
+                categoria_calendario,
+                origen_tipo,
+                origen_id,
+                ubicacion,
+                creado_por
+            )
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            RETURNING id
+        """, (
+            data["titulo"],
+            data.get("descripcion"),
+            data["fecha_inicio"],
+            data.get("fecha_termino"),
+            data.get("todo_el_dia", True),
+            data.get("categoria_calendario"),
+            data.get("origen_tipo"),
+            data.get("origen_id"),
+            data.get("ubicacion"),
+            current_user_id
+        ))
+        event_id = cur.fetchone()[0]
 
-        conn = get_db_connection()
-        with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO calendario_eventos (
-                    titulo,
-                    descripcion,
-                    fecha_inicio,
-                    fecha_termino,
-                    todo_el_dia,
-                    origen_tipo,
-                    origen_id,
-                    ubicacion,
-                    creado_por
-                )
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                RETURNING id
-            """, (
-                data.get("titulo"),
-                data.get("descripcion"),
-                data.get("fecha_inicio"),
-                data.get("fecha_termino"),
-                data.get("todo_el_dia", True),
-                data.get("origen_tipo"),
-                data.get("origen_id"),
-                data.get("ubicacion"),
-                current_user_id
-            ))
+    conn.commit()
+    release_db_connection(conn)
 
-            evento_id = cur.fetchone()[0]
+    return jsonify({"id": event_id}), 201
 
-        conn.commit()
 
-        log_auditoria(
-            current_user_id,
-            "create_evento",
-            f"Creó evento calendario id={evento_id}"
-        )
+@app.route("/calendario_eventos", methods=["GET"])
+@session_required
+def get_calendario_eventos(current_user_id):
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute("""
+            SELECT
+                e.*,
+                hc.nombre AS categoria_nombre
+            FROM calendario_eventos e
+            LEFT JOIN hitoscalendario hc ON hc.id = e.categoria_calendario
+            WHERE e.activo = TRUE
+            ORDER BY e.fecha_inicio
+        """)
+        rows = cur.fetchall()
 
-        return jsonify({
-            "message": "Evento creado",
-            "id": evento_id
-        }), 201
+    release_db_connection(conn)
+    return jsonify(rows)
 
-    except psycopg2.errors.UniqueViolation:
-        if conn:
-            conn.rollback()
-        return jsonify({
-            "message": "Ya existe un evento para ese origen"
-        }), 409
-
-    finally:
-        if conn:
-            release_db_connection(conn)
 
 @app.route("/calendario_eventos/<int:evento_id>", methods=["PUT"])
 @session_required
@@ -2774,6 +2664,102 @@ def delete_calendario_evento(current_user_id, evento_id):
     finally:
         if conn:
             release_db_connection(conn)
+
+# hitoscalendario
+
+@app.route("/hitoscalendario", methods=["GET"])
+@session_required
+def get_hitoscalendario(current_user_id):
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute("""
+            SELECT id, nombre, is_hito
+            FROM hitoscalendario
+            ORDER BY nombre
+        """)
+        rows = cur.fetchall()
+    release_db_connection(conn)
+    return jsonify(rows)
+
+@app.route("/hitoscalendario", methods=["POST"])
+@session_required
+def create_hitoscalendario(current_user_id):
+    data = request.get_json()
+
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute("""
+            INSERT INTO hitoscalendario (nombre, is_hito)
+            VALUES (%s, %s)
+            RETURNING id
+        """, (
+            data["nombre"],
+            data.get("is_hito", True)
+        ))
+        new_id = cur.fetchone()[0]
+
+    conn.commit()
+    release_db_connection(conn)
+
+    return jsonify({"id": new_id}), 201
+
+@app.route("/hitoscalendario/<int:id>", methods=["PUT"])
+@session_required
+def update_hitoscalendario(current_user_id, id):
+    data = request.get_json()
+
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE hitoscalendario
+            SET nombre = %s,
+                is_hito = %s
+            WHERE id = %s
+        """, (
+            data["nombre"],
+            data.get("is_hito", True),
+            id
+        ))
+
+    conn.commit()
+    release_db_connection(conn)
+
+    return jsonify({"message": "Actualizado"})
+
+@app.route("/hitoscalendario/<int:id>", methods=["DELETE"])
+@session_required
+def delete_hitoscalendario(current_user_id, id):
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM hitoscalendario WHERE id = %s", (id,))
+    conn.commit()
+    release_db_connection(conn)
+
+    return jsonify({"message": "Eliminado"})
+
+@app.route("/calendario_eventos_detalle", methods=["GET"])
+@session_required
+def get_calendario_eventos_detalle(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT *
+                FROM vw_calendario_eventos_full
+                ORDER BY fecha_inicio
+            """)
+            eventos = cur.fetchall()
+
+        return jsonify(eventos), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if conn:
+            conn.close()
+
 
 
 # AUDITORÍA

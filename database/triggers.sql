@@ -107,7 +107,7 @@ BEGIN
         creado_por
     )
     VALUES (
-        'Hito: ' || NEW.tipo_hito,
+        'Hito: ',
         NEW.observacion,
         NEW.fecha::timestamp,
         NULL,
@@ -169,6 +169,81 @@ CREATE TRIGGER sync_observacion_calendario
 AFTER INSERT ON proyectos_observaciones
 FOR EACH ROW
 EXECUTE FUNCTION trg_sync_observacion_to_calendario();
+
+
+
+CREATE OR REPLACE VIEW vw_calendario_eventos_full AS
+SELECT
+    ce.id AS calendario_id,
+    ce.titulo,
+    ce.descripcion,
+    ce.fecha_inicio,
+    ce.fecha_termino,
+    ce.todo_el_dia,
+    ce.origen_tipo,
+    ce.activo,
+
+    -- ======================
+    -- Proyecto
+    -- ======================
+    p.id AS proyecto_id,
+    p.nombre AS proyecto_nombre,
+    p.monto,
+    p.anno_ejecucion,
+    p.fecha_postulacion,
+
+    -- ======================
+    -- Normalizados (nombres)
+    -- ======================
+    a.nombre  AS area_nombre,
+    f.nombre  AS financiamiento_nombre,
+    ep.nombre AS estado_proyecto,
+    et.nombre AS etapa_proyecto,
+    es.nombre AS estado_postulacion,
+    s.nombre  AS sector_nombre,
+
+    -- ======================
+    -- Metadata del origen
+    -- ======================
+    ph.fecha        AS hito_fecha,
+    ph.observacion  AS hito_observacion,
+
+    po.observacion  AS observacion_texto,
+
+    ce.creado_por,
+    ce.creado_en
+
+FROM calendario_eventos ce
+
+-- ======================
+-- Resolver ORIGEN
+-- ======================
+LEFT JOIN proyectos_hitos ph
+    ON ce.origen_tipo = 'proyectos_hitos'
+   AND ce.origen_id = ph.id
+
+LEFT JOIN proyectos_observaciones po
+    ON ce.origen_tipo = 'proyectos_observaciones'
+   AND ce.origen_id = po.id
+
+-- ======================
+-- Resolver PROYECTO
+-- ======================
+LEFT JOIN proyectos p
+    ON p.id = COALESCE(ph.proyecto_id, po.proyecto_id)
+
+-- ======================
+-- Catálogos
+-- ======================
+LEFT JOIN areas a ON a.id = p.area_id
+LEFT JOIN financiamientos f ON f.id = p.financiamiento_id
+LEFT JOIN estados_proyecto ep ON ep.id = p.estado_proyecto_id
+LEFT JOIN etapas_proyecto et ON et.id = p.etapa_proyecto_id
+LEFT JOIN estados_postulacion es ON es.id = p.estado_postulacion_id
+LEFT JOIN sectores s ON s.id = p.sector_id
+
+WHERE ce.activo = TRUE;
+
 
 
 

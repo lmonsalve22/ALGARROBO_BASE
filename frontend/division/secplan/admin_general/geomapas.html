@@ -9,21 +9,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Gestión de Geomapas</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Leaflet CSS (Mapas) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        /* Estilos generales heredados */
         .card-hover {
             transition: all 0.3s ease;
         }
@@ -33,7 +28,6 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Modal Base */
         .modal {
             display: none;
             position: fixed;
@@ -52,7 +46,6 @@
             align-items: center;
         }
 
-        /* Contenido Modal Estándar (Crear) */
         .modal-content {
             background: white;
             border-radius: 12px;
@@ -65,7 +58,6 @@
             position: relative;
         }
 
-        /* Contenido Modal Visor (Mapa Grande) */
         .modal-content-viewer {
             background: white;
             border-radius: 12px;
@@ -107,7 +99,6 @@
             color: #1e293b;
         }
 
-        /* Formularios y Filtros */
         .form-group {
             margin-bottom: 1.25rem;
         }
@@ -139,12 +130,11 @@
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        /* --- NUEVOS ESTILOS PARA ZONA DE CARGA (DROPZONE) --- */
         .drop-zone {
             border: 2px dashed #cbd5e1;
-            /* border-gray-300 */
+
             border-radius: 0.75rem;
-            /* rounded-xl */
+
             padding: 2rem;
             text-align: center;
             transition: all 0.2s ease;
@@ -155,16 +145,16 @@
 
         .drop-zone:hover {
             border-color: #10b981;
-            /* emerald-500 */
+
             background-color: #ecfdf5;
-            /* emerald-50 */
+
         }
 
         .drop-zone.drag-over {
             border-color: #059669;
-            /* emerald-600 */
+
             background-color: #d1fae5;
-            /* emerald-100 */
+
             transform: scale(1.01);
         }
 
@@ -196,9 +186,6 @@
             display: none;
         }
 
-        /* --------------------------------------------------- */
-
-        /* Toast Notification */
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -302,7 +289,6 @@
             animation: fadeIn 0.4s ease-in-out;
         }
 
-        /* Estilos específicos del Visor de Mapas */
         #mapContainer {
             flex: 1;
             width: 100%;
@@ -328,23 +314,20 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header -->
+
     <div id="headerRender"></div>
 
     <div class="flex">
         <div id="asideRender"></div>
 
-        <!-- Main Content -->
         <main class="flex-1 p-6">
             <div id="mapsView" class="view-content">
 
-                <!-- Page Header -->
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Geomapas</h2>
                     <p class="text-gray-600">Repositorio de capas y geojsons SECPLAC</p>
                 </div>
 
-                <!-- BARRA DE FILTROS -->
                 <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-emerald-500">
                     <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
                         <div class="w-full md:w-1/3">
@@ -388,7 +371,6 @@
                     </div>
                 </div>
 
-                <!-- Project Selector Card -->
                 <div class="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
                     <div class="flex flex-col md:flex-row gap-4 items-end">
                         <div class="flex-1 w-full">
@@ -412,10 +394,8 @@
                     </div>
                 </div>
 
-                <!-- Actions & Recent Activity -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-                    <!-- Create Map Action Area -->
                     <div class="lg:col-span-1">
                         <div class="bg-white rounded-lg shadow p-6 h-full flex flex-col items-center justify-center text-center border border-dashed border-gray-300 hover:border-emerald-500 transition cursor-pointer group"
                             onclick="openCreateMapModal()">
@@ -432,7 +412,6 @@
                         </div>
                     </div>
 
-                    <!-- Recent Uploads Log -->
                     <div class="lg:col-span-2">
                         <div class="bg-white rounded-lg shadow overflow-hidden h-full">
                             <div
@@ -472,9 +451,8 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN LISTADO DE GEOMAPAS DEL PROYECTO -->
                 <div id="projectGeomapasPanel" class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
-                    <!-- Header del Panel -->
+
                     <div
                         class="px-6 py-4 border-b border-gray-200 bg-emerald-50 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
@@ -494,7 +472,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabla de Geomapas -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -517,7 +494,7 @@
                                 </tr>
                             </thead>
                             <tbody id="projectGeomapasBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Se llena con JS -->
+
                             </tbody>
                         </table>
                         <div id="geomapasLoading" class="hidden p-8 text-center">
@@ -535,7 +512,6 @@
         </main>
     </div>
 
-    <!-- MODAL DE CREAR GEOMAPA -->
     <div id="createMapModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -544,7 +520,7 @@
             </div>
 
             <form id="createMapForm" onsubmit="handleCreateMap(event)">
-                <!-- Contexto Proyecto -->
+
                 <div class="form-group p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <label class="text-xs text-gray-500 uppercase">Proyecto Destino</label>
                     <div class="flex items-center gap-2">
@@ -554,7 +530,6 @@
                     </div>
                 </div>
 
-                <!-- Datos del Mapa -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label for="mapName">Nombre del Mapa *</label>
@@ -566,7 +541,6 @@
                     </div>
                 </div>
 
-                <!-- NUEVA ZONA DE CARGA DE ARCHIVO -->
                 <div class="form-group">
                     <label>Archivo GeoJSON *</label>
                     <p class="text-xs text-gray-500 mb-2">Arrastra tu archivo .json o .geojson aquí.</p>
@@ -574,7 +548,6 @@
                     <div id="dropZone" class="drop-zone">
                         <input type="file" id="fileInput" accept=".json,.geojson">
 
-                        <!-- Estado: Esperando archivo -->
                         <div class="upload-prompt flex flex-col items-center justify-center py-4">
                             <div
                                 class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-3">
@@ -584,7 +557,6 @@
                             <p class="text-xs text-gray-400 mt-1">o haz clic para buscar</p>
                         </div>
 
-                        <!-- Estado: Archivo cargado -->
                         <div class="file-info-card flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <div class="bg-blue-100 text-blue-600 p-2 rounded">
@@ -618,7 +590,6 @@
         </div>
     </div>
 
-    <!-- MODAL VISOR DE MAPAS (LEAFLET) -->
     <div id="viewerModal" class="modal">
         <div class="modal-content-viewer">
             <div class="modal-header">
@@ -642,62 +613,42 @@
             </div>
 
             <div class="flex-1 relative bg-gray-800 overflow-hidden">
-                <!-- Loading Overlay -->
+
                 <div id="viewerLoading" class="viewer-loading-overlay">
                     <div class="loading-dark mb-3"></div>
                     <p class="text-sm text-gray-500">Cargando capa geográfica...</p>
                 </div>
 
-                <!-- Contenedor Leaflet -->
                 <div id="mapContainer"></div>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast">
         <span id="toastIcon"></span>
         <span id="toastMessage" class="font-medium text-gray-800"></span>
     </div>
 
-    <!-- Scripts Layout -->
     <script src="../../../script/layout.js"></script>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        // --- CONFIGURACIÓN ---
-        const API_BASE = 'https://186.67.61.251:8000';
-        let allProjects = [];
-        let currentMapData = null; // Guardar datos para exportar
-        let mapInstance = null; // Instancia de Leaflet
-        let geoJsonLayer = null; // Capa actual
-        let uploadedGeoJSON = null; // Variable global para almacenar el JSON leído del archivo
 
-        function getAuthHeaders() {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                console.error("No se encontró token.");
-                showToast("Sesión no iniciada", "error");
-                return null;
-            }
-            return {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
-        }
+        let allProjects = [];
+        let currentMapData = null;
+        let mapInstance = null;
+        let geoJsonLayer = null;
+        let uploadedGeoJSON = null;
 
         document.addEventListener('DOMContentLoaded', function () {
             loadProjects();
 
-            // Listeners de filtros
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterStatus').addEventListener('change', applyFilters);
 
-            // Listener para cargar mapas cuando se selecciona un proyecto
             document.getElementById('projectSelect').addEventListener('change', function (e) {
                 const pid = e.target.value;
                 const projectName = e.target.options[e.target.selectedIndex].text;
@@ -709,30 +660,24 @@
                 }
             });
 
-            // Inicializar lógica de Drag & Drop para el modal
             initDropZone();
         });
-
-        // --- LÓGICA DE DRAG & DROP (FILE READER) ---
 
         function initDropZone() {
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
 
-            // Click en la zona abre el selector
             dropZone.addEventListener('click', (e) => {
-                if (e.target.closest('button')) return; // Evitar click en botón borrar
+                if (e.target.closest('button')) return;
                 fileInput.click();
             });
 
-            // Input change
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
                     processFile(e.target.files[0]);
                 }
             });
 
-            // Drag events
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 dropZone.addEventListener(eventName, preventDefaults, false);
             });
@@ -760,7 +705,7 @@
         }
 
         function processFile(file) {
-            // Validar extensión
+
             const validTypes = ['application/json', '.json', '.geojson'];
             const fileName = file.name.toLowerCase();
             const isValid = fileName.endsWith('.json') || fileName.endsWith('.geojson');
@@ -775,15 +720,12 @@
                 try {
                     const jsonContent = JSON.parse(e.target.result);
 
-                    // Validar estructura básica de GeoJSON
                     if (!jsonContent.type) {
                         throw new Error("El archivo no parece ser un GeoJSON válido (falta 'type').");
                     }
 
-                    // Almacenar en variable global
                     uploadedGeoJSON = jsonContent;
 
-                    // Calcular estadísticas
                     let featureCount = 0;
                     if (jsonContent.type === 'FeatureCollection' && Array.isArray(jsonContent.features)) {
                         featureCount = jsonContent.features.length;
@@ -793,7 +735,6 @@
                         featureCount = jsonContent.geometries.length;
                     }
 
-                    // Actualizar UI
                     updateDropZoneUI(file.name, file.size, featureCount);
                     showToast(`Archivo cargado: ${featureCount} elementos`, "success");
 
@@ -819,31 +760,17 @@
 
         function clearFile() {
             uploadedGeoJSON = null;
-            document.getElementById('fileInput').value = ''; // Limpiar input
+            document.getElementById('fileInput').value = '';
             document.getElementById('dropZone').classList.remove('has-file');
         }
 
-        // --- FIN LÓGICA DRAG & DROP ---
-
-        // --- LÓGICA DE PROYECTOS ---
-
         async function loadProjects() {
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
             const select = document.getElementById('projectSelect');
             select.innerHTML = '<option value="" disabled selected>Cargando...</option>';
             select.disabled = true;
 
             try {
-                const response = await fetch(`${API_BASE}/proyectos`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) throw new Error('Error al cargar proyectos');
-
-                allProjects = await response.json();
+                allProjects = await api.get('/proyectos');
 
                 updateFilterOptions();
                 applyFilters();
@@ -946,17 +873,12 @@
             countBadge.textContent = projectList.length;
         }
 
-        // --- LÓGICA ESPECÍFICA DE GEOMAPAS ---
-
         async function loadProjectGeomapas(pid, projectName) {
             const panel = document.getElementById('projectGeomapasPanel');
             const tbody = document.getElementById('projectGeomapasBody');
             const loading = document.getElementById('geomapasLoading');
             const empty = document.getElementById('geomapasEmpty');
             const nameDisplay = document.getElementById('selectedProjectNameDisplay');
-
-            const headers = getAuthHeaders();
-            if (!headers) return;
 
             panel.classList.remove('hidden');
             nameDisplay.textContent = projectName;
@@ -965,14 +887,7 @@
             empty.classList.add('hidden');
 
             try {
-                const response = await fetch(`${API_BASE}/proyectos/${pid}/geomapas`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) throw new Error('Error al obtener geomapas');
-
-                const data = await response.json();
+                const data = await api.get(`/proyectos/${pid}/geomapas`);
                 const geomapas = data.geomapas || [];
 
                 loading.classList.add('hidden');
@@ -1017,8 +932,6 @@
             const projectName = select.options[select.selectedIndex].text;
             if (pid) loadProjectGeomapas(pid, projectName);
         }
-
-        // --- LÓGICA DEL VISOR (LEAFLET) ---
 
         async function openMapViewer(geomapaId, mapName) {
             const modal = document.getElementById('viewerModal');
@@ -1104,8 +1017,6 @@
             modal.classList.remove('active');
         }
 
-        // --- GESTIÓN DEL MODAL DE CREAR ---
-
         function openCreateMapModal() {
             const projectId = document.getElementById('projectSelect').value;
             const select = document.getElementById('projectSelect');
@@ -1123,7 +1034,7 @@
             document.getElementById('modalProjectName').textContent = projectText;
 
             document.getElementById('createMapForm').reset();
-            clearFile(); // Limpiar zona de archivos
+            clearFile();
 
             document.getElementById('createMapModal').classList.add('active');
         }
@@ -1139,7 +1050,6 @@
             const nombre = document.getElementById('mapName').value;
             const descripcion = document.getElementById('mapDesc').value;
 
-            // CAMBIO: Usar variable uploadedGeoJSON en lugar de textarea
             if (!uploadedGeoJSON) {
                 showToast("Debes subir un archivo GeoJSON", "error");
                 return;
@@ -1151,45 +1061,29 @@
                 geojson: uploadedGeoJSON
             };
 
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
             const btn = document.getElementById('btnSubmitCreate');
             const originalText = document.getElementById('btnCreateText').textContent;
             btn.disabled = true;
             document.getElementById('btnCreateText').innerHTML = '<span class="loading"></span> Guardando...';
 
             try {
-                const res = await fetch(`${API_BASE}/proyectos/${pid}/geomapas`, {
-                    method: "POST",
-                    headers: headers,
-                    body: JSON.stringify(payload)
-                });
+                const data = await api.post(`/proyectos/${pid}/geomapas`, payload);
 
-                const data = await res.json();
-
-                if (res.ok) {
-                    showToast("Geomapa creado exitosamente", "success");
-                    addToLog(pid, nombre, "success");
-                    closeCreateMapModal();
-                    const select = document.getElementById('projectSelect');
-                    loadProjectGeomapas(pid, select.options[select.selectedIndex].text);
-                } else {
-                    console.error("Error Server:", data);
-                    showToast(`Error al crear: ${data.message || res.status}`, "error");
-                    addToLog(pid, nombre, "error");
-                }
+                showToast("Geomapa creado exitosamente", "success");
+                addToLog(pid, nombre, "success");
+                closeCreateMapModal();
+                const select = document.getElementById('projectSelect');
+                loadProjectGeomapas(pid, select.options[select.selectedIndex].text);
 
             } catch (error) {
-                console.error('Error de Red:', error);
-                showToast('Error de conexión al crear mapa', 'error');
+                console.error('Error:', error);
+                showToast(`Error al crear: ${error.message}`, "error");
+                addToLog(pid, nombre, "error");
             } finally {
                 btn.disabled = false;
                 document.getElementById('btnCreateText').textContent = originalText;
             }
         }
-
-        // --- UTILIDADES VISUALES (LOG) ---
 
         function addToLog(projectId, itemName, status) {
             const tbody = document.getElementById('uploadLogBody');

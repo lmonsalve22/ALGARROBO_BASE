@@ -9,17 +9,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Gestión de Hitos</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        /* Estilos generales heredados */
         .card-hover {
             transition: all 0.3s ease;
         }
@@ -29,7 +25,6 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Modal Base */
         .modal {
             display: none;
             position: fixed;
@@ -49,7 +44,6 @@
             align-items: center;
         }
 
-        /* Contenido Modal Estándar */
         .modal-content {
             background: white;
             border-radius: 12px;
@@ -64,7 +58,6 @@
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
 
-        /* Contenido Modal Visor (Detalle) */
         .modal-content-viewer {
             background: white;
             border-radius: 12px;
@@ -104,7 +97,6 @@
             color: #1e293b;
         }
 
-        /* Formularios y Filtros */
         .form-group {
             margin-bottom: 1.25rem;
         }
@@ -137,7 +129,6 @@
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        /* Toast Notification */
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -250,17 +241,15 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header -->
+
     <div id="headerRender"></div>
 
     <div class="flex">
         <div id="asideRender"></div>
 
-        <!-- Main Content -->
         <main class="flex-1 p-6">
             <div id="hitosView" class="view-content">
 
-                <!-- Page Header -->
                 <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Gestión de Hitos</h2>
@@ -272,7 +261,6 @@
                     </button>
                 </div>
 
-                <!-- BARRA DE FILTROS -->
                 <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-emerald-500">
                     <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
                         <div class="w-full md:w-1/3">
@@ -316,7 +304,6 @@
                     </div>
                 </div>
 
-                <!-- Project Selector Card -->
                 <div class="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
                     <div class="flex flex-col md:flex-row gap-4 items-end">
                         <div class="flex-1 w-full">
@@ -341,7 +328,6 @@
                     </div>
                 </div>
 
-                <!-- Recent Activity Log -->
                 <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
                     <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                         <h3 class="font-semibold text-gray-800 text-sm">Historial de Registro (Sesión Actual)</h3>
@@ -377,9 +363,8 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN LISTADO DE HITOS DEL PROYECTO -->
                 <div id="projectHitosPanel" class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
-                    <!-- Header del Panel -->
+
                     <div
                         class="px-6 py-4 border-b border-gray-200 bg-emerald-50 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
@@ -400,7 +385,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabla de Hitos -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -420,7 +404,7 @@
                                 </tr>
                             </thead>
                             <tbody id="projectHitosBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Se llena con JS -->
+
                             </tbody>
                         </table>
                         <div id="hitosLoading" class="hidden p-8 text-center">
@@ -443,7 +427,6 @@
         </main>
     </div>
 
-    <!-- MODAL DE CREAR HITO -->
     <div id="createHitoModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -453,7 +436,7 @@
 
             <div class="p-6">
                 <form id="createHitoForm" onsubmit="handleCreateHito(event)">
-                    <!-- Contexto Proyecto -->
+
                     <div class="form-group p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
                         <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Proyecto Destino</label>
                         <div class="flex items-center gap-2 mt-1">
@@ -464,19 +447,11 @@
                         </div>
                     </div>
 
-                    <!-- Datos del Hito -->
                     <div class="grid grid-cols-1 gap-4">
                         <div class="form-group">
-                            <label for="tipoHito">Tipo de Hito *</label>
-                            <select id="tipoHito" name="tipo_hito" required class="bg-white">
-                                <option value="" disabled selected>Selecciona un tipo...</option>
-                                <option value="RECEPCION_OBSERVACIONES">Recepción de Observaciones</option>
-                                <option value="RESPUESTA_OBSERVACIONES">Respuesta a Observaciones</option>
-                                <option value="APROBACION_CONVENIO">Aprobación Convenio</option>
-                                <option value="INICIO_LICITACION">Inicio Licitación</option>
-                                <option value="APROBACION_URS">Aprobación URS</option>
-                                <option value="APROBACION_NIVEL_CENTRAL">Aprobación Nivel Central</option>
-                                <option value="OTRO">Otro (Especificar en obs)</option>
+                            <label for="categoriaHito">Categoría del Hito *</label>
+                            <select id="categoriaHito" name="categoria_hito" required class="bg-white">
+                                <option value="" disabled selected>Cargando categorías...</option>
                             </select>
                         </div>
 
@@ -509,7 +484,6 @@
         </div>
     </div>
 
-    <!-- MODAL VISOR DETALLE HITO -->
     <div id="viewerModal" class="modal">
         <div class="modal-content-viewer">
             <div class="modal-header">
@@ -528,13 +502,12 @@
             </div>
 
             <div class="p-6">
-                <!-- Loading Overlay -->
+
                 <div id="viewerLoading" class="hidden text-center py-8">
                     <div class="loading-dark mx-auto mb-3"></div>
                     <p class="text-sm text-gray-500">Cargando detalles...</p>
                 </div>
 
-                <!-- Detalle -->
                 <div id="viewerContent" class="hidden space-y-5">
                     <div class="flex items-center gap-4">
                         <div class="flex-1">
@@ -577,19 +550,18 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast">
         <span id="toastIcon"></span>
         <span id="toastMessage" class="font-medium text-gray-800 text-sm"></span>
     </div>
 
-    <!-- Scripts Layout -->
     <script src="../../../script/layout.js"></script>
 
     <script>
-        // --- CONFIGURACIÓN ---
+
         const API_BASE = 'https://186.67.61.251:8000';
         let allProjects = [];
+        let categoriasHito = [];
 
         function openCreateHitoModal() {
             const pid = document.getElementById('projectSelect').value;
@@ -614,18 +586,13 @@
             document.getElementById('viewerModal').classList.remove('active');
         }
 
-        // --- UTILIDAD PARA FECHAS GMT (FIX INVALID DATE) ---
-        // Maneja formato: "Wed, 07 Jan 2026 00:00:00 GMT"
-        // Usamos Intl.DateTimeFormat con timeZone: 'UTC' para evitar desfases de zona horaria
         function formatDisplayDate(dateString) {
             if (!dateString) return "Sin fecha registrada";
 
             const dateObj = new Date(dateString);
 
-            // Chequear si la fecha es válida
             if (isNaN(dateObj.getTime())) return "Fecha inválida";
 
-            // Forzar zona horaria UTC para mostrar exactamente lo que envía el servidor
             return new Intl.DateTimeFormat('es-CL', {
                 weekday: 'long',
                 year: 'numeric',
@@ -640,7 +607,6 @@
             const dateObj = new Date(dateString);
             if (isNaN(dateObj.getTime())) return dateString;
 
-            // Formato corto DD-MM-YYYY
             return new Intl.DateTimeFormat('es-CL', {
                 day: '2-digit',
                 month: '2-digit',
@@ -651,13 +617,12 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             loadProjects();
+            loadCategoriasHito();
 
-            // Listeners de filtros
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterStatus').addEventListener('change', applyFilters);
 
-            // Listener para cargar hitos cuando se selecciona un proyecto
             document.getElementById('projectSelect').addEventListener('change', function (e) {
                 const pid = e.target.value;
                 const projectName = e.target.options[e.target.selectedIndex].text;
@@ -670,7 +635,29 @@
             });
         });
 
-        // --- LÓGICA DE PROYECTOS (REUTILIZADA) ---
+        async function loadCategoriasHito() {
+            try {
+                const data = await api.get('/hitoscalendario');
+
+                categoriasHito = data.filter(c => c.is_hito === true || c.is_hito === 'true' || c.is_hito === 1);
+
+                // Sort by name
+                categoriasHito.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+                const select = document.getElementById('categoriaHito');
+                select.innerHTML = '<option value="" disabled selected>Selecciona una categoría...</option>';
+
+                categoriasHito.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.nombre;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+                showToast('Error al cargar categorías de hitos', 'error');
+            }
+        }
 
         async function loadProjects() {
             const select = document.getElementById('projectSelect');
@@ -781,8 +768,6 @@
             countBadge.textContent = projectList.length;
         }
 
-        // --- LÓGICA ESPECÍFICA DE HITOS ---
-
         async function loadProjectHitos(pid, projectName) {
             const panel = document.getElementById('projectHitosPanel');
             const tbody = document.getElementById('projectHitosBody');
@@ -797,12 +782,11 @@
             empty.classList.add('hidden');
 
             try {
-                const data = await api.get(`/proyectos/${pid}/hitos`);
-                const hitos = data.hitos || [];
+                const hitos = await api.get(`/proyectos/${pid}/hitos`);
 
                 loading.classList.add('hidden');
 
-                if (hitos.length === 0) {
+                if (!hitos || hitos.length === 0) {
                     empty.classList.remove('hidden');
                 } else {
                     hitos.forEach(hito => {
@@ -811,9 +795,11 @@
                         const fechaStr = utils.formatDate(hito.fecha);
                         const obsShort = hito.observacion ? hito.observacion.substring(0, 45) + (hito.observacion.length > 45 ? '...' : '') : '-';
 
+                        const categoriaNombre = hito.categoria_nombre || 'Sin categoría';
+
                         let iconClass = 'fa-flag text-gray-400';
                         let bgClass = 'bg-gray-100 text-gray-600';
-                        if (hito.tipo_hito.includes('APROBACION')) {
+                        if (categoriaNombre.toLowerCase().includes('aprobacion') || categoriaNombre.toLowerCase().includes('aprobación')) {
                             iconClass = 'fa-check-circle text-emerald-600';
                             bgClass = 'bg-emerald-100 text-emerald-700';
                         }
@@ -822,7 +808,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono text-xs">${fechaStr}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                 <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${bgClass}">
-                                    <i class="fas ${iconClass}"></i> ${hito.tipo_hito.replace(/_/g, ' ')}
+                                    <i class="fas ${iconClass}"></i> ${categoriaNombre}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate text-xs" title="${hito.observacion || ''}">${obsShort}</td>
@@ -855,15 +841,26 @@
 
             try {
                 const data = await api.get(`/hitos/${hitoId}/detalle`);
-                document.getElementById('detailTipo').textContent = data.tipo_hito.replace(/_/g, ' ');
+
+                let categoriaNombre = data.categoria_nombre || 'Sin categoría';
+                // Try to find in loaded categories if name is missing or we want to be sure
+                if (categoriasHito && categoriasHito.length > 0 && data.categoria_hito) {
+                    const cat = categoriasHito.find(c => c.id == data.categoria_hito);
+                    if (cat) categoriaNombre = cat.nombre;
+                }
+
+                document.getElementById('detailTipo').textContent = categoriaNombre;
                 document.getElementById('detailFecha').textContent = utils.formatDate(data.fecha);
                 document.getElementById('detailObs').textContent = data.observacion || 'Sin observaciones.';
-                document.getElementById('detailCreador').innerHTML = `<i class="fas fa-user text-gray-400"></i> ${data.creado_por_nombre || 'Desconocido'}`;
+
+                const creador = data.creado_por_nombre || 'Usuario del sistema';
+                document.getElementById('detailCreador').innerHTML = `<i class="fas fa-user text-gray-400"></i> ${creador}`;
 
                 loading.classList.add('hidden');
                 content.classList.remove('hidden');
             } catch (error) {
-                showToast(error.message, 'error');
+                console.error(error);
+                showToast('Error cargando detalle: ' + (error.message || 'Desconocido'), 'error');
                 closeViewerModal();
             }
         }
@@ -871,24 +868,37 @@
         async function handleCreateHito(e) {
             e.preventDefault();
             const pid = document.getElementById('createProjectId').value;
-            const data = utils.serializeForm(e.target);
+
+            const categoriaId = document.getElementById('categoriaHito').value;
+            const fecha = document.getElementById('fechaHito').value;
+            const observacion = document.getElementById('obsHito').value;
+
+            const payload = {
+                fecha: fecha,
+                observacion: observacion || null,
+                categoria_hito: parseInt(categoriaId),
+                categoria_calendario: parseInt(categoriaId)
+            };
 
             const btn = document.getElementById('btnSubmitCreate');
             const originalText = document.getElementById('btnCreateText').textContent;
+
+            const categoriaSelect = document.getElementById('categoriaHito');
+            const categoriaNombre = categoriaSelect.options[categoriaSelect.selectedIndex].text;
 
             try {
                 btn.disabled = true;
                 document.getElementById('btnCreateText').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
 
-                await api.post(`/proyectos/${pid}/hitos`, data);
+                await api.post(`/proyectos/${pid}/hitos`, payload);
 
                 showToast("Hito registrado exitosamente");
-                addToLog(pid, data.tipo_hito, "success");
+                addToLog(pid, categoriaNombre, "success");
                 closeCreateHitoModal();
                 loadProjectHitos(pid, document.getElementById('projectSelect').options[document.getElementById('projectSelect').selectedIndex].text);
             } catch (error) {
                 showToast(error.message, "error");
-                addToLog(pid, data.tipo_hito, "error");
+                addToLog(pid, categoriaNombre, "error");
             } finally {
                 btn.disabled = false;
                 document.getElementById('btnCreateText').textContent = originalText;
@@ -901,8 +911,6 @@
             const projectName = select.options[select.selectedIndex].text;
             if (pid) loadProjectHitos(pid, projectName);
         }
-
-        // --- UTILIDADES VISUALES (LOG) ---
 
         function addToLog(projectId, itemName, status) {
             const tbody = document.getElementById('uploadLogBody');

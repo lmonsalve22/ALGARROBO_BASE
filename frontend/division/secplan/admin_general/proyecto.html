@@ -9,12 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Algarrobo</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,26 +22,23 @@
                         sans: ['Outfit', 'sans-serif'],
                     },
                     colors: {
-                        primary: '#6366f1', // Indigo 500
-                        secondary: '#ec4899', // Pink 500
-                        accent: '#8b5cf6', // Violet 500
+                        primary: '#6366f1', 
+                        secondary: '#ec4899', 
+                        accent: '#8b5cf6', 
                     }
                 }
             }
         }
     </script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        /* Global Styles */
+        
         body {
             font-family: 'Outfit', sans-serif;
             background-color: #f8fafc;
@@ -55,7 +50,6 @@
             min-height: 100vh;
         }
 
-        /* Glassmorphism & Cards */
         .glass-panel {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -95,7 +89,6 @@
             opacity: 1;
         }
 
-        /* Animations */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -112,7 +105,6 @@
             animation: fadeIn 0.4s ease-out forwards;
         }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -177,7 +169,6 @@
             color: #ef4444;
         }
 
-        /* Form Inputs */
         input:not([type="checkbox"]),
         textarea,
         select {
@@ -233,7 +224,6 @@
             color: #334155;
         }
 
-        /* Checkbox */
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -247,7 +237,6 @@
             cursor: pointer;
         }
 
-        /* Table Styles */
         .table-container {
             border-radius: 1rem;
             overflow: hidden;
@@ -271,7 +260,6 @@
             border-bottom: 1px solid #f1f5f9;
         }
 
-        /* Status Badge */
         .status-badge {
             padding: 0.35rem 0.85rem;
             border-radius: 9999px;
@@ -280,7 +268,6 @@
             letter-spacing: 0.025em;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -314,7 +301,6 @@
             border-color: #f59e0b;
         }
 
-        /* Modal Footer */
         .modal-footer {
             display: flex;
             justify-content: flex-end;
@@ -324,7 +310,6 @@
             border-top: 1px solid #e2e8f0;
         }
 
-        /* Loader */
         .loading {
             width: 1.25rem;
             height: 1.25rem;
@@ -342,7 +327,6 @@
             display: revert;
         }
 
-        /* Details Table in Modal */
         .details-table {
             width: 100%;
             border-collapse: collapse;
@@ -372,7 +356,7 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header -->
+    
     <div id="headerRender">
     </div>
 
@@ -380,21 +364,18 @@
         <div id="asideRender">
         </div>
 
-        <!-- Main Content -->
         <main class="flex-1 p-6">
-            <!-- Projects View -->
+            
             <div id="projectsView" class="view-content">
-                <!-- Page Header -->
+                
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Proyectos</h2>
                     <p class="text-gray-600">Cartera de proyectos SECPLAC - Actualizado: <span
                             id="lastUpdate">01/09/2025</span></p>
                 </div>
 
-                <!-- KPI Cards -->
-                <!-- KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <!-- Total Proyectos -->
+                    
                     <div class="card-modern p-6 relative">
                         <div class="flex items-center justify-between z-10 relative">
                             <div>
@@ -409,7 +390,6 @@
                         </div>
                     </div>
 
-                    <!-- En Ejecución -->
                     <div class="card-modern p-6 relative">
                         <div class="flex items-center justify-between z-10 relative">
                             <div>
@@ -423,7 +403,6 @@
                         </div>
                     </div>
 
-                    <!-- Monto Total -->
                     <div class="card-modern p-6 relative">
                         <div class="flex items-center justify-between z-10 relative">
                             <div>
@@ -437,7 +416,6 @@
                         </div>
                     </div>
 
-                    <!-- Avance Promedio -->
                     <div class="card-modern p-6 relative">
                         <div class="flex items-center justify-between z-10 relative">
                             <div>
@@ -453,10 +431,9 @@
                     </div>
                 </div>
 
-                <!-- Filter Bar Section -->
                 <div class="glass-panel rounded-2xl p-6 mb-8 animate-fade-in" style="animation-delay: 0.1s;">
                     <div class="flex flex-col md:flex-row gap-6 justify-between items-end">
-                        <!-- Buscador -->
+                        
                         <div class="w-full md:w-1/3">
                             <label for="searchInput" class="block text-sm font-semibold text-gray-700 mb-2">Buscar
                                 Proyecto</label>
@@ -471,9 +448,8 @@
                             </div>
                         </div>
 
-                        <!-- Filtros Select Conectados -->
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1 w-full">
-                            <!-- Filtro Área -->
+                            
                             <div>
                                 <label for="filterArea"
                                     class="block text-sm font-semibold text-gray-700 mb-2">Área</label>
@@ -483,7 +459,6 @@
                                 </select>
                             </div>
 
-                            <!-- Filtro Financiamiento -->
                             <div>
                                 <label for="filterFinancing"
                                     class="block text-sm font-semibold text-gray-700 mb-2">Financiamiento</label>
@@ -493,7 +468,6 @@
                                 </select>
                             </div>
 
-                            <!-- Filtro Estado -->
                             <div>
                                 <label for="filterStatus"
                                     class="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
@@ -503,7 +477,6 @@
                                 </select>
                             </div>
 
-                            <!-- Filtro Profesional -->
                             <div>
                                 <label for="filterProfessional"
                                     class="block text-sm font-semibold text-gray-700 mb-2">Profesional</label>
@@ -514,7 +487,6 @@
                             </div>
                         </div>
 
-                        <!-- Botón Limpiar -->
                         <div class="w-full md:w-auto pb-0.5">
                             <button onclick="clearFilters()"
                                 class="w-full md:w-auto h-[42px] px-6 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm flex items-center justify-center gap-2">
@@ -524,7 +496,6 @@
                     </div>
                 </div>
 
-                <!-- Projects Table -->
                 <div class="table-container animate-fade-in" style="animation-delay: 0.2s;">
                     <div
                         class="px-6 py-5 border-b border-gray-100 bg-white flex justify-between items-center flex-wrap gap-4">
@@ -568,7 +539,7 @@
                                 </tr>
                             </thead>
                             <tbody id="projectsTableBody" class="bg-white">
-                                <!-- Projects will be loaded here -->
+                                
                             </tbody>
                         </table>
                     </div>
@@ -577,7 +548,6 @@
         </main>
     </div>
 
-    <!-- Modal para crear/editar proyectos -->
     <div id="proyectoModal" class="modal">
         <div class="modal-content" style="max-width: 1400px;">
             <div class="modal-header"
@@ -613,12 +583,12 @@
                                 <label for="n_registro">N° Registro</label>
                                 <input type="number" id="n_registro" name="n_registro">
                             </div>
-                            <!-- MODIFICADO: Select Dinámico para Área -->
+                            
                             <div class="form-group">
                                 <label for="area_id">Área</label>
                                 <select id="area_id" name="area_id">
                                     <option value="">Seleccione Área</option>
-                                    <!-- Se llena dinámicamente -->
+                                    
                                 </select>
                             </div>
                         </div>
@@ -627,28 +597,28 @@
                     <fieldset>
                         <legend>Estado y Avance</legend>
                         <div class="form-grid">
-                            <!-- MODIFICADO: Select Dinámico para Estado Proyecto -->
+                            
                             <div class="form-group">
                                 <label for="estado_proyecto_id">Estado Proyecto</label>
                                 <select id="estado_proyecto_id" name="estado_proyecto_id">
                                     <option value="">Seleccione Estado</option>
-                                    <!-- Se llena dinámicamente -->
+                                    
                                 </select>
                             </div>
-                            <!-- MODIFICADO: Select Dinámico para Etapa Proyecto -->
+                            
                             <div class="form-group">
                                 <label for="etapa_proyecto_id">Etapa Proyecto</label>
                                 <select id="etapa_proyecto_id" name="etapa_proyecto_id">
                                     <option value="">Seleccione Etapa</option>
-                                    <!-- Se llena dinámicamente -->
+                                    
                                 </select>
                             </div>
-                            <!-- MODIFICADO: Select Dinámico para Estado Postulación -->
+                            
                             <div class="form-group">
                                 <label for="estado_postulacion_id">Estado Postulación</label>
                                 <select id="estado_postulacion_id" name="estado_postulacion_id">
                                     <option value="">Seleccione Estado</option>
-                                    <!-- Se llena dinámicamente -->
+                                    
                                 </select>
                             </div>
                             <div class="form-group">
@@ -668,12 +638,12 @@
                     <fieldset>
                         <legend>Financiamiento</legend>
                         <div class="form-grid">
-                            <!-- MODIFICADO: Select Dinámico para Financiamiento -->
+                            
                             <div class="form-group">
                                 <label for="financiamiento_id">Financiamiento</label>
                                 <select id="financiamiento_id" name="financiamiento_id">
                                     <option value="">Seleccione Financiamiento</option>
-                                    <!-- Se llena dinámicamente -->
+                                    
                                 </select>
                             </div>
                             <div class="form-group">
@@ -707,7 +677,7 @@
                                 <label for="fecha_postulacion">Fecha Postulación</label>
                                 <input type="date" id="fecha_postulacion" name="fecha_postulacion">
                             </div>
-                            <!-- Campo fecha_actualización se mantiene oculto, el backend lo maneja -->
+                            
                             <div class="form-group">
                                 <label for="fecha_actualizacion">Fecha Actualización</label>
                                 <input type="date" id="fecha_actualizacion" name="fecha_actualizacion">
@@ -718,20 +688,20 @@
                     <fieldset>
                         <legend>Ubicación y Territorio</legend>
                         <div class="form-grid">
-                            <!-- MODIFICADO: Select Dinámico para Lineamiento -->
+                            
                             <div class="form-group">
                                 <label for="lineamiento_estrategico_id">Lineamiento Estratégico</label>
                                 <select id="lineamiento_estrategico_id" name="lineamiento_estrategico_id">
                                     <option value="">Seleccione Lineamiento</option>
-                                    <!-- Se llena dinámicamente -->
+                                    
                                 </select>
                             </div>
-                            <!-- MODIFICADO: Select Dinámico para Sector -->
+                            
                             <div class="form-group">
                                 <label for="sector_id">Sector</label>
                                 <select id="sector_id" name="sector_id">
                                     <option value="">Seleccione Sector</option>
-                                    <!-- Se llena dinámicamente -->
+                                    
                                 </select>
                             </div>
                             <div class="form-group">
@@ -840,7 +810,6 @@
         </div>
     </div>
 
-    <!-- Modal para ver detalles del proyecto -->
     <div id="viewProjectModal" class="modal">
         <div class="modal-content" style="max-width: 1400px;">
             <div class="modal-header"
@@ -858,7 +827,7 @@
                     onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
             </div>
             <div id="viewProjectDetails" class="p-6" style="background: #fafbfc;">
-                <!-- Los detalles del proyecto se cargarán aquí dinámicamente -->
+                
             </div>
             <div class="modal-footer"
                 style="background: #f8f9fa; border-radius: 0 0 1.5rem 1.5rem; padding: 1.5rem 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
@@ -872,7 +841,6 @@
         </div>
     </div>
 
-    <!-- Toast para notificaciones -->
     <div id="toast" class="toast">
         <span id="toastMessage"></span>
     </div>
@@ -880,7 +848,7 @@
     <script src="../../../script/layout.js"></script>
 
     <script>
-        // Configuración
+        
         let proyectos = [];
         let catalogData = {
             areas: [],
@@ -894,7 +862,6 @@
         let editingId = null;
         let columnsVisible = false;
 
-        // --- CARGA DE CATÁLOGOS (MASTER DATA) ---
         async function loadCatalogData() {
             try {
                 const resources = [
@@ -922,20 +889,19 @@
         }
 
         function populateFilterSelects() {
-            // Llenar filtros de la barra superior con los nombres únicos de los catálogos
+            
             populateSelectOptions('filterArea', catalogData.areas.map(a => a.nombre), 'Todas');
             populateSelectOptions('filterFinancing', catalogData.financiamientos.map(f => f.nombre), 'Todos');
             populateSelectOptions('filterStatus', catalogData.estados_proyecto.map(e => e.nombre), 'Todos');
-            // Profesionales se llenarán dinámicamente desde los proyectos cargados
+            
         }
 
         function populateFormSelects() {
-            // Helper para llenar un select
+            
             const fillSelect = (elementId, data, defaultText) => {
                 const select = document.getElementById(elementId);
                 if (!select) return;
 
-                // Guardar selección actual si estamos editando
                 const currentVal = select.value;
 
                 select.innerHTML = `<option value="">${defaultText}</option>`;
@@ -946,7 +912,6 @@
                     select.appendChild(option);
                 });
 
-                // Restaurar valor si existía
                 if (currentVal) select.value = currentVal;
             };
 
@@ -959,7 +924,6 @@
             fillSelect('lineamiento_estrategico_id', catalogData.lineamientos_estrategicos, 'Seleccione Lineamiento');
         }
 
-        // --- UTILIDAD PARA FECHAS ---
         function formatDateForInput(dateString) {
             if (!dateString) return '';
             if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
@@ -987,12 +951,11 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             checkLoginStatus();
-            // Cargar datos maestros antes que proyectos para asegurar consistencia
+            
             loadCatalogData().then(() => {
                 loadProjects();
             });
 
-            // Listeners para filtros y búsqueda
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('filterArea').addEventListener('change', applyFilters);
             document.getElementById('filterFinancing').addEventListener('change', applyFilters);
@@ -1018,11 +981,10 @@
 
                 proyectos = await api.get('/proyectos');
 
-                // Ordenar: Fechas desde la más reciente a la más antigua (Descendente), luego alfabéticamente
                 proyectos.sort((a, b) => {
                     const dateA = new Date(a.fecha_actualizacion || a.fecha_postulacion || 0);
                     const dateB = new Date(b.fecha_actualizacion || b.fecha_postulacion || 0);
-                    const diff = dateB - dateA; // Descendente (Más reciente primero)
+                    const diff = dateB - dateA; 
                     if (diff !== 0) return diff;
                     return (a.nombre || '').localeCompare(b.nombre || '');
                 });
@@ -1041,7 +1003,6 @@
             }
         }
 
-        // --- LÓGICA DE FILTROS ---
         function populateSelectOptions(selectElementId, optionsList, defaultLabel, currentValue) {
             const select = document.getElementById(selectElementId);
             const previousValue = select.value;
@@ -1074,7 +1035,6 @@
             const selectedStatus = document.getElementById('filterStatus').value;
             const selectedProfessional = document.getElementById('filterProfessional').value;
 
-            // 1. Áreas (usamos area_nombre del join)
             const dataForAreas = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
@@ -1085,7 +1045,6 @@
             const uniqueAreas = [...new Set(dataForAreas.map(p => p.area_nombre).filter(Boolean))].sort();
             populateSelectOptions('filterArea', uniqueAreas, 'Todas las áreas', selectedArea);
 
-            // 2. Financiamientos (usamos financiamiento_nombre)
             const dataForFinancing = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
@@ -1096,7 +1055,6 @@
             const uniqueFinancing = [...new Set(dataForFinancing.map(p => p.financiamiento_nombre).filter(Boolean))].sort();
             populateSelectOptions('filterFinancing', uniqueFinancing, 'Todo el financiamiento', selectedFinancing);
 
-            // 3. Estados (usamos estado_nombre)
             const dataForStatus = proyectos.filter(p => {
                 const profs = getProfessionalsFromProject(p);
                 const matchesPro = selectedProfessional === '' || profs.includes(selectedProfessional);
@@ -1107,7 +1065,6 @@
             const uniqueStatus = [...new Set(dataForStatus.map(p => p.estado_nombre).filter(Boolean))].sort();
             populateSelectOptions('filterStatus', uniqueStatus, 'Todos los estados', selectedStatus);
 
-            // 4. Profesionales
             const dataForProfessionals = proyectos.filter(p =>
                 (selectedArea === '' || p.area_nombre === selectedArea) &&
                 (selectedFinancing === '' || p.financiamiento_nombre === selectedFinancing) &&
@@ -1169,7 +1126,6 @@
             `).join('');
         }
 
-        // --- RENDERIZADO ---
         function renderProyectos(proyectosToRender) {
             const tableBody = document.getElementById('projectsTableBody');
             if (proyectosToRender.length === 0) {
@@ -1245,7 +1201,7 @@
 
         function updateKPIs(proyectosData) {
             document.getElementById('totalProjects').textContent = proyectosData.length;
-            // Filtramos usando estado_nombre
+            
             const executionCount = proyectosData.filter(p => p.estado_nombre === 'Ejecución').length;
             document.getElementById('executionProjects').textContent = executionCount;
             const totalAmount = proyectosData.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
@@ -1307,10 +1263,9 @@
                 observaciones: "Observaciones Generales"
             };
 
-            // Modern sectioned layout
             let html = `
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <!-- Header Section -->
+                    
                     <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 border-b border-gray-200">
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
@@ -1334,12 +1289,11 @@
                         </div>
                     </div>
 
-                    <!-- Main Content Grid -->
                     <div class="p-6">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <!-- Left Column -->
+                            
                             <div class="space-y-6">
-                                <!-- Información General -->
+                                
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                         <i class="fas fa-info-circle text-indigo-500"></i>
@@ -1371,7 +1325,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Financiamiento -->
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                         <i class="fas fa-dollar-sign text-green-500"></i>
@@ -1401,7 +1354,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Ubicación -->
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                         <i class="fas fa-map-marker-alt text-red-500"></i>
@@ -1428,9 +1380,8 @@
                                 </div>
                             </div>
 
-                            <!-- Right Column -->
                             <div class="space-y-6">
-                                <!-- Profesionales -->
+                                
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                         <i class="fas fa-users text-blue-500"></i>
@@ -1464,7 +1415,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Documentación -->
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                         <i class="fas fa-file-alt text-purple-500"></i>
@@ -1502,7 +1452,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Observaciones Generales -->
                                 ${proyecto.observaciones ? `
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -1644,7 +1593,6 @@
                 </div>
             `;
 
-            // Auditoría
             html += `
                 <div class="mt-8">
                     <div class="bg-gradient-to-r from-gray-700 to-gray-900 rounded-2xl shadow-lg p-6 text-white">
@@ -1704,7 +1652,7 @@
             if (!confirm('¿Está seguro de que desea eliminar este proyecto? Esta acción no se puede deshacer.')) return;
 
             try {
-                // showLoading es opcional si existe, si no usamos un alternativo
+                
                 if (typeof showLoading === 'function') showLoading(true, 'Eliminando...');
 
                 await api.delete(`/proyectos/${id}`);
@@ -1728,7 +1676,7 @@
         }
 
         function openModal(proyecto = null) {
-            // Asegurarnos de que los catálogos estén cargados
+            
             if (catalogData.areas.length === 0) {
                 populateFormSelects();
             }
@@ -1741,17 +1689,15 @@
             const submitText = document.getElementById('submitText');
 
             if (proyecto) {
-                // Modo edición
+                
                 titleText.textContent = 'Editar Proyecto';
                 modalIcon.className = 'fas fa-edit';
                 modalSubtitle.textContent = 'Modifique los campos necesarios para actualizar el proyecto';
                 submitText.textContent = 'Actualizar';
                 editingId = proyecto.id;
 
-                // Limpiamos formulario primero
                 form.reset();
 
-                // Iterar sobre las claves del proyecto para llenar el formulario
                 Object.keys(proyecto).forEach(key => {
                     const input = form.elements[key];
                     if (input) {
@@ -1760,13 +1706,13 @@
                         } else if (input.type === 'date') {
                             input.value = formatDateForInput(proyecto[key]);
                         } else {
-                            // Para selects, el valor debe ser el ID
+                            
                             input.value = proyecto[key] || '';
                         }
                     }
                 });
             } else {
-                // Modo nuevo proyecto
+                
                 titleText.textContent = 'Nuevo Proyecto';
                 modalIcon.className = 'fas fa-folder-plus';
                 modalSubtitle.textContent = 'Complete los campos para registrar un nuevo proyecto';
@@ -1791,7 +1737,6 @@
             e.preventDefault();
             const data = utils.serializeForm(e.target);
 
-            // Normalización de datos
             Object.keys(data).forEach(key => {
                 const element = e.target.elements[key];
                 if (element && element.type === 'checkbox') {
@@ -1800,7 +1745,6 @@
                 if (data[key] === '' || data[key] === null) delete data[key];
             });
 
-            // Limpiar campos técnicos/display
             const cleanup = [
                 'user_id', 'actualizado_por', 'fecha_actualizacion',
                 'user_nombre', 'actualizado_por_nombre',

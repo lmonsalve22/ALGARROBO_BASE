@@ -9,12 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informes - Geoportal Municipal</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,26 +31,18 @@
         }
     </script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- jsPDF para generar PDFs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- SheetJS para generar Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- Unified Admin Styles -->
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        /* ========================================
-           INFORMES - DISEÑO PREMIUM
-           ======================================== */
 
         :root {
             --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
@@ -72,7 +62,6 @@
             min-height: 100vh;
         }
 
-        /* Glass Panel */
         .glass-panel {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
@@ -81,14 +70,12 @@
             box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
         }
 
-        /* Report Cards Grid */
         .report-cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
         }
 
-        /* Report Card */
         .report-card {
             background: white;
             border-radius: 1rem;
@@ -131,7 +118,6 @@
             opacity: 1;
         }
 
-        /* Icon Circles */
         .icon-circle {
             width: 56px;
             height: 56px;
@@ -192,7 +178,6 @@
             color: #ea580c;
         }
 
-        /* Header Gradient */
         .header-gradient {
             background: var(--gradient-primary);
             border-radius: 1.5rem;
@@ -214,7 +199,6 @@
             transform: rotate(-15deg);
         }
 
-        /* Metric Cards */
         .metric-card-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -246,7 +230,6 @@
             box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Preview Panel */
         .preview-panel {
             background: white;
             border-radius: 1rem;
@@ -260,13 +243,11 @@
             border: 1px solid #e2e8f0;
         }
 
-        /* Chart Container */
         .chart-container {
             position: relative;
             height: 280px;
         }
 
-        /* Loading Spinner */
         .spinner {
             width: 20px;
             height: 20px;
@@ -284,7 +265,6 @@
             }
         }
 
-        /* Button Styles */
         .btn-primary {
             background: var(--gradient-primary);
             color: white;
@@ -323,7 +303,6 @@
             color: white;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 2rem;
@@ -344,7 +323,6 @@
             transform: translateX(0);
         }
 
-        /* Section Headers */
         .section-header {
             display: flex;
             align-items: center;
@@ -364,7 +342,6 @@
             font-size: 1.25rem;
         }
 
-        /* Animate */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -381,7 +358,6 @@
             animation: fadeIn 0.5s ease forwards;
         }
 
-        /* Report type specific gradients */
         [data-type="portfolio"] .report-card {
             --card-gradient: linear-gradient(135deg, #3b82f6, #2563eb);
         }
@@ -425,16 +401,15 @@
 </head>
 
 <body class="bg-gray-50">
-    <!-- Header -->
+    
     <div id="headerRender"></div>
 
     <div class="flex">
-        <!-- Sidebar -->
+        
         <div id="asideRender"></div>
 
-        <!-- Main Content -->
         <main class="flex-1 p-6">
-            <!-- Page Header -->
+            
             <div class="header-gradient mb-8 animate-fade-in">
                 <div class="relative z-10">
                     <div class="flex items-center gap-4 mb-4">
@@ -460,7 +435,6 @@
                 </div>
             </div>
 
-            <!-- Quick Stats -->
             <div class="metric-card-container mb-8 animate-fade-in" style="animation-delay: 0.1s;">
                 <div class="metric-card">
                     <div class="flex items-center justify-between">
@@ -508,7 +482,6 @@
                 </div>
             </div>
 
-            <!-- Report Types Section -->
             <div class="section-header animate-fade-in" style="animation-delay: 0.2s;">
                 <div class="icon-box">
                     <i class="fas fa-folder-open"></i>
@@ -521,7 +494,7 @@
 
             <div class="report-cards-grid mb-8 animate-fade-in" style="animation-delay: 0.3s;"
                 id="reportCardsContainer">
-                <!-- 1. Portfolio General -->
+                
                 <div class="report-card" data-type="portfolio" onclick="selectReport('portfolio')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle blue">
@@ -542,7 +515,6 @@
                     </div>
                 </div>
 
-                <!-- 2. Por Estado -->
                 <div class="report-card" data-type="status" onclick="selectReport('status')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle green">
@@ -562,7 +534,6 @@
                     </div>
                 </div>
 
-                <!-- 3. Por Área -->
                 <div class="report-card" data-type="area" onclick="selectReport('area')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle purple">
@@ -582,7 +553,6 @@
                     </div>
                 </div>
 
-                <!-- 4. Financiero -->
                 <div class="report-card" data-type="financial" onclick="selectReport('financial')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle yellow">
@@ -603,7 +573,6 @@
                     </div>
                 </div>
 
-                <!-- 5. Avance -->
                 <div class="report-card" data-type="progress" onclick="selectReport('progress')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle cyan">
@@ -623,7 +592,6 @@
                     </div>
                 </div>
 
-                <!-- 6. Prioritarios -->
                 <div class="report-card" data-type="priority" onclick="selectReport('priority')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle red">
@@ -643,7 +611,6 @@
                     </div>
                 </div>
 
-                <!-- 7. Profesionales -->
                 <div class="report-card" data-type="professionals" onclick="selectReport('professionals')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle pink">
@@ -663,7 +630,6 @@
                     </div>
                 </div>
 
-                <!-- 8. Por Sector -->
                 <div class="report-card" data-type="sector" onclick="selectReport('sector')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle emerald">
@@ -683,7 +649,6 @@
                     </div>
                 </div>
 
-                <!-- 9. Cronograma -->
                 <div class="report-card" data-type="timeline" onclick="selectReport('timeline')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle indigo">
@@ -703,7 +668,6 @@
                     </div>
                 </div>
 
-                <!-- 10. Comparativo -->
                 <div class="report-card" data-type="comparison" onclick="selectReport('comparison')">
                     <div class="flex items-start gap-4 mb-4">
                         <div class="icon-circle orange">
@@ -724,11 +688,10 @@
                 </div>
             </div>
 
-            <!-- Generation Panel -->
             <div class="glass-panel rounded-2xl p-6 mb-8 animate-fade-in" style="animation-delay: 0.4s;"
                 id="generationPanel">
                 <div class="flex flex-col lg:flex-row gap-6">
-                    <!-- Options -->
+                    
                     <div class="lg:w-1/3">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">
                             <i class="fas fa-cog mr-2 text-indigo-500"></i>Opciones de Generación
@@ -799,7 +762,6 @@
                         </div>
                     </div>
 
-                    <!-- Preview -->
                     <div class="lg:w-2/3">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">
                             <i class="fas fa-eye mr-2 text-indigo-500"></i>Vista Previa del Informe
@@ -817,7 +779,6 @@
                 </div>
             </div>
 
-            <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-fade-in" style="animation-delay: 0.5s;">
                 <div class="glass-panel rounded-2xl p-6">
                     <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -841,7 +802,6 @@
         </main>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast">
         <i class="fas fa-check-circle text-green-500" id="toastIcon"></i>
         <span id="toastMessage"></span>
@@ -849,18 +809,13 @@
 
     <script src="../../../script/layout.js"></script>
     <script>
-        // ========================================
-        // ESTADO GLOBAL
-        // ========================================
+
         let proyectos = [];
         let catalogData = { areas: [], estados_proyecto: [], financiamientos: [] };
         let selectedReportType = 'portfolio';
         let statusChart = null;
         let areaChart = null;
 
-        // ========================================
-        // INICIALIZACIÓN
-        // ========================================
         document.addEventListener('DOMContentLoaded', function () {
             checkLoginStatus();
             loadData();
@@ -868,10 +823,9 @@
 
         async function loadData() {
             try {
-                // Cargar proyectos
+                
                 proyectos = await api.get('/proyectos');
 
-                // Cargar catálogos
                 const [areas, estados, financiamientos] = await Promise.all([
                     api.get('/areas').catch(() => []),
                     api.get('/estados_proyecto').catch(() => []),
@@ -882,13 +836,11 @@
                 catalogData.estados_proyecto = estados;
                 catalogData.financiamientos = financiamientos;
 
-                // Actualizar UI
                 updateStats();
                 populateFilters();
                 initializeCharts();
                 updatePreview();
 
-                // Actualizar fecha
                 document.getElementById('lastUpdate').textContent = new Date().toLocaleDateString('es-CL');
 
             } catch (error) {
@@ -900,30 +852,26 @@
         function updateStats() {
             document.getElementById('totalProjects').textContent = proyectos.length;
 
-            // Inversión total
             const totalInversion = proyectos.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
             document.getElementById('statInversion').textContent = formatCurrency(totalInversion);
 
-            // En ejecución
             const enEjecucion = proyectos.filter(p =>
                 p.estado_nombre && p.estado_nombre.toLowerCase().includes('ejecución')
             ).length;
             document.getElementById('statEjecucion').textContent = enEjecucion;
 
-            // Avance promedio
             const avgProgress = proyectos.length > 0
                 ? proyectos.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / proyectos.length
                 : 0;
             const displayProgress = avgProgress > 1 ? avgProgress : avgProgress * 100;
             document.getElementById('statAvance').textContent = displayProgress.toFixed(1) + '%';
 
-            // Prioritarios
             const prioritarios = proyectos.filter(p => p.es_prioridad === 'SI').length;
             document.getElementById('statPrioritarios').textContent = prioritarios;
         }
 
         function populateFilters() {
-            // Áreas
+            
             const areaSelect = document.getElementById('reportArea');
             catalogData.areas.forEach(area => {
                 const option = document.createElement('option');
@@ -932,7 +880,6 @@
                 areaSelect.appendChild(option);
             });
 
-            // Años
             const yearSelect = document.getElementById('reportYear');
             const years = [...new Set(proyectos.map(p => p.anno_elaboracion).filter(Boolean))].sort((a, b) => b - a);
             years.forEach(year => {
@@ -943,11 +890,8 @@
             });
         }
 
-        // ========================================
-        // GRÁFICOS
-        // ========================================
         function initializeCharts() {
-            // Agrupar por estado
+            
             const estadoCounts = {};
             proyectos.forEach(p => {
                 const estado = p.estado_nombre || 'Sin estado';
@@ -979,7 +923,6 @@
                 });
             }
 
-            // Agrupar por área con montos
             const areaMounts = {};
             proyectos.forEach(p => {
                 const area = p.area_nombre || 'Sin área';
@@ -1019,14 +962,10 @@
             }
         }
 
-        // ========================================
-        // SELECCIÓN DE INFORME
-        // ========================================
         function selectReport(type) {
             selectedReportType = type;
             document.getElementById('reportType').value = type;
 
-            // Actualizar selección visual
             document.querySelectorAll('.report-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -1034,7 +973,6 @@
 
             updatePreview();
 
-            // Scroll al panel
             document.getElementById('generationPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
@@ -1129,9 +1067,6 @@
             };
         }
 
-        // ========================================
-        // GENERACIÓN DE INFORMES
-        // ========================================
         async function generateReport() {
             const format = document.querySelector('input[name="format"]:checked').value;
             const type = document.getElementById('reportType').value;
@@ -1166,75 +1101,344 @@
 
             const filteredProjects = getFilteredProjects();
             const reportTitles = {
-                portfolio: 'Cartera de Proyectos',
-                status: 'Proyectos por Estado',
-                area: 'Proyectos por Área',
-                financial: 'Informe Financiero',
-                progress: 'Avance de Proyectos',
-                priority: 'Proyectos Prioritarios',
-                professionals: 'Carga por Profesional',
-                sector: 'Distribucion por Sector',
-                timeline: 'Cronograma de Proyectos',
-                comparison: 'Comparativo Anual'
+                portfolio: 'Informe de Cartera de Proyectos',
+                status: 'Informe de Proyectos por Estado',
+                area: 'Informe de Proyectos por Area',
+                financial: 'Informe Financiero Detallado',
+                progress: 'Informe de Avance de Proyectos',
+                priority: 'Informe de Proyectos Prioritarios',
+                professionals: 'Informe de Carga por Profesional',
+                sector: 'Informe de Distribucion Territorial',
+                timeline: 'Informe de Cronograma de Proyectos',
+                comparison: 'Informe Comparativo Anual'
             };
 
-            // Header
             doc.setFillColor(99, 102, 241);
-            doc.rect(0, 0, 210, 40, 'F');
+            doc.rect(0, 0, 210, 297, 'F');
+
+            doc.setFillColor(255, 255, 255);
+            doc.circle(105, 80, 30, 'F');
+            doc.setTextColor(99, 102, 241);
+            doc.setFontSize(24);
+            doc.text('IMA', 105, 85, { align: 'center' });
 
             doc.setTextColor(255, 255, 255);
-            doc.setFontSize(20);
-            doc.text('Geoportal Municipal', 20, 20);
-            doc.setFontSize(14);
-            doc.text(reportTitles[type] || 'Informe', 20, 30);
+            doc.setFontSize(28);
+            doc.text('GEOPORTAL MUNICIPAL', 105, 130, { align: 'center' });
 
-            // Metadatos
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(10);
-            doc.text(`Fecha: ${new Date().toLocaleDateString('es-CL')}`, 20, 50);
-            doc.text(`Total Proyectos: ${filteredProjects.length}`, 20, 56);
+            doc.setFontSize(12);
+            doc.text('Ilustre Municipalidad de Algarrobo', 105, 145, { align: 'center' });
+
+            doc.setDrawColor(255, 255, 255);
+            doc.setLineWidth(0.5);
+            doc.line(50, 160, 160, 160);
+
+            doc.setFontSize(22);
+            doc.text(reportTitles[type] || 'Informe', 105, 185, { align: 'center' });
+
+            doc.setFontSize(14);
+            doc.text(`Fecha de Generacion: ${new Date().toLocaleDateString('es-CL')}`, 105, 210, { align: 'center' });
 
             const totalInversion = filteredProjects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
-            doc.text(`Inversion Total: ${formatCurrency(totalInversion)}`, 20, 62);
+            const avgProgress = filteredProjects.length > 0
+                ? filteredProjects.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / filteredProjects.length
+                : 0;
 
-            // Tabla de proyectos
-            const tableData = filteredProjects.slice(0, 30).map(p => [
-                (p.nombre || '').substring(0, 40),
-                p.area_nombre || '-',
-                p.estado_nombre || '-',
-                formatCurrencyShort(p.monto || 0),
-                `${parseFloat(p.avance_total_porcentaje || 0).toFixed(0)}%`
+            doc.setFontSize(11);
+            doc.text(`Total de Proyectos: ${filteredProjects.length}`, 105, 240, { align: 'center' });
+            doc.text(`Inversion Total: ${formatCurrency(totalInversion)}`, 105, 250, { align: 'center' });
+            doc.text(`Avance Promedio: ${(avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1)}%`, 105, 260, { align: 'center' });
+
+            doc.addPage();
+            let y = 20;
+
+            doc.setFillColor(99, 102, 241);
+            doc.rect(0, 0, 210, 25, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.text('RESUMEN EJECUTIVO', 20, 16);
+            doc.setTextColor(0, 0, 0);
+
+            y = 35;
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text('1. Introduccion', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            y += 8;
+            const introText = `Este informe presenta un analisis detallado de la cartera de proyectos de la Municipalidad de Algarrobo. Se incluyen ${filteredProjects.length} proyectos con una inversion total de ${formatCurrency(totalInversion)}.`;
+            const introLines = doc.splitTextToSize(introText, 170);
+            doc.text(introLines, 20, y);
+            y += introLines.length * 5 + 10;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('2. Metricas Clave', 20, y);
+            y += 10;
+
+            const estadoCounts = {};
+            const areaCounts = {};
+            const financiamientoCounts = {};
+
+            filteredProjects.forEach(p => {
+                const estado = p.estado_nombre || 'Sin estado';
+                const area = p.area_nombre || 'Sin area';
+                const fin = p.financiamiento_nombre || 'Sin financiamiento';
+                estadoCounts[estado] = (estadoCounts[estado] || 0) + 1;
+                areaCounts[area] = (areaCounts[area] || 0) + 1;
+                financiamientoCounts[fin] = (financiamientoCounts[fin] || 0) + 1;
+            });
+
+            const metricsData = [
+                ['Metrica', 'Valor'],
+                ['Total de Proyectos', filteredProjects.length.toString()],
+                ['Inversion Total', formatCurrency(totalInversion)],
+                ['Avance Promedio', `${(avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1)}%`],
+                ['Proyectos Prioritarios', filteredProjects.filter(p => p.es_prioridad === 'SI').length.toString()],
+                ['Areas Involucradas', Object.keys(areaCounts).length.toString()],
+                ['Fuentes de Financiamiento', Object.keys(financiamientoCounts).length.toString()]
+            ];
+
+            doc.autoTable({
+                startY: y,
+                head: [metricsData[0]],
+                body: metricsData.slice(1),
+                theme: 'grid',
+                headStyles: { fillColor: [99, 102, 241], fontStyle: 'bold' },
+                styles: { fontSize: 9, cellPadding: 4 },
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 80 }, 1: { cellWidth: 80 } }
+            });
+
+            y = doc.lastAutoTable.finalY + 15;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('3. Distribucion por Estado', 20, y);
+            y += 8;
+
+            const estadoData = Object.entries(estadoCounts).map(([estado, count]) => [
+                estado,
+                count.toString(),
+                `${((count / filteredProjects.length) * 100).toFixed(1)}%`
             ]);
 
             doc.autoTable({
-                startY: 70,
-                head: [['Proyecto', 'Area', 'Estado', 'Monto', 'Avance']],
-                body: tableData,
+                startY: y,
+                head: [['Estado', 'Cantidad', 'Porcentaje']],
+                body: estadoData,
                 theme: 'striped',
-                headStyles: { fillColor: [99, 102, 241] },
+                headStyles: { fillColor: [16, 185, 129] },
+                styles: { fontSize: 9, cellPadding: 3 }
+            });
+
+            y = doc.lastAutoTable.finalY + 15;
+
+            if (y > 220) {
+                doc.addPage();
+                y = 35;
+                doc.setFillColor(99, 102, 241);
+                doc.rect(0, 0, 210, 25, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(14);
+                doc.text('ANALISIS POR AREA', 20, 16);
+                doc.setTextColor(0, 0, 0);
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('4. Distribucion por Area', 20, y);
+            y += 8;
+
+            const areaData = Object.entries(areaCounts).map(([area, count]) => {
+                const areaProjects = filteredProjects.filter(p => (p.area_nombre || 'Sin area') === area);
+                const areaInversion = areaProjects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+                return [area, count.toString(), formatCurrencyShort(areaInversion)];
+            });
+
+            doc.autoTable({
+                startY: y,
+                head: [['Area', 'Proyectos', 'Inversion']],
+                body: areaData,
+                theme: 'striped',
+                headStyles: { fillColor: [139, 92, 246] },
+                styles: { fontSize: 9, cellPadding: 3 }
+            });
+
+            doc.addPage();
+            doc.setFillColor(99, 102, 241);
+            doc.rect(0, 0, 210, 25, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.text('DETALLE DE PROYECTOS', 20, 16);
+            doc.setTextColor(0, 0, 0);
+
+            let tableHeaders, tableBody;
+
+            switch (type) {
+                case 'financial':
+                    tableHeaders = [['Proyecto', 'Financiamiento', 'Monto', 'Estado', 'Avance']];
+                    tableBody = filteredProjects.map(p => [
+                        (p.nombre || '').substring(0, 35),
+                        (p.financiamiento_nombre || '-').substring(0, 20),
+                        formatCurrencyShort(p.monto || 0),
+                        (p.estado_nombre || '-').substring(0, 15),
+                        `${parseFloat(p.avance_total_porcentaje || 0).toFixed(0)}%`
+                    ]);
+                    break;
+
+                case 'progress':
+                    tableHeaders = [['Proyecto', 'Avance %', 'Estado', 'Area', 'Prioridad']];
+                    tableBody = filteredProjects
+                        .sort((a, b) => (parseFloat(b.avance_total_porcentaje) || 0) - (parseFloat(a.avance_total_porcentaje) || 0))
+                        .map(p => [
+                            (p.nombre || '').substring(0, 40),
+                            `${parseFloat(p.avance_total_porcentaje || 0).toFixed(1)}%`,
+                            (p.estado_nombre || '-').substring(0, 15),
+                            (p.area_nombre || '-').substring(0, 15),
+                            p.es_prioridad === 'SI' ? 'SI' : 'NO'
+                        ]);
+                    break;
+
+                case 'priority':
+                    const priorityProjects = filteredProjects.filter(p => p.es_prioridad === 'SI');
+                    tableHeaders = [['Proyecto', 'Area', 'Estado', 'Monto', 'Avance']];
+                    tableBody = priorityProjects.map(p => [
+                        (p.nombre || '').substring(0, 40),
+                        (p.area_nombre || '-').substring(0, 15),
+                        (p.estado_nombre || '-').substring(0, 15),
+                        formatCurrencyShort(p.monto || 0),
+                        `${parseFloat(p.avance_total_porcentaje || 0).toFixed(0)}%`
+                    ]);
+                    break;
+
+                case 'professionals':
+                    const professionalData = {};
+                    filteredProjects.forEach(p => {
+                        [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5]
+                            .filter(Boolean)
+                            .forEach(prof => {
+                                if (!professionalData[prof]) {
+                                    professionalData[prof] = { count: 0, monto: 0, proyectos: [] };
+                                }
+                                professionalData[prof].count++;
+                                professionalData[prof].monto += parseFloat(p.monto) || 0;
+                                professionalData[prof].proyectos.push(p.nombre);
+                            });
+                    });
+                    tableHeaders = [['Profesional', 'Proyectos', 'Inversion Total', 'Carga']];
+                    tableBody = Object.entries(professionalData)
+                        .sort((a, b) => b[1].count - a[1].count)
+                        .map(([prof, data]) => [
+                            prof.substring(0, 30),
+                            data.count.toString(),
+                            formatCurrencyShort(data.monto),
+                            data.count > 5 ? 'Alta' : data.count > 2 ? 'Media' : 'Baja'
+                        ]);
+                    break;
+
+                case 'sector':
+                    const sectorData = {};
+                    filteredProjects.forEach(p => {
+                        const sector = p.sector_nombre || 'Sin sector';
+                        if (!sectorData[sector]) {
+                            sectorData[sector] = { count: 0, monto: 0 };
+                        }
+                        sectorData[sector].count++;
+                        sectorData[sector].monto += parseFloat(p.monto) || 0;
+                    });
+                    tableHeaders = [['Sector/Territorio', 'Proyectos', 'Inversion', '% del Total']];
+                    tableBody = Object.entries(sectorData)
+                        .sort((a, b) => b[1].count - a[1].count)
+                        .map(([sector, data]) => [
+                            sector.substring(0, 35),
+                            data.count.toString(),
+                            formatCurrencyShort(data.monto),
+                            `${((data.count / filteredProjects.length) * 100).toFixed(1)}%`
+                        ]);
+                    break;
+
+                case 'timeline':
+                    tableHeaders = [['Proyecto', 'Ano Elab.', 'Ano Ejec.', 'Estado', 'Avance']];
+                    tableBody = filteredProjects
+                        .sort((a, b) => (b.anno_ejecucion || 0) - (a.anno_ejecucion || 0))
+                        .map(p => [
+                            (p.nombre || '').substring(0, 40),
+                            p.anno_elaboracion || '-',
+                            p.anno_ejecucion || '-',
+                            (p.estado_nombre || '-').substring(0, 15),
+                            `${parseFloat(p.avance_total_porcentaje || 0).toFixed(0)}%`
+                        ]);
+                    break;
+
+                case 'comparison':
+                    const yearData = {};
+                    filteredProjects.forEach(p => {
+                        const year = p.anno_elaboracion || 'Sin ano';
+                        if (!yearData[year]) {
+                            yearData[year] = { count: 0, monto: 0, avance: 0 };
+                        }
+                        yearData[year].count++;
+                        yearData[year].monto += parseFloat(p.monto) || 0;
+                        yearData[year].avance += parseFloat(p.avance_total_porcentaje) || 0;
+                    });
+                    tableHeaders = [['Ano', 'Proyectos', 'Inversion', 'Avance Prom.']];
+                    tableBody = Object.entries(yearData)
+                        .sort((a, b) => (b[0] === 'Sin ano' ? 0 : b[0]) - (a[0] === 'Sin ano' ? 0 : a[0]))
+                        .map(([year, data]) => [
+                            year,
+                            data.count.toString(),
+                            formatCurrencyShort(data.monto),
+                            `${(data.avance / data.count).toFixed(1)}%`
+                        ]);
+                    break;
+
+                default: 
+                    tableHeaders = [['Proyecto', 'Area', 'Estado', 'Monto', 'Avance']];
+                    tableBody = filteredProjects.map(p => [
+                        (p.nombre || '').substring(0, 40),
+                        (p.area_nombre || '-').substring(0, 15),
+                        (p.estado_nombre || '-').substring(0, 15),
+                        formatCurrencyShort(p.monto || 0),
+                        `${parseFloat(p.avance_total_porcentaje || 0).toFixed(0)}%`
+                    ]);
+            }
+
+            doc.autoTable({
+                startY: 35,
+                head: tableHeaders,
+                body: tableBody,
+                theme: 'striped',
+                headStyles: { fillColor: [99, 102, 241], fontStyle: 'bold' },
                 styles: { fontSize: 8, cellPadding: 3 },
-                columnStyles: {
-                    0: { cellWidth: 60 },
-                    1: { cellWidth: 35 },
-                    2: { cellWidth: 35 },
-                    3: { cellWidth: 30 },
-                    4: { cellWidth: 20 }
+                didDrawPage: function (data) {
+                    
+                    if (data.pageNumber > 1) {
+                        doc.setFillColor(99, 102, 241);
+                        doc.rect(0, 0, 210, 25, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(14);
+                        doc.text('DETALLE DE PROYECTOS (continuacion)', 20, 16);
+                        doc.setTextColor(0, 0, 0);
+                    }
                 }
             });
 
-            // Footer
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
                 doc.setFontSize(8);
                 doc.setTextColor(128);
                 doc.text(
-                    `Municipalidad de Algarrobo - Pagina ${i} de ${pageCount}`,
+                    `Municipalidad de Algarrobo - ${reportTitles[type]} - Pagina ${i} de ${pageCount}`,
                     105, 290, { align: 'center' }
+                );
+                doc.text(
+                    `Generado el ${new Date().toLocaleString('es-CL')}`,
+                    105, 295, { align: 'center' }
                 );
             }
 
-            doc.save(`informe_${type}_${Date.now()}.pdf`);
+            doc.save(`informe_${type}_${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
         function generateExcel(type) {
@@ -1254,49 +1458,212 @@
                 comparison: 'Comparativo Anual'
             };
 
-            // Hoja de resumen
+            const totalInversion = filteredProjects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            const avgProgress = filteredProjects.length > 0
+                ? filteredProjects.reduce((sum, p) => sum + (parseFloat(p.avance_total_porcentaje) || 0), 0) / filteredProjects.length
+                : 0;
+            const prioritarios = filteredProjects.filter(p => p.es_prioridad === 'SI').length;
+
             const summaryData = [
-                ['GEOPORTAL MUNICIPAL - ALGARROBO'],
+                ['GEOPORTAL MUNICIPAL - ILUSTRE MUNICIPALIDAD DE ALGARROBO'],
+                [''],
                 [reportTitles[type] || 'Informe'],
                 [''],
-                ['Fecha de generacion:', new Date().toLocaleDateString('es-CL')],
-                ['Total proyectos:', filteredProjects.length],
-                ['Inversion total:', filteredProjects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0)],
+                ['RESUMEN EJECUTIVO'],
+                [''],
+                ['Metrica', 'Valor'],
+                ['Fecha de Generacion', new Date().toLocaleDateString('es-CL')],
+                ['Total de Proyectos', filteredProjects.length],
+                ['Inversion Total ($)', totalInversion],
+                ['Avance Promedio (%)', (avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1)],
+                ['Proyectos Prioritarios', prioritarios],
+                [''],
+                ['DISTRIBUCION POR ESTADO'],
                 ['']
             ];
 
-            const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-            XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen');
+            const estadoCounts = {};
+            filteredProjects.forEach(p => {
+                const estado = p.estado_nombre || 'Sin estado';
+                estadoCounts[estado] = (estadoCounts[estado] || 0) + 1;
+            });
 
-            // Hoja de datos
-            const headers = ['ID', 'Nombre', 'Codigo', 'Area', 'Estado', 'Financiamiento', 'Monto', 'Avance %', 'Prioridad', 'Ano Elaboracion'];
-            const projectData = filteredProjects.map(p => [
+            summaryData.push(['Estado', 'Cantidad', 'Porcentaje']);
+            Object.entries(estadoCounts).forEach(([estado, count]) => {
+                summaryData.push([estado, count, `${((count / filteredProjects.length) * 100).toFixed(1)}%`]);
+            });
+
+            summaryData.push([''], ['DISTRIBUCION POR AREA'], ['']);
+            summaryData.push(['Area', 'Cantidad', 'Inversion']);
+
+            const areaCounts = {};
+            filteredProjects.forEach(p => {
+                const area = p.area_nombre || 'Sin area';
+                if (!areaCounts[area]) {
+                    areaCounts[area] = { count: 0, monto: 0 };
+                }
+                areaCounts[area].count++;
+                areaCounts[area].monto += parseFloat(p.monto) || 0;
+            });
+
+            Object.entries(areaCounts).forEach(([area, data]) => {
+                summaryData.push([area, data.count, data.monto]);
+            });
+
+            const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+            summaryWs['!cols'] = [{ wch: 35 }, { wch: 20 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen Ejecutivo');
+
+            const fullHeaders = [
+                'ID', 'Nombre', 'Codigo', 'Area', 'Estado', 'Etapa',
+                'Financiamiento', 'Monto', 'Avance (%)', 'Prioridad',
+                'Ano Elaboracion', 'Ano Ejecucion', 'Sector', 'Unidad Vecinal',
+                'Profesional 1', 'Profesional 2', 'Profesional 3', 'Profesional 4', 'Profesional 5',
+                'Documentos', 'Planimetrias', 'Topografia', 'Latitud', 'Longitud'
+            ];
+
+            const fullData = filteredProjects.map(p => [
                 p.id,
                 p.nombre || '',
                 p.codigo || '',
                 p.area_nombre || '',
                 p.estado_nombre || '',
+                p.etapa_nombre || '',
                 p.financiamiento_nombre || '',
                 parseFloat(p.monto) || 0,
                 parseFloat(p.avance_total_porcentaje) || 0,
                 p.es_prioridad || 'NO',
-                p.anno_elaboracion || ''
+                p.anno_elaboracion || '',
+                p.anno_ejecucion || '',
+                p.sector_nombre || '',
+                p.unidad_vecinal || '',
+                p.profesional_1 || '',
+                p.profesional_2 || '',
+                p.profesional_3 || '',
+                p.profesional_4 || '',
+                p.profesional_5 || '',
+                p.documentos || '',
+                p.planimetrias || '',
+                p.topografia || '',
+                p.latitud || '',
+                p.longitud || ''
             ]);
 
-            const dataWs = XLSX.utils.aoa_to_sheet([headers, ...projectData]);
+            const dataWs = XLSX.utils.aoa_to_sheet([fullHeaders, ...fullData]);
             dataWs['!cols'] = [
-                { wch: 6 }, { wch: 40 }, { wch: 15 }, { wch: 20 },
-                { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 },
-                { wch: 10 }, { wch: 12 }
+                { wch: 6 }, { wch: 45 }, { wch: 15 }, { wch: 18 }, { wch: 15 },
+                { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 10 },
+                { wch: 12 }, { wch: 12 }, { wch: 18 }, { wch: 15 },
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
+                { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 12 }
             ];
-            XLSX.utils.book_append_sheet(wb, dataWs, 'Proyectos');
+            XLSX.utils.book_append_sheet(wb, dataWs, 'Datos Completos');
 
-            XLSX.writeFile(wb, `informe_${type}_${Date.now()}.xlsx`);
+            let analysisData = [];
+            let analysisSheetName = 'Analisis';
+
+            switch (type) {
+                case 'professionals':
+                    analysisSheetName = 'Carga Profesional';
+                    analysisData = [['ANALISIS DE CARGA POR PROFESIONAL'], ['']];
+                    analysisData.push(['Profesional', 'Proyectos Asignados', 'Inversion Total', 'Nivel de Carga', 'Lista de Proyectos']);
+
+                    const profData = {};
+                    filteredProjects.forEach(p => {
+                        [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5]
+                            .filter(Boolean)
+                            .forEach(prof => {
+                                if (!profData[prof]) profData[prof] = { count: 0, monto: 0, proyectos: [] };
+                                profData[prof].count++;
+                                profData[prof].monto += parseFloat(p.monto) || 0;
+                                profData[prof].proyectos.push(p.nombre);
+                            });
+                    });
+
+                    Object.entries(profData)
+                        .sort((a, b) => b[1].count - a[1].count)
+                        .forEach(([prof, data]) => {
+                            analysisData.push([
+                                prof,
+                                data.count,
+                                data.monto,
+                                data.count > 5 ? 'Alta' : data.count > 2 ? 'Media' : 'Baja',
+                                data.proyectos.slice(0, 5).join('; ') + (data.proyectos.length > 5 ? '...' : '')
+                            ]);
+                        });
+                    break;
+
+                case 'financial':
+                    analysisSheetName = 'Analisis Financiero';
+                    analysisData = [['ANALISIS FINANCIERO DETALLADO'], ['']];
+                    analysisData.push(['Fuente de Financiamiento', 'Proyectos', 'Monto Total', '% del Presupuesto']);
+
+                    const finData = {};
+                    filteredProjects.forEach(p => {
+                        const fin = p.financiamiento_nombre || 'Sin financiamiento';
+                        if (!finData[fin]) finData[fin] = { count: 0, monto: 0 };
+                        finData[fin].count++;
+                        finData[fin].monto += parseFloat(p.monto) || 0;
+                    });
+
+                    Object.entries(finData)
+                        .sort((a, b) => b[1].monto - a[1].monto)
+                        .forEach(([fin, data]) => {
+                            analysisData.push([
+                                fin,
+                                data.count,
+                                data.monto,
+                                `${((data.monto / totalInversion) * 100).toFixed(1)}%`
+                            ]);
+                        });
+                    break;
+
+                case 'comparison':
+                    analysisSheetName = 'Comparativo Anual';
+                    analysisData = [['COMPARATIVO POR ANO DE ELABORACION'], ['']];
+                    analysisData.push(['Ano', 'Proyectos', 'Inversion Total', 'Avance Promedio', 'Prioritarios']);
+
+                    const yearData = {};
+                    filteredProjects.forEach(p => {
+                        const year = p.anno_elaboracion || 'Sin ano';
+                        if (!yearData[year]) yearData[year] = { count: 0, monto: 0, avance: 0, priority: 0 };
+                        yearData[year].count++;
+                        yearData[year].monto += parseFloat(p.monto) || 0;
+                        yearData[year].avance += parseFloat(p.avance_total_porcentaje) || 0;
+                        if (p.es_prioridad === 'SI') yearData[year].priority++;
+                    });
+
+                    Object.entries(yearData)
+                        .sort((a, b) => (b[0] === 'Sin ano' ? 0 : parseInt(b[0])) - (a[0] === 'Sin ano' ? 0 : parseInt(a[0])))
+                        .forEach(([year, data]) => {
+                            analysisData.push([
+                                year,
+                                data.count,
+                                data.monto,
+                                `${(data.avance / data.count).toFixed(1)}%`,
+                                data.priority
+                            ]);
+                        });
+                    break;
+
+                default:
+                    analysisSheetName = 'Estadisticas';
+                    analysisData = [['ESTADISTICAS ADICIONALES'], ['']];
+                    analysisData.push(['Categoria', 'Detalle', 'Valor']);
+                    analysisData.push(['Proyectos', 'Total', filteredProjects.length]);
+                    analysisData.push(['Proyectos', 'Prioritarios', prioritarios]);
+                    analysisData.push(['Financiero', 'Inversion Total', totalInversion]);
+                    analysisData.push(['Financiero', 'Promedio por Proyecto', totalInversion / filteredProjects.length]);
+                    analysisData.push(['Avance', 'Promedio General', `${(avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1)}%`]);
+            }
+
+            const analysisWs = XLSX.utils.aoa_to_sheet(analysisData);
+            analysisWs['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 50 }];
+            XLSX.utils.book_append_sheet(wb, analysisWs, analysisSheetName);
+
+            XLSX.writeFile(wb, `informe_${type}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // ========================================
-        // UTILIDADES
-        // ========================================
         function formatCurrency(value) {
             if (!value && value !== 0) return '$0';
             return new Intl.NumberFormat('es-CL', {

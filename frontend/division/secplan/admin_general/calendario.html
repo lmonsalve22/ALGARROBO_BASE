@@ -5,348 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario - Geoportal Municipal</title>
-
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- FullCalendar CSS -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-
-    <!-- Unified Admin Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles/admin-styles.css">
-
     <style>
-        /* ========================================
-           CALENDARIO MUNICIPAL - DISEÑO PREMIUM
-           ======================================== */
-
         :root {
             --primary: #3b82f6;
             --primary-dark: #2563eb;
-            --primary-light: #93c5fd;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
             --purple: #8b5cf6;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
         }
-
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        /* ========================================
-           FULLCALENDAR - ESTILOS PERSONALIZADOS
-           ======================================== */
-
-        #calendar {
-            max-width: 100%;
-            margin: 0 auto;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-
-        /* Header del calendario */
-        .fc .fc-toolbar.fc-header-toolbar {
-            margin-bottom: 1.5rem;
-            padding: 0;
-        }
-
-        .fc .fc-toolbar-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--gray-800);
-            text-transform: capitalize;
-        }
-
-        /* Botones de navegación */
-        .fc .fc-button-primary {
-            background: white;
-            border: 1px solid var(--gray-200);
-            color: var(--gray-700);
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .fc .fc-button-primary:hover {
-            background: var(--gray-50);
-            border-color: var(--gray-300);
-            color: var(--gray-800);
-        }
-
-        .fc .fc-button-primary:not(:disabled).fc-button-active,
-        .fc .fc-button-primary:not(:disabled):active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-
-        .fc .fc-button-primary:focus {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-        }
-
-        .fc .fc-button-group>.fc-button {
-            border-radius: 0;
-        }
-
-        .fc .fc-button-group>.fc-button:first-child {
-            border-radius: 8px 0 0 8px;
-        }
-
-        .fc .fc-button-group>.fc-button:last-child {
-            border-radius: 0 8px 8px 0;
-        }
-
-        /* Navegación prev/next */
-        .fc .fc-prev-button,
-        .fc .fc-next-button {
-            padding: 0.5rem;
-            min-width: 40px;
-        }
-
-        .fc .fc-today-button {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-
-        .fc .fc-today-button:hover {
-            background: var(--primary-dark);
-            border-color: var(--primary-dark);
-        }
-
-        .fc .fc-today-button:disabled {
-            background: var(--gray-200);
-            border-color: var(--gray-200);
-            color: var(--gray-500);
-        }
-
-        /* ========================================
-           VISTA MES (dayGridMonth)
-           ======================================== */
-
-        .fc-theme-standard .fc-scrollgrid {
-            border: none;
-        }
-
-        .fc .fc-col-header {
-            background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
-        }
-
-        .fc .fc-col-header-cell {
-            padding: 1rem 0;
-            border: none;
-            border-bottom: 2px solid var(--gray-100);
-        }
-
-        .fc .fc-col-header-cell-cushion {
-            font-weight: 600;
-            color: var(--gray-600);
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-
-        .fc .fc-daygrid-day {
-            border: 1px solid var(--gray-100);
-            transition: all 0.2s ease;
-        }
-
-        .fc .fc-daygrid-day:hover {
-            background: var(--gray-50);
-        }
-
-        .fc .fc-daygrid-day-number {
-            padding: 0.75rem;
-            font-weight: 500;
-            color: var(--gray-700);
-            font-size: 0.875rem;
-        }
-
-        .fc .fc-daygrid-day.fc-day-today {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
-        }
-
-        .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0.5rem;
-        }
-
-        .fc .fc-day-other .fc-daygrid-day-number {
-            color: var(--gray-400);
-        }
-
-        /* ========================================
-           VISTA SEMANA (timeGridWeek)
-           ======================================== */
-
-        .fc .fc-timegrid-slot {
-            height: 48px;
-            border-color: var(--gray-100);
-        }
-
-        .fc .fc-timegrid-slot-label {
-            font-size: 0.75rem;
-            color: var(--gray-500);
-            font-weight: 500;
-        }
-
-        .fc .fc-timegrid-col {
-            border-color: var(--gray-100);
-        }
-
-        .fc .fc-timegrid-now-indicator-line {
-            border-color: var(--danger);
-            border-width: 2px;
-        }
-
-        .fc .fc-timegrid-now-indicator-arrow {
-            border-color: var(--danger);
-            border-top-color: transparent;
-            border-bottom-color: transparent;
-        }
-
-        /* ========================================
-           VISTA AGENDA (listWeek)
-           ======================================== */
-
-        .fc .fc-list {
-            border: none;
-        }
-
-        .fc .fc-list-day-cushion {
-            background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
-            padding: 1rem 1.25rem;
-        }
-
-        .fc .fc-list-day-text,
-        .fc .fc-list-day-side-text {
-            font-weight: 600;
-            color: var(--gray-800);
-        }
-
-        .fc .fc-list-event {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .fc .fc-list-event:hover {
-            background: var(--gray-50);
-        }
-
-        .fc .fc-list-event:hover td {
-            background: transparent;
-        }
-
-        .fc .fc-list-event-time {
-            color: var(--gray-500);
-            font-weight: 500;
-            padding: 1rem;
-        }
-
-        .fc .fc-list-event-title {
-            padding: 1rem;
-            font-weight: 500;
-        }
-
-        .fc .fc-list-event-dot {
-            border-radius: 50%;
-            width: 10px;
-            height: 10px;
-        }
-
-        /* ========================================
-           EVENTOS - ESTILOS PREMIUM
-           ======================================== */
-
-        .fc-event {
-            border: none !important;
-            border-radius: 6px !important;
-            padding: 4px 8px !important;
-            font-size: 0.8rem !important;
-            font-weight: 500 !important;
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .fc-event:hover {
-            transform: translateY(-1px) !important;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-        }
-
-        .fc-event-main {
-            padding: 2px 0;
-        }
-
-        .fc-event-title {
-            font-weight: 600 !important;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .fc-daygrid-event {
-            margin: 2px 4px !important;
-        }
-
-        .fc-daygrid-block-event .fc-event-time {
-            font-weight: 600;
-        }
-
-        .fc-daygrid-dot-event {
-            padding: 4px !important;
-        }
-
-        .fc-daygrid-dot-event .fc-event-title {
-            font-weight: 500 !important;
-        }
-
-        /* Eventos más cortos muestran solo punto */
-        .fc-daygrid-event-dot {
-            border-radius: 50%;
-            width: 8px;
-            height: 8px;
-            margin-right: 6px;
-        }
-
-        /* ========================================
-           MODAL - DISEÑO GLASSMORPHISM
-           ======================================== */
 
         .modal {
             display: none;
@@ -356,104 +27,68 @@
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
-            background-color: rgba(15, 23, 42, 0.6);
+            background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
         .modal.show {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             opacity: 1;
         }
 
         .modal-content {
             background: white;
-            margin: 4% auto;
-            padding: 0;
-            border: none;
             border-radius: 16px;
             width: 90%;
-            max-width: 560px;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            transform: translateY(-30px) scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
 
         .modal.show .modal-content {
-            transform: translateY(0) scale(1);
+            transform: scale(1);
         }
 
-        .modal-header {
-            padding: 1.5rem 1.5rem 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .close-btn {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--gray-100);
-            color: var(--gray-500);
-            font-size: 20px;
-            font-weight: bold;
+        .fc-event {
             cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
+            border: none !important;
+            border-radius: 6px !important;
+            padding: 3px 8px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.1s ease;
         }
 
-        .close-btn:hover {
-            background: var(--gray-200);
-            color: var(--gray-700);
+        .fc-event:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        /* ========================================
-           TARJETAS DE EVENTOS LATERALES
-           ======================================== */
-
-        .event-card {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-
-        .event-card:hover {
-            transform: translateX(4px);
-            border-color: var(--gray-200);
-            box-shadow: var(--shadow);
-        }
-
-        /* ========================================
-           LOADING STATE
-           ======================================== */
 
         .loading-overlay {
             position: absolute;
             inset: 0;
             background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(2px);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
-            border-radius: 12px;
+            z-index: 50;
+            border-radius: 0.5rem;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
         }
 
         .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid var(--gray-200);
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -464,222 +99,274 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* FullCalendar Customization */
+        .fc-toolbar-title {
+            font-size: 1.5rem !important;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .fc-button {
+            border-radius: 0.5rem !important;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .fc-button-primary {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+
+        .fc-button-primary:hover {
+            background-color: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .fc-col-header-cell-cushion {
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-size: 0.875rem;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
     </style>
 </head>
 
-<body class="bg-gray-50">
-    <!-- Header -->
+<body class="bg-gray-50 text-gray-800">
     <div id="headerRender"></div>
+    <div class="flex min-h-screen">
+        <aside id="asideRender" class="w-64 bg-white shadow-xl hidden md:block z-10"></aside>
+        <main class="flex-1 p-6 overflow-x-hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Calendario Municipal</h2>
+                <p class="text-gray-500 mt-1">Gestión integral de eventos, hitos y actividades</p>
+            </div>
 
-    <div class="flex">
-        <!-- Sidebar -->
-        <div id="asideRender"></div>
-
-        <!-- Main Content -->
-        <main class="flex-1 p-6">
-            <!-- Calendar View -->
-            <div id="calendarView" class="view-content">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Calendario Municipal</h2>
-                    <p class="text-gray-600">Gestión de eventos, hitos y plazos de proyectos</p>
-                </div>
-
-                <!-- Calendar Actions -->
-                <div class="bg-white rounded-lg shadow p-4 mb-6">
-                    <div class="flex flex-wrap justify-between items-center gap-4">
-                        <div class="flex flex-wrap gap-2">
-                            <button id="btnNuevoEvento"
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
-                                <i class="fas fa-plus"></i>Nuevo Evento
-                            </button>
-                            <button id="btnSincronizar"
-                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                                <i class="fas fa-sync"></i>Sincronizar
-                            </button>
-                            <button id="btnExportar"
-                                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2">
-                                <i class="fas fa-download"></i>Exportar
-                            </button>
-                        </div>
-                        <div class="flex items-center gap-4 flex-wrap">
-                            <div class="flex items-center space-x-2">
-                                <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
-                                <span class="text-sm">Vialidad</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-                                <span class="text-sm">Saneamiento</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                                <span class="text-sm">Espacios Públicos</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
-                                <span class="text-sm">Educación</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="w-3 h-3 bg-red-500 rounded-full"></span>
-                                <span class="text-sm">Salud</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="w-3 h-3 bg-gray-500 rounded-full"></span>
-                                <span class="text-sm">Municipal</span>
-                            </div>
-                        </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-8">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div class="flex flex-wrap gap-3">
+                        <button id="btnNuevoEvento"
+                            class="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 flex items-center gap-2 font-medium">
+                            <i class="fas fa-plus"></i> Nuevo Evento
+                        </button>
+                        <button id="btnSincronizar"
+                            class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-500/30 flex items-center gap-2 font-medium">
+                            <i class="fas fa-sync-alt"></i> Sincronizar
+                        </button>
+                    </div>
+                    <div id="legendContainer" class="flex items-center gap-4 flex-wrap text-sm">
+                        <!-- Leyenda generada dinámicamente -->
                     </div>
                 </div>
+            </div>
 
-                <!-- Calendar Grid -->
-                <div class="bg-white rounded-lg shadow p-6 relative">
-                    <div id="calendarLoading" class="loading-overlay hidden">
-                        <div class="spinner"></div>
-                    </div>
-                    <div id="calendar"></div>
-                </div>
-
-                <!-- Upcoming Events -->
-                <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Próximos Eventos</h3>
-                        <div id="upcomingEventsList" class="space-y-3">
-                            <div class="text-center text-gray-400 py-4">Cargando...</div>
+            <!-- Filters Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Buscar Proyecto</label>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                            <input type="text" id="filterSearch" placeholder="Nombre, código o sector..."
+                                class="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                     </div>
-
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Eventos Municipales</h3>
-                        <div id="municipalEventsList" class="space-y-3">
-                            <div class="text-center text-gray-400 py-4">Cargando...</div>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Área</label>
+                        <select id="filterAreaCalendar"
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">Todas las áreas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Estado Proyecto</label>
+                        <select id="filterStatus"
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="btnClearFilters"
+                            class="w-full py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
+                            <i class="fas fa-eraser mr-2"></i> Limpiar Filtros
+                        </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Calendario Full Width -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative">
+                <div id="calendarLoading" class="loading-overlay hidden">
+                    <div class="spinner"></div>
+                </div>
+                <!-- Altura mínima para asegurar que se vea bien -->
+                <div id="calendar" class="min-h-[700px]"></div>
             </div>
         </main>
     </div>
 
-    <!-- Modal para agregar/editar eventos -->
+    <!-- Modal Nuevo/Editar -->
     <div id="eventModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">Agregar Evento</h2>
-                <button id="closeModalBtn" class="close-btn">&times;</button>
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-800">Nuevo Evento</h3>
+                <button id="closeModalBtn"
+                    class="text-gray-400 hover:text-gray-600 text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition">&times;</button>
             </div>
-            <div class="modal-body">
-                <form id="eventForm">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="eventTitle">
-                            Título del Evento *
-                        </label>
-                        <input
-                            class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            id="eventTitle" type="text" placeholder="Título del evento" required>
+            <form id="eventForm" class="p-6">
+                <div class="mb-5">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Título del Evento *</label>
+                    <input type="text" id="eventTitle" required
+                        class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm">
+                </div>
+                <div class="mb-5">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Descripción</label>
+                    <textarea id="eventDescription" rows="3"
+                        class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-5 mb-5">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Fecha Inicio *</label>
+                        <input type="date" id="eventStartDate" required
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="eventDescription">
-                            Descripción
-                        </label>
-                        <textarea
-                            class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            id="eventDescription" rows="3" placeholder="Descripción del evento"></textarea>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Fecha Término</label>
+                        <input type="date" id="eventEndDate"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="eventStartDate">
-                                Fecha de Inicio *
-                            </label>
-                            <input
-                                class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                id="eventStartDate" type="date" required>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="eventEndDate">
-                                Fecha de Término
-                            </label>
-                            <input
-                                class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                id="eventEndDate" type="date">
-                        </div>
+                </div>
+                <div class="grid grid-cols-2 gap-5 mb-6">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Área</label>
+                        <select id="eventArea"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="Vialidad">Vialidad</option>
+                            <option value="Saneamiento">Saneamiento</option>
+                            <option value="Espacios Públicos">Espacios Públicos</option>
+                            <option value="Educación">Educación</option>
+                            <option value="Salud">Salud</option>
+                            <option value="Municipal" selected>Municipal</option>
+                        </select>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="eventArea">
-                                Área
-                            </label>
-                            <select
-                                class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                id="eventArea">
-                                <option value="Vialidad">Vialidad</option>
-                                <option value="Saneamiento">Saneamiento</option>
-                                <option value="Espacios Públicos">Espacios Públicos</option>
-                                <option value="Educación">Educación</option>
-                                <option value="Salud">Salud</option>
-                                <option value="Municipal">Municipal</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="eventLocation">
-                                Ubicación
-                            </label>
-                            <input
-                                class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                id="eventLocation" type="text" placeholder="Ubicación del evento">
-                        </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Ubicación</label>
+                        <input type="text" id="eventLocation"
+                            class="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="eventFinancing">
-                            Financiamiento
-                        </label>
-                        <input
-                            class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            id="eventFinancing" type="text" placeholder="Fuente de financiamiento">
+                </div>
+                <div class="flex justify-between items-center pt-6 border-t border-gray-100">
+                    <div id="deleteEventContainer" class="hidden">
+                        <button type="button" id="btnDeleteEvent"
+                            class="px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition font-medium border border-red-200">
+                            <i class="fas fa-trash-alt mr-2"></i>Eliminar
+                        </button>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <div id="deleteEventContainer" class="hidden">
-                            <button type="button" id="btnDeleteEvent"
-                                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
-                                <i class="fas fa-trash"></i>Eliminar
-                            </button>
-                        </div>
-                        <div class="flex justify-end gap-3 ml-auto">
-                            <button type="button" id="btnCancelModal"
-                                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">
-                                Cancelar
-                            </button>
-                            <button type="submit"
-                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
-                                <i class="fas fa-save"></i>Guardar
-                            </button>
-                        </div>
+                    <div class="flex gap-3 ml-auto">
+                        <button type="button" id="btnCancelModal"
+                            class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium">Cancelar</button>
+                        <button type="submit"
+                            class="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-medium shadow-lg shadow-blue-500/30">
+                            <i class="fas fa-save mr-2"></i>Guardar
+                        </button>
                     </div>
-                </form>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detalle -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-800">Detalle del Evento</h3>
+                <button id="closeDetailModalBtn"
+                    class="text-gray-400 hover:text-gray-600 text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition">&times;</button>
+            </div>
+            <div class="p-6">
+                <div class="mb-5">
+                    <h4 id="detailTitle" class="text-2xl font-bold text-gray-900 leading-tight"></h4>
+                </div>
+
+                <div id="detailProjectInfo" class="mb-5 p-4 bg-blue-50 rounded-xl border border-blue-100 hidden">
+                    <div class="flex items-center gap-2 text-blue-700 mb-2">
+                        <i class="fas fa-project-diagram"></i>
+                        <span class="font-bold text-sm uppercase tracking-wide">Proyecto Asociado</span>
+                    </div>
+                    <p id="detailProjectName" class="text-gray-800 font-semibold"></p>
+                    <p class="text-xs text-blue-600 mt-2 italic flex items-center gap-1">
+                        <i class="fas fa-info-circle"></i>
+                        Este evento es gestionado automÃ¡ticamente por el proyecto.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <p class="text-xs text-gray-500 uppercase font-bold mb-1 tracking-wider">Inicio</p>
+                        <p id="detailStartDate" class="text-gray-800 font-medium"></p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <p class="text-xs text-gray-500 uppercase font-bold mb-1 tracking-wider">Término</p>
+                        <p id="detailEndDate" class="text-gray-800 font-medium"></p>
+                    </div>
+                </div>
+
+                <div class="mb-5 flex flex-wrap gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">Área</p>
+                        <span id="detailArea"
+                            class="inline-block px-4 py-1.5 rounded-full text-sm font-bold bg-blue-100 text-blue-800"></span>
+                    </div>
+                    <div id="detailLocationContainer" class="hidden">
+                        <p class="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">Ubicación</p>
+                        <p id="detailLocation"
+                            class="text-gray-800 flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-lg border border-gray-200">
+                            <i class="fas fa-map-marker-alt text-gray-400"></i>
+                            <span></span>
+                        </p>
+                    </div>
+                </div>
+
+                <div id="detailDescriptionContainer" class="mb-5 hidden">
+                    <p class="text-xs text-gray-500 uppercase font-bold mb-2 tracking-wider">Descripción</p>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <p id="detailDescription" class="text-gray-700 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-gray-50 flex justify-end gap-3">
+                <button onclick="document.getElementById('detailModal').classList.remove('show')"
+                    class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium">
+                    Cerrar
+                </button>
+                <div id="editButtonContainer">
+                    <button id="btnEditFromDetail"
+                        class="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-medium flex items-center gap-2 shadow-lg shadow-blue-500/30">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts de dependencias primero -->
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js'></script>
-
-    <!-- Scripts de la aplicación -->
-    <script src="../../../script/router.js"></script>
     <script src="../../../script/api.js"></script>
-    <script src="../../../script/utils.js"></script>
     <script src="../../../script/layout.js"></script>
-
+    <script src="../../../script/utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js"></script>
     <script>
-        // ========================================
-        // CALENDARIO MUNICIPAL - MODULO PRINCIPAL
-        // ========================================
-
-        // Estado global del módulo
-        const CalendarioApp = {
+        var CalendarioApp = {
             calendar: null,
             currentEventId: null,
-            currentEventOriginId: null,
+            currentEvent: null,
             eventsData: [],
-
-            // Colores para cada área
             areaColors: {
                 'Vialidad': '#3B82F6',
                 'Saneamiento': '#10B981',
@@ -687,841 +374,670 @@
                 'Educación': '#8B5CF6',
                 'Salud': '#EF4444',
                 'Municipal': '#6B7280'
-            },
-
-            areaTheme: {
-                'Vialidad': { bg: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800', light: 'bg-blue-50' },
-                'Saneamiento': { bg: 'bg-green-500', badge: 'bg-green-100 text-green-800', light: 'bg-green-50' },
-                'Espacios Públicos': { bg: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-800', light: 'bg-yellow-50' },
-                'Educación': { bg: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800', light: 'bg-purple-50' },
-                'Salud': { bg: 'bg-red-500', badge: 'bg-red-100 text-red-800', light: 'bg-red-50' },
-                'Municipal': { bg: 'bg-gray-500', badge: 'bg-gray-100 text-gray-800', light: 'bg-gray-50' }
             }
         };
 
-        // ========================================
-        // INICIALIZACIÓN
-        // ========================================
-
+        // Initialize
         document.addEventListener('DOMContentLoaded', function () {
-
-            // Inicializar eventos de UI primero (no dependen de API)
-            initUIEvents();
-
-            // Inicializar calendario
             initCalendar();
-
-            // Cargar eventos desde API
+            initEvents();
+            loadAreas(); // Load areas first
             loadEvents();
         });
 
-        function initUIEvents() {
-            // Botón nuevo evento
-            const btnNuevo = document.getElementById('btnNuevoEvento');
-            if (btnNuevo) {
-                btnNuevo.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    openModalForNewEvent();
-                });
-            }
+        // Dynamic Areas Management
+        var availableAreas = [];
 
-            // Botón sincronizar
-            const btnSync = document.getElementById('btnSincronizar');
-            if (btnSync) {
-                btnSync.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    syncCalendar();
-                });
-            }
+        function loadAreas() {
+            if (typeof api === 'undefined') return;
 
-            // Botón exportar
-            const btnExport = document.getElementById('btnExportar');
-            if (btnExport) {
-                btnExport.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    exportCalendar();
-                });
-            }
-
-            // Modal - cerrar
-            const closeBtn = document.getElementById('closeModalBtn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', closeModal);
-            }
-
-            const cancelBtn = document.getElementById('btnCancelModal');
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', closeModal);
-            }
-
-            // Modal - click fuera para cerrar
-            const modal = document.getElementById('eventModal');
-            if (modal) {
-                modal.addEventListener('click', function (e) {
-                    if (e.target === modal) {
-                        closeModal();
+            api.get('/areas')
+                .then(function (areas) {
+                    if (Array.isArray(areas)) {
+                        availableAreas = areas.filter(a => a.activo);
+                        populateAreaSelect(availableAreas);
+                        populateFilterAreaSelect(availableAreas);
+                        renderLegend(availableAreas);
                     }
+                })
+                .catch(function (err) {
+                    console.error('Error loading areas:', err);
+                    var fallback = [
+                        { nombre: 'Municipal' },
+                        { nombre: 'Vialidad' },
+                        { nombre: 'Saneamiento' }
+                    ];
+                    populateAreaSelect(fallback);
+                    populateFilterAreaSelect(fallback);
                 });
-            }
+        }
 
-            // Form submit
-            const form = document.getElementById('eventForm');
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    saveEvent();
-                });
-            }
+        function populateAreaSelect(areas) {
+            var select = document.getElementById('eventArea');
+            select.innerHTML = ''; // Clear existing
 
-            // Botón eliminar
-            const btnDelete = document.getElementById('btnDeleteEvent');
-            if (btnDelete) {
-                btnDelete.addEventListener('click', deleteEvent);
+            areas.forEach(function (area) {
+                var option = document.createElement('option');
+                option.value = area.nombre;
+                option.textContent = area.nombre;
+                select.appendChild(option);
+            });
+
+            // Add "Municipal" if not present as a fallback default
+            if (!areas.some(a => a.nombre === 'Municipal')) {
+                var mun = document.createElement('option');
+                mun.value = 'Municipal';
+                mun.textContent = 'Municipal';
+                select.appendChild(mun);
             }
         }
 
-        // ========================================
-        // CALENDARIO FULLCALENDAR
-        // ========================================
+        function populateFilterAreaSelect(areas) {
+            var select = document.getElementById('filterAreaCalendar');
+            if (!select) return;
+            select.innerHTML = '<option value="">Todas las áreas</option>';
+
+            areas.forEach(function (area) {
+                var option = document.createElement('option');
+                option.value = area.nombre;
+                option.textContent = area.nombre;
+                select.appendChild(option);
+            });
+        }
+
+        function renderLegend(areas) {
+            var container = document.getElementById('legendContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // Ensure unique names
+            var uniqueNames = [];
+            var seen = new Set();
+            areas.forEach(function (a) {
+                if (!seen.has(a.nombre)) {
+                    seen.add(a.nombre);
+                    uniqueNames.push(a.nombre);
+                }
+            });
+            uniqueNames.sort();
+
+            uniqueNames.forEach(function (name) {
+                var color = getAreaHexColor(name);
+
+                var div = document.createElement('div');
+                div.className = 'flex items-center gap-2 px-3 py-1 rounded-full border border-gray-100 bg-white shadow-sm';
+                div.innerHTML = `<span class="w-3 h-3 rounded-full" style="background-color: ${color};"></span>${name}`;
+                container.appendChild(div);
+            });
+        }
+
+        // Helper to get color for any area name
+        function getAreaColor(areaName) {
+            if (!areaName) return 'bg-gray-100 text-gray-800';
+
+            // Predefined map for common ones
+            var map = {
+                'Vialidad': 'bg-blue-100 text-blue-800',
+                'Saneamiento': 'bg-green-100 text-green-800',
+                'Espacios Públicos': 'bg-amber-100 text-amber-800',
+                'Educación': 'bg-purple-100 text-purple-800',
+                'Salud': 'bg-red-100 text-red-800',
+                'Municipal': 'bg-gray-100 text-gray-800',
+                'Hito de Proyecto': 'bg-indigo-100 text-indigo-800',
+                'Observación': 'bg-orange-100 text-orange-800',
+                'General': 'bg-gray-100 text-gray-800'
+            };
+
+            if (map[areaName]) return map[areaName];
+
+            // Dynamic color generation for unknown areas
+            var colors = [
+                'bg-teal-100 text-teal-800',
+                'bg-cyan-100 text-cyan-800',
+                'bg-pink-100 text-pink-800',
+                'bg-rose-100 text-rose-800',
+                'bg-fuchsia-100 text-fuchsia-800',
+                'bg-lime-100 text-lime-800'
+            ];
+
+            // Simple hash
+            var hash = 0;
+            for (var i = 0; i < areaName.length; i++) {
+                hash = areaName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            var index = Math.abs(hash) % colors.length;
+            return colors[index];
+        }
+
+        function getAreaHexColor(areaName) {
+            // Mapping for FullCalendar dots/backgrounds
+            var map = {
+                'Vialidad': '#3B82F6',
+                'Saneamiento': '#10B981',
+                'Espacios Públicos': '#F59E0B',
+                'Educación': '#8B5CF6',
+                'Salud': '#EF4444',
+                'Municipal': '#6B7280',
+                'Hito de Proyecto': '#6366f1',
+                'Observación': '#f97316'
+            };
+            if (map[areaName]) return map[areaName];
+
+            // Generate hex color
+            var hash = 0;
+            for (var i = 0; i < areaName.length; i++) {
+                hash = areaName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            var c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+            return '#' + '00000'.substring(0, 6 - c.length) + c;
+        }
 
         function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) {
-                console.error('Elemento #calendar no encontrado');
-                return;
-            }
-
+            var calendarEl = document.getElementById('calendar');
             CalendarioApp.calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'es',
+                height: 750, // Fixed height for consistency
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
-                events: [],
+                buttonText: {
+                    today: 'Hoy',
+                    month: 'Mes',
+                    week: 'Semana',
+                    list: 'Agenda'
+                },
+                selectable: true,
+                editable: false,
+                dayMaxEvents: true,
+                navLinks: true,
+                // FORCE Custom Content Rendering
+                eventContent: function (arg) {
+                    var props = arg.event.extendedProps || {};
+                    var displayText = props.proyecto_nombre || arg.event.title;
+
+                    // Return a DOM structure that mimics standard FC but with our text
+                    // We generate HTML to ensure styles like italic or bold can be applied if needed
+                    return { html: '<div class="fc-event-main-frame"><div class="fc-event-title-container"><div class="fc-event-title fc-sticky">' + displayText + '</div></div></div>' };
+                },
                 eventClick: function (info) {
+                    info.jsEvent.preventDefault();
                     showEventDetails(info.event);
                 },
                 dateClick: function (info) {
-                    // Mostrar eventos de ese día
-                    showEventsForDate(info.dateStr);
+                    openModalForDate(info.dateStr);
                 }
             });
-
             CalendarioApp.calendar.render();
         }
 
-        // Mostrar eventos de una fecha específica
-        function showEventsForDate(dateStr) {
-            const eventsOnDate = CalendarioApp.eventsData.filter(event => {
-                const eventStart = event.start.toString().split('T')[0];
-                const eventEnd = event.end ? event.end.toString().split('T')[0] : eventStart;
-                return dateStr >= eventStart && dateStr <= eventEnd;
+        function initEvents() {
+            // New Event Button
+            document.getElementById('btnNuevoEvento').addEventListener('click', function () {
+                openModalForNewEvent();
+            });
+            // Sync Button
+            document.getElementById('btnSincronizar').addEventListener('click', function () {
+                loadEvents();
             });
 
-            if (eventsOnDate.length === 0) {
-                showToastMessage(`No hay eventos para el ${formatDateReadable(dateStr)}`, 'info');
+            // Edit Modal Controls
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('btnCancelModal').addEventListener('click', closeModal);
+            document.getElementById('eventModal').addEventListener('click', function (e) {
+                if (e.target === this) closeModal();
+            });
+            document.getElementById('eventForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                saveEvent();
+            });
+            document.getElementById('btnDeleteEvent').addEventListener('click', deleteEvent);
+
+            // Detail Modal Controls
+            document.getElementById('closeDetailModalBtn').addEventListener('click', closeDetailModal);
+            document.getElementById('detailModal').addEventListener('click', function (e) {
+                if (e.target === this) closeDetailModal();
+            });
+            document.getElementById('btnEditFromDetail').addEventListener('click', editFromDetail);
+
+            // Filter Controls
+            var fSearch = document.getElementById('filterSearch');
+            if (fSearch) fSearch.addEventListener('input', applyCalendarFilters);
+
+            var fArea = document.getElementById('filterAreaCalendar');
+            if (fArea) fArea.addEventListener('change', applyCalendarFilters);
+
+            var fStatus = document.getElementById('filterStatus');
+            if (fStatus) fStatus.addEventListener('change', applyCalendarFilters);
+
+            var fClear = document.getElementById('btnClearFilters');
+            if (fClear) fClear.addEventListener('click', clearCalendarFilters);
+        }
+
+        function clearCalendarFilters() {
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('filterAreaCalendar').value = '';
+            document.getElementById('filterStatus').value = '';
+            applyCalendarFilters();
+        }
+
+        function applyCalendarFilters() {
+            var searchTerm = document.getElementById('filterSearch').value.toLowerCase();
+            var area = document.getElementById('filterAreaCalendar').value;
+            var status = document.getElementById('filterStatus').value;
+
+            // Filter the source data
+            var filtered = CalendarioApp.eventsData.filter(function (evt) {
+                var props = evt.extendedProps;
+
+                // 1. Search (Name, Code, Sector)
+                var textMatch = true;
+                if (searchTerm) {
+                    var pName = (props.proyecto_nombre || '').toLowerCase();
+                    var eTitle = (props.original_title || evt.title || '').toLowerCase();
+                    var sector = (props.sector_nombre || '').toLowerCase();
+                    var code = (props.proyecto_id ? String(props.proyecto_id) : ''); // Code fallback to ID or future field
+
+                    textMatch = pName.includes(searchTerm) || eTitle.includes(searchTerm) || sector.includes(searchTerm) || code.includes(searchTerm);
+                }
+
+                // 2. Area
+                var areaMatch = true;
+                if (area) {
+                    areaMatch = (props.area === area);
+                }
+
+                // 3. Status
+                var statusMatch = true;
+                if (status) {
+                    var s = (props.estado_proyecto || '').toLowerCase();
+                    statusMatch = s === status.toLowerCase();
+                }
+
+                return textMatch && areaMatch && statusMatch;
+            });
+
+            refreshCalendar(filtered);
+        }
+
+        function populateStatusFilter(events) {
+            var select = document.getElementById('filterStatus');
+            if (!select) return;
+            var current = select.value;
+            // Get unique statuses
+            var statuses = new Set();
+            events.forEach(function (evt) {
+                if (evt.extendedProps && evt.extendedProps.estado_proyecto) {
+                    statuses.add(evt.extendedProps.estado_proyecto);
+                }
+            });
+
+            select.innerHTML = '<option value="">Todos</option>';
+            Array.from(statuses).sort().forEach(function (st) {
+                var opt = document.createElement('option');
+                opt.value = st;
+                opt.textContent = st;
+                select.appendChild(opt);
+            });
+            select.value = current;
+        }
+
+        // Helper to safe parse API date to YYYY-MM-DD string to avoid timezone shifts
+        function safeDateString(dateStr) {
+            if (!dateStr) return null;
+            var d = new Date(dateStr);
+            if (isNaN(d.getTime())) return null;
+            // Use UTC components to get the exact date sent by server
+            var year = d.getUTCFullYear();
+            var month = String(d.getUTCMonth() + 1).padStart(2, '0');
+            var day = String(d.getUTCDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function loadEvents() {
+            showLoading(true);
+
+            if (typeof api === 'undefined') {
+                showLoading(false);
+                showToastMessage('Error: Librería API no cargada', 'error');
                 return;
             }
 
-            if (eventsOnDate.length === 1) {
-                // Si hay solo un evento, mostrarlo directamente
-                const event = eventsOnDate[0];
-                showEventDetails({
-                    id: event.id,
-                    title: event.title,
-                    start: new Date(event.start),
-                    end: event.end ? new Date(event.end) : null,
-                    extendedProps: event.extendedProps
-                });
-            } else {
-                // Si hay múltiples eventos, mostrar lista en modal
-                showEventListModal(dateStr, eventsOnDate);
-            }
-        }
+            api.get('/calendario_eventos_detalle')
+                .then(function (events) {
+                    if (!events || !Array.isArray(events)) {
+                        showToastMessage('Respuesta inválida del servidor', 'error');
+                        return;
+                    }
 
-        function formatDateReadable(dateStr) {
-            const [y, m, d] = dateStr.split('-');
-            return new Date(y, m - 1, d).toLocaleDateString('es-CL', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-        }
+                    CalendarioApp.eventsData = events.map(function (evt) {
+                        var areaNombre = evt.area_nombre || evt.origen_tipo || 'Municipal';
 
-        function showEventListModal(dateStr, events) {
-            const modal = document.getElementById('eventModal');
-            const form = document.getElementById('eventForm');
+                        // FIX: Use safe date string YYYY-MM-DD
+                        var start = safeDateString(evt.fecha_inicio);
+                        var end = safeDateString(evt.fecha_termino);
 
-            // Ocultar formulario y mostrar lista
-            form.innerHTML = `
-                <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">
-                        <i class="fas fa-calendar-day mr-2"></i>${formatDateReadable(dateStr)}
-                    </h3>
-                    <p class="text-sm text-gray-500 mb-4">${events.length} evento(s) encontrado(s)</p>
-                </div>
-                <div class="space-y-3 max-h-80 overflow-y-auto">
-                    ${events.map(event => {
-                const area = event.extendedProps?.area || 'Municipal';
-                const theme = CalendarioApp.areaTheme[area] || CalendarioApp.areaTheme['Municipal'];
-                return `
-                        <div class="event-card flex items-start space-x-3 p-3 ${theme.light} rounded-lg border border-gray-200" 
-                             onclick="selectEventFromList(${event.id})">
-                            <div class="${theme.bg} text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-medium text-gray-900">${event.title}</p>
-                                <p class="text-sm text-gray-600">${event.extendedProps?.description || 'Sin descripción'}</p>
-                                <div class="flex items-center mt-2 gap-2">
-                                    <span class="text-xs ${theme.badge} px-2 py-0.5 rounded">${area}</span>
-                                    ${event.extendedProps?.location ? `<span class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${event.extendedProps.location}</span>` : ''}
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-right text-gray-400 self-center"></i>
-                        </div>
-                        `;
-            }).join('')}
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button type="button" onclick="closeModal()" 
-                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">
-                        Cerrar
-                    </button>
-                </div>
-            `;
+                        // Use dynamic color helper
+                        var color = getAreaHexColor(areaNombre);
 
-            document.getElementById('modalTitle').textContent = 'Eventos del Día';
-            document.getElementById('deleteEventContainer').classList.add('hidden');
+                        // TITLE LOGIC: Use Project Name if available, otherwise Event Title
+                        var displayTitle = evt.proyecto_nombre || evt.titulo || '(Sin Título)';
 
-            showModal();
-
-            // Guardar HTML original del form para restaurarlo después
-            CalendarioApp.originalFormHTML = null; // Se restaurará en closeModal
-        }
-
-        function selectEventFromList(eventId) {
-            closeModal();
-            // Pequeño delay para que se cierre el modal de lista antes de abrir el de detalle
-            setTimeout(() => {
-                const event = CalendarioApp.eventsData.find(e => e.id == eventId);
-                if (event) {
-                    // Restaurar formulario original primero
-                    restoreEventForm();
-                    showEventDetails({
-                        id: event.id,
-                        title: event.title,
-                        start: new Date(event.start),
-                        end: event.end ? new Date(event.end) : null,
-                        extendedProps: event.extendedProps
+                        return {
+                            id: evt.calendario_id,
+                            title: displayTitle,
+                            start: start,
+                            end: end,
+                            allDay: true, // Force all day for YYYY-MM-DD strings
+                            backgroundColor: color,
+                            borderColor: color,
+                            extendedProps: {
+                                area: areaNombre,
+                                description: evt.descripcion || '',
+                                proyecto_id: evt.proyecto_id,
+                                proyecto_nombre: evt.proyecto_nombre,
+                                original_title: evt.titulo,
+                                ubicacion: evt.ubicacion || '',
+                                financing: evt.financiamiento_nombre || '',
+                                estado_proyecto: evt.estado_proyecto,
+                                sector_nombre: evt.sector_nombre
+                            }
+                        };
                     });
-                }
-            }, 250);
-        }
 
-        function restoreEventForm() {
-            const form = document.getElementById('eventForm');
-            form.innerHTML = `
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="eventTitle">
-                        Título del Evento *
-                    </label>
-                    <input
-                        class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        id="eventTitle" type="text" placeholder="Título del evento" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="eventDescription">
-                        Descripción
-                    </label>
-                    <textarea
-                        class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        id="eventDescription" rows="3" placeholder="Descripción del evento"></textarea>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="eventStartDate">
-                            Fecha de Inicio *
-                        </label>
-                        <input
-                            class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            id="eventStartDate" type="date" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="eventEndDate">
-                            Fecha de Término
-                        </label>
-                        <input
-                            class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            id="eventEndDate" type="date">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="eventArea">
-                            Área
-                        </label>
-                        <select
-                            class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            id="eventArea">
-                            <option value="Vialidad">Vialidad</option>
-                            <option value="Saneamiento">Saneamiento</option>
-                            <option value="Espacios Públicos">Espacios Públicos</option>
-                            <option value="Educación">Educación</option>
-                            <option value="Salud">Salud</option>
-                            <option value="Municipal">Municipal</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="eventLocation">
-                            Ubicación
-                        </label>
-                        <input
-                            class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            id="eventLocation" type="text" placeholder="Ubicación del evento">
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="eventFinancing">
-                        Financiamiento
-                    </label>
-                    <input
-                        class="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        id="eventFinancing" type="text" placeholder="Fuente de financiamiento">
-                </div>
-                <div class="flex justify-between items-center">
-                    <div id="deleteEventContainer" class="hidden">
-                        <button type="button" id="btnDeleteEvent"
-                            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
-                            <i class="fas fa-trash"></i>Eliminar
-                        </button>
-                    </div>
-                    <div class="flex justify-end gap-3 ml-auto">
-                        <button type="button" id="btnCancelModal"
-                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">
-                            Cancelar
-                        </button>
-                        <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
-                            <i class="fas fa-save"></i>Guardar
-                        </button>
-                    </div>
-                </div>
-            `;
+                    // Populate status filter dynamically based on data
+                    populateStatusFilter(CalendarioApp.eventsData);
 
-            // Re-attach event listeners
-            document.getElementById('btnCancelModal').addEventListener('click', closeModal);
-            document.getElementById('btnDeleteEvent').addEventListener('click', deleteEvent);
-        }
+                    // Apply filters (which renders calendar)
+                    applyCalendarFilters();
 
-        // ========================================
-        // CARGA DE DATOS
-        // ========================================
-
-        async function loadEvents() {
-            showLoading(true);
-
-            try {
-                // Verificar que api esté disponible
-                if (typeof api === 'undefined') {
-                    console.warn('API no disponible, usando datos de ejemplo');
-                    loadSampleData();
-                    return;
-                }
-
-                const events = await api.get('/calendario_eventos');
-
-                // Verificar que la respuesta sea un array
-                if (!Array.isArray(events)) {
-                    console.warn('Calendario: La respuesta no es un array:', typeof events);
-                    loadSampleData();
-                    return;
-                }
-
-                if (events.length === 0) {
-                    CalendarioApp.eventsData = [];
-                    refreshCalendar();
-                    updateSidePanels();
-                    showToastMessage('No hay eventos registrados', 'info');
-                    return;
-                }
-
-                CalendarioApp.eventsData = events.map(evt => {
-                    // Convertir fechas de formato RFC 2822 a ISO
-                    const startDate = parseDate(evt.fecha_inicio);
-                    const endDate = parseDate(evt.fecha_termino) || startDate;
-
-                    return {
-                        id: evt.id,
-                        title: evt.titulo,
-                        start: startDate,
-                        end: endDate,
-                        allDay: evt.todo_el_dia !== false,
-                        backgroundColor: CalendarioApp.areaColors[evt.origen_tipo] || '#9CA3AF',
-                        borderColor: CalendarioApp.areaColors[evt.origen_tipo] || '#9CA3AF',
-                        extendedProps: {
-                            area: evt.origen_tipo || 'Municipal',
-                            description: cleanDescription(evt.descripcion),
-                            location: evt.ubicacion || '',
-                            financing: extractFinancing(evt.descripcion),
-                            origen_id: evt.origen_id,
-                            full_description: evt.descripcion
-                        }
-                    };
+                    if (CalendarioApp.eventsData.length > 0) {
+                        console.log('Eventos cargados:', CalendarioApp.eventsData.length);
+                    } else {
+                        showToastMessage('No hay eventos registrados en la base de datos', 'info');
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error cargando eventos:', error);
+                    var msg = 'Error de conexión: ' + (error.message || 'Error desconocido');
+                    if (error.message && error.message.includes('500')) {
+                        msg = 'Error del Servidor (500). Contacte al administrador.';
+                    }
+                    showToastMessage(msg, 'error');
+                })
+                .finally(function () {
+                    showLoading(false);
                 });
-
-                refreshCalendar();
-                updateSidePanels();
-                showToastMessage(`${CalendarioApp.eventsData.length} eventos cargados`, 'success');
-
-            } catch (error) {
-                console.error('Error cargando eventos:', error);
-                showToastMessage('Error al cargar eventos. Usando datos de ejemplo.', 'error');
-                loadSampleData();
-            } finally {
-                showLoading(false);
-            }
         }
 
         function loadSampleData() {
-            // Datos de ejemplo para cuando no hay API
+            var today = new Date().toISOString().split('T')[0];
             CalendarioApp.eventsData = [
                 {
                     id: 1,
-                    title: 'Reunión de Planificación',
-                    start: new Date().toISOString().split('T')[0],
-                    end: new Date().toISOString().split('T')[0],
+                    title: 'Evento de ejemplo',
+                    start: today,
                     backgroundColor: '#3B82F6',
-                    borderColor: '#3B82F6',
-                    extendedProps: {
-                        area: 'Vialidad',
-                        description: 'Reunión mensual de planificación',
-                        location: 'Sala de reuniones',
-                        financing: 'Municipal',
-                        origen_id: null
-                    }
+                    extendedProps: { area: 'Municipal', description: 'Descripción de prueba' }
                 }
             ];
-
             refreshCalendar();
-            updateSidePanels();
+            showLoading(false);
         }
 
-        function refreshCalendar() {
+        function refreshCalendar(eventsToList) {
+            var data = eventsToList || CalendarioApp.eventsData;
+
             if (CalendarioApp.calendar) {
                 CalendarioApp.calendar.removeAllEvents();
-                CalendarioApp.calendar.addEventSource(CalendarioApp.eventsData);
+                CalendarioApp.calendar.addEventSource(data);
             }
         }
 
-        // ========================================
-        // MODAL DE EVENTOS
-        // ========================================
-
         function openModalForNewEvent() {
-            const today = new Date().toISOString().split('T')[0];
+            var today = new Date().toISOString().split('T')[0];
             openModalForDate(today);
         }
 
         function openModalForDate(date) {
-            // Reset form
             document.getElementById('eventForm').reset();
-
-            // Configurar valores
-            document.getElementById('modalTitle').textContent = 'Agregar Evento';
+            document.getElementById('modalTitle').textContent = 'Nuevo Evento';
             document.getElementById('eventStartDate').value = date;
             document.getElementById('eventEndDate').value = date;
-            document.getElementById('eventArea').value = 'Municipal';
 
-            // Reset estado
+            // Set default area if available in the select, otherwise Municipal
+            var areaSelect = document.getElementById('eventArea');
+            if (areaSelect.options.length > 0) {
+                areaSelect.selectedIndex = 0;
+            } else {
+                // Should ideally wait for areas to load, but fallback just in case
+            }
+
             CalendarioApp.currentEventId = null;
-            CalendarioApp.currentEventOriginId = null;
-
-            // Ocultar botón eliminar
             document.getElementById('deleteEventContainer').classList.add('hidden');
-
-            // Mostrar modal
             showModal();
         }
 
         function showEventDetails(event) {
-            const props = event.extendedProps;
+            var props = event.extendedProps || {};
+            CalendarioApp.currentEventId = event.id;
+            CalendarioApp.currentEvent = event;
+
+            var mainTitle = event.title;
+            var subTitle = props.original_title || event.title; // Default to title if no original
+            var isProjectEvent = false;
+
+            if (props.proyecto_nombre) {
+                // If it has a project, the mainTitle IS ALREADY project_name (set in loadEvents)
+                // We want the subtitle to be the Hito name (original_title)
+                subTitle = props.original_title;
+                isProjectEvent = true;
+            } else {
+                // Formatting for non-project events
+                subTitle = "Evento General";
+            }
+
+            document.getElementById('detailTitle').textContent = mainTitle;
+
+            // Project Info Box
+            var projectInfo = document.getElementById('detailProjectInfo');
+            var editBtn = document.getElementById('btnEditFromDetail');
+
+            var infoLabelIcon = projectInfo.querySelector('.flex span');
+            if (infoLabelIcon) infoLabelIcon.textContent = isProjectEvent ? "Hito / Evento" : "Tipo";
+
+            if (isProjectEvent) {
+                // IT IS A PROJECT EVENT
+                document.getElementById('detailProjectName').textContent = subTitle;
+                projectInfo.classList.remove('hidden');
+                editBtn.classList.add('hidden');
+            } else if (props.proyecto_id) {
+                // Fallback
+                document.getElementById('detailProjectName').textContent = 'Proyecto #' + props.proyecto_id;
+                projectInfo.classList.remove('hidden');
+                editBtn.classList.add('hidden');
+            } else {
+                // Normal event
+                projectInfo.classList.add('hidden');
+                editBtn.classList.remove('hidden');
+            }
+
+            // Dates
+            var dStart = event.start; // FullCalendar Date Object
+            // If it's pure string YYYY-MM-DD, FullCalendar parses it to Date with 00:00 local usually, or UTC depending on config.
+            // With allDay:true, it's safer.
+
+            if (!dStart && props.start) dStart = new Date(props.start);
+
+            var options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' };
+            // Using timeZone UTC to display exactly what we parsed
+
+            if (dStart) {
+                document.getElementById('detailStartDate').textContent = dStart.toLocaleDateString('es-CL', options);
+            }
+            // End Date logic...
+            if (event.end) {
+                document.getElementById('detailEndDate').textContent = event.end.toLocaleDateString('es-CL', options);
+            } else {
+                document.getElementById('detailEndDate').textContent = document.getElementById('detailStartDate').textContent;
+            }
+
+            // Area
+            var area = props.area;
+            // Map generic types to readable names
+            if (area === 'proyectos_hitos') area = 'Hito de Proyecto';
+            if (area === 'proyectos_observaciones') area = 'Observación';
+            if (!area) area = 'General';
+
+            var areaEl = document.getElementById('detailArea');
+            areaEl.textContent = area;
+            // Use dynamic color helper
+            var badgeClass = getAreaColor(area);
+            areaEl.className = 'inline-block px-4 py-1.5 rounded-full text-sm font-bold ' + badgeClass;
+
+            // Description
+            var descContainer = document.getElementById('detailDescriptionContainer');
+            if (props.description) {
+                document.getElementById('detailDescription').textContent = props.description;
+                descContainer.classList.remove('hidden');
+            } else {
+                descContainer.classList.add('hidden');
+            }
+
+            // Location
+            var locContainer = document.getElementById('detailLocationContainer');
+            if (props.ubicacion) {
+                document.getElementById('detailLocation').querySelector('span').textContent = props.ubicacion;
+                locContainer.classList.remove('hidden');
+            } else {
+                locContainer.classList.add('hidden');
+            }
+
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+        }
+
+        function editFromDetail() {
+            // Security check
+            var event = CalendarioApp.currentEvent;
+            if (!event) return;
+            var props = event.extendedProps || {};
+            if (props.proyecto_nombre || props.proyecto_id) {
+                showToastMessage('Los eventos de proyectos no se pueden editar aquí', 'warning');
+                return;
+            }
+
+            closeDetailModal();
 
             document.getElementById('modalTitle').textContent = 'Editar Evento';
             document.getElementById('eventTitle').value = event.title;
             document.getElementById('eventDescription').value = props.description || '';
 
-            const startStr = event.start.toISOString().split('T')[0];
-            const endStr = event.end ? event.end.toISOString().split('T')[0] : startStr;
+            var startStr = event.start instanceof Date ? event.start.toISOString().split('T')[0] : event.start.toString().split('T')[0];
+            var endStr = event.end ? (event.end instanceof Date ? event.end.toISOString().split('T')[0] : event.end.toString().split('T')[0]) : startStr;
 
             document.getElementById('eventStartDate').value = startStr;
             document.getElementById('eventEndDate').value = endStr;
             document.getElementById('eventArea').value = props.area || 'Municipal';
-            document.getElementById('eventLocation').value = props.location || '';
-            document.getElementById('eventFinancing').value = props.financing || '';
+            document.getElementById('eventLocation').value = props.ubicacion || '';
 
-            CalendarioApp.currentEventId = parseInt(event.id);
-            CalendarioApp.currentEventOriginId = props.origen_id;
-
-            // Mostrar botón eliminar
             document.getElementById('deleteEventContainer').classList.remove('hidden');
-
             showModal();
         }
 
         function showModal() {
-            const modal = document.getElementById('eventModal');
-            modal.style.display = 'block';
-            // Forzar reflow para animación
-            modal.offsetHeight;
-            modal.classList.add('show');
+            document.getElementById('eventModal').classList.add('show');
             document.getElementById('eventTitle').focus();
         }
 
         function closeModal() {
-            const modal = document.getElementById('eventModal');
-            modal.classList.remove('show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 200);
-            CalendarioApp.currentEventId = null;
-            CalendarioApp.currentEventOriginId = null;
+            document.getElementById('eventModal').classList.remove('show');
         }
 
-        // ========================================
-        // CRUD DE EVENTOS
-        // ========================================
+        function saveEvent() {
+            var title = document.getElementById('eventTitle').value.trim();
+            var description = document.getElementById('eventDescription').value.trim();
+            var startDate = document.getElementById('eventStartDate').value;
+            var endDate = document.getElementById('eventEndDate').value || startDate;
+            var area = document.getElementById('eventArea').value;
+            var location = document.getElementById('eventLocation').value.trim();
 
-        async function saveEvent() {
-            const title = document.getElementById('eventTitle').value.trim();
-            const description = document.getElementById('eventDescription').value.trim();
-            const startDate = document.getElementById('eventStartDate').value;
-            const endDate = document.getElementById('eventEndDate').value;
-            const area = document.getElementById('eventArea').value;
-            const location = document.getElementById('eventLocation').value.trim();
-            const financing = document.getElementById('eventFinancing').value.trim();
-
-            // Validación
-            if (!title) {
-                showToastMessage('El título es obligatorio', 'error');
-                document.getElementById('eventTitle').focus();
+            if (!title || !startDate) {
+                showToastMessage('Título y fecha son obligatorios', 'error');
                 return;
             }
 
-            if (!startDate) {
-                showToastMessage('La fecha de inicio es obligatoria', 'error');
-                document.getElementById('eventStartDate').focus();
-                return;
-            }
-
-            // Construir payload - evitar nulls y valores negativos que pueden causar errores en BD
-            const payload = {
+            var payload = {
                 titulo: title,
-                fecha_inicio: startDate
+                descripcion: description,
+                fecha_inicio: startDate,
+                fecha_termino: endDate,
+                origen_tipo: area,
+                ubicacion: location,
+                todo_el_dia: true
             };
 
-            // Solo agregar campos opcionales si tienen valor
-            if (description || financing) {
-                payload.descripcion = formatDescriptionForSave(description, financing);
-            }
-            if (endDate) {
-                payload.fecha_termino = endDate;
-            }
-            if (location) {
-                payload.ubicacion = location;
-            }
-            if (area) {
-                payload.origen_tipo = area;
-            }
-
-            // todo_el_dia siempre true para eventos de día completo
-            payload.todo_el_dia = true;
-
-            // origen_id solo si es positivo (IDs reales de proyectos/hitos)
-            if (CalendarioApp.currentEventOriginId && CalendarioApp.currentEventOriginId > 0) {
-                payload.origen_id = CalendarioApp.currentEventOriginId;
-            }
-
-            try {
-                if (typeof api === 'undefined') {
-                    // Modo sin API - agregar localmente
-                    const newEvent = {
-                        id: Date.now(),
-                        title: title,
-                        start: startDate,
-                        end: endDate || startDate,
-                        backgroundColor: CalendarioApp.areaColors[area],
-                        borderColor: CalendarioApp.areaColors[area],
-                        extendedProps: {
-                            area: area,
-                            description: description,
-                            location: location,
-                            financing: financing,
-                            origen_id: null
-                        }
-                    };
-                    CalendarioApp.eventsData.push(newEvent);
-                    refreshCalendar();
-                    updateSidePanels();
-                    showToastMessage('Evento guardado localmente', 'success');
-                    closeModal();
-                    return;
-                }
-
-                if (CalendarioApp.currentEventId) {
-                    await api.put(`/calendario_eventos/${CalendarioApp.currentEventId}`, payload);
-                    showToastMessage('Evento actualizado correctamente', 'success');
-                } else {
-                    await api.post('/calendario_eventos', payload);
-                    showToastMessage('Evento creado correctamente', 'success');
-                }
-
-                closeModal();
-                loadEvents();
-
-            } catch (error) {
-                console.error('Error guardando evento:', error);
-                let msg = 'Error al guardar el evento';
-                if (error.message && error.message.includes('409')) {
-                    msg = 'Ya existe un evento similar';
-                }
-                showToastMessage(msg, 'error');
-            }
-        }
-
-        async function deleteEvent() {
-            if (!CalendarioApp.currentEventId) return;
-
-            if (!confirm('¿Está seguro de que desea eliminar este evento?')) return;
-
-            try {
-                if (typeof api !== 'undefined') {
-                    await api.delete(`/calendario_eventos/${CalendarioApp.currentEventId}`);
-                }
-
-                // Eliminar localmente también
-                CalendarioApp.eventsData = CalendarioApp.eventsData.filter(
-                    e => e.id !== CalendarioApp.currentEventId
-                );
-
-                refreshCalendar();
-                updateSidePanels();
-                showToastMessage('Evento eliminado', 'success');
-                closeModal();
-
-            } catch (error) {
-                console.error('Error eliminando evento:', error);
-                showToastMessage('Error al eliminar el evento', 'error');
-            }
-        }
-
-        // ========================================
-        // PANELES LATERALES
-        // ========================================
-
-        function updateSidePanels() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const upcomingEvents = CalendarioApp.eventsData
-                .filter(e => new Date(e.start) >= today)
-                .sort((a, b) => new Date(a.start) - new Date(b.start));
-
-            renderEventList('upcomingEventsList', upcomingEvents.slice(0, 5));
-
-            const municipalEvents = upcomingEvents
-                .filter(e => e.extendedProps && e.extendedProps.area === 'Municipal')
-                .slice(0, 3);
-
-            renderEventList('municipalEventsList', municipalEvents);
-        }
-
-        function renderEventList(containerId, events) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-
-            if (events.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-500 py-4 text-sm">No hay eventos próximos</div>';
+            if (typeof api === 'undefined') {
+                showToastMessage('API no disponible (Modo Demo)', 'warning');
                 return;
             }
 
-            container.innerHTML = events.map(event => {
-                const [y, m, d] = event.start.toString().split('T')[0].split('-');
-                const dateStr = new Date(y, m - 1, d).toLocaleDateString('es-CL', {
-                    day: 'numeric', month: 'long', year: 'numeric'
+            var promise;
+            if (CalendarioApp.currentEventId) {
+                promise = api.put('/calendario_eventos/' + CalendarioApp.currentEventId, payload);
+            } else {
+                promise = api.post('/calendario_eventos', payload);
+            }
+
+            promise
+                .then(function () {
+                    showToastMessage(CalendarioApp.currentEventId ? 'Evento actualizado' : 'Evento creado', 'success');
+                    closeModal();
+                    loadEvents();
+                })
+                .catch(function (error) {
+                    console.error('Error guardando evento:', error);
+                    showToastMessage('Error al guardar el evento', 'error');
                 });
-
-                const area = event.extendedProps?.area || 'Municipal';
-                const theme = CalendarioApp.areaTheme[area] || CalendarioApp.areaTheme['Municipal'];
-                const financing = event.extendedProps?.financing || '';
-
-                return `
-                <div class="event-card flex items-start space-x-3 p-3 ${theme.light} rounded-lg" onclick="handleEventCardClick(${event.id})">
-                    <div class="${theme.bg} text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                        ${d}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium text-gray-900 truncate">${event.title}</p>
-                        <p class="text-sm text-gray-600">${dateStr}</p>
-                        <div class="flex items-center mt-1 flex-wrap gap-1">
-                            <span class="text-xs ${theme.badge} px-2 py-0.5 rounded">${area}</span>
-                            ${financing ? `<span class="text-xs text-gray-500">${financing}</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
         }
 
-        function handleEventCardClick(id) {
-            const event = CalendarioApp.eventsData.find(e => e.id == id);
-            if (event) {
-                showEventDetails({
-                    id: event.id,
-                    title: event.title,
-                    start: new Date(event.start),
-                    end: event.end ? new Date(event.end) : null,
-                    extendedProps: event.extendedProps
-                });
+        function deleteEvent() {
+            if (!CalendarioApp.currentEventId) return;
+            if (!confirm('¿Está seguro de eliminar este evento?')) return;
+
+            if (typeof api !== 'undefined') {
+                api.delete('/calendario_eventos/' + CalendarioApp.currentEventId)
+                    .then(function () {
+                        showToastMessage('Evento eliminado', 'success');
+                        closeModal();
+                        loadEvents();
+                    })
+                    .catch(function (error) {
+                        console.error('Error eliminando evento:', error);
+                        showToastMessage('Error al eliminar', 'error');
+                    });
             }
-        }
-
-        // ========================================
-        // SINCRONIZACIÓN Y EXPORTACIÓN
-        // ========================================
-
-        function syncCalendar() {
-            showToastMessage('Sincronizando...', 'info');
-            loadEvents();
-        }
-
-        function exportCalendar() {
-            let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Geoportal Municipal//ES\n';
-
-            CalendarioApp.eventsData.forEach(event => {
-                const startDate = event.start.toString().split('T')[0].replace(/-/g, '');
-                let endDate = startDate;
-                if (event.end) {
-                    endDate = event.end.toString().split('T')[0].replace(/-/g, '');
-                }
-
-                icsContent += 'BEGIN:VEVENT\n';
-                icsContent += `UID:${event.id}@geoportal.cl\n`;
-                icsContent += `DTSTART:${startDate}\n`;
-                icsContent += `DTEND:${endDate}\n`;
-                icsContent += `SUMMARY:${event.title}\n`;
-                if (event.extendedProps?.description) {
-                    icsContent += `DESCRIPTION:${event.extendedProps.description}\n`;
-                }
-                if (event.extendedProps?.location) {
-                    icsContent += `LOCATION:${event.extendedProps.location}\n`;
-                }
-                icsContent += 'END:VEVENT\n';
-            });
-
-            icsContent += 'END:VCALENDAR';
-
-            const blob = new Blob([icsContent], { type: 'text/calendar' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'calendario_municipal.ics';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            showToastMessage('Calendario exportado', 'success');
-        }
-
-        // ========================================
-        // UTILIDADES
-        // ========================================
-
-        // Convertir fecha de formato RFC 2822 (del backend) a ISO (para FullCalendar)
-        // IMPORTANTE: Usar métodos UTC para evitar problemas de zona horaria
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-
-            // Si ya está en formato ISO (YYYY-MM-DD), devolverlo tal cual
-            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-                return dateStr;
-            }
-
-            // Si es formato ISO con hora (YYYY-MM-DDTHH:MM:SS)
-            if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
-                return dateStr.split('T')[0];
-            }
-
-            // Convertir formato RFC 2822 "Tue, 13 Jan 2026 00:00:00 GMT" a ISO
-            try {
-                const date = new Date(dateStr);
-                if (isNaN(date.getTime())) {
-                    console.warn('Fecha inválida:', dateStr);
-                    return null;
-                }
-
-                // USAR UTC para evitar cambios por zona horaria
-                // La fecha del servidor está en UTC, queremos mantenerla igual
-                const year = date.getUTCFullYear();
-                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(date.getUTCDate()).padStart(2, '0');
-
-                const result = `${year}-${month}-${day}`;
-                return result;
-            } catch (e) {
-                console.error('Error parseando fecha:', dateStr, e);
-                return null;
-            }
-        }
-
-        function extractFinancing(desc) {
-            if (!desc) return '';
-            const match = desc.match(/\[Financiamiento: (.*?)\]/);
-            return match ? match[1] : '';
-        }
-
-        function cleanDescription(desc) {
-            if (!desc) return '';
-            return desc.replace(/\[Financiamiento: .*?\]/, '').trim();
-        }
-
-        function formatDescriptionForSave(desc, financing) {
-            if (financing) {
-                return `${desc || ''} [Financiamiento: ${financing}]`.trim();
-            }
-            return desc || '';
         }
 
         function showLoading(show) {
-            const loader = document.getElementById('calendarLoading');
+            var loader = document.getElementById('calendarLoading');
             if (loader) {
-                loader.classList.toggle('hidden', !show);
+                if (show) loader.classList.remove('hidden');
+                else loader.classList.add('hidden');
             }
         }
 
-        function showToastMessage(message, type = 'info') {
-            // Usar showToast de layout.js si está disponible
+        function showToastMessage(message, type) {
             if (typeof showToast === 'function') {
                 showToast(message, type);
                 return;
             }
-
-            // Fallback simple
-            console.log(`[${type.toUpperCase()}] ${message}`);
-
-            // Crear toast simple
-            const toast = document.createElement('div');
-            toast.className = `fixed bottom-5 right-5 px-4 py-3 rounded-lg shadow-lg text-white z-50 ${type === 'error' ? 'bg-red-500' :
-                type === 'success' ? 'bg-green-500' : 'bg-blue-500'
-                }`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => toast.remove(), 3000);
+            console.log('[' + (type || 'info').toUpperCase() + '] ' + message);
         }
     </script>
 </body>

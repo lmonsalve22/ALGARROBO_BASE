@@ -6,22 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Institucional - Portal Municipal</title>
 
-    <!-- Fuentes y Estilos -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="../division/secplan/admin_general/styles/admin-styles.css">
 
-    <!-- Scripts Base -->
     <script src="../script/router.js"></script>
     <script src="../script/api.js"></script>
     <script src="../script/utils.js"></script>
 
     <style>
-        /* Ajustes específicos para el Geoportal */
+        
         .geoportal-layout {
             display: grid;
             grid-template-columns: 280px 1fr;
@@ -62,12 +59,12 @@
 </head>
 
 <body class="bg-slate-50 min-h-screen">
-    <!-- Header renderizado por layout.js -->
+    
     <div id="headerRender"></div>
     <script src="../script/layout.js"></script>
 
     <div class="geoportal-layout">
-        <!-- Sidebar Local del Geoportal -->
+        
         <aside class="geoportal-sidebar bg-white border-r border-slate-200 p-6 space-y-8">
             <div>
                 <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Exploración</h3>
@@ -94,9 +91,8 @@
             </div>
         </aside>
 
-        <!-- Contenido Principal -->
         <main class="p-4 md:p-8 overflow-y-auto max-h-[calc(100vh-65px)] custom-scrollbar">
-            <!-- Header de Sección -->
+            
             <div class="page-header flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
                 <div>
                     <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Biblioteca de Mapas</h1>
@@ -113,12 +109,10 @@
                 </div>
             </div>
 
-            <!-- Grid de Mapas -->
             <div id="listaMapas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Se cargan dinámicamente -->
+                
             </div>
 
-            <!-- Loading State -->
             <div id="loading" class="py-20 text-center">
                 <div
                     class="inline-block w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin">
@@ -126,7 +120,6 @@
                 <p class="mt-4 text-slate-400 font-medium">Sincronizando capas cartográficas...</p>
             </div>
 
-            <!-- Empty State -->
             <div id="emptyState" class="py-20 text-center hidden">
                 <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <i class="fas fa-map-marked-alt text-4xl text-slate-300"></i>
@@ -158,14 +151,12 @@
             emptyState.classList.add("hidden");
 
             try {
-                // Obtener nivel de acceso del usuario
+                
                 const user = typeof userData !== 'undefined' ? userData : JSON.parse(localStorage.getItem('user_data') || '{}');
                 const roleId = user.nivel_acceso || 1;
 
-                // Intentar cargar mapas desde la API
                 const data = await api.get(`/mapas/por-rol/${roleId}`);
 
-                // Procesar datos
                 const mapasList = Array.isArray(data.mapas) ? data.mapas : [];
                 const total = data.total || mapasList.length;
 
@@ -176,7 +167,6 @@
                     return;
                 }
 
-                // Renderizar tarjetas
                 mapasList.forEach((mapa, index) => {
                     const card = crearTarjetaMapa(mapa, index);
                     listaEl.appendChild(card);
@@ -184,7 +174,7 @@
 
             } catch (error) {
                 console.error("Error cargando mapas:", error);
-                // Si falla la API, mostrar mensaje de error o modo demo
+                
                 showToast("Error al cargar la biblioteca de mapas", "error");
                 emptyState.classList.remove("hidden");
             } finally {
@@ -196,7 +186,6 @@
             const article = document.createElement("article");
             article.className = "card-modern !p-0 overflow-hidden map-card-custom group";
 
-            // Imagen aleatoria coherente para el visor
             const seed = mapa.id || index;
             const imgSrc = `https://picsum.photos/seed/map${seed}/600/300`;
 

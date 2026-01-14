@@ -6,16 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Proyectos - Portal Municipal</title>
 
-    <!-- Fuentes y Estilos -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="../division/secplan/admin_general/styles/admin-styles.css">
 
-    <!-- Scripts Base -->
     <script src="../script/router.js"></script>
     <script src="../script/api.js"></script>
     <script src="../script/utils.js"></script>
@@ -26,7 +23,7 @@
     <script src="../script/layout.js"></script>
 
     <main class="container mx-auto p-4 md:p-8 max-w-7xl">
-        <!-- Header de Página -->
+        
         <div class="page-header flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Gestión de Proyectos</h1>
@@ -44,7 +41,6 @@
             </div>
         </div>
 
-        <!-- Filtros y Estadísticas Rápidas -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="md:col-span-3 card-modern !p-4 flex items-center gap-4">
                 <div class="relative flex-1">
@@ -67,7 +63,6 @@
             </div>
         </div>
 
-        <!-- Tabla de Proyectos -->
         <div class="card-modern !p-0 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -84,7 +79,7 @@
                         </tr>
                     </thead>
                     <tbody id="proyectosBody" class="divide-y divide-slate-50">
-                        <!-- Filas dinámicas -->
+                        
                     </tbody>
                 </table>
             </div>
@@ -106,11 +101,10 @@
         </div>
     </main>
 
-    <!-- Modal Formulario (Overlay) -->
     <div id="proyectoModal"
         class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-            <!-- Modal Header -->
+            
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <div class="flex items-center gap-3">
                     <div
@@ -129,12 +123,10 @@
                 </button>
             </div>
 
-            <!-- Modal Body -->
             <div class="p-8 overflow-y-auto custom-scrollbar">
                 <form id="proyectoForm" class="space-y-8">
                     <input type="hidden" id="editingId">
 
-                    <!-- Sección: General -->
                     <div class="space-y-4">
                         <h3 class="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
@@ -163,7 +155,6 @@
                         </div>
                     </div>
 
-                    <!-- Sección: Clasificación -->
                     <div class="space-y-4 pt-4 border-t border-slate-50">
                         <h3 class="text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
@@ -215,7 +206,6 @@
                         </div>
                     </div>
 
-                    <!-- Sección: Finanzas -->
                     <div class="space-y-4 pt-4 border-t border-slate-50">
                         <h3
                             class="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
@@ -252,7 +242,6 @@
                         </div>
                     </div>
 
-                    <!-- Sección: Ubicación y Plazos -->
                     <div class="space-y-4 pt-4 border-t border-slate-50">
                         <h3 class="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
@@ -324,7 +313,6 @@
                         </div>
                     </div>
 
-                    <!-- Sección: Factibilidad Técnica -->
                     <div class="space-y-4 pt-4 border-t border-slate-50">
                         <h3 class="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
@@ -373,7 +361,6 @@
                         </div>
                     </div>
 
-                    <!-- Sección: Observaciones -->
                     <div class="space-y-4 pt-4 border-t border-slate-50">
                         <h3 class="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
@@ -388,7 +375,6 @@
                 </form>
             </div>
 
-            <!-- Modal Footer -->
             <div class="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
                 <button onclick="closeModal()"
                     class="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all font-bold text-sm">
@@ -592,7 +578,6 @@
 
                 const formData = utils.serializeForm(e.target);
 
-                // Formatear datos especiales
                 const body = { ...formData };
                 body.es_prioridad = document.getElementById('es_prioridad').checked ? 'SI' : 'NO';
                 body.financiamiento_municipal = document.getElementById('financiamiento_municipal').checked ? 'SI' : 'NO';
@@ -634,7 +619,6 @@
             }
         }
 
-        // Close modal on click outside
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });

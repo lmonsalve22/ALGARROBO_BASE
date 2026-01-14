@@ -9,15 +9,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal - Análisis de Datos</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Unified Admin Styles -->
+    
     <link rel="stylesheet" href="styles/admin-styles.css">
 </head>
 
@@ -34,9 +33,8 @@
                     <p class="text-gray-500">Visualización de métricas avanzadas y tendencias del Geoportal</p>
                 </div>
 
-                <!-- Analysis Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Distribution by Priority -->
+                    
                     <div class="card-modern p-6 lg:col-span-1">
                         <h3 class="text-lg font-semibold mb-6">Proyectos por Prioridad</h3>
                         <div class="h-64 flex items-center justify-center">
@@ -44,7 +42,6 @@
                         </div>
                     </div>
 
-                    <!-- Trend Chart -->
                     <div class="card-modern p-6 lg:col-span-2">
                         <h3 class="text-lg font-semibold mb-6">Tendencia de Inversión Mensual</h3>
                         <div class="h-64">
@@ -53,12 +50,11 @@
                     </div>
                 </div>
 
-                <!-- Secondary Analysis -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     <div class="card-modern p-6">
                         <h3 class="text-lg font-semibold mb-6">Avance por Sector</h3>
                         <div class="space-y-4" id="sectorProgress">
-                            <!-- Se llena dinámicamente -->
+                            
                         </div>
                     </div>
 
@@ -186,14 +182,13 @@
 
         function updateEfficiency(projects) {
             const finished = projects.filter(p => p.estado_proyecto === 'Terminado').length;
-            const efficiency = projects.length > 0 ? (finished / projects.length) * 100 : 75; // 75 as dummy if 0
+            const efficiency = projects.length > 0 ? (finished / projects.length) * 100 : 75; 
 
             const circle = document.getElementById('efficiencyProgress');
             const val = document.getElementById('efficiencyVal');
 
             val.textContent = efficiency.toFixed(0) + '%';
 
-            // Circumference is ~553
             const offset = 553 - (efficiency / 100 * 553);
             setTimeout(() => {
                 circle.style.strokeDashoffset = offset;

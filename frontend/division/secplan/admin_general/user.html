@@ -9,13 +9,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal - Gestión de Usuarios</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Unified Admin Styles -->
+    
     <link rel="stylesheet" href="styles/admin-styles.css">
 </head>
 
@@ -27,7 +26,7 @@
 
         <main class="flex-1 p-6">
             <div class="max-w-7xl mx-auto">
-                <!-- Page Header -->
+                
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
@@ -39,7 +38,6 @@
                     </button>
                 </div>
 
-                <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div class="card-modern p-6">
                         <div class="flex items-center justify-between">
@@ -76,7 +74,6 @@
                     </div>
                 </div>
 
-                <!-- Users Table -->
                 <div class="card-modern overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-800">Lista de Usuarios</h2>
@@ -98,7 +95,7 @@
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody" class="divide-y divide-gray-100">
-                                <!-- Se llena dinámicamente -->
+                                
                             </tbody>
                         </table>
                     </div>
@@ -107,7 +104,6 @@
         </main>
     </div>
 
-    <!-- Modal Form -->
     <div id="userModal" class="modal">
         <div class="modal-content max-w-lg">
             <div class="flex justify-between items-center mb-6">
@@ -184,7 +180,6 @@
                     api.get('/users')
                 ]);
 
-                // Poblar selects
                 const divSelect = document.getElementById('division_id');
                 divisiones.forEach(d => {
                     const opt = new Option(d.nombre, d.division_id);

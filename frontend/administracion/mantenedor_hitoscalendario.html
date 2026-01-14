@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenedor Hitos/Calendario - Administración</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background-color: #10B981;
+        }
+
+        .toast.error {
+            background-color: #EF4444;
+        }
+
+        .toast.info {
+            background-color: #3B82F6;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <h1 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-tags text-blue-600 mr-2"></i>
+                        Mantenedor Hitos/Calendario
+                    </h1>
+                </div>
+                <a href="index.html" class="text-sm text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-home mr-1"></i> Volver al inicio
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-sm border">
+            <div class="p-6 border-b flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-800">Categorías de Hitos y Calendario</h2>
+                    <p class="text-sm text-gray-500">Gestiona las categorías para hitos de proyectos y eventos del
+                        calendario</p>
+                </div>
+                <button onclick="openCreateModal()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    Nueva Categoría
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="mb-4 flex flex-wrap gap-4">
+                    <div class="relative flex-1 min-w-[200px]">
+                        <input type="text" id="searchInput" placeholder="Buscar categoría..."
+                            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            oninput="filterTable()">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <select id="filterType" class="px-4 py-2 border rounded-lg" onchange="filterTable()">
+                        <option value="">Todos los tipos</option>
+                        <option value="true">Solo Hitos</option>
+                        <option value="false">Solo Calendario</option>
+                    </select>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50 border-b">
+                                <th class="text-left py-3 px-4 font-semibold text-gray-600">ID</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-600">Nombre</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-600">Tipo</th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-600">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="4" class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>Cargando datos...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="emptyState" class="hidden text-center py-12">
+                    <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+                    <p class="text-gray-500">No hay categorías registradas</p>
+                    <button onclick="openCreateModal()" class="mt-4 text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-plus mr-1"></i> Crear primera categoría
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-800">Nueva Categoría</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="itemForm" class="p-6" onsubmit="saveItem(event)">
+                <input type="hidden" id="itemId">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Nombre *</label>
+                    <input type="text" id="itemNombre" required
+                        class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Nombre de la categoría">
+                </div>
+                <div class="mb-6">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="itemIsHito" checked
+                            class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="text-gray-700">
+                            <strong>Es Hito</strong>
+                            <span class="text-sm text-gray-500 block">Marcar si esta categoría es para hitos de
+                                proyectos</span>
+                        </span>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeModal()"
+                        class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                        <i class="fas fa-save"></i>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="p-6 border-b">
+                <h3 class="text-xl font-bold text-gray-800">Confirmar Eliminación</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-600 mb-2">¿Está seguro de que desea eliminar esta categoría?</p>
+                <p id="deleteItemName" class="font-semibold text-gray-800 bg-gray-100 p-3 rounded-lg"></p>
+                <p class="text-sm text-red-500 mt-3">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Esta acción no se puede deshacer.
+                </p>
+            </div>
+            <div class="p-6 border-t flex justify-end gap-3">
+                <button onclick="closeDeleteModal()"
+                    class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
+                    Cancelar
+                </button>
+                <button onclick="confirmDelete()"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2">
+                    <i class="fas fa-trash"></i>
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../division/secplan/admin_general/../../../script/api.js"></script>
+    <script>
+        var allData = [];
+        var deleteItemId = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadData();
+        });
+
+        function loadData() {
+            if (typeof api === 'undefined') {
+                showToast('API no disponible', 'error');
+                return;
+            }
+
+            api.get('/hitoscalendario')
+                .then(function (data) {
+                    allData = data || [];
+                    renderTable(allData);
+                })
+                .catch(function (error) {
+                    console.error('Error cargando datos:', error);
+                    showToast('Error al cargar datos', 'error');
+                    renderTable([]);
+                });
+        }
+
+        function renderTable(data) {
+            var tbody = document.getElementById('tableBody');
+            var emptyState = document.getElementById('emptyState');
+
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            var html = '';
+            data.forEach(function (item) {
+                var tipoClass = item.is_hito ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800';
+                var tipoText = item.is_hito ? 'Hito' : 'Calendario';
+                html += '<tr class="border-b hover:bg-gray-50 transition">';
+                html += '<td class="py-3 px-4 text-gray-500">#' + item.id + '</td>';
+                html += '<td class="py-3 px-4 font-medium text-gray-800">' + escapeHtml(item.nombre) + '</td>';
+                html += '<td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-medium ' + tipoClass + '">' + tipoText + '</span></td>';
+                html += '<td class="py-3 px-4 text-right">';
+                html += '<button onclick="openEditModal(' + item.id + ')" class="text-blue-600 hover:text-blue-800 mr-3" title="Editar"><i class="fas fa-edit"></i></button>';
+                html += '<button onclick="openDeleteModal(' + item.id + ', \'' + escapeHtml(item.nombre).replace(/'/g, "\\'") + '\')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>';
+                html += '</td>';
+                html += '</tr>';
+            });
+            tbody.innerHTML = html;
+        }
+
+        function filterTable() {
+            var search = document.getElementById('searchInput').value.toLowerCase();
+            var filterType = document.getElementById('filterType').value;
+
+            var filtered = allData.filter(function (item) {
+                var matchSearch = item.nombre.toLowerCase().includes(search);
+                var matchType = filterType === '' || String(item.is_hito) === filterType;
+                return matchSearch && matchType;
+            });
+
+            renderTable(filtered);
+        }
+
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Nueva Categoría';
+            document.getElementById('itemForm').reset();
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemIsHito').checked = true;
+            document.getElementById('modal').classList.add('show');
+            document.getElementById('itemNombre').focus();
+        }
+
+        function openEditModal(id) {
+            var item = allData.find(function (i) { return i.id === id; });
+            if (!item) return;
+
+            document.getElementById('modalTitle').textContent = 'Editar Categoría';
+            document.getElementById('itemId').value = item.id;
+            document.getElementById('itemNombre').value = item.nombre;
+            document.getElementById('itemIsHito').checked = item.is_hito;
+            document.getElementById('modal').classList.add('show');
+            document.getElementById('itemNombre').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        function saveItem(event) {
+            event.preventDefault();
+
+            var id = document.getElementById('itemId').value;
+            var nombre = document.getElementById('itemNombre').value.trim();
+            var isHito = document.getElementById('itemIsHito').checked;
+
+            if (!nombre) {
+                showToast('El nombre es obligatorio', 'error');
+                return;
+            }
+
+            var payload = {
+                nombre: nombre,
+                is_hito: isHito
+            };
+
+            var promise;
+            if (id) {
+                promise = api.put('/hitoscalendario/' + id, payload);
+            } else {
+                promise = api.post('/hitoscalendario', payload);
+            }
+
+            promise
+                .then(function () {
+                    showToast(id ? 'Categoría actualizada' : 'Categoría creada', 'success');
+                    closeModal();
+                    loadData();
+                })
+                .catch(function (error) {
+                    console.error('Error guardando:', error);
+                    showToast('Error al guardar', 'error');
+                });
+        }
+
+        function openDeleteModal(id, nombre) {
+            deleteItemId = id;
+            document.getElementById('deleteItemName').textContent = nombre;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteItemId = null;
+        }
+
+        function confirmDelete() {
+            if (!deleteItemId) return;
+
+            api.delete('/hitoscalendario/' + deleteItemId)
+                .then(function () {
+                    showToast('Categoría eliminada', 'success');
+                    closeDeleteModal();
+                    loadData();
+                })
+                .catch(function (error) {
+                    console.error('Error eliminando:', error);
+                    showToast('Error al eliminar', 'error');
+                });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type) {
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + (type || 'info');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(function () { toast.remove(); }, 3000);
+        }
+    </script>
+</body>
+
+</html>
