@@ -1,0 +1,445 @@
+
+
+Aquí tienes 100 preguntas y respuestas basadas exclusivamente en los datos de la tabla proporcionada. Estas preguntas cubren diferentes niveles de complejidad, desde la recuperación de datos directos hasta el filtrado por categorías y estados.
+
+### Preguntas de Recuperación Directa (IDs y Nombres)
+
+1.  **P:** ¿Cuál es el nombre del proyecto con ID 114?
+    **R:** Construcción agua potable y alcantarillado Escuela Rural el Yeco
+2.  **P:** ¿Cuál es el estado actual del proyecto 114?
+    **R:** Diseño
+3.  **P:** ¿A qué categoría pertenece el proyecto "Construcción alcantarillado la Puntilla I" (ID 115)?
+    **R:** Saneamiento
+4.  **P:** ¿Cuál es el fuente de financiamiento del proyecto 115?
+    **R:** FNDR
+5.  **P:** ¿Cuál es el costo estimado del proyecto 115?
+    **R:** $262.000.000
+6.  **P:** ¿Cuál es el porcentaje de avance del proyecto 115?
+    **R:** 95%
+7.  **P:** ¿Qué estado tiene el proyecto 244?
+    **R:** Sin Estado
+8.  **P:** ¿Cuál es el nombre del proyecto con ID 243?
+    **R:** testALL
+9.  **P:** ¿Qué categoría tiene el proyecto "Test2" (ID 242)?
+    **R:** Cultura
+10. **P:** ¿Cuál es el costo del proyecto 242?
+    **R:** $0
+11. **P:** ¿Cuál es el estado del proyecto 242?
+    **R:** En ejecución
+12. **P:** ¿Cuál es el nombre del proyecto con ID 215?
+    **R:** Actualización del Plan de Desarrollo Comunal
+13. **P:** ¿Cuánto cuesta el proyecto "Actualización del Plan Regulador Comunal" (ID 214)?
+    **R:** $121.262.065
+14. **P:** ¿Qué porcentaje de avance tiene el proyecto 214?
+    **R:** 83%
+15. **P:** ¿Cuál es el estado del proyecto 213 "Actualización del Plan Turístico Comunal"?
+    **R:** Subsanación de observaciones
+16. **P:** ¿Cuál es la fuente de financiamiento para el proyecto 170 "Adquisición Buses municipales"?
+    **R:** Circular 33
+17. **P:** ¿Cuál es el nombre del proyecto con ID 181?
+    **R:** Adquisición Camión Algibe
+18. **P:** ¿Qué costo tiene el proyecto 181?
+    **R:** $0
+19. **P:** ¿Cuál es el estado del proyecto 180 "Adquisición Punto Limpio"?
+    **R:** Diseño
+20. **P:** ¿Cuál es el porcentaje de avance del proyecto 180?
+    **R:** 63%
+
+### Preguntas de Filtrado y Detalles Específicos
+
+21. **P:** ¿Cuál es el proyecto con ID 239?
+    **R:** Adquisicion Sistema de Televigilancia
+22. **P:** ¿Cuál es el estado del proyecto 239?
+    **R:** En ejecución
+23. **P:** ¿Qué fuente de financia el proyecto 212 "Alumbrado Accesos Comunal"?
+    **R:** PMB 2026
+24. **P:** ¿Cuál es el costo del proyecto 211 "Alumbrado Camino El Libertador El Yeco"?
+    **R:** $344.615.000
+25. **P:** ¿A qué categoría pertenece el proyecto 210?
+    **R:** Energización
+26. **P:** ¿Cuál es el estado del proyecto 204 "Asistencia Técnica"?
+    **R:** En preparación
+27. **P:** ¿Cuál es el costo del proyecto 134 "Bacheos en distintos sectores de la comuna"?
+    **R:** $168.752.000
+28. **P:** ¿Qué porcentaje de avance tiene el proyecto 134?
+    **R:** 3%
+29. **P:** ¿Cuál es el nombre del proyecto con ID 141?
+    **R:** Canalización y descarga de aguas lluvias Calle Almirante Lynch (Socavon Mirasol)
+30. **P:** ¿Cuál es el estado del proyecto 141?
+    **R:** Diseño
+31. **P:** ¿Cuál es el costo del proyecto 156 "Centro Social agrícola para el adulto Mayor, San José"?
+    **R:** $154.235.800
+32. **P:** ¿Qué porcentaje de avance tiene el proyecto 156?
+    **R:** 78%
+33. **P:** ¿Cuál es el estado del proyecto 153 "Cierre de Quebrada del Pacífico"?
+    **R:** Subsanación de observaciones
+34. **P:** ¿Cuál es el proyecto con ID 192?
+    **R:** Cierre perimetral escuela San José y Los Claveles
+35. **P:** ¿Cuál es el costo del proyecto 192?
+    **R:** $37.299.048
+36. **P:** ¿Cuál es el estado del proyecto 225?
+    **R:** Diseño
+37. **P:** ¿Qué financia el proyecto 241 "Conservación Municipal Casa de la Cultura"?
+    **R:** Municipal
+38. **P:** ¿Cuál es el costo del proyecto 131?
+    **R:** $168.572.500
+39. **P:** ¿Cuál es el estado del proyecto 131?
+    **R:** En preparación
+40. **P:** ¿Qué fuente financia el proyecto 227?
+    **R:** FNDR
+
+### Comparaciones y Valores Económicos
+
+41. **P:** ¿Cuál es el costo del proyecto 228?
+    **R:** $307.959.630
+42. **P:** ¿Cuál es el estado del proyecto 228?
+    **R:** En ejecución
+43. **P:** ¿Cuánto cuesta el proyecto 229 "Construcción Alcantarillado Etapa 4 (El Canelo)"?
+    **R:** $350.000.000
+44. **P:** ¿Cuál es el estado del proyecto 229?
+    **R:** Preparando bases de licitación
+45. **P:** ¿Cuál es el costo del proyecto 230?
+    **R:** $350.000.000
+46. **P:** ¿Cuál es el estado del proyecto 116?
+    **R:** Reevaluación
+47. **P:** ¿Cuál es el porcentaje de avance del proyecto 116?
+    **R:** 95%
+48. **P:** ¿Qué costo tiene el proyecto 120?
+    **R:** $65.000.000
+49. **P:** ¿Cuál es el estado del proyecto 190?
+    **R:** Licitación
+50. **P:** ¿Cuánto cuesta el proyecto 199?
+    **R:** $180.000.000
+51. **P:** ¿Cuál es el porcentaje de avance del proyecto 194?
+    **R:** 10%
+52. **P:** ¿Cuál es el costo del proyecto 121?
+    **R:** $800.000.000
+53. **P:** ¿Qué estado tiene el proyecto 150?
+    **R:** Diseño
+54. **P:** ¿Cuál es el costo del proyecto 158?
+    **R:** $150.000.000
+55. **P:** ¿Cuál es el estado del proyecto 196?
+    **R:** En preparación
+56. **P:** ¿Cuál es el porcentaje de avance del proyecto 154?
+    **R:** 36%
+57. **P:** ¿Cuánto cuesta el proyecto 168?
+    **R:** $125.000.000
+58. **P:** ¿Cuál es el estado del proyecto 137?
+    **R:** Preparando bases de licitación
+59. **P:** ¿Cuál es el costo del proyecto 177 "Construcción Estadio Club deportivo Unión San José"?
+    **R:** $2.050.000.000
+60. **P:** ¿Cuál es el porcentaje de avance del proyecto 177?
+    **R:** 83%
+
+### Preguntas de Categoría y Estado Complejo
+
+61. **P:** ¿Cuál es el estado del proyecto 117?
+    **R:** Diseño
+62. **P:** ¿Cuánto cuesta el proyecto 226?
+    **R:** $80.000.000
+63. **P:** ¿Cuál es el estado del proyecto 237?
+    **R:** Ejecutado
+64. **P:** ¿Cuál es el porcentaje de avance del proyecto 157?
+    **R:** 99%
+65. **P:** ¿Cuál es el costo del proyecto 161?
+    **R:** $400.000.000
+66. **P:** ¿Cuál es el estado del proyecto 176?
+    **R:** Diseño
+67. **P:** ¿Cuánto cuesta el proyecto 118?
+    **R:** $350.000.000
+68. **P:** ¿Cuál es el porcentaje de avance del proyecto 119?
+    **R:** 8%
+69. **P:** ¿Cuál es el estado del proyecto 188?
+    **R:** Diseño
+70. **P:** ¿Cuál es el costo del proyecto 183?
+    **R:** $161.624.544
+71. **P:** ¿Cuál es el porcentaje de avance del proyecto 160?
+    **R:** 26%
+72. **P:** ¿Cuál es el estado del proyecto 151?
+    **R:** Adjudicado
+73. **P:** ¿Cuánto cuesta el proyecto 162?
+    **R:** $114.500.000
+74. **P:** ¿Cuál es el estado del proyecto 142?
+    **R:** Preparando bases de licitación
+75. **P:** ¿Cuál es el porcentaje de avance del proyecto 189?
+    **R:** 75%
+76. **P:** ¿Cuál es el estado del proyecto 127?
+    **R:** Aprobado
+77. **P:** ¿Cuánto cuesta el proyecto 238?
+    **R:** $153.003.413
+78. **P:** ¿Cuál es el estado del proyecto 182 "Construcción Vivero"?
+    **R:** En preparación
+79. **P:** ¿Cuál es el porcentaje de avance del proyecto 187?
+    **R:** 37%
+80. **P:** ¿Cuál es el estado del proyecto 148?
+    **R:** En preparación
+
+### Preguntas Avanzadas y Específicas
+
+81. **P:** ¿Cuál es el proyecto con ID 143?
+    **R:** Diseño y construcción de 2 Refugios Peatonales Acceso Comunidad El Yeco
+82. **P:** ¿Cuál es el costo del proyecto 220?
+    **R:** $0
+83. **P:** ¿Cuál es el estado del proyecto 224?
+    **R:** Diseño
+84. **P:** ¿Cuánto cuesta el proyecto 197?
+    **R:** $553.000.000
+85. **P:** ¿Cuál es el porcentaje de avance del proyecto 200?
+    **R:** 50%
+86. **P:** ¿Cuál es el costo del proyecto 201?
+    **R:** $168.572.500
+87. **P:** ¿Cuál es el estado del proyecto 128?
+    **R:** Diseño
+88. **P:** ¿Cuánto cuesta el proyecto 139?
+    **R:** $850.000.000
+89. **P:** ¿Cuál es el estado del proyecto 184?
+    **R:** En preparación
+90. **P:** ¿Cuál es el costo del proyecto 234?
+    **R:** $82.507.307
+91. **P:** ¿Cuál es el estado del proyecto 185?
+    **R:** Diseño
+92. **P:** ¿Cuánto cuesta el proyecto 169 "Mejoramiento Estadio Municipal El Litre"?
+    **R:** $141.000.000
+93. **P:** ¿Cuál es el porcentaje de avance del proyecto 159?
+    **R:** 83%
+94. **P:** ¿Cuál es el costo del proyecto 136 "Mejoramiento pavimentación avda Peñablanca"?
+    **R:** $3.850.000.000
+95. **P:** ¿Cuál es el estado del proyecto 135?
+    **R:** Aprobado
+96. **P:** ¿Cuál es el costo del proyecto 149?
+    **R:** $80.000.000
+97. **P:** ¿Cuál es el estado del proyecto 173?
+    **R:** Diseño
+98. **P:** ¿Cuánto cuesta el proyecto 155?
+    **R:** $88.896.466
+99. **P:** ¿Cuál es el porcentaje de avance del proyecto 163?
+    **R:** 25%
+100. **P:** ¿Cuál es el estado del proyecto 164 "Tractor para limpieza de playas"?
+     **R:** Aprobado
+
+
+
+     
+
+Aquí tienes 100 preguntas de conteo con distintos filtros y sus respuestas correctas basadas en la tabla proporcionada.
+
+### Conteo por Estado
+
+1.  **P:** ¿Cuántos proyectos tienen el estado "Diseño"?
+    **R:** 46
+2.  **P:** ¿Cuántos proyectos tienen el estado "En preparación"?
+    **R:** 32
+3.  **P:** ¿Cuántos proyectos tienen el estado "En ejecución"?
+    **R:** 11
+4.  **P:** ¿Cuántos proyectos tienen el estado "Subsanación de observaciones"?
+    **R:** 6
+5.  **P:** ¿Cuántos proyectos tienen el estado "Adjudicado"?
+    **R:** 4
+6.  **P:** ¿Cuántos proyectos tienen el estado "Preparando bases de licitación"?
+    **R:** 7
+7.  **P:** ¿Cuántos proyectos tienen el estado "Ejecutado"?
+    **R:** 3
+8.  **P:** ¿Cuántos proyectos tienen el estado "Aprobado"?
+    **R:** 5
+9.  **P:** ¿Cuántos proyectos tienen el estado "Licitación"?
+    **R:** 2
+10. **P:** ¿Cuántos proyectos tienen el estado "Reevaluación"?
+    **R:** 2
+11. **P:** ¿Cuántos proyectos tienen el estado "Sin Estado"?
+    **R:** 2
+12. **P:** ¿Cuántos proyectos tienen estados que contienen la palabra "Diseño" (es decir, "Diseño" o "Preparando bases de licitación" o "Licitación")?
+    **R:** 55
+
+### Conteo por Categoría
+
+13. **P:** ¿Cuántos proyectos pertenecen a la categoría "Vialidad"?
+    **R:** 29
+14. **P:** ¿Cuántos proyectos pertenecen a la categoría "Espacios Públicos y equipamiento"?
+    **R:** 41
+15. **P:** ¿Cuántos proyectos pertenecen a la categoría "Saneamiento"?
+    **R:** 11
+16. **P:** ¿Cuántos proyectos pertenecen a la categoría "Planificación"?
+    **R:** 11
+17. **P:** ¿Cuántos proyectos pertenecen a la categoría "Energización"?
+    **R:** 12
+18. **P:** ¿Cuántos proyectos pertenecen a la categoría "Educación"?
+    **R:** 8
+19. **P:** ¿Cuántos proyectos pertenecen a la categoría "Salud"?
+    **R:** 5
+20. **P:** ¿Cuántos proyectos pertenecen a la categoría "Cultura"?
+    **R:** 4
+21. **P:** ¿Cuántos proyectos no tienen categoría asignada (celda vacía)?
+    **R:** 2
+22. **P:** ¿Cuántos proyectos pertenecen a categorías que empiezan con la letra "E" (Educación, Energización, Espacios Públicos y equipamiento)?
+    **R:** 61
+
+### Conteo por Fuente de Financiamiento
+
+23. **P:** ¿Cuántos proyectos son financiados por "FNDR" (sin importar el año)?
+    **R:** 18
+24. **P:** ¿Cuántos proyectos son financiados por "Municipal"?
+    **R:** 7
+25. **P:** ¿Cuántos proyectos son financiados por "PMU" (en sus variaciones PMU 2023, PMU 2024, etc.)?
+    **R:** 18
+26. **P:** ¿Cuántos proyectos son financiados por "Circular 33"?
+    **R:** 7
+27. **P:** ¿Cuántos proyectos son financiados por "FAEP"?
+    **R:** 3
+28. **P:** ¿Cuántos proyectos son financiados por "FRIL"?
+    **R:** 7
+29. **P:** ¿Cuántos proyectos son financiados por "PMB"?
+    **R:** 7
+30. **P:** ¿Cuántos proyectos son financiados por "Sectorial MOP"?
+    **R:** 3
+31. **P:** ¿Cuántos proyectos son financiados por "DS.27 SERVIU"?
+    **R:** 3
+32. **P:** ¿Cuántos proyectos son financiados por "Educación / Municipal"?
+    **R:** 4
+33. **P:** ¿Cuántos proyectos son financiados por fondos relacionados con "VIALIDAD" (VIALIDAD 2026)?
+    **R:** 1
+34. **P:** ¿Cuántos proyectos son financiados por "GORE 5000 UTM"?
+    **R:** 1
+35. **P:** ¿Cuántos proyectos tienen una fuente de financiamiento que incluye la palabra "PMU" o "PMB"?
+    **R:** 25
+
+### Conteo por Montos (Costos)
+
+36. **P:** ¿Cuántos proyectos tienen un costo mayor a $1.000.000.000 (1 billón)?
+    **R:** 6
+37. **P:** ¿Cuántos proyectos tienen un costo mayor a $500.000.000?
+    **R:** 12
+38. **P:** ¿Cuántos proyectos tienen un costo mayor a $300.000.000?
+    **R:** 25
+39. **P:** ¿Cuántos proyectos tienen un costo de exactamente $0?
+    **R:** 15
+40. **P:** ¿Cuántos proyectos tienen un costo menor a $50.000.000?
+    **R:** 13
+41. **P:** ¿Cuántos proyectos tienen un costo entre $100.000.000 y $199.999.999?
+    **R:** 31
+42. **P:** ¿Cuántos proyectos tienen un costo entre $150.000.000 y $170.000.000?
+    **R:** 15
+43. **P:** ¿Cuántos proyectos tienen un costo superior a $200.000.000 pero inferior a $300.000.000?
+    **R:** 11
+44. **P:** ¿Cuántos proyectos tienen un costo exacto de $100.000.000?
+    **R:** 2
+45. **P:** ¿Cuántos proyectos tienen un costo exacto de $150.000.000?
+    **R:** 2
+
+### Conteo por Porcentaje de Avance
+
+46. **P:** ¿Cuántos proyectos tienen un 100% de avance completado?
+    **R:** 41
+47. **P:** ¿Cuántos proyectos tienen un 0% de avance?
+    **R:** 13
+48. **P:** ¿Cuántos proyectos tienen un avance superior al 50%?
+    **R:** 63
+49. **P:** ¿Cuántos proyectos tienen un avance inferior al 10%?
+    **R:** 17
+50. **P:** ¿Cuántos proyectos tienen un avance entre 90% y 99%?
+    **R:** 10
+51. **P:** ¿Cuántos proyectos tienen un avance entre 50% y 60%?
+    **R:** 8
+52. **P:** ¿Cuántos proyectos tienen un avance entre 30% y 39%?
+    **R:** 4
+53. **P:** ¿Cuántos proyectos tienen un avance entre 70% y 79%?
+    **R:** 4
+54. **P:** ¿Cuántos proyectos tienen un avance entre 20% y 29%?
+    **R:** 4
+55. **P:** ¿Cuántos proyectos tienen un avance mayor o igual a 95%?
+    **R:** 46
+
+### Conteo por Palabras en el Nombre
+
+56. **P:** ¿Cuántos proyectos contienen la palabra "Alcantarillado" en su nombre?
+    **R:** 11
+57. **P:** ¿Cuántos proyectos contienen la palabra "Escuela" en su nombre?
+    **R:** 6
+58. **P:** ¿Cuántos proyectos contienen la palabra "Mejoramiento" en su nombre?
+    **R:** 19
+59. **P:** ¿Cuántos proyectos contienen la palabra "Pavimentación" (o Pavimentacion) en su nombre?
+    **R:** 11
+60. **P:** ¿Cuántos proyectos empiezan con la palabra "Construcción"?
+    **R:** 26
+61. **P:** ¿Cuántos proyectos contienen la palabra "Diseño" en su nombre?
+    **R:** 2
+62. **P:** ¿Cuántos proyectos contienen la palabra "El Yeco" en su nombre?
+    **R:** 7
+63. **P:** ¿Cuántos proyectos contienen la palabra "San José" en su nombre?
+    **R:** 5
+64. **P:** ¿Cuántos proyectos contienen la palabra "Mirasol" en su nombre?
+    **R:** 6
+65. **P:** ¿Cuántos proyectos contienen la palabra "Plaza" en su nombre?
+    **R:** 6
+66. **P:** ¿Cuántos proyectos contienen la palabra "Sede" en su nombre?
+    **R:** 6
+67. **P:** ¿Cuántos proyectos contienen la palabra "Normalización" en su nombre?
+    **R:** 4
+68. **P:** ¿Cuántos proyectos contienen la palabra "Reposición" en su nombre?
+    **R:** 8
+69. **P:** ¿Cuántos proyectos contienen la palabra "Luminarias" o "Alumbrado" en su nombre?
+    **R:** 12
+70. **P:** ¿Cuántos proyectos contienen la palabra "Adquisición" en su nombre?
+    **R:** 4
+
+### Conteos Combinados (Cruce de Variables)
+
+71. **P:** ¿Cuántos proyectos son de la categoría "Saneamiento" y tienen estado "Diseño"?
+    **R:** 7
+72. **P:** ¿Cuántos proyectos son de la categoría "Saneamiento" y tienen estado "En ejecución"?
+    **R:** 2
+73. **P:** ¿Cuántos proyectos son de la categoría "Vialidad" y tienen estado "En preparación"?
+    **R:** 6
+74. **P:** ¿Cuántos proyectos son de la categoría "Vialidad" y tienen estado "Aprobado"?
+    **R:** 3
+75. **P:** ¿Cuántos proyectos son de la categoría "Vialidad" y tienen estado "Diseño"?
+    **R:** 10
+76. **P:** ¿Cuántos proyectos son de la categoría "Espacios Públicos y equipamiento" y tienen estado "En ejecución"?
+    **R:** 8
+77. **P:** ¿Cuántos proyectos son de la categoría "Espacios Públicos y equipamiento" y tienen estado "Diseño"?
+    **R:** 20
+78. **P:** ¿Cuántos proyectos son de la categoría "Educación" y tienen estado "Diseño"?
+    **R:** 5
+79. **P:** ¿Cuántos proyectos son de la categoría "Educación" y tienen estado "Adjudicado"?
+    **R:** 2
+80. **P:** ¿Cuántos proyectos tienen estado "En ejecución" y costo mayor a $500.000.000?
+    **R:** 2
+81. **P:** ¿Cuántos proyectos tienen costo $0 y estado "En preparación"?
+    **R:** 8
+82. **P:** ¿Cuántos proyectos tienen costo $0 y estado "Sin Estado"?
+    **R:** 2
+83. **P:** ¿Cuántos proyectos tienen 100% de avance y estado "Diseño"?
+    **R:** 25
+84. **P:** ¿Cuántos proyectos tienen 100% de avance y estado "En ejecución"?
+    **R:** 8
+85. **P:** ¿Cuántos proyectos tienen 0% de avance y estado "En preparación"?
+    **R:** 13
+86. **P:** ¿Cuántos proyectos tienen estado "Aprobado" y categoría "Vialidad"?
+    **R:** 3
+87. **P:** ¿Cuántos proyectos tienen estado "Subsanación de observaciones"?
+    **R:** 6
+88. **P:** ¿Cuántos proyectos tienen estado "Subsanación de observaciones" y categoría "Vialidad"?
+    **R:** 3
+89. **P:** ¿Cuántos proyectos tienen estado "Licitación"?
+    **R:** 2
+90. **P:** ¿Cuántos proyectos tienen fuente de financiamiento "FNDR" y categoría "Vialidad"?
+    **R:** 4
+91. **P:** ¿Cuántos proyectos tienen fuente de financiamiento "FNDR" y categoría "Saneamiento"?
+    **R:** 6
+92. **P:** ¿Cuántos proyectos tienen fuente de financiamiento "PMU" y estado "Diseño"?
+    **R:** 12
+93. **P:** ¿Cuántos proyectos tienen fuente de financiamiento "Sectorial MOP" y categoría "Vialidad"?
+    **R:** 3
+94. **P:** ¿Cuántos proyectos tienen ID superior a 200?
+    **R:** 26
+95. **P:** ¿Cuántos proyectos tienen ID inferior a 150?
+    **R:** 54
+96. **P:** ¿Cuántos proyectos de la categoría "Salud" tienen estado "Diseño"?
+    **R:** 4
+97. **P:** ¿Cuántos proyectos de la categoría "Planificación" tienen estado "Diseño"?
+    **R:** 5
+98. **P:** ¿Cuántos proyectos de la categoría "Planificación" tienen estado "En preparación"?
+    **R:** 5
+99. **P:** ¿Cuántos proyectos tienen un costo mayor a $300.000.000 y estado "Diseño"?
+    **R:** 9
+100. **P:** ¿Cuál es el total de proyectos listados en la tabla?
+    **R:** 131
