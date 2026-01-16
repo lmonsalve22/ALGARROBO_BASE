@@ -723,6 +723,15 @@
                             </div>
 
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Profesional
+                                    (Opcional)</label>
+                                <select id="reportProfessional" onchange="updatePreview()"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50">
+                                    <option value="">Todos los profesionales</option>
+                                </select>
+                            </div>
+
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Año de Filtro
                                     (Opcional)</label>
                                 <select id="reportYear"
@@ -814,24 +823,54 @@
         const MODEL_NAME = "GLM-4.6V-Flash";
 
         async function fetchAIExecutiveSummary(projects, title) {
-            const totalMonto = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
-
-            // Calcular distribuciones para el prompt
+            // Calcular totales
+            const totalInversion = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
             const estadoCounts = {};
             const areaCounts = {};
+            const individualProfessionalCounts = {};
+            const duplaCounts = {};
+
             projects.forEach(p => {
+                // Estados y Areas
                 const estado = p.estado_nombre || 'Sin estado';
-                const area = p.area_nombre || 'Sin área';
+                const area = p.area_nombre || 'Sin area';
                 estadoCounts[estado] = (estadoCounts[estado] || 0) + 1;
                 areaCounts[area] = (areaCounts[area] || 0) + 1;
+
+                // Duplas
+                if (p.dupla_profesional) {
+                    const dupla = p.dupla_profesional.trim();
+                    duplaCounts[dupla] = (duplaCounts[dupla] || 0) + 1;
+                }
+
+                // Profesionales Individuales (1-5)
+                [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5].forEach(prof => {
+                    if (prof && prof.trim()) {
+                        const name = prof.trim();
+                        individualProfessionalCounts[name] = (individualProfessionalCounts[name] || 0) + 1;
+                    }
+                });
             });
 
-            // Muestra limitada para no exceder tokens
-            const summaryData = projects.slice(0, 30).map(p => ({
-                n: p.nombre,
-                e: p.estado_nombre || p.estado_proyecto,
-                m: parseInt(p.monto) || 0,
-                a: p.area_nombre || p.area
+            // Top Profesionales (ordenados)
+            const topProfesionales = Object.entries(individualProfessionalCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .map(([name, count]) => `${name} (${count})`)
+                .join(', ');
+
+            const topDuplas = Object.entries(duplaCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([name, count]) => `${name} (${count})`)
+                .join(', ');
+
+            // Muestra de proyectos para contexto
+            const summaryData = projects.slice(0, 15).map(p => ({
+                nombre: p.nombre,
+                monto: p.monto,
+                estado: p.estado_nombre,
+                area: p.area_nombre
             }));
 
             const prompt = `Eres un experto analista de gestión pública.
@@ -839,9 +878,11 @@ Genera un análisis completo para el informe de proyectos municipales: "${title}
 
 DATOS GENERALES:
 - Cantidad Proyectos: ${projects.length}
-- Inversión Total: $${new Intl.NumberFormat('es-CL').format(totalMonto)}
+- Inversión Total: $${new Intl.NumberFormat('es-CL').format(totalInversion)}
 - Distribución por Estado: ${JSON.stringify(estadoCounts)}
 - Distribución por Área: ${JSON.stringify(areaCounts)}
+- Carga Laboral Profesionales (Top): ${topProfesionales}
+- Duplas Principales: ${topDuplas}
 - Muestra de proyectos: ${JSON.stringify(summaryData)}
 
 INSTRUCCIONES:
@@ -851,6 +892,7 @@ Analiza los datos y genera un objeto JSON (SIN MARKDOWN, SOLO JSON) con la sigui
   "analisis_metricas": "Breve explicación (máx 40 palabras) sobre el volumen de inversión y cantidad de proyectos.",
   "analisis_estados": "Breve explicación (máx 40 palabras) sobre cómo se distribuyen los estados de los proyectos.",
   "analisis_areas": "Breve explicación (máx 40 palabras) sobre las áreas con mayor enfoque o inversión.",
+  "analisis_equipo": "Breve explicación (máx 40 palabras) sobre la carga laboral del equipo y profesionales destacados.",
   "analisis_detalle": "Breve introducción (máx 40 palabras) para la tabla detallada de proyectos que sigue a continuación."
 }
 
@@ -894,6 +936,7 @@ Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
                     analisis_metricas: parsed.analisis_metricas || "Análisis de métricas no disponible.",
                     analisis_estados: parsed.analisis_estados || "Análisis de estados no disponible.",
                     analisis_areas: parsed.analisis_areas || "Análisis de áreas no disponible.",
+                    analisis_equipo: parsed.analisis_equipo || "Análisis de equipo no disponible.",
                     analisis_detalle: parsed.analisis_detalle || "Análisis detallado no disponible."
                 };
 
@@ -904,6 +947,7 @@ Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
                     analisis_metricas: "Sin análisis disponible.",
                     analisis_estados: "Sin análisis disponible.",
                     analisis_areas: "Sin análisis disponible.",
+                    analisis_equipo: "Sin análisis disponible.",
                     analisis_detalle: "Sin análisis disponible."
                 };
             }
@@ -987,6 +1031,29 @@ Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
                 option.value = year;
                 option.textContent = year;
                 yearSelect.appendChild(option);
+            });
+
+            // Poblar filtro de profesionales
+            const professionalSelect = document.getElementById('reportProfessional');
+            const professionals = new Set();
+
+            proyectos.forEach(p => {
+                // Duplas
+                if (p.dupla_profesional) professionals.add(p.dupla_profesional.trim());
+
+                // Individuales
+                [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5].forEach(prof => {
+                    if (prof && prof.trim()) professionals.add(prof.trim());
+                });
+            });
+
+            const sortedProfessionals = [...professionals].sort();
+
+            sortedProfessionals.forEach(prof => {
+                const option = document.createElement('option');
+                option.value = prof;
+                option.textContent = prof;
+                professionalSelect.appendChild(option);
             });
         }
 
@@ -1140,12 +1207,21 @@ Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
 
             const areaId = document.getElementById('reportArea').value;
             const year = document.getElementById('reportYear').value;
+            const professional = document.getElementById('reportProfessional').value;
 
             if (areaId) {
                 filtered = filtered.filter(p => p.area_id == areaId);
             }
             if (year) {
                 filtered = filtered.filter(p => p.anno_elaboracion == year);
+            }
+            if (professional) {
+                filtered = filtered.filter(p => {
+                    const inDupla = p.dupla_profesional && p.dupla_profesional.includes(professional);
+                    const inProfs = [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5]
+                        .some(prof => prof && prof.includes(professional));
+                    return inDupla || inProfs;
+                });
             }
 
             return filtered;
@@ -1562,7 +1638,6 @@ Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
                 headStyles: { fillColor: [139, 92, 246] },
                 styles: { fontSize: 9, cellPadding: 3 }
             });
-
             y = doc.lastAutoTable.finalY + 8;
 
             if (aiData.analisis_areas) {
@@ -1575,6 +1650,71 @@ Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
 
                 y = printParsedMarkdown(doc, aiData.analisis_areas, 35, y, 155, 10);
                 doc.setTextColor(0, 0, 0);
+            }
+
+            y += 15;
+
+            // 5. ANÁLISIS DE EQUIPO
+            if (y > 230) {
+                doc.addPage();
+                y = 35;
+                doc.setFillColor(99, 102, 241);
+                doc.rect(0, 0, 210, 25, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(14);
+                doc.text('ANÁLISIS DE EQUIPO', 20, 16);
+                doc.setTextColor(0, 0, 0);
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('5. Carga de Trabajo por Profesional', 20, y);
+            y += 8;
+
+            // Calcular carga
+            const professionalCounts = {};
+            filteredProjects.forEach(p => {
+                [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5].forEach(prof => {
+                    if (prof && prof.trim()) {
+                        const name = prof.trim();
+                        professionalCounts[name] = (professionalCounts[name] || 0) + 1;
+                    }
+                });
+            });
+
+            const teamData = Object.entries(professionalCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 12) // Top 12
+                .map(([name, count]) => [name, count.toString()]);
+
+            if (teamData.length > 0) {
+                doc.autoTable({
+                    startY: y,
+                    head: [['Profesional', 'Proyectos Asignados']],
+                    body: teamData,
+                    theme: 'striped',
+                    headStyles: { fillColor: [245, 158, 11] }, // Amber/Orange
+                    styles: { fontSize: 9, cellPadding: 3 }
+                });
+
+                y = doc.lastAutoTable.finalY + 8;
+
+                if (aiData.analisis_equipo) {
+                    if (y > 260) { doc.addPage(); y = 20; }
+
+                    doc.setTextColor(79, 70, 229);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9);
+                    doc.text('Análisis:', 20, y);
+
+                    y = printParsedMarkdown(doc, aiData.analisis_equipo, 35, y, 155, 10);
+                    doc.setTextColor(0, 0, 0);
+                }
+            } else {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(10);
+                doc.text('No hay información de profesionales disponible.', 20, y);
+                y += 10;
             }
 
             doc.addPage();
