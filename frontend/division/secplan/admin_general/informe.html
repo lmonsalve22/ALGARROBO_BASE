@@ -816,8 +816,18 @@
         async function fetchAIExecutiveSummary(projects, title) {
             const totalMonto = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
 
+            // Calcular distribuciones para el prompt
+            const estadoCounts = {};
+            const areaCounts = {};
+            projects.forEach(p => {
+                const estado = p.estado_nombre || 'Sin estado';
+                const area = p.area_nombre || 'Sin área';
+                estadoCounts[estado] = (estadoCounts[estado] || 0) + 1;
+                areaCounts[area] = (areaCounts[area] || 0) + 1;
+            });
+
             // Muestra limitada para no exceder tokens
-            const summaryData = projects.slice(0, 50).map(p => ({
+            const summaryData = projects.slice(0, 30).map(p => ({
                 n: p.nombre,
                 e: p.estado_nombre || p.estado_proyecto,
                 m: parseInt(p.monto) || 0,
@@ -825,20 +835,26 @@
             }));
 
             const prompt = `Eres un experto analista de gestión pública.
-Genera un Resumen Ejecutivo Estratégico para el informe: "${title}".
+Genera un análisis completo para el informe de proyectos municipales: "${title}".
+
 DATOS GENERALES:
 - Cantidad Proyectos: ${projects.length}
 - Inversión Total: $${new Intl.NumberFormat('es-CL').format(totalMonto)}
-- Muestra de datos: ${JSON.stringify(summaryData)}
+- Distribución por Estado: ${JSON.stringify(estadoCounts)}
+- Distribución por Área: ${JSON.stringify(areaCounts)}
+- Muestra de proyectos: ${JSON.stringify(summaryData)}
 
 INSTRUCCIONES:
-Redacta un análisis de media página (aprox 300 palabras/2000 caracteres) que incluya:
-1. Introducción al estado de la cartera.
-2. Análisis de distribución de recursos.
-3. Principales hallazgos o alertas basa en los estados de proyecto.
-4. Conclusión breve.
+Analiza los datos y genera un objeto JSON (SIN MARKDOWN, SOLO JSON) con la siguiente estructura exacta:
+{
+  "resumen_ejecutivo": "Texto de aprox 250 palabras con introducción, análisis de recursos, hallazgos y conclusión.",
+  "analisis_metricas": "Breve explicación (máx 40 palabras) sobre el volumen de inversión y cantidad de proyectos.",
+  "analisis_estados": "Breve explicación (máx 40 palabras) sobre cómo se distribuyen los estados de los proyectos.",
+  "analisis_areas": "Breve explicación (máx 40 palabras) sobre las áreas con mayor enfoque o inversión.",
+  "analisis_detalle": "Breve introducción (máx 40 palabras) para la tabla detallada de proyectos que sigue a continuación."
+}
 
-Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos saltos de linea.`;
+Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
 
             try {
                 const response = await fetch(API_URL, {
@@ -850,7 +866,7 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
                     body: JSON.stringify({
                         model: MODEL_NAME,
                         messages: [
-                            { role: "system", content: "Eres un asistente de análisis de datos para SECPLAN." },
+                            { role: "system", content: "Eres un asistente de análisis de datos para SECPLAN. Respondes SIEMPRE en formato JSON válido." },
                             { role: "user", content: prompt }
                         ],
                         temperature: 0.7
@@ -859,10 +875,37 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
 
                 if (!response.ok) throw new Error("Error en API IA");
                 const data = await response.json();
-                return data.choices[0].message.content;
+
+                let content = data.choices[0].message.content;
+
+                // Intento robusto de extraer JSON
+                const firstBrace = content.indexOf('{');
+                const lastBrace = content.lastIndexOf('}');
+
+                if (firstBrace !== -1 && lastBrace !== -1) {
+                    content = content.substring(firstBrace, lastBrace + 1);
+                }
+
+                const parsed = JSON.parse(content);
+
+                // Asegurar que existan las claves para que no quede vacio
+                return {
+                    resumen_ejecutivo: parsed.resumen_ejecutivo || "Resumen no disponible.",
+                    analisis_metricas: parsed.analisis_metricas || "Análisis de métricas no disponible.",
+                    analisis_estados: parsed.analisis_estados || "Análisis de estados no disponible.",
+                    analisis_areas: parsed.analisis_areas || "Análisis de áreas no disponible.",
+                    analisis_detalle: parsed.analisis_detalle || "Análisis detallado no disponible."
+                };
+
             } catch (e) {
                 console.error("Error generando resumen IA:", e);
-                return "No se pudo generar el Resumen Inteligente debido a un error de conexión con el servicio de IA.\n\nPor favor consulte los detalles estadísticos en las páginas siguientes.";
+                return {
+                    resumen_ejecutivo: "No se pudo generar el análisis inteligente. Revise la conexión a internet o la configuración de API Key.",
+                    analisis_metricas: "Sin análisis disponible.",
+                    analisis_estados: "Sin análisis disponible.",
+                    analisis_areas: "Sin análisis disponible.",
+                    analisis_detalle: "Sin análisis disponible."
+                };
             }
         }
 
@@ -1181,7 +1224,130 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
             }
         }
 
-        function generatePDF(type, aiSummaryText = "") {
+        function printParsedMarkdown(doc, rawText, x, y, maxWidth, normalFontSize = 10) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(normalFontSize);
+            doc.setTextColor(50, 50, 50);
+
+            const lines = rawText.split('\n');
+            let currentY = y;
+            const lineHeight = normalFontSize * 0.5 + 2.5;
+
+            lines.forEach(line => {
+                line = line.trim();
+                // Skip empty lines at immediate start if you want, but Markdown often has them
+                if (!line) {
+                    currentY += lineHeight;
+                    return;
+                }
+
+                // Headers
+                let isHeader = false;
+                let fontSize = normalFontSize;
+                let headerText = line;
+
+                if (line.startsWith('#')) {
+                    isHeader = true;
+                    if (line.startsWith('###')) {
+                        fontSize = normalFontSize + 1;
+                        headerText = line.replace(/^###\s*/, '');
+                    } else if (line.startsWith('##')) {
+                        fontSize = normalFontSize + 2;
+                        headerText = line.replace(/^##\s*/, '');
+                    } else {
+                        fontSize = normalFontSize + 4;
+                        headerText = line.replace(/^#\s*/, '');
+                    }
+                }
+
+                if (isHeader) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(fontSize);
+                    doc.setTextColor(0, 0, 0); // Headers black
+
+                    // Simple wrap for headers
+                    const splitTitle = doc.splitTextToSize(headerText, maxWidth);
+                    doc.text(splitTitle, x, currentY);
+                    currentY += (splitTitle.length * (fontSize * 0.5 + 2.5)) + 4;
+
+                    // Reset
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(normalFontSize);
+                    doc.setTextColor(50, 50, 50);
+                    return;
+                }
+
+                // List Items
+                let indentX = 0;
+                if (line.startsWith('- ') || line.startsWith('* ')) {
+                    indentX = 5;
+                    line = line.substring(2);
+                    doc.text('•', x, currentY);
+                }
+
+                // Word Processing for Bold (**text**)
+                // Split by ** but keep delimiters to identify parts
+                const parts = line.split(/(\*\*)/g);
+                let isBold = false;
+                const atoms = [];
+
+                parts.forEach(part => {
+                    if (part === '**') {
+                        isBold = !isBold;
+                    } else {
+                        // Split by spaces to handle wrapping, keeping spaces attached to word or separate
+                        // Simplest: split by space
+                        const words = part.split(/(\s+)/);
+                        words.forEach(word => {
+                            if (word) atoms.push({ text: word, bold: isBold });
+                        });
+                    }
+                });
+
+                let currentLineWidth = indentX;
+                let lineBuffer = [];
+                let startX = x + indentX;
+
+                atoms.forEach(atom => {
+                    doc.setFont('helvetica', atom.bold ? 'bold' : 'normal');
+                    doc.setFontSize(normalFontSize);
+                    const atomWidth = doc.getTextWidth(atom.text);
+
+                    // Check availability
+                    if (currentLineWidth + atomWidth > maxWidth) {
+                        // Flush Line
+                        let printX = x + indentX;
+                        lineBuffer.forEach(a => {
+                            doc.setFont('helvetica', a.bold ? 'bold' : 'normal');
+                            doc.text(a.text, printX, currentY);
+                            printX += doc.getTextWidth(a.text);
+                        });
+
+                        currentY += lineHeight;
+                        lineBuffer = [];
+                        currentLineWidth = indentX; // Reset to indent
+                    }
+
+                    lineBuffer.push(atom);
+                    currentLineWidth += atomWidth;
+                });
+
+                // Flush remaining
+                if (lineBuffer.length > 0) {
+                    let printX = x + indentX;
+                    lineBuffer.forEach(a => {
+                        doc.setFont('helvetica', a.bold ? 'bold' : 'normal');
+                        doc.text(a.text, printX, currentY);
+                        printX += doc.getTextWidth(a.text);
+                    });
+                    currentY += lineHeight;
+                }
+            });
+
+            return currentY;
+        }
+
+        function generatePDF(type, aiData = {}) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -1235,32 +1401,31 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
             doc.text(`Inversion Total: ${formatCurrency(totalInversion)}`, 105, 250, { align: 'center' });
             doc.text(`Avance Promedio: ${(avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1)}%`, 105, 260, { align: 'center' });
 
-            // PAGINA 2: RESUMEN IA
-            if (aiSummaryText) {
+            // PAGINA 2: RESUMEN EJECUTIVO (Página exclusiva)
+            if (aiData.resumen_ejecutivo) {
                 doc.addPage();
 
-                // Fondo encabezado
+                // Encabezado
                 doc.setFillColor(79, 70, 229);
                 doc.rect(0, 0, 210, 30, 'F');
 
                 doc.setTextColor(255, 255, 255);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(16);
-                doc.text('RESUMEN EJECUTIVO (IA)', 20, 20);
+                doc.text('1. RESUMEN EJECUTIVO', 20, 20);
 
                 doc.setTextColor(0, 0, 0);
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(11);
 
-                const splitText = doc.splitTextToSize(aiSummaryText, 170);
-                doc.text(splitText, 20, 45);
+                // Contenido
+                printParsedMarkdown(doc, aiData.resumen_ejecutivo, 20, 45, 170, 11);
 
+                // Nota pie
                 doc.setFontSize(8);
                 doc.setTextColor(150);
-                doc.text('Este resumen ha sido generado automáticamente por Inteligencia Artificial (ZhipuAI GLM-4) basado en los datos actuales.', 105, 285, { align: 'center' });
+                doc.text('Análisis generado automáticamente por Inteligencia Artificial.', 105, 280, { align: 'center' });
             }
 
-            // PAGINA 3: ESTADÍSTICAS GENERALES
+            // PAGINA 3: ESTADÍSTICAS
             doc.addPage();
             let y = 20;
 
@@ -1268,26 +1433,12 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
             doc.rect(0, 0, 210, 25, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(14);
-            doc.text('ESTADÍSTICAS GENERALES', 20, 16);
+            doc.text('ESTADÍSTICAS Y ANÁLISIS', 20, 16);
             doc.setTextColor(0, 0, 0);
 
             y = 35;
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('1. Introduccion', 20, y);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-            y += 8;
-            const introText = `Este informe presenta un analisis detallado de la cartera de proyectos de la Municipalidad de Algarrobo. Se incluyen ${filteredProjects.length} proyectos con una inversion total de ${formatCurrency(totalInversion)}.`;
-            const introLines = doc.splitTextToSize(introText, 170);
-            doc.text(introLines, 20, y);
-            y += introLines.length * 5 + 10;
 
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(11);
-            doc.text('2. Metricas Clave', 20, y);
-            y += 10;
-
+            // Preparar datos estadísticos
             const estadoCounts = {};
             const areaCounts = {};
             const financiamientoCounts = {};
@@ -1301,13 +1452,19 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
                 financiamientoCounts[fin] = (financiamientoCounts[fin] || 0) + 1;
             });
 
+            // 2. METRICAS CLAVE
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('2. Métricas Clave', 20, y);
+            y += 8;
+
             const metricsData = [
-                ['Metrica', 'Valor'],
+                ['Métrica', 'Valor'],
                 ['Total de Proyectos', filteredProjects.length.toString()],
-                ['Inversion Total', formatCurrency(totalInversion)],
+                ['Inversión Total', formatCurrency(totalInversion)],
                 ['Avance Promedio', `${(avgProgress > 1 ? avgProgress : avgProgress * 100).toFixed(1)}%`],
                 ['Proyectos Prioritarios', filteredProjects.filter(p => p.es_prioridad === 'SI').length.toString()],
-                ['Areas Involucradas', Object.keys(areaCounts).length.toString()],
+                ['Áreas Involucradas', Object.keys(areaCounts).length.toString()],
                 ['Fuentes de Financiamiento', Object.keys(financiamientoCounts).length.toString()]
             ];
 
@@ -1321,11 +1478,26 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
                 columnStyles: { 0: { fontStyle: 'bold', cellWidth: 80 }, 1: { cellWidth: 80 } }
             });
 
-            y = doc.lastAutoTable.finalY + 15;
+            y = doc.lastAutoTable.finalY + 8;
 
+            // ANÁLISIS MÉTRICAS (ABAJO)
+            if (aiData.analisis_metricas) {
+                doc.setTextColor(79, 70, 229);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.text('Análisis:', 20, y);
+
+                y = printParsedMarkdown(doc, aiData.analisis_metricas, 35, y, 155, 10);
+                doc.setTextColor(0, 0, 0);
+            }
+
+            y += 15;
+
+            // 3. DISTRIBUCION POR ESTADO
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(11);
-            doc.text('3. Distribucion por Estado', 20, y);
+            doc.setFont('helvetica', 'bold');
+            doc.text('3. Distribución por Estado', 20, y);
             y += 8;
 
             const estadoData = Object.entries(estadoCounts).map(([estado, count]) => [
@@ -1343,22 +1515,37 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
                 styles: { fontSize: 9, cellPadding: 3 }
             });
 
-            y = doc.lastAutoTable.finalY + 15;
+            y = doc.lastAutoTable.finalY + 8;
 
-            if (y > 220) {
+            if (aiData.analisis_estados) {
+                if (y > 260) { doc.addPage(); y = 20; }
+
+                doc.setTextColor(79, 70, 229);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.text('Análisis:', 20, y);
+
+                y = printParsedMarkdown(doc, aiData.analisis_estados, 35, y, 155, 10);
+                doc.setTextColor(0, 0, 0);
+            }
+
+            y += 15;
+
+            if (y > 230) {
                 doc.addPage();
                 y = 35;
                 doc.setFillColor(99, 102, 241);
                 doc.rect(0, 0, 210, 25, 'F');
                 doc.setTextColor(255, 255, 255);
                 doc.setFontSize(14);
-                doc.text('ANALISIS POR AREA', 20, 16);
+                doc.text('ANÁLISIS POR ÁREA', 20, 16);
                 doc.setTextColor(0, 0, 0);
             }
 
+            // 4. DISTRIBUCION POR AREA
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(11);
-            doc.text('4. Distribucion por Area', 20, y);
+            doc.text('4. Distribución por Área', 20, y);
             y += 8;
 
             const areaData = Object.entries(areaCounts).map(([area, count]) => {
@@ -1369,12 +1556,26 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
 
             doc.autoTable({
                 startY: y,
-                head: [['Area', 'Proyectos', 'Inversion']],
+                head: [['Área', 'Proyectos', 'Inversión']],
                 body: areaData,
                 theme: 'striped',
                 headStyles: { fillColor: [139, 92, 246] },
                 styles: { fontSize: 9, cellPadding: 3 }
             });
+
+            y = doc.lastAutoTable.finalY + 8;
+
+            if (aiData.analisis_areas) {
+                if (y > 260) { doc.addPage(); y = 20; }
+
+                doc.setTextColor(79, 70, 229);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.text('Análisis:', 20, y);
+
+                y = printParsedMarkdown(doc, aiData.analisis_areas, 35, y, 155, 10);
+                doc.setTextColor(0, 0, 0);
+            }
 
             doc.addPage();
             doc.setFillColor(99, 102, 241);
@@ -1383,6 +1584,18 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
             doc.setFontSize(14);
             doc.text('DETALLE DE PROYECTOS', 20, 16);
             doc.setTextColor(0, 0, 0);
+
+            let tableY = 35;
+            if (aiData.analisis_detalle) {
+                doc.setTextColor(79, 70, 229);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.text('Análisis:', 20, tableY);
+
+                tableY = printParsedMarkdown(doc, aiData.analisis_detalle, 35, tableY, 155, 10);
+                doc.setTextColor(0, 0, 0);
+                tableY += 6;
+            }
 
             let tableHeaders, tableBody;
 
@@ -1516,7 +1729,7 @@ Usa un tono formal, técnico y directo. Texto plano, parrafos separados por dos 
             }
 
             doc.autoTable({
-                startY: 35,
+                startY: tableY,
                 head: tableHeaders,
                 body: tableBody,
                 theme: 'striped',

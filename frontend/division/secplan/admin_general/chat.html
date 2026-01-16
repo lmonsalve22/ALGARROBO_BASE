@@ -572,7 +572,7 @@
             try {
                 DOM.projectsLoading.classList.remove('hidden');
 
-                const pProjects = fetch(`${API_BASE}/proyectos_chat`, {
+                const pProjects = fetch(`${API_BASE}/proyectos`, {
                     method: 'GET',
                     headers: getAuthHeaders()
                 }).then(r => {
