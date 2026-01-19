@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        
         .card-hover {
             transition: all 0.3s ease;
         }
@@ -241,7 +240,7 @@
 </head>
 
 <body class="bg-gray-50">
-    
+
     <div id="headerRender"></div>
 
     <div class="flex">
@@ -366,7 +365,7 @@
 
                 <div id="projectObservacionesPanel"
                     class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
-                    
+
                     <div
                         class="px-6 py-4 border-b border-gray-200 bg-blue-50 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
@@ -403,7 +402,7 @@
                                 </tr>
                             </thead>
                             <tbody id="projectObservacionesBody" class="bg-white divide-y divide-gray-200">
-                                
+
                             </tbody>
                         </table>
                         <div id="obsLoading" class="hidden p-8 text-center">
@@ -434,7 +433,7 @@
 
             <div class="p-6">
                 <form id="createObservacionForm" onsubmit="handleCreateObservacion(event)">
-                    
+
                     <div class="form-group p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
                         <label class="text-xs text-gray-500 uppercase font-bold tracking-wider">Proyecto Destino</label>
                         <div class="flex items-center gap-2 mt-1">
@@ -493,7 +492,7 @@
             </div>
 
             <div class="p-6">
-                
+
                 <div id="viewerLoading" class="hidden text-center py-8">
                     <div class="loading-dark mx-auto mb-3"></div>
                     <p class="text-sm text-gray-500">Cargando detalles...</p>
@@ -541,9 +540,11 @@
     </div>
 
     <script src="../../../script/layout.js"></script>
+    <script src="../../../script/help.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => createHelpButton('observacion'));</script>
 
     <script>
-        
+
         const API_BASE = 'https://186.67.61.251:8000';
         let allProjects = [];
 
@@ -830,7 +831,7 @@
                     return res.json();
                 })
                 .then(data => {
-                    
+
                     document.getElementById('detailFecha').textContent = formatDisplayDate(data.fecha);
 
                     document.getElementById('detailObs').textContent = data.observacion || 'Sin observaciones registradas.';

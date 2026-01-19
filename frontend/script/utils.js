@@ -1,7 +1,7 @@
 
 
 const utils = {
-    
+
     formatCurrency(value) {
         if (!value && value !== 0) return '$0';
         return new Intl.NumberFormat('es-CL', {
@@ -44,11 +44,11 @@ const utils = {
     },
 
     formatCompactNumber(number) {
-        if (!number) return '0';
-        if (number >= 1000000000) return '$' + (number / 1000000000).toFixed(1) + 'B';
-        if (number >= 1000000) return '$' + (number / 1000000).toFixed(1) + 'M';
-        if (number >= 1000) return '$' + (number / 1000).toFixed(1) + 'K';
-        return '$' + number.toString();
+        if (!number) return '$0';
+        const formatChilean = (num) => num.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+        if (number >= 1000000) return '$' + formatChilean(number / 1000000) + 'M';
+        if (number >= 1000) return '$' + formatChilean(number / 1000) + 'K';
+        return '$' + formatChilean(number);
     },
 
     fillSelect(elementId, items, valueField, textField, placeholder = 'Seleccione una opción') {

@@ -124,7 +124,7 @@
             position: fixed;
             top: 0;
             right: -400px;
-            
+
             width: 400px;
             height: 100%;
             background-color: white;
@@ -137,7 +137,7 @@
 
         #projectDetailsPanel.show {
             right: 0;
-            
+
         }
 
         .close-panel-btn {
@@ -169,20 +169,20 @@
 </head>
 
 <body class="bg-gray-50">
-    
+
     <div id="headerRender">
     </div>
 
     <div class="flex">
-        
+
         <div id="asideRender">
 
         </div>
 
         <main class="flex-1 p-6">
-            
+
             <div id="mapView" class="view-content">
-                
+
                 <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Mapa de Proyectos</h2>
                     <p class="text-gray-600">Visualización geográfica de todos los proyectos municipales</p>
@@ -236,9 +236,9 @@
                 </div>
 
                 <div class="bg-white rounded-lg shadow p-4">
-                    
+
                     <div id="mapFilters" class="mb-4 flex flex-wrap gap-2">
-                        
+
                         <button onclick="filterMapByArea('all')"
                             class="filter-button active px-4 py-2 rounded">Todos</button>
                     </div>
@@ -249,7 +249,7 @@
                 <div class="mt-6 bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold mb-4">Proyectos en Mapa</h3>
                     <div id="mapProjectsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        
+
                     </div>
                 </div>
             </div>
@@ -260,21 +260,23 @@
         <button class="close-panel-btn" onclick="closeProjectDetails()">&times;</button>
         <h2 class="text-xl font-bold mb-4">Detalles del Proyecto</h2>
         <div id="projectDetailsContent">
-            
+
         </div>
     </div>
 
     <script src="../../../script/layout.js"></script>
-    
+    <script src="../../../script/help.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => createHelpButton('mapa'));</script>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        
+
         const BASE_URL = 'https://186.67.61.251:8000';
 
         let map;
         let markers = [];
-        let allProjects = []; 
+        let allProjects = [];
         let currentFilter = 'all';
 
         const areaColors = {
@@ -284,7 +286,7 @@
             'Educación': '#8B5CF6',
             'Salud': '#EF4444',
             'Planificación': '#F59E0B',
-            'default': '#6B7280' 
+            'default': '#6B7280'
         };
 
         function getAreaColor(area) {
@@ -300,7 +302,7 @@
                 return 'No especificado';
             }
             if (key.includes('fecha')) {
-                
+
                 try {
                     return new Date(value).toLocaleDateString('es-CL');
                 } catch (e) {
@@ -319,7 +321,7 @@
 
         async function fetchProjects() {
             try {
-                
+
                 const token = localStorage.getItem('authToken');
 
                 if (!token) {
@@ -329,13 +331,13 @@
                 const response = await fetch(`${BASE_URL}/proyectos`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': token, 
+                        'Authorization': token,
                         'Content-Type': 'application/json'
                     }
                 });
 
                 if (!response.ok) {
-                    
+
                     if (response.status === 401 || response.status === 403) {
                         throw new Error('No autorizado. Su sesión ha expirado o el token es inválido.');
                     }
@@ -347,14 +349,14 @@
                 initializeApp();
             } catch (error) {
                 console.error("No se pudieron cargar los proyectos:", error);
-                
+
                 const mapContainer = document.getElementById('map');
                 if (mapContainer) {
                     mapContainer.innerHTML = `<div class="flex justify-center items-center h-full text-center p-4"><p class="text-red-500 font-semibold">Error al cargar los proyectos.</p><p class="text-gray-600">${error.message}</p></div>`;
                 }
-                
+
                 if (error.message.includes('No autorizado') || error.message.includes('Token de autenticación no encontrado')) {
-                    
+
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('authToken');
                     window.location.href = '../../index.html';
@@ -370,7 +372,7 @@
         }
 
         function initializeMap() {
-            
+
             map = L.map('map').setView([-33.366677, -71.673103], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -390,7 +392,7 @@
                 popupContent += `<div class="popup-title">${project.nombre}</div>`;
 
                 Object.keys(project).forEach(key => {
-                    
+
                     const value = formatValue(key, project[key]);
                     popupContent += `<div class="popup-info"><strong>${formatKey(key)}:</strong> ${value}</div>`;
                 });
@@ -427,7 +429,7 @@
 
         function createFilterButtons() {
             const filterContainer = document.getElementById('mapFilters');
-            filterContainer.innerHTML = ''; 
+            filterContainer.innerHTML = '';
 
             const allButton = document.createElement('button');
             allButton.textContent = 'Todos';
@@ -448,7 +450,7 @@
 
         function updateStatsCards() {
             const totalProjectsCount = allProjects.length;
-            
+
             const vialidadCount = allProjects.filter(p => p.area_nombre === 'Vialidad').length;
             const saneamientoCount = allProjects.filter(p => p.area_nombre === 'Saneamiento').length;
             const espaciosPublicosCount = allProjects.filter(p => p.area_nombre === 'Espacios Públicos').length;
@@ -460,7 +462,7 @@
         }
 
         function addLegend() {
-            
+
             if (window.mapLegend) {
                 map.removeControl(window.mapLegend);
             }
@@ -491,7 +493,7 @@
         }
 
         function filterMapByArea(area) {
-            
+
             document.querySelectorAll('.filter-button').forEach(button => {
                 button.classList.remove('active');
             });
@@ -549,7 +551,7 @@
 
             let filteredProjects = allProjects;
             if (filterArea !== 'all') {
-                
+
                 filteredProjects = allProjects.filter(project => project.area_nombre === filterArea);
             }
 
@@ -612,7 +614,7 @@
             content.appendChild(title);
 
             Object.keys(project).forEach(key => {
-                
+
                 const detailItem = document.createElement('div');
                 detailItem.className = 'detail-item';
 
