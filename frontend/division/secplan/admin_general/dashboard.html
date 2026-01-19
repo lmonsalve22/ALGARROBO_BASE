@@ -2,288 +2,839 @@
 <html lang="es">
 
 <head>
-
     <script src="../../../script/router.js"></script>
     <script src="../../../script/api.js"></script>
     <script src="../../../script/utils.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geoportal Municipal - Algarrobo</title>
+    <title>Dashboard - Geoportal Municipal</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#6366f1', secondary: '#ec4899', accent: '#8b5cf6' }
+                }
+            }
+        }
+    </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
-        .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
+        :root {
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
         }
 
-        .card-hover {
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 95%, 1) 0, transparent 50%);
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        .header-gradient {
+            background: var(--gradient-primary);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-gradient::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: rotate(-15deg);
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid #f1f5f9;
             transition: all 0.3s ease;
         }
 
-        .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
         }
 
-        .status-badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
+        .icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .icon-circle.blue {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #2563eb;
+        }
+
+        .icon-circle.green {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #059669;
+        }
+
+        .icon-circle.purple {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            color: #7c3aed;
+        }
+
+        .icon-circle.orange {
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            color: #ea580c;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .section-description {
+            color: #64748b;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-top: 0.5rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chart-card h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-card h4 i {
             font-size: 0.75rem;
-            font-weight: 500;
+            opacity: 0.7;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #e2e8f0 20%, #e2e8f0 80%, transparent 100%);
+            margin: 2.5rem 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
         }
     </style>
 </head>
 
-<body class="bg-gray-50">
-
-    <div id="headerRender">
-    </div>
+<body>
+    <div id="headerRender"></div>
 
     <div class="flex">
-        <div id="asideRender">
-
-        </div>
+        <div id="asideRender"></div>
 
         <main class="flex-1 p-6">
-
-            <div id="dashboardView" class="view-content">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Dashboard Principal</h2>
-                    <p class="text-gray-600">Resumen ejecutivo de la gestión municipal</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-blue-100">Proyectos Activos</p>
-                                <p class="text-3xl font-bold" id="activeProjectsCount">0</p>
-                                <p class="text-sm text-blue-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i><span id="projectsChange">0%</span> vs mes
-                                    anterior
-                                </p>
-                            </div>
-                            <i class="fas fa-chart-pie text-4xl text-blue-200"></i>
+            <!-- Header -->
+            <div class="header-gradient mb-8 animate-fade-in">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur">
+                            <i class="fas fa-chart-line text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold">Dashboard de Proyectos</h1>
+                            <p class="text-white/80">Panel analítico integral de gestión municipal</p>
                         </div>
                     </div>
-                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-green-100">Inversión Total</p>
-                                <p class="text-3xl font-bold" id="totalInvestment">$0</p>
-                                <p class="text-sm text-green-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i><span id="investmentChange">0%</span> vs año
-                                    anterior
-                                </p>
-                            </div>
-                            <i class="fas fa-dollar-sign text-4xl text-green-200"></i>
+                    <div class="flex flex-wrap gap-4 mt-6">
+                        <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-2 flex items-center gap-2">
+                            <i class="fas fa-database"></i>
+                            <span id="totalProjects">0</span> proyectos
                         </div>
-                    </div>
-                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100">Tasa de Avance</p>
-                                <p class="text-3xl font-bold" id="progressRate">0%</p>
-                                <p class="text-sm text-purple-100 mt-2">
-                                    <i class="fas fa-arrow-up mr-1"></i><span id="progressChange">0%</span> vs mes
-                                    anterior
-                                </p>
-                            </div>
-                            <i class="fas fa-tasks text-4xl text-purple-200"></i>
+                        <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-2 flex items-center gap-2">
+                            <i class="fas fa-coins"></i>
+                            Inversión: <span id="totalInversion">$0</span>
                         </div>
-                    </div>
-                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-orange-100">Beneficiarios</p>
-                                <p class="text-3xl font-bold" id="beneficiaries">0</p>
-                                <p class="text-sm text-orange-100 mt-2">
-                                    <i class="fas fa-users mr-1"></i>Estimado
-                                </p>
-                            </div>
-                            <i class="fas fa-user-friends text-4xl text-orange-200"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Proyectos por Área</h3>
-                        <canvas id="areaChart"></canvas>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold mb-4">Estado de Proyectos</h3>
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="mt-6 bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-4">Proyectos Recientes</h3>
-                    <div id="recentProjects" class="space-y-4">
-
-                        <div class="text-center py-4">
-                            <i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i>
-                            <p class="text-gray-500 mt-2">Cargando proyectos...</p>
+                        <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-2 flex items-center gap-2">
+                            <i class="fas fa-clock"></i>
+                            Actualizado: <span id="lastUpdate">-</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in"
+                style="animation-delay: 0.1s;">
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Proyectos Activos</p>
+                            <p class="text-2xl font-bold text-gray-800" id="activeProjects">0</p>
+                            <p class="text-xs text-green-500 mt-1"><i class="fas fa-arrow-up"></i> En ejecución</p>
+                        </div>
+                        <div class="icon-circle blue"><i class="fas fa-briefcase"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Inversión Total</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statInversion">$0</p>
+                            <p class="text-xs text-blue-500 mt-1"><i class="fas fa-chart-line"></i> Acumulado</p>
+                        </div>
+                        <div class="icon-circle green"><i class="fas fa-dollar-sign"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Avance Promedio</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statAvance">0%</p>
+                            <p class="text-xs text-purple-500 mt-1"><i class="fas fa-tasks"></i> Global</p>
+                        </div>
+                        <div class="icon-circle purple"><i class="fas fa-chart-pie"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Áreas Activas</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statAreas">0</p>
+                            <p class="text-xs text-orange-500 mt-1"><i class="fas fa-layer-group"></i> Sectores</p>
+                        </div>
+                        <div class="icon-circle orange"><i class="fas fa-map-marker-alt"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 1: Cartera de Proyectos -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><i
+                            class="fas fa-briefcase"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Cartera de Proyectos</h3>
+                        <p class="section-description">Resumen ejecutivo del portafolio completo de proyectos
+                            municipales. Visualiza la distribución general según su estado actual y la evolución
+                            histórica de elaboración de proyectos a lo largo del tiempo, permitiendo identificar
+                            tendencias y patrones de gestión.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-circle"></i> Distribución por Estado</h4>
+                        <div class="chart-container"><canvas id="chart1_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-calendar-alt"></i> Evolución Temporal</h4>
+                        <div class="chart-container"><canvas id="chart1_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 2: Por Estado -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.25s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i
+                            class="fas fa-tasks"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Análisis por Estado</h3>
+                        <p class="section-description">Clasificación detallada de proyectos según su estado de avance y
+                            etapa de desarrollo. Este análisis permite monitorear el ciclo de vida completo de cada
+                            iniciativa, desde su diseño inicial hasta su ejecución y cierre, identificando cuellos de
+                            botella y oportunidades de mejora.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-flag"></i> Estados del Proyecto</h4>
+                        <div class="chart-container"><canvas id="chart2_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-layer-group"></i> Etapas de Desarrollo</h4>
+                        <div class="chart-container"><canvas id="chart2_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 3: Por Área -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.3s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);"><i
+                            class="fas fa-layer-group"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Distribución por Área</h3>
+                        <p class="section-description">Desglose de proyectos según las áreas de intervención municipal:
+                            vialidad, saneamiento, espacios públicos, educación, salud y otras. Permite evaluar la
+                            asignación de recursos y el enfoque estratégico de la gestión municipal en cada sector de
+                            desarrollo.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-th-large"></i> Proyectos por Área</h4>
+                        <div class="chart-container"><canvas id="chart3_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-coins"></i> Inversión por Área</h4>
+                        <div class="chart-container"><canvas id="chart3_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 4: Financiero -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.35s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i
+                            class="fas fa-coins"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Análisis Financiero</h3>
+                        <p class="section-description">Panorama completo de las fuentes de financiamiento y la
+                            distribución presupuestaria de los proyectos. Identifica los principales canales de
+                            inversión, los proyectos con mayor asignación de recursos y las tendencias de inversión
+                            anual para optimizar la planificación financiera.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-university"></i> Fuentes de Financiamiento</h4>
+                        <div class="chart-container"><canvas id="chart4_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-chart-bar"></i> Top Proyectos por Monto</h4>
+                        <div class="chart-container"><canvas id="chart4_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 5: Avance de Proyectos -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.4s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);"><i
+                            class="fas fa-chart-line"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Progreso y Avance</h3>
+                        <p class="section-description">Monitoreo del porcentaje de avance de cada proyecto en ejecución.
+                            Este dashboard permite identificar proyectos con alto rendimiento, detectar aquellos que
+                            requieren atención especial y evaluar el cumplimiento de metas establecidas en la
+                            planificación original.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-tachometer-alt"></i> Distribución de Avance</h4>
+                        <div class="chart-container"><canvas id="chart5_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-trophy"></i> Top Proyectos por Avance</h4>
+                        <div class="chart-container"><canvas id="chart5_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 6: Carga por Profesional -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.45s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);"><i
+                            class="fas fa-users"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Carga por Profesional</h3>
+                        <p class="section-description">Análisis de la distribución de trabajo entre los profesionales
+                            del equipo municipal. Visualiza la cantidad de proyectos asignados a cada profesional, las
+                            duplas de trabajo más activas y permite equilibrar la carga laboral para optimizar la
+                            productividad del equipo.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-user-tie"></i> Proyectos por Profesional</h4>
+                        <div class="chart-container"><canvas id="chart6_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-user-friends"></i> Duplas de Trabajo</h4>
+                        <div class="chart-container"><canvas id="chart6_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 7: Por Sector/Territorio -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.5s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488);"><i
+                            class="fas fa-map-marker-alt"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Distribución Territorial</h3>
+                        <p class="section-description">Mapeo de proyectos según su ubicación geográfica dentro de la
+                            comuna. Permite visualizar la cobertura territorial de las inversiones, identificar sectores
+                            con mayor concentración de proyectos y garantizar una distribución equitativa de recursos en
+                            todas las unidades vecinales.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-map"></i> Proyectos por Sector</h4>
+                        <div class="chart-container"><canvas id="chart7_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-home"></i> Unidades Vecinales</h4>
+                        <div class="chart-container"><canvas id="chart7_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 8: Cronograma/Timeline -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.55s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5);"><i
+                            class="fas fa-calendar-alt"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Cronograma y Timeline</h3>
+                        <p class="section-description">Línea temporal de proyectos que muestra la distribución de
+                            elaboración y ejecución a lo largo de los años. Facilita la planificación estratégica, la
+                            identificación de períodos de alta actividad y el seguimiento histórico de la gestión de
+                            proyectos municipales.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-pencil-ruler"></i> Por Año de Elaboración</h4>
+                        <div class="chart-container"><canvas id="chart8_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-hard-hat"></i> Por Año de Ejecución</h4>
+                        <div class="chart-container"><canvas id="chart8_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 9: Comparativo Anual -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.6s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #f97316, #ea580c);"><i
+                            class="fas fa-balance-scale"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Comparativo Anual</h3>
+                        <p class="section-description">Análisis histórico que compara métricas clave entre diferentes
+                            períodos. Evalúa la evolución de la cantidad de proyectos y los montos de inversión año tras
+                            año, permitiendo identificar tendencias de crecimiento, estabilidad o áreas que requieren
+                            mayor atención estratégica.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-chart-area"></i> Evolución de Proyectos</h4>
+                        <div class="chart-container"><canvas id="chart9_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-money-bill-trend-up"></i> Inversión Histórica</h4>
+                        <div class="chart-container"><canvas id="chart9_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Section 10: Lineamientos Estratégicos -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.65s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><i
+                            class="fas fa-star"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Lineamientos Estratégicos</h3>
+                        <p class="section-description">Alineación de proyectos con los objetivos estratégicos del plan
+                            de desarrollo municipal. Permite verificar que las inversiones y esfuerzos estén
+                            direccionados hacia las prioridades definidas, garantizando coherencia entre la
+                            planificación estratégica y la ejecución de proyectos.</p>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4><i class="fas fa-bullseye"></i> Por Lineamiento</h4>
+                        <div class="chart-container"><canvas id="chart10_1"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4><i class="fas fa-donate"></i> Inversión por Lineamiento</h4>
+                        <div class="chart-container"><canvas id="chart10_2"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <script src="../../../script/layout.js"></script>
-
     <script>
+        const charts = {};
+        const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'];
+        const gradientColors = [
+            'rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)',
+            'rgba(139, 92, 246, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(236, 72, 153, 0.8)',
+            'rgba(20, 184, 166, 0.8)', 'rgba(249, 115, 22, 0.8)', 'rgba(99, 102, 241, 0.8)', 'rgba(132, 204, 22, 0.8)'
+        ];
 
-        let areaChart = null;
-        let statusChart = null;
-
-        document.addEventListener('DOMContentLoaded', function () {
-
-            loadDashboardData();
-        });
+        document.addEventListener('DOMContentLoaded', () => loadDashboardData());
 
         async function loadDashboardData() {
             try {
                 const projects = await api.get('/proyectos');
-                updateDashboardWithRealData(projects);
+                updateDashboard(projects);
             } catch (error) {
                 console.error('Error cargando dashboard:', error);
-                showToast('Error al cargar datos del panel', 'error');
-                document.getElementById('recentProjects').innerHTML = `<p class="text-center text-red-500 p-4">Error de conexión</p>`;
             }
         }
 
-        function updateDashboardWithRealData(projects) {
+        function updateDashboard(projects) {
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('activeProjects').textContent = projects.length;
 
-            document.getElementById('activeProjectsCount').textContent = projects.length;
-            document.getElementById('projectsChange').textContent = '+5%';
+            const totalInversion = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            document.getElementById('totalInversion').textContent = utils.formatCompactNumber(totalInversion);
+            document.getElementById('statInversion').textContent = utils.formatCompactNumber(totalInversion);
 
-            const totalInvestment = projects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
-            document.getElementById('totalInvestment').textContent = utils.formatCompactNumber(totalInvestment);
-            document.getElementById('investmentChange').textContent = '+12%';
+            const avgAvance = projects.length > 0
+                ? (projects.reduce((sum, p) => sum + ((parseFloat(p.avance_total_porcentaje) || 0) * 100), 0) / projects.length)
+                : 0;
+            document.getElementById('statAvance').textContent = avgAvance.toFixed(1) + '%';
 
-            const totalProgress = projects.reduce((sum, p) => sum + (parseFloat(p.avance_total_decimal) || 0), 0);
-            const averageProgress = projects.length > 0 ? (totalProgress / projects.length) * 100 : 0;
-            document.getElementById('progressRate').textContent = averageProgress.toFixed(0) + '%';
+            const areas = [...new Set(projects.map(p => p.area_nombre).filter(Boolean))];
+            document.getElementById('statAreas').textContent = areas.length;
 
-            const beneficiaries = Math.floor(totalInvestment / 1000000) * 50;
-            document.getElementById('beneficiaries').textContent = beneficiaries.toLocaleString('es-CL');
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('es-CL');
 
-            updateCharts(projects);
-            updateRecentProjects(projects);
+            createAllCharts(projects);
         }
 
-        function updateCharts(projects) {
+        function createAllCharts(projects) {
+            // Section 1: Cartera
+            createDoughnutChart('chart1_1', groupBy(projects, 'estado_nombre'), 'Estado');
+            createLineChart('chart1_2', groupByYear(projects, 'anno_elaboracion'), 'Proyectos');
 
-            const projectsByArea = {};
-            projects.forEach(project => {
-                const area = project.area_nombre || project.area || 'Sin clasificar';
-                projectsByArea[area] = (projectsByArea[area] || 0) + 1;
+            // Section 2: Estados
+            createDoughnutChart('chart2_1', groupBy(projects, 'estado_nombre'), 'Estado');
+            createHorizontalBarChart('chart2_2', groupBy(projects, 'etapa_nombre'), 'Proyectos');
+
+            // Section 3: Áreas
+            createDoughnutChart('chart3_1', groupBy(projects, 'area_nombre'), 'Área');
+            createBarChart('chart3_2', sumByGroup(projects, 'area_nombre', 'monto'), 'Inversión ($)');
+
+            // Section 4: Financiero
+            createDoughnutChart('chart4_1', groupBy(projects, 'financiamiento_nombre'), 'Financiamiento');
+            createHorizontalBarChart('chart4_2', topByMonto(projects, 8), 'Monto ($)');
+
+            // Section 5: Avance
+            createDoughnutChart('chart5_1', avanceRanges(projects), 'Rango');
+            createHorizontalBarChart('chart5_2', topByAvance(projects, 8), 'Avance %');
+
+            // Section 6: Profesionales
+            createHorizontalBarChart('chart6_1', groupByProfessional(projects), 'Proyectos');
+            createBarChart('chart6_2', groupByDupla(projects), 'Proyectos');
+
+            // Section 7: Sectores
+            createDoughnutChart('chart7_1', groupBy(projects, 'sector_nombre'), 'Sector');
+            createHorizontalBarChart('chart7_2', groupBy(projects, 'unidad_vecinal'), 'Proyectos');
+
+            // Section 8: Timeline
+            createBarChart('chart8_1', groupByYear(projects, 'anno_elaboracion'), 'Elaborados');
+            createBarChart('chart8_2', groupByYear(projects, 'anno_ejecucion'), 'Ejecutados');
+
+            // Section 9: Comparativo
+            createLineChart('chart9_1', groupByYear(projects, 'anno_ejecucion'), 'Proyectos');
+            createBarChart('chart9_2', sumByYear(projects, 'anno_ejecucion', 'monto'), 'Inversión ($)');
+
+            // Section 10: Lineamientos
+            createDoughnutChart('chart10_1', groupBy(projects, 'lineamiento_nombre'), 'Lineamiento');
+            createHorizontalBarChart('chart10_2', sumByGroup(projects, 'lineamiento_nombre', 'monto'), 'Inversión ($)');
+        }
+
+        // Helper functions
+        function groupBy(data, key) {
+            const result = {};
+            data.forEach(item => {
+                const k = item[key] || 'Sin clasificar';
+                result[k] = (result[k] || 0) + 1;
             });
+            return result;
+        }
 
-            const areaKeys = Object.keys(projectsByArea).sort();
-            const areaValues = areaKeys.map(key => projectsByArea[key]);
-
-            const projectsByStatus = {};
-            projects.forEach(project => {
-                const status = project.estado_nombre || project.estado_proyecto || 'Sin estado';
-                projectsByStatus[status] = (projectsByStatus[status] || 0) + 1;
+        function sumByGroup(data, groupKey, sumKey) {
+            const result = {};
+            data.forEach(item => {
+                const k = item[groupKey] || 'Sin clasificar';
+                result[k] = (result[k] || 0) + (parseFloat(item[sumKey]) || 0);
             });
+            return result;
+        }
 
-            const statusKeys = Object.keys(projectsByStatus).sort();
-            const statusValues = statusKeys.map(key => projectsByStatus[key]);
+        function groupByYear(data, key) {
+            const result = {};
+            data.forEach(item => {
+                const year = item[key] || 'S/A';
+                result[year] = (result[year] || 0) + 1;
+            });
+            return sortObjectByKey(result);
+        }
 
-            const areaCtx = document.getElementById('areaChart');
-            if (areaCtx) {
-                if (areaChart) areaChart.destroy();
+        function sumByYear(data, yearKey, sumKey) {
+            const result = {};
+            data.forEach(item => {
+                const year = item[yearKey] || 'S/A';
+                result[year] = (result[year] || 0) + (parseFloat(item[sumKey]) || 0);
+            });
+            return sortObjectByKey(result);
+        }
 
-                areaChart = new Chart(areaCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: areaKeys,
-                        datasets: [{
-                            data: areaValues,
-                            backgroundColor: [
-                                '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6',
-                                '#EF4444', '#EC4899', '#14B8A6', '#F97316'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { position: 'bottom' } }
+        function sortObjectByKey(obj) {
+            const sorted = {};
+            Object.keys(obj).sort().forEach(k => sorted[k] = obj[k]);
+            return sorted;
+        }
+
+        function topByMonto(data, limit) {
+            const sorted = [...data].sort((a, b) => (parseFloat(b.monto) || 0) - (parseFloat(a.monto) || 0));
+            const result = {};
+            sorted.slice(0, limit).forEach(p => {
+                const name = (p.nombre || 'S/N').substring(0, 30);
+                result[name] = parseFloat(p.monto) || 0;
+            });
+            return result;
+        }
+
+        function topByAvance(data, limit) {
+            const sorted = [...data].sort((a, b) => (parseFloat(b.avance_total_porcentaje) || 0) - (parseFloat(a.avance_total_porcentaje) || 0));
+            const result = {};
+            sorted.slice(0, limit).forEach(p => {
+                const name = (p.nombre || 'S/N').substring(0, 30);
+                result[name] = (parseFloat(p.avance_total_porcentaje) || 0) * 100;
+            });
+            return result;
+        }
+
+        function avanceRanges(data) {
+            const ranges = { '0-25%': 0, '26-50%': 0, '51-75%': 0, '76-100%': 0 };
+            data.forEach(p => {
+                const avance = (parseFloat(p.avance_total_porcentaje) || 0) * 100;
+                if (avance <= 25) ranges['0-25%']++;
+                else if (avance <= 50) ranges['26-50%']++;
+                else if (avance <= 75) ranges['51-75%']++;
+                else ranges['76-100%']++;
+            });
+            return ranges;
+        }
+
+        function groupByProfessional(data) {
+            const result = {};
+            data.forEach(p => {
+                [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5].forEach(prof => {
+                    if (prof && prof.trim()) {
+                        const name = prof.trim().substring(0, 25);
+                        result[name] = (result[name] || 0) + 1;
                     }
                 });
-            }
-
-            const statusCtx = document.getElementById('statusChart');
-            if (statusCtx) {
-                if (statusChart) statusChart.destroy();
-
-                statusChart = new Chart(statusCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: statusKeys,
-                        datasets: [{
-                            label: 'Proyectos',
-                            data: statusValues,
-                            backgroundColor: '#3B82F6'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
-            }
-        }
-
-        function updateRecentProjects(projects) {
-            const sortedProjects = [...projects].sort((a, b) => {
-                const dateA = new Date(a.fecha_actualizacion || 0);
-                const dateB = new Date(b.fecha_actualizacion || 0);
-                return dateB - dateA;
             });
-
-            const recentProjects = sortedProjects.slice(0, 5);
-            const projectsHtml = recentProjects.map(project => {
-                const status = project.estado_nombre || project.estado_proyecto || 'S/E';
-                const area = project.area_nombre || project.area || 'General';
-                const statusClass = utils.getStatusClass(status);
-                return `
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg card-hover">
-                        <div class="flex items-center space-x-4">
-                            <div class="bg-indigo-100 p-3 rounded-full">
-                                <i class="fas fa-folder text-indigo-600"></i>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-800">${project.nombre}</p>
-                                <p class="text-sm text-gray-500">${area} • ${utils.formatCurrency(project.monto)}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="status-badge ${statusClass}">${status}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('recentProjects').innerHTML = projectsHtml;
+            const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const top = {};
+            sorted.forEach(([k, v]) => top[k] = v);
+            return top;
         }
 
-        function changeRole(role) {
-            localStorage.setItem('userRole', role);
-            showToast(`Rol cambiado a ${role}`, 'info');
-            loadDashboardData();
+        function groupByDupla(data) {
+            const result = {};
+            data.forEach(p => {
+                if (p.dupla_profesionales && p.dupla_profesionales.trim()) {
+                    const dupla = p.dupla_profesionales.trim().substring(0, 35);
+                    result[dupla] = (result[dupla] || 0) + 1;
+                }
+            });
+            const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const top = {};
+            sorted.forEach(([k, v]) => top[k] = v);
+            return top;
+        }
+
+        // Chart creation functions
+        function createDoughnutChart(id, data, label) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            if (charts[id]) charts[id].destroy();
+
+            charts[id] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{ data: Object.values(data), backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } }
+                }
+            });
+        }
+
+        function createBarChart(id, data, label) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            if (charts[id]) charts[id].destroy();
+
+            charts[id] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{ label, data: Object.values(data), backgroundColor: gradientColors, borderRadius: 6 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true }, x: { ticks: { maxRotation: 45, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function createHorizontalBarChart(id, data, label) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            if (charts[id]) charts[id].destroy();
+
+            charts[id] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{ label, data: Object.values(data), backgroundColor: gradientColors, borderRadius: 6 }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true }, y: { ticks: { font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function createLineChart(id, data, label) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            if (charts[id]) charts[id].destroy();
+
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label, data: Object.values(data),
+                        borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true }, x: { ticks: { font: { size: 10 } } } }
+                }
+            });
         }
     </script>
 </body>
