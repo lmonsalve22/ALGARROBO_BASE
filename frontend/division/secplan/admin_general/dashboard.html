@@ -251,15 +251,16 @@
                 </div>
             </div>
 
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in"
+            <!-- KPI Cards - Row 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-fade-in"
                 style="animation-delay: 0.1s;">
                 <div class="metric-card">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Proyectos Activos</p>
                             <p class="text-2xl font-bold text-gray-800" id="activeProjects">0</p>
-                            <p class="text-xs text-green-500 mt-1"><i class="fas fa-arrow-up"></i> En ejecución</p>
+                            <p class="text-xs text-green-500 mt-1"><i class="fas fa-folder-open"></i> Total registrados
+                            </p>
                         </div>
                         <div class="icon-circle blue"><i class="fas fa-briefcase"></i></div>
                     </div>
@@ -289,9 +290,118 @@
                         <div>
                             <p class="text-gray-500 text-sm font-medium">Áreas Activas</p>
                             <p class="text-2xl font-bold text-gray-800" id="statAreas">0</p>
-                            <p class="text-xs text-orange-500 mt-1"><i class="fas fa-layer-group"></i> Sectores</p>
+                            <p class="text-xs text-orange-500 mt-1"><i class="fas fa-layer-group"></i> En operación</p>
                         </div>
-                        <div class="icon-circle orange"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="icon-circle orange"><i class="fas fa-th-large"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Cards - Row 2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 animate-fade-in"
+                style="animation-delay: 0.15s;">
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Proyectos Prioritarios</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statPrioritarios">0</p>
+                            <p class="text-xs text-red-500 mt-1"><i class="fas fa-exclamation-circle"></i> Alta
+                                prioridad</p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;"><i
+                                class="fas fa-star"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Profesionales</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statProfesionales">0</p>
+                            <p class="text-xs text-pink-500 mt-1"><i class="fas fa-user-tie"></i> Asignados</p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); color: #db2777;"><i
+                                class="fas fa-users"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Sectores</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statSectores">0</p>
+                            <p class="text-xs text-teal-500 mt-1"><i class="fas fa-map-marker-alt"></i> Territorios</p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%); color: #0d9488;"><i
+                                class="fas fa-map"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Monto Promedio</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statMontoPromedio">$0</p>
+                            <p class="text-xs text-amber-500 mt-1"><i class="fas fa-calculator"></i> Por proyecto</p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #d97706;"><i
+                                class="fas fa-coins"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Cards - Row 3 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in"
+                style="animation-delay: 0.18s;">
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Financiamientos</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statFinanciamientos">0</p>
+                            <p class="text-xs text-indigo-500 mt-1"><i class="fas fa-university"></i> Fuentes activas
+                            </p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4f46e5;"><i
+                                class="fas fa-hand-holding-usd"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Año Más Activo</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statAnnoActivo">-</p>
+                            <p class="text-xs text-cyan-500 mt-1"><i class="fas fa-calendar-check"></i> Mayor ejecución
+                            </p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%); color: #0891b2;"><i
+                                class="fas fa-calendar-alt"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Mayor Inversión</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statMayorInversion">$0</p>
+                            <p class="text-xs text-rose-500 mt-1"><i class="fas fa-trophy"></i> Proyecto top</p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%); color: #e11d48;"><i
+                                class="fas fa-crown"></i></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium">Proyectos Este Año</p>
+                            <p class="text-2xl font-bold text-gray-800" id="statEsteAnno">0</p>
+                            <p class="text-xs text-lime-600 mt-1"><i class="fas fa-rocket"></i> En ejecución 2026</p>
+                        </div>
+                        <div class="icon-circle"
+                            style="background: linear-gradient(135deg, #ecfccb 0%, #d9f99d 100%); color: #65a30d;"><i
+                                class="fas fa-calendar-day"></i></div>
                     </div>
                 </div>
             </div>
@@ -564,6 +674,29 @@
                 </div>
             </div>
 
+            <div class="section-divider"></div>
+
+            <!-- Section 11: Últimos Proyectos Modificados -->
+            <div class="section-card animate-fade-in" style="animation-delay: 0.7s;">
+                <div class="section-header">
+                    <div class="section-icon" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);"><i
+                            class="fas fa-history"></i></div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Últimos Proyectos Modificados</h3>
+                        <p class="section-description">Registro de los 10 proyectos con actividad más reciente en el
+                            sistema. Esta sección permite dar seguimiento a las actualizaciones realizadas, identificar
+                            proyectos con gestión activa y mantener un control sobre los cambios efectuados en la
+                            cartera de proyectos municipales.</p>
+                    </div>
+                </div>
+                <div id="recentProjectsContainer" class="space-y-3">
+                    <div class="flex items-center justify-center py-8 text-gray-400">
+                        <i class="fas fa-spinner fa-spin text-2xl mr-3"></i>
+                        <span>Cargando proyectos recientes...</span>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -589,6 +722,7 @@
         }
 
         function updateDashboard(projects) {
+            // Row 1: KPIs básicos
             document.getElementById('totalProjects').textContent = projects.length;
             document.getElementById('activeProjects').textContent = projects.length;
 
@@ -599,14 +733,67 @@
             const avgAvance = projects.length > 0
                 ? (projects.reduce((sum, p) => sum + ((parseFloat(p.avance_total_porcentaje) || 0) * 100), 0) / projects.length)
                 : 0;
-            document.getElementById('statAvance').textContent = avgAvance.toFixed(1) + '%';
+            document.getElementById('statAvance').textContent = avgAvance.toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
 
             const areas = [...new Set(projects.map(p => p.area_nombre).filter(Boolean))];
             document.getElementById('statAreas').textContent = areas.length;
 
+            // Row 2: KPIs adicionales
+            // Proyectos prioritarios (buscar por estado_nombre o nombre que contenga "priorit" o "urgent")
+            const prioritarios = projects.filter(p => {
+                const estado = (p.estado_nombre || '').toLowerCase();
+                const nombre = (p.nombre || '').toLowerCase();
+                return estado.includes('priorit') || estado.includes('urgent') ||
+                    nombre.includes('priorit') || nombre.includes('urgent');
+            }).length;
+            document.getElementById('statPrioritarios').textContent = prioritarios;
+
+            // Profesionales únicos
+            const profesionales = new Set();
+            projects.forEach(p => {
+                [p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5].forEach(prof => {
+                    if (prof && prof.trim()) profesionales.add(prof.trim());
+                });
+            });
+            document.getElementById('statProfesionales').textContent = profesionales.size;
+
+            // Sectores únicos
+            const sectores = [...new Set(projects.map(p => p.sector_nombre).filter(Boolean))];
+            document.getElementById('statSectores').textContent = sectores.length;
+
+            // Monto promedio por proyecto
+            const montoPromedio = projects.length > 0 ? totalInversion / projects.length : 0;
+            document.getElementById('statMontoPromedio').textContent = utils.formatCompactNumber(montoPromedio);
+
+            // Row 3: KPIs avanzados
+            // Financiamientos únicos
+            const financiamientos = [...new Set(projects.map(p => p.financiamiento_nombre).filter(Boolean))];
+            document.getElementById('statFinanciamientos').textContent = financiamientos.length;
+
+            // Año más activo (con más proyectos en ejecución)
+            const annoCount = {};
+            projects.forEach(p => {
+                const anno = p.anno_ejecucion;
+                if (anno) annoCount[anno] = (annoCount[anno] || 0) + 1;
+            });
+            const annoMasActivo = Object.entries(annoCount).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('statAnnoActivo').textContent = annoMasActivo ? annoMasActivo[0] : '-';
+
+            // Mayor inversión (proyecto con monto más alto)
+            const proyectoMayorInversion = [...projects].sort((a, b) => (parseFloat(b.monto) || 0) - (parseFloat(a.monto) || 0))[0];
+            document.getElementById('statMayorInversion').textContent = proyectoMayorInversion
+                ? utils.formatCompactNumber(parseFloat(proyectoMayorInversion.monto) || 0)
+                : '$0';
+
+            // Proyectos este año (2026)
+            const currentYear = new Date().getFullYear();
+            const proyectosEsteAnno = projects.filter(p => p.anno_ejecucion === currentYear).length;
+            document.getElementById('statEsteAnno').textContent = proyectosEsteAnno;
+
             document.getElementById('lastUpdate').textContent = new Date().toLocaleString('es-CL');
 
             createAllCharts(projects);
+            renderRecentProjects(projects);
         }
 
         function createAllCharts(projects) {
@@ -835,6 +1022,69 @@
                     scales: { y: { beginAtZero: true }, x: { ticks: { font: { size: 10 } } } }
                 }
             });
+        }
+
+        function renderRecentProjects(projects) {
+            const container = document.getElementById('recentProjectsContainer');
+            if (!container) return;
+
+            // Ordenar por fecha de actualización (más reciente primero)
+            const sorted = [...projects].sort((a, b) => {
+                const dateA = new Date(a.fecha_actualizacion || 0);
+                const dateB = new Date(b.fecha_actualizacion || 0);
+                return dateB - dateA;
+            });
+
+            const recent = sorted.slice(0, 10);
+
+            if (recent.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center py-8 text-gray-400">
+                        <i class="fas fa-inbox text-3xl mr-3"></i>
+                        <span>No hay proyectos registrados</span>
+                    </div>`;
+                return;
+            }
+
+            const statusColors = {
+                'En Ejecución': 'bg-blue-100 text-blue-700',
+                'Completado': 'bg-green-100 text-green-700',
+                'En Diseño': 'bg-yellow-100 text-yellow-700',
+                'Pausado': 'bg-orange-100 text-orange-700',
+                'Cancelado': 'bg-red-100 text-red-700',
+                'default': 'bg-gray-100 text-gray-700'
+            };
+
+            container.innerHTML = recent.map((p, idx) => {
+                const estado = p.estado_nombre || 'Sin estado';
+                const area = p.area_nombre || 'Sin área';
+                const monto = p.monto ? utils.formatCompactNumber(parseFloat(p.monto)) : '$0';
+                const avance = ((parseFloat(p.avance_total_porcentaje) || 0) * 100).toFixed(0);
+                const fecha = p.fecha_actualizacion
+                    ? new Date(p.fecha_actualizacion).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : 'Sin fecha';
+                const statusClass = statusColors[estado] || statusColors['default'];
+
+                return `
+                    <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer group">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                            ${idx + 1}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">${p.nombre || 'Sin nombre'}</h4>
+                            <div class="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                                <span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i> ${area}</span>
+                                <span class="flex items-center gap-1"><i class="fas fa-coins text-xs"></i> ${monto}</span>
+                                <span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i> ${avance}%</span>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-medium ${statusClass}">${estado}</span>
+                            <p class="text-xs text-gray-400 mt-1"><i class="fas fa-clock mr-1"></i>${fecha}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
     </script>
 </body>
