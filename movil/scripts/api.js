@@ -249,11 +249,35 @@ const ui = {
     },
 
     formatDate(dateString) {
-        const date = new Date(dateString);
+        if (!dateString) return '';
+
+        // Intentar corregir formato SQL simple (YYYY-MM-DD HH:MM:SS)
+        // Algunos navegadores requieren 'T'
+        let cleanDate = dateString;
+        if (typeof dateString === 'string' && dateString.indexOf('T') === -1 && dateString.indexOf('-') > 0) {
+            cleanDate = dateString.replace(' ', 'T');
+        }
+
+        const date = new Date(cleanDate);
+
+        // Si es inválida
+        if (isNaN(date.getTime())) {
+            // Intento secundario: quizás es formato HTTPGMT
+            const date2 = new Date(dateString);
+            if (!isNaN(date2.getTime())) return this.formatDateRelative(date2);
+
+            return String(dateString).substring(0, 16); // Fallback: mostrar primeros caracteres
+        }
+
+        return this.formatDateRelative(date);
+    },
+
+    formatDateRelative(date) {
         const now = new Date();
         const diffMs = now - date;
         const diffMins = Math.floor(diffMs / 60000);
 
+        if (diffMins < 1) return 'Hace un momento';
         if (diffMins < 60) {
             return `Hace ${diffMins} min`;
         } else if (diffMins < 1440) {
@@ -262,7 +286,9 @@ const ui = {
             return date.toLocaleDateString('es-CL', {
                 day: '2-digit',
                 month: 'short',
-                year: 'numeric'
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
         }
     }

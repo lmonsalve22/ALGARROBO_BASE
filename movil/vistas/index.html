@@ -4,256 +4,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Reportes Ciudadanos</title>
-
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- FontAwesome -->
+    <title>Acceso - Reportes Ciudadanos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="../estilos/styles.css">
 </head>
 
 <body>
-    <div id="app-frame">
+    <div id="login-app" class="welcome-container"
+        style="padding:20px; max-width:400px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; justify-content:center;">
 
-        <!-- Header -->
-        <div class="app-header" id="main-header">
-            <button class="back-btn" id="btn-back" onclick="app.goBack()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <h1 id="header-title">Reportes Ciudadanos</h1>
-            <button class="logout-btn" id="btn-logout" onclick="app.logout()">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
+        <!-- Vista Bienvenida -->
+        <div id="view-welcome" style="text-align:center;">
+            <div class="logo-container" style="margin-bottom:20px;">
+                <i class="fas fa-city" style="font-size:3rem; color:var(--primary);"></i>
+            </div>
+            <h1>Reportes Ciudadanos</h1>
+            <p class="subtitle" style="margin-bottom:30px;">Mejoremos nuestra ciudad juntos</p>
+
+            <button class="btn-primary" onclick="showView('login')">Iniciar Sesión</button>
+            <button class="btn-secondary" onclick="showView('register')">Registrarse</button>
         </div>
 
-        <!-- Content Area -->
-        <div class="content-area">
-
-            <!-- VISTA: Bienvenida/Registro -->
-            <div id="view-welcome" class="view active">
-                <div class="welcome-container">
-                    <div class="logo-container">
-                        <i class="fas fa-city"></i>
-                    </div>
-                    <h1>Reportes Ciudadanos</h1>
-                    <p class="subtitle">Mejoremos nuestra ciudad juntos</p>
-
-                    <button class="btn-primary" onclick="app.showView('login')">
-                        Iniciar Sesión
-                    </button>
-                    <button class="btn-secondary" onclick="app.showView('register')">
-                        Registrarse
-                    </button>
+        <!-- Vista Login -->
+        <div id="view-login" style="display:none;">
+            <button onclick="showView('welcome')"
+                style="background:none;border:none;font-size:1.2rem;margin-bottom:10px;"><i
+                    class="fas fa-arrow-left"></i></button>
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" required class="form-control">
                 </div>
-            </div>
-
-            <!-- VISTA: Registro -->
-            <div id="view-register" class="view">
-                <div class="auth-container">
-                    <h2>Crear Cuenta</h2>
-                    <form id="register-form" onsubmit="auth.register(event)">
-                        <div class="form-group">
-                            <label>Nombre Completo</label>
-                            <input type="text" name="nombre" required placeholder="Juan Pérez">
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" name="email" required placeholder="juan@email.com">
-                        </div>
-                        <div class="form-group">
-                            <label>Contraseña</label>
-                            <input type="password" name="password" required minlength="6"
-                                placeholder="Mínimo 6 caracteres">
-                        </div>
-                        <button type="submit" class="btn-submit">Registrarse</button>
-                    </form>
-                    <p class="auth-footer">
-                        ¿Ya tienes cuenta? <a href="#" onclick="app.showView('login')">Inicia sesión</a>
-                    </p>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-password" required class="form-control">
                 </div>
-            </div>
-
-            <!-- VISTA: Login -->
-            <div id="view-login" class="view">
-                <div class="auth-container">
-                    <h2>Iniciar Sesión</h2>
-                    <form id="login-form" onsubmit="auth.login(event)">
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Contraseña</label>
-                            <input type="password" name="password" required>
-                        </div>
-                        <button type="submit" class="btn-submit">Entrar</button>
-                    </form>
-                    <p class="auth-footer">
-                        ¿No tienes cuenta? <a href="#" onclick="app.showView('register')">Regístrate</a>
-                    </p>
-                </div>
-            </div>
-
-            <!-- VISTA: Home -->
-            <div id="view-home" class="view">
-                <div class="home-header">
-                    <h2>Reportar Problema</h2>
-                    <p class="subtitle">Selecciona una categoría</p>
-                </div>
-
-                <div class="category-grid">
-                    <div class="category-card" onclick="reports.openForm(1)">
-                        <i class="fas fa-road"></i>
-                        <span>Bache</span>
-                    </div>
-                    <div class="category-card" onclick="reports.openForm(2)">
-                        <i class="fas fa-lightbulb"></i>
-                        <span>Luz</span>
-                    </div>
-                    <div class="category-card" onclick="reports.openForm(3)">
-                        <i class="fas fa-walking"></i>
-                        <span>Aceras</span>
-                    </div>
-                    <div class="category-card" onclick="reports.openForm(4)">
-                        <i class="fas fa-ellipsis-h"></i>
-                        <span>Otro</span>
-                    </div>
-                </div>
-
-                <div class="section-header">
-                    <h3>Mis Reportes</h3>
-                    <button class="btn-link" onclick="reports.loadMyReports()">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-                <div id="my-reports-list" class="reports-list"></div>
-            </div>
-
-            <!-- VISTA: Formulario de Reporte -->
-            <div id="view-report-form" class="view">
-                <form id="report-form" onsubmit="reports.submit(event)">
-                    <input type="hidden" id="report-category-id">
-
-                    <div class="form-group">
-                        <label>Ubicación en el Mapa</label>
-                        <div id="map-picker"></div>
-                        <button type="button" class="btn-gps" onclick="reports.useGPS()">
-                            <i class="fas fa-crosshairs"></i> Usar mi ubicación
-                        </button>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Dirección de Referencia</label>
-                        <input type="text" name="direccion_referencia" required
-                            placeholder="Ej: Av. Principal esquina 5ta">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Descripción del Problema</label>
-                        <textarea name="descripcion" rows="4"
-                            placeholder="Describe el problema con detalle..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Fotos (hasta 5)</label>
-                        <input type="file" id="photo-input" accept="image/*" multiple
-                            onchange="reports.previewPhotos(event)">
-                        <div id="photo-previews" class="photo-grid"></div>
-                    </div>
-
-                    <button type="submit" class="btn-submit">Enviar Reporte</button>
-                </form>
-            </div>
-
-            <!-- VISTA: Detalle de Reporte -->
-            <div id="view-report-detail" class="view">
-                <div id="report-detail-content"></div>
-            </div>
-
-            <!-- VISTA: Mapa -->
-            <div id="view-map" class="view">
-                <div id="full-map"></div>
-                <div class="map-legend">
-                    <div class="legend-item">
-                        <span class="legend-dot bache"></span> Bache
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot luz"></span> Luz
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot aceras"></span> Aceras
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot otro"></span> Otro
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA: Perfil -->
-            <div id="view-profile" class="view">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <h2 id="profile-name">Usuario</h2>
-                    <p id="profile-email">email@ejemplo.com</p>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="stat-total">0</div>
-                        <div class="stat-label">Total Reportes</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="stat-pending">0</div>
-                        <div class="stat-label">Pendientes</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="stat-resolved">0</div>
-                        <div class="stat-label">Resueltos</div>
-                    </div>
-                </div>
-
-                <div class="profile-actions">
-                    <button class="btn-secondary" onclick="app.logout()">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                    </button>
-                </div>
-            </div>
-
+                <button type="submit" class="btn-submit">Entrar</button>
+            </form>
+            <div id="login-error" style="color:red; margin-top:10px; text-align:center;"></div>
         </div>
 
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav" id="bottom-nav">
-            <div class="nav-item active" onclick="app.showView('home')">
-                <i class="fas fa-home"></i>
-                <span>Inicio</span>
-            </div>
-            <div class="nav-item" onclick="app.showView('map')">
-                <i class="fas fa-map-marked-alt"></i>
-                <span>Mapa</span>
-            </div>
-            <div class="nav-item" onclick="app.showView('profile')">
-                <i class="fas fa-user"></i>
-                <span>Perfil</span>
-            </div>
-        </nav>
-
-        <!-- Toast Notification -->
-        <div id="toast"></div>
-
-        <!-- Loading Spinner -->
-        <div id="loading-overlay">
-            <div class="spinner"></div>
+        <!-- Vista Registro -->
+        <div id="view-register" style="display:none;">
+            <button onclick="showView('welcome')"
+                style="background:none;border:none;font-size:1.2rem;margin-bottom:10px;"><i
+                    class="fas fa-arrow-left"></i></button>
+            <h2>Crear Cuenta</h2>
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="reg-nombre" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="reg-password" required minlength="6" class="form-control">
+                </div>
+                <button type="submit" class="btn-submit">Registrarse</button>
+            </form>
+            <div id="reg-error" style="color:red; margin-top:10px; text-align:center;"></div>
         </div>
+
     </div>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="../scripts/api.js"></script>
-    <script src="../scripts/app.js"></script>
+    <script src="../scripts/api.js?v=2"></script>
+    <script>
+        // Verificar sesión existente
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+
+        if (token && userStr) {
+            redirectUser(JSON.parse(userStr));
+        }
+
+        function showView(name) {
+            ['welcome', 'login', 'register'].forEach(v => {
+                document.getElementById('view-' + v).style.display = (v === name) ? 'block' : 'none';
+            });
+            // Limpiar errores
+            document.getElementById('login-error').textContent = '';
+            document.getElementById('reg-error').textContent = '';
+        }
+
+        function redirectUser(user) {
+            const nivel = parseInt(user.nivel_acceso || 0);
+            //console.log('Nivel de acceso:', nivel);
+            if (nivel > 0) {
+                window.location.href = 'funcionario.html';
+            } else {
+                window.location.href = 'vecino.html';
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pwd = document.getElementById('login-password').value;
+            const errDiv = document.getElementById('login-error');
+
+            try {
+                errDiv.textContent = 'Autenticando...';
+                const data = await api.login(email, pwd);
+
+                // Guardar sesión
+                api.setToken(data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                redirectUser(data.user);
+            } catch (error) {
+                errDiv.textContent = 'Credenciales inválidas';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('reg-nombre').value;
+            const email = document.getElementById('reg-email').value;
+            const pwd = document.getElementById('reg-password').value;
+            const errDiv = document.getElementById('reg-error');
+
+            try {
+                errDiv.textContent = 'Registrando...';
+                await api.register(nombre, email, pwd);
+                alert('Registro exitoso. Por favor inicia sesión.');
+                showView('login');
+            } catch (error) {
+                errDiv.textContent = error.message || 'Error en registro';
+            }
+        }
+    </script>
 </body>
 
 </html>

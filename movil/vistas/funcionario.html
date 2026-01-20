@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestión Municipal</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../estilos/styles.css">
+</head>
+
+<body>
+    <div id="app-frame">
+
+        <!-- Header -->
+        <div class="app-header" id="main-header">
+            <button class="back-btn" id="btn-back" onclick="app.goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 id="header-title">Gestión Municipal</h1>
+            <button class="logout-btn" id="btn-logout" onclick="app.logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+
+            <!-- VISTA: Admin (Gestión) - ACTIVE por defecto -->
+            <div id="view-admin" class="view active">
+                <div class="admin-header">
+                    <h3 style="margin:0"><i class="fas fa-building"></i> Panel de Control</h3>
+                </div>
+
+                <div class="filter-bar">
+                    <button class="filter-btn active" onclick="admin.filter('todos', this)">Todos</button>
+                    <button class="filter-btn" onclick="admin.filter('pendientes', this)">Pendientes</button>
+                    <button class="filter-btn" onclick="admin.filter('verificados', this)">Verificados</button>
+                </div>
+
+                <div id="admin-reports-list" style="padding-bottom: 80px;">
+                    <p style="text-align:center; color:#64748b; margin-top:40px;">Cargando reportes...</p>
+                </div>
+            </div>
+
+            <!-- VISTA: Selección Categoría (Nuevo Reporte) -->
+            <div id="view-home" class="view">
+                <!-- Usamos ID 'view-home' para compatibilidad con app.js si redirige a home -->
+                <div class="home-header">
+                    <h2>Generar Reporte</h2>
+                    <p class="subtitle">Como funcionario</p>
+                </div>
+                <div class="category-grid">
+                    <div class="category-card" onclick="reports.openForm(1)"><i
+                            class="fas fa-road"></i><span>Bache</span></div>
+                    <div class="category-card" onclick="reports.openForm(2)"><i
+                            class="fas fa-lightbulb"></i><span>Luz</span></div>
+                    <div class="category-card" onclick="reports.openForm(3)"><i
+                            class="fas fa-walking"></i><span>Aceras</span></div>
+                    <div class="category-card" onclick="reports.openForm(4)"><i
+                            class="fas fa-ellipsis-h"></i><span>Otro</span></div>
+                </div>
+            </div>
+
+            <!-- VISTA: Formulario de Reporte -->
+            <div id="view-report-form" class="view">
+                <form id="report-form" onsubmit="reports.submit(event)">
+                    <input type="hidden" id="report-category-id">
+                    <div class="form-group">
+                        <label>Ubicación en el Mapa</label>
+                        <div id="map-picker"></div>
+                        <button type="button" class="btn-gps" onclick="reports.useGPS()"><i
+                                class="fas fa-crosshairs"></i> Usar mi ubicación</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección de Referencia</label>
+                        <input type="text" name="direccion_referencia" required placeholder="Ubicación exacta">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea name="descripcion" rows="4" placeholder="Detalles técnicos..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Evidencia (Fotos)</label>
+                        <input type="file" id="photo-input" accept="image/*" multiple
+                            onchange="reports.previewPhotos(event)">
+                        <div id="photo-previews" class="photo-grid"></div>
+                    </div>
+                    <button type="submit" class="btn-submit">Registrar Incidente</button>
+                </form>
+            </div>
+
+            <!-- VISTA: Mapa Global -->
+            <div id="view-map" class="view">
+                <div id="full-map"></div>
+                <div class="map-legend">
+                    <div class="legend-item"><span class="legend-dot bache"></span> Bache</div>
+                    <div class="legend-item"><span class="legend-dot luz"></span> Luz</div>
+                    <div class="legend-item"><span class="legend-dot aceras"></span> Aceras</div>
+                    <div class="legend-item"><span class="legend-dot otro"></span> Otro</div>
+                </div>
+            </div>
+
+            <!-- VISTA: Detalle de Reporte -->
+            <div id="view-report-detail" class="view">
+                <div id="report-detail-content"></div>
+            </div>
+
+            <!-- VISTA: Perfil -->
+            <div id="view-profile" class="view">
+                <div class="profile-header">
+                    <div class="profile-avatar"><i class="fas fa-user-shield"></i></div>
+                    <h2 id="profile-name">Funcionario</h2>
+                    <p id="profile-email">...@munialgarrobo.cl</p>
+                </div>
+                <div class="profile-actions">
+                    <button class="btn-secondary" onclick="app.logout()">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav show" id="bottom-nav">
+            <div class="nav-item active" id="nav-admin" onclick="app.showView('admin')" style="display:flex !important">
+                <i class="fas fa-tools"></i>
+                <span>Gestión</span>
+            </div>
+            <div class="nav-item" onclick="app.showView('map')">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Mapa</span>
+            </div>
+            <div class="nav-item" onclick="app.showView('profile')">
+                <i class="fas fa-user-shield"></i>
+                <span>Perfil</span>
+            </div>
+        </nav>
+
+        <!-- Toast Notification -->
+        <div id="toast"></div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+
+    <!-- Image Modal (Lightbox) -->
+    <div id="image-modal" class="image-modal">
+        <button class="image-modal-close" onclick="ui.closeImageModal()">&times;</button>
+        <img class="image-modal-content" id="modal-image" src="">
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>window.APP_MODE = 'funcionario';</script>
+    <script src="../scripts/api.js?v=2"></script>
+    <script src="../scripts/app.js?v=2"></script>
+</body>
+
+</html>

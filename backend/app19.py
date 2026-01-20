@@ -69,7 +69,30 @@ APP_PORT = int(os.getenv("PORT", 8000))
 DEBUG = os.getenv("FLASK_DEBUG", "True").lower() in ("1", "true", "yes")
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app) - Usaremos manejo manual para garantizar compatibilidad total
+
+@app.after_request
+def add_cors_headers(response):
+    # Log de tráfico para depuración
+    if request.path.startswith('/api'):
+        logger.info(f"REQUEST {request.method} {request.path} -> {response.status_code}")
+    
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Access-Control-Allow-Credentials'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    return response
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Inyectar headers CORS también en errores
+    response = jsonify({"error": str(e)})
+    response.status_code = 500
+    if hasattr(e, 'code'):
+        response.status_code = e.code
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Access-Control-Allow-Credentials'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    return response
 
 logger.info("Backend Municipal (versión mejorada con manejo de desconexiones NeonDB) iniciando...")
 
@@ -419,6 +442,9 @@ def log_auditoria(user_id, accion, descripcion):
 def session_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        if request.method == 'OPTIONS':
+            return jsonify({}), 200
+
         auth = request.headers.get("Authorization", "")
         token = None
         if auth.startswith("Bearer "):
@@ -2789,19 +2815,47 @@ def get_auditoria(current_user_id):
         if conn:
             release_db_connection(conn)
 
+# -----------------------
+# CLEANUP: Cerrar el pool de conexiones al salir
+# -----------------------
+@app.teardown_appcontext
+def close_connection(exception=None):
+    """Función que se ejecuta al final de cada petición para asegurar que las conexiones se devuelvan al pool"""
+    pass  # Las conexiones se gestionan manualmente con release_db_connection
+
+def cleanup():
+    """Cierra el pool de conexiones y detiene el health check al terminar la aplicación"""
+    global connection_pool
+    
+    # Detener el health check worker
+    stop_health_check()
+    
+    # Cerrar el pool de conexiones
+    try:
+        with pool_lock:
+            if connection_pool and not connection_pool.closed:
+                connection_pool.closeall()
+                logger.info("Pool de conexiones cerrado correctamente")
+    except Exception as e:
+        logger.error(f"Error al cerrar el pool de conexiones: {e}")
+
 # ============================================
 # MOBILE API CONFIGURATION AND UTILITIES
 # ============================================
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
-import jwt
 from datetime import timedelta
+import io
 
 # CONFIG FOTOS REPORTES
 FOTOS_DIR = os.path.join(os.path.dirname(__file__), "fotos_reportes")
 os.makedirs(FOTOS_DIR, exist_ok=True)
-JWT_SECRET = "CAMBIAR_ESTO_EN_PRODUCCION_POR_ALGO_MUY_SECRETO"
-JWT_HOURS = 720  # 30 días
+
+from flask import send_from_directory
+
+@app.route('/fotos_reportes/<path:filename>')
+def servir_foto_reporte(filename):
+    return send_from_directory(FOTOS_DIR, filename)
 
 # Utilidades para imágenes
 def es_imagen(f): 
@@ -2848,7 +2902,7 @@ def extraer_gps(data):
     except: return {}
 
 # ============================================
-# MOBILE API: REGISTRO
+# MOBILE API: REGISTRO (Simplificado)
 # ============================================
 @app.route("/api/mobile/auth/register", methods=["POST"])
 def registrar():
@@ -2862,48 +2916,92 @@ def registrar():
         if len(pwd) < 6: return jsonify({"msg":"Password mínimo 6 caracteres"}), 400
         
         conn = get_db_connection()
+        
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("SELECT 1 FROM registro_vecinos_pendiente WHERE email=%s", (email,))
-            if c.fetchone(): return jsonify({"msg":"Email ya registrado"}), 400
+            c.execute("SELECT 1 FROM users WHERE email=%s", (email,))
+            if c.fetchone(): 
+                return jsonify({"msg":"Email ya registrado"}), 400
         
         phash = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
-        token = secrets.token_urlsafe(32)
         
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("""INSERT INTO registro_vecinos_pendiente (email, password_hash, nombre, token_confirmacion)
-                        VALUES (%s, %s, %s, %s) RETURNING id""",
-                     (email, phash, nom, token))
-            rid = c.fetchone()['id']
-
+            c.execute("""INSERT INTO users (email, password_hash, nombre, nivel_acceso, activo)
+                        VALUES (%s, %s, %s, 0, TRUE) RETURNING user_id""",
+                     (email, phash, nom))
+            user_id = c.fetchone()['user_id']
+            
+            c.execute("SELECT role_id FROM roles WHERE nombre = 'Vecino'")
+            role_row = c.fetchone()
+            if role_row:
+                c.execute("INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)",
+                         (user_id, role_row['role_id']))
         
         conn.commit()
-        return jsonify({"msg":"Registro OK. Confirma email","token":token,"id":rid}), 201
+        return jsonify({"msg":"Registro exitoso", "user_id":user_id}), 201
+        
     except Exception as e:
         if conn: conn.rollback()
         logger.error(f"Error registro: {e}")
-        return jsonify({"msg":"Error"}), 500
-    finally:
-        if conn: release_db_connection(conn)
-
-@app.route("/api/mobile/auth/confirm/<token>", methods=["GET"])
-def confirmar(token):
-    conn = None
-    try:
-        conn = get_db_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("UPDATE registro_vecinos_pendiente SET confirmado=TRUE WHERE token_confirmacion=%s AND confirmado=FALSE RETURNING email", (token,))
-            r = c.fetchone()
-        if not r: return jsonify({"msg":"Token inválido"}), 400
-        conn.commit()
-        return jsonify({"msg":"Email confirmado","email":r['email']}), 200
-    except Exception as e:
-        if conn: conn.rollback()
-        return jsonify({"msg":"Error"}), 500
+        return jsonify({"msg":"Error al registrar"}), 500
     finally:
         if conn: release_db_connection(conn)
 
 # ============================================
-# MOBILE API: LOGIN
+# ADMIN API: CREAR FUNCIONARIO
+# ============================================
+@app.route("/api/admin/crear-funcionario", methods=["POST"])
+@session_required
+def crear_funcionario(current_user_id):
+    conn = None
+    try:
+        d = request.get_json()
+        if not all(k in d for k in ['email','password','nombre']):
+            return jsonify({"msg":"Faltan datos"}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            # 1. Verificar si quien pide esto es ADMIN (nivel_acceso >= 10)
+            c.execute("SELECT nivel_acceso FROM users WHERE user_id = %s", (current_user_id,))
+            admin_user = c.fetchone()
+            
+            if not admin_user or admin_user['nivel_acceso'] < 10:
+                return jsonify({"msg":"No autorizado. Se requiere nivel de acceso 10."}), 403
+
+            # 2. Check user existe
+            email, pwd, nom = d['email'].strip().lower(), d['password'], d['nombre'].strip()
+            c.execute("SELECT 1 FROM users WHERE email=%s", (email,))
+            if c.fetchone(): return jsonify({"msg":"Email ya registrado"}), 400
+            
+            # 3. Crear usuario
+            phash = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
+            # Creamos funcionario con nivel 1 (Fiscalizador básico)
+            c.execute("""INSERT INTO users (email, password_hash, nombre, nivel_acceso, activo)
+                        VALUES (%s, %s, %s, 1, TRUE) RETURNING user_id""",
+                     (email, phash, nom))
+            new_user_id = c.fetchone()['user_id']
+            
+            # 4. Asignar Rol
+            c.execute("SELECT role_id FROM roles WHERE nombre IN ('Fiscalizador', 'Funcionario') LIMIT 1")
+            role_row = c.fetchone()
+            if not role_row:
+                c.execute("INSERT INTO roles (nombre) VALUES ('Fiscalizador') RETURNING role_id")
+                role_row = c.fetchone()
+            
+            c.execute("INSERT INTO user_roles (user_id, role_id) VALUES (%s, %s)",
+                     (new_user_id, role_row['role_id']))
+            
+            conn.commit()
+            return jsonify({"msg":"Funcionario creado exitosamente", "user_id": new_user_id}), 201
+            
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error crear funcionario: {e}")
+        return jsonify({"msg":f"Error: {str(e)}"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+# ============================================
+# MOBILE API: LOGIN (Active Sessions - NO JWT)
 # ============================================
 @app.route("/api/mobile/auth/login", methods=["POST"])
 def login_mobile():
@@ -2914,18 +3012,37 @@ def login_mobile():
         
         conn = get_db_connection()
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("""SELECT u.user_id,u.email,u.nombre,u.password_hash,u.activo,ARRAY_AGG(r.nombre) AS roles
-                        FROM users u LEFT JOIN user_roles ur ON ur.user_id=u.user_id LEFT JOIN roles r ON r.role_id=ur.role_id
-                        WHERE u.email=%s GROUP BY u.user_id""", (email,))
+            # Consulta simplificada: Solo datos de usuario y nivel_acceso
+            c.execute("""SELECT user_id, email, nombre, password_hash, activo, nivel_acceso
+                        FROM users 
+                        WHERE email=%s""", (email,))
             u = c.fetchone()
         
         if not u or not u['activo'] or not bcrypt.checkpw(pwd.encode(), u['password_hash'].encode()):
             return jsonify({"msg":"Credenciales inválidas"}), 401
         
-        token = jwt.encode({'user_id':u['user_id'],'email':u['email'],'exp':datetime.utcnow()+timedelta(hours=JWT_HOURS)}, 
-                          JWT_SECRET, algorithm="HS256")
+        # LOGGING PARA DEBUG
+        logger.info(f"LOGIN DEBUG: User {u['email']} - Nivel Acceso: {u.get('nivel_acceso')}")
+
+        # Generar token de sesión simple
+        import secrets
+        token = secrets.token_hex(32)
+        active_sessions[token] = u['user_id']
         
-        return jsonify({"token":token,"user":{"user_id":u['user_id'],"email":u['email'],"nombre":u['nombre'],"roles":u['roles']or[]}}), 200
+        # Asegurar entero
+        nivel = u['nivel_acceso']
+        if nivel is None: nivel = 0
+        
+        return jsonify({
+            "token": token,
+            "user": {
+                "user_id": u['user_id'],
+                "email": u['email'],
+                "nombre": u['nombre'],
+                "nivel_acceso": int(nivel),
+                "roles": [] # Enviamos lista vacía para compatibilidad
+            }
+        }), 200
     except Exception as e:
         logger.error(f"Login error: {e}")
         return jsonify({"msg":"Error"}), 500
@@ -2933,76 +3050,330 @@ def login_mobile():
         if conn: release_db_connection(conn)
 
 # ============================================
-# MOBILE API: FOTOS
+# MOBILE API: MAESTROS
 # ============================================
-@app.route("/api/mobile/reportes/<int:rid>/fotos", methods=["POST"])
-@session_required
-def subir_fotos(current_user_id, rid):
+@app.route("/api/mobile/divisiones", methods=["GET"])
+def get_divisiones_mobile():
     conn = None
     try:
         conn = get_db_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("SELECT numero_folio FROM reportes_ciudadanos WHERE id=%s AND activo=TRUE", (rid,))
-            r = c.fetchone()
-        if not r: return jsonify({"msg":"Reporte no existe"}), 404
-        
-        files = request.files.getlist('fotos')
-        meta_json = request.form.get('metadata', '{}')
-        try: meta_extra = json.loads(meta_json)
-        except: meta_extra = {}
-        
-        if not files or len(files) > 5: return jsonify({"msg":"Entre 1 y 5 fotos"}), 400
-        
-        guardadas = []
-        ym = time.strftime("%Y/%m")
-        udir = os.path.join(FOTOS_DIR, ym)
-        os.makedirs(udir, exist_ok=True)
-        
-        for i, f in enumerate(files):
-            if not f or not es_imagen(f.filename): continue
-            data = f.read()
-            if len(data) > 5*1024*1024: continue
-            
-            exif = extraer_gps(data)
-            opt = optimizar_imagen(data)
-            
-            ts = int(time.time()*1000) + i
-            fname = secure_filename(f"rep_{rid}_{ts}.jpg")
-            fpath = os.path.join(udir, fname)
-            with open(fpath, 'wb') as fw: fw.write(opt)
-            
-            url = f"/fotos_reportes/{ym}/{fname}"
-            
-            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-                c.execute("""INSERT INTO reportes_fotos (reporte_id, ruta_archivo, subido_por)
-                            VALUES (%s, %s, %s) RETURNING id""",
-                         (rid, url, current_user_id))
-                fid = c.fetchone()['id']
-            guardadas.append({"id":fid,"url":url})
-
-        
-        conn.commit()
-        log_auditoria(current_user_id, "subir_fotos", f"{len(guardadas)} fotos en {r['numero_folio']}")
-        return jsonify({"msg":f"{len(guardadas)} fotos subidas","fotos":guardadas}), 200
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT division_id, nombre FROM divisiones ORDER BY nombre")
+            rows = cur.fetchall()
+        return jsonify(rows), 200
     except Exception as e:
-        if conn: conn.rollback()
-        logger.error(f"Error fotos: {e}")
-        traceback.print_exc()
+        logger.error(f"Error divisiones: {e}")
         return jsonify({"msg":"Error"}), 500
     finally:
         if conn: release_db_connection(conn)
 
-@app.route("/api/mobile/reportes/<int:rid>/fotos", methods=["GET"])
-def ver_fotos(rid):
+@app.route("/api/mobile/roles", methods=["GET"])
+def get_roles_mobile():
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT role_id, nombre FROM roles ORDER BY nombre")
+            rows = cur.fetchall()
+        return jsonify(rows), 200
+    except Exception as e:
+        logger.error(f"Error roles: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/mobile/estados", methods=["GET"])
+def get_estados_mobile():
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT id, nombre FROM estados_reporte ORDER BY id")
+            rows = cur.fetchall()
+        return jsonify(rows), 200
+    except Exception as e:
+        logger.error(f"Error estados: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+# ============================================
+# MOBILE API: PERFIL & ESTADÍSTICAS
+# ============================================
+@app.route("/api/mobile/perfil", methods=["GET"])
+@session_required
+def get_perfil(current_user_id):
     conn = None
     try:
         conn = get_db_connection()
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("""SELECT f.id, f.ruta_archivo, f.subido_en, u.nombre AS subido_por
-                        FROM reportes_fotos f LEFT JOIN users u ON u.user_id=f.subido_por 
-                        WHERE f.reporte_id=%s ORDER BY f.subido_en""", (rid,))
+            # Datos usuario
+            c.execute("SELECT user_id, nombre, email, nivel_acceso FROM users WHERE user_id = %s", (current_user_id,))
+            user = c.fetchone()
+            
+            # Estadísticas
+            c.execute("""
+                SELECT 
+                    COUNT(*) as total,
+                    COUNT(*) FILTER (WHERE estado_id = 1) as pendientes, -- Reportado
+                    COUNT(*) FILTER (WHERE estado_id IN (2,3)) as en_proceso, -- Verificado/Programado
+                    COUNT(*) FILTER (WHERE estado_id = 4) as resueltos -- Reparado
+                FROM reportes_ciudadanos 
+                WHERE reportado_por = %s AND activo = TRUE
+            """, (current_user_id,))
+            stats = c.fetchone()
+            
+        return jsonify({"user": user, "stats": stats}), 200
+    except Exception as e:
+        logger.error(f"Error perfil: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/mobile/perfil", methods=["PUT"])
+@session_required
+def update_perfil(current_user_id):
+    conn = None
+    try:
+        d = request.get_json()
+        nombre = d.get('nombre')
+        pwd = d.get('password')
+        
+        updates = []
+        vals = []
+        
+        if nombre:
+            updates.append("nombre = %s")
+            vals.append(nombre)
+        if pwd and len(pwd) >= 6:
+            phash = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
+            updates.append("password_hash = %s")
+            vals.append(phash)
+            
+        if not updates:
+            return jsonify({"msg":"Nada que actualizar"}), 400
+            
+        vals.append(current_user_id)
+        
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute(f"UPDATE users SET {', '.join(updates)} WHERE user_id = %s", tuple(vals))
+            conn.commit()
+            
+        return jsonify({"msg":"Perfil actualizado"}), 200
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error update perfil: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+# ============================================
+# MOBILE API: REPORTES
+# ============================================
+@app.route("/api/mobile/reportes", methods=["POST"])
+@session_required
+def crear_reporte(current_user_id):
+    conn = None
+    try:
+        d = request.get_json()
+        required = ['categoria_id', 'latitud', 'longitud', 'direccion_referencia']
+        if not all(k in d for k in required):
+            return jsonify({"msg":"Faltan campos"}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("""INSERT INTO reportes_ciudadanos 
+                        (categoria_id, estado_id, latitud, longitud, direccion_referencia, 
+                         descripcion, reportado_por, activo)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE)
+                        RETURNING id, numero_folio""",
+                     (d['categoria_id'], 1, d['latitud'], d['longitud'], 
+                      d['direccion_referencia'], d.get('descripcion'), current_user_id))
+            result = c.fetchone()
+        
+        conn.commit()
+        return jsonify({"msg":"Creado","id":result['id'],"numero_folio":result['numero_folio']}), 201
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error crear reporte: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/mobile/reportes/<int:rid>", methods=["GET"])
+@session_required
+def get_reporte_detalle(current_user_id, rid):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("""SELECT r.id, r.numero_folio, c.nombre as categoria, e.nombre as estado,
+                        r.direccion_referencia, r.descripcion, r.fecha_reporte, r.latitud, r.longitud,
+                        u.nombre as autor
+                        FROM reportes_ciudadanos r
+                        LEFT JOIN categorias_reporte c ON c.id = r.categoria_id
+                        LEFT JOIN estados_reporte e ON e.id = r.estado_id
+                        LEFT JOIN users u ON u.user_id = r.reportado_por
+                        WHERE r.id = %s""", (rid,))
+            repo = c.fetchone()
+            
+        if not repo:
+            return jsonify({"msg":"No encontrado"}), 404
+            
+        return jsonify(repo), 200
+    except Exception as e:
+        logger.error(f"Error detalle reporte: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/mobile/reportes/todos", methods=["GET"])
+def get_todos_reportes():
+    # Endpoint público para el mapa
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("""SELECT r.id, r.latitud, r.longitud, c.nombre as categoria, 
+                        e.nombre as estado, r.direccion_referencia, r.categoria_id
+                        FROM reportes_ciudadanos r
+                        LEFT JOIN categorias_reporte c ON c.id = r.categoria_id
+                        LEFT JOIN estados_reporte e ON e.id = r.estado_id
+                        WHERE r.activo = TRUE""")
+            rows = c.fetchall()
+        return jsonify(rows), 200
+    except Exception as e:
+        logger.error(f"Error mapa: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/mobile/reportes/mis-reportes", methods=["GET"])
+@session_required
+def mis_reportes(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("""SELECT r.id, r.numero_folio, c.nombre as categoria, e.nombre as estado,
+                        r.direccion_referencia, r.descripcion, r.fecha_reporte
+                        FROM reportes_ciudadanos r
+                        LEFT JOIN categorias_reporte c ON c.id = r.categoria_id
+                        LEFT JOIN estados_reporte e ON e.id = r.estado_id
+                        WHERE r.reportado_por = %s AND r.activo = TRUE
+                        ORDER BY r.fecha_reporte DESC""", (current_user_id,))
+            reportes = c.fetchall()
+        return jsonify(reportes), 200
+    except Exception as e:
+        logger.error(f"Error mis reportes: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+# ============================================
+# MOBILE API: AUXILIAR (Categorías)
+# ============================================
+@app.route("/api/mobile/categorias", methods=["GET"])
+def get_categorias_mobile():
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT id, nombre FROM categorias_reporte ORDER BY id")
+            rows = cur.fetchall()
+        return jsonify(rows), 200
+    except Exception as e:
+        logger.error(f"Error categorias: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+# ============================================
+# MOBILE API: COMENTARIOS
+# ============================================
+@app.route("/api/mobile/reportes/<int:rid>/comentarios", methods=["GET"])
+def get_comentarios(rid):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("""SELECT rc.id, rc.comentario, rc.creado_en, u.nombre as autor
+                        FROM reportes_comentarios rc
+                        JOIN users u ON u.user_id = rc.user_id
+                        WHERE rc.reporte_id = %s ORDER BY rc.creado_en""",(rid,))
+            rows = c.fetchall()
+        return jsonify(rows), 200
+    except Exception as e:
+        logger.error(f"Error comments get: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/mobile/reportes/<int:rid>/comentarios", methods=["POST"])
+@session_required
+def add_comentario(current_user_id, rid):
+    conn = None
+    try:
+        d = request.get_json()
+        texto = d.get('comentario')
+        if not texto: return jsonify({"msg":"Texto vacío"}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("INSERT INTO reportes_comentarios (reporte_id, user_id, comentario) VALUES (%s, %s, %s) RETURNING id",
+                     (rid, current_user_id, texto))
+            nid = c.fetchone()['id']
+        conn.commit()
+        return jsonify({"msg":"Comentario agregado","id":nid}), 201
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error comments post: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+# ============================================
+# MOBILE API: VERIFICACIÓN
+# ============================================
+@app.route("/api/mobile/reportes/<int:rid>/verificar", methods=["POST"])
+@session_required
+def verificar_reporte(current_user_id, rid):
+    conn = None
+    try:
+        d = request.get_json()
+        resultado = d.get('resultado') # CONFIRMADO, RECHAZADO, etc.
+        if not resultado: return jsonify({"msg":"Falta resultado"}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("""INSERT INTO reportes_verificaciones (reporte_id, verificado_por, resultado) 
+                        VALUES (%s, %s, %s) RETURNING id""", (rid, current_user_id, resultado))
+            
+            # Actualizar estado reporte
+            new_status = 2 if resultado == 'CONFIRMADO' else 5 
+            c.execute("UPDATE reportes_ciudadanos SET estado_id = %s WHERE id = %s", (new_status, rid))
+            
+        conn.commit()
+        return jsonify({"msg":"Verificado"}), 200
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error verify: {e}")
+        return jsonify({"msg":"Error"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+# ============================================
+# MOBILE API: FOTOS
+# ============================================
+@app.route("/api/mobile/reportes/<int:rid>/fotos", methods=["GET"])
+def ver_fotos_reporte(rid):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            c.execute("SELECT id, ruta_archivo FROM reportes_fotos WHERE reporte_id = %s", (rid,))
             fotos = c.fetchall()
-        release_db_connection(conn)
         return jsonify(fotos), 200
     except Exception as e:
         logger.error(f"Error ver fotos: {e}")
@@ -3010,109 +3381,57 @@ def ver_fotos(rid):
     finally:
         if conn: release_db_connection(conn)
 
-
-# ============================================
-# MOBILE API: VERIFICACIÓN
-# ============================================
-@app.route("/api/mobile/reportes/<int:rid>/verificar", methods=["POST"])
+@app.route("/api/mobile/reportes/<int:rid>/fotos", methods=["POST"])
 @session_required
-def verificar(current_user_id, rid):
+def subir_fotos(current_user_id, rid):
     conn = None
     try:
-        d = request.get_json()
-        if 'resultado' not in d:
-            return jsonify({"msg":"Falta resultado"}), 400
+        logger.info(f"--- INICIO SUBIDA FOTOS REPORTE {rid} ---")
+        logger.info(f"Headers: {request.headers}")
+        logger.info(f"Files Keys: {request.files.keys()}")
+        
+        files = request.files.getlist('fotos')
+        logger.info(f"Archivos encontrados con key 'fotos': {len(files)}")
+        
+        if not files: 
+            return jsonify({"msg":"Sin fotos recibidas en backend"}), 400
         
         conn = get_db_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("SELECT numero_folio FROM reportes_ciudadanos WHERE id=%s", (rid,))
-            r = c.fetchone()
-        if not r: return jsonify({"msg":"Reporte no existe"}), 404
+        guardadas = []
+        ym = time.strftime("%Y/%m")
+        udir = os.path.join(FOTOS_DIR, ym)
+        os.makedirs(udir, exist_ok=True)
         
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("""INSERT INTO reportes_verificaciones (reporte_id, verificado_por, resultado)
-                        VALUES (%s, %s, %s) RETURNING id, verificado_en""",
-                     (rid, current_user_id, d['resultado'].upper()))
-            v = c.fetchone()
+        for i, f in enumerate(files):
+            if not f: continue
+            
+            logger.info(f"Procesando archivo: {f.filename} ({f.content_type})")
+            
+            # Guardado DIRECTO sin optimización para probar
+            ts = int(time.time()*1000) + i
+            fname = secure_filename(f"rep_{rid}_{ts}_{f.filename}")
+            fpath = os.path.join(udir, fname)
+            f.save(fpath) # Guardado nativo de Flask/Werkzeug
+            
+            logger.info(f"Guardado en disco: {fpath}")
+            
+            url = f"/fotos_reportes/{ym}/{fname}"
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+                c.execute("INSERT INTO reportes_fotos (reporte_id, ruta_archivo, subido_por) VALUES (%s, %s, %s) RETURNING id",
+                         (rid, url, current_user_id))
+                fid = c.fetchone()['id']
+            guardadas.append({"id":fid,"url":url})
         
         conn.commit()
-        log_auditoria(current_user_id, "verificar", f"Verificación {d['resultado']}")
-        return jsonify({"msg":"Verificación OK","id":v['id']}), 201
+        logger.info(f"--- FIN SUBIDA: {len(guardadas)} guardadas ---")
+        return jsonify({"msg":f"{len(guardadas)} fotos subidas","fotos":guardadas}), 200
     except Exception as e:
         if conn: conn.rollback()
-        logger.error(f"Error verificar: {e}")
-        return jsonify({"msg":"Error"}), 500
+        logger.error(f"FATAL ERROR EN SUBIDA: {e}", exc_info=True)
+        return jsonify({"msg":f"Error interno: {str(e)}"}), 500
     finally:
         if conn: release_db_connection(conn)
 
-
-# ============================================
-# MOBILE API: COMENTARIOS
-# ============================================
-@app.route("/api/mobile/reportes/<int:rid>/comentarios", methods=["GET"])
-def ver_comentarios(rid):
-    conn = None
-    try:
-        conn = get_db_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("""SELECT c.id, c.comentario, c.creado_en, u.nombre AS usuario,
-                        CASE WHEN EXISTS(SELECT 1 FROM user_roles ur JOIN roles r ON r.role_id=ur.role_id WHERE ur.user_id=u.user_id AND r.nombre='Fiscalizador') 
-                        THEN 'Fiscalizador' ELSE 'Vecino' END AS tipo
-                        FROM reportes_comentarios c JOIN users u ON u.user_id=c.user_id WHERE c.reporte_id=%s ORDER BY c.creado_en ASC""", (rid,))
-            coms = c.fetchall()
-        release_db_connection(conn)
-        return jsonify(coms), 200
-    except Exception as e:
-        return jsonify({"msg":"Error"}), 500
-    finally:
-        if conn: release_db_connection(conn)
-
-@app.route("/api/mobile/reportes/<int:rid>/comentarios", methods=["POST"])
-@session_required
-def crear_comentario(current_user_id, rid):
-    conn = None
-    try:
-        d = request.get_json()
-        com = d.get('comentario','').strip()
-        if not com: return jsonify({"msg":"Comentario vacío"}), 400
-        
-        conn = get_db_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
-            c.execute("INSERT INTO reportes_comentarios (reporte_id, user_id, comentario) VALUES (%s, %s, %s) RETURNING id, creado_en",
-                     (rid, current_user_id, com[:1000]))
-            r = c.fetchone()
-        conn.commit()
-        return jsonify({"msg":"Comentario OK","id":r['id']}), 201
-    except Exception as e:
-        if conn: conn.rollback()
-        return jsonify({"msg":"Error"}), 500
-    finally:
-        if conn: release_db_connection(conn)
-
-
-# -----------------------
-# CLEANUP: Cerrar el pool de conexiones al salir
-# -----------------------
-@app.teardown_appcontext
-def close_connection(exception=None):
-    """Función que se ejecuta al final de cada petición para asegurar que las conexiones se devuelvan al pool"""
-    pass  # Las conexiones se gestionan manualmente con release_db_connection
-
-def cleanup():
-    """Cierra el pool de conexiones y detiene el health check al terminar la aplicación"""
-    global connection_pool
-    
-    # Detener el health check worker
-    stop_health_check()
-    
-    # Cerrar el pool de conexiones
-    try:
-        with pool_lock:
-            if connection_pool and not connection_pool.closed:
-                connection_pool.closeall()
-                logger.info("Pool de conexiones cerrado correctamente")
-    except Exception as e:
-        logger.error(f"Error al cerrar el pool de conexiones: {e}")
 
 # -----------------------
 # START

@@ -22,15 +22,33 @@ const appState = {
 
 const app = {
     init() {
-        // Verificar si hay sesión activa
-        if (api.token) {
-            this.showView('home');
-            document.getElementById('bottom-nav').classList.add('show');
-            document.getElementById('btn-logout').style.display = 'block';
-            // Cargar datos del usuario
-            this.loadUserData();
+        // Verificar sesión
+        if (!api.token) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        this.loadUserData();
+
+        document.getElementById('bottom-nav').classList.add('show');
+        // Mostrar logout siempre
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) btnLogout.style.display = 'block';
+
+        // Determinar vista inicial según modo
+        const mode = window.APP_MODE || 'vecino';
+
+        if (mode === 'funcionario') {
+            // Inicializar admin
+            this.showView('admin');
+            // Asegurar que el nav item de gestión sea visible y activo
+            const navAdmin = document.getElementById('nav-admin');
+            if (navAdmin) {
+                navAdmin.style.display = 'flex';
+                navAdmin.classList.add('active');
+            }
         } else {
-            this.showView('welcome');
+            this.showView('home');
         }
     },
 
@@ -89,6 +107,9 @@ const app = {
             case 'profile':
                 this.loadProfile();
                 break;
+            case 'admin':
+                admin.init();
+                break;
         }
     },
 
@@ -98,10 +119,17 @@ const app = {
     },
 
     async loadUserData() {
-        // En producción, cargaríamos datos del usuario desde el backend
-        // Por ahora usamos datos del token decodificado o localStorage
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         appState.user = user;
+
+        // Verificar si es funcionario (nivel_acceso > 0)
+        // Vecino = 0 (o null), Funcionario >= 1
+        const nivel = parseInt(user.nivel_acceso || 0);
+
+        const navAdmin = document.getElementById('nav-admin');
+        if (navAdmin) {
+            navAdmin.style.display = (nivel > 0) ? 'flex' : 'none';
+        }
     },
 
     async loadProfile() {
@@ -120,10 +148,7 @@ const app = {
         if (confirm('¿Cerrar sesión?')) {
             api.clearToken();
             localStorage.removeItem('user');
-            document.getElementById('bottom-nav').classList.remove('show');
-            document.getElementById('btn-logout').style.display = 'none';
-            this.showView('welcome');
-            appState.user = null;
+            window.location.href = 'index.html';
         }
     }
 };
@@ -377,7 +402,7 @@ const reports = {
                         <h4>Evidencias Fotográficas (${photos.length})</h4>
                         <div class="photo-gallery">
                             ${photos.map(p => `
-                                <div class="photo-card" onclick="window.open('${API_BASE}${p.ruta_archivo}', '_blank')">
+                                <div class="photo-card" onclick="ui.showImageModal('${API_BASE}${p.ruta_archivo}')">
                                     <div class="photo-wrapper" style="background-image: url('${API_BASE}${p.ruta_archivo}')"></div>
                                 </div>
                             `).join('')}
@@ -588,6 +613,122 @@ const maps = {
 // INICIALIZAR APP
 // ==========================================
 
+// ============================================
+// LÓGICA ADMIN (GESTIÓN)
+// ============================================
+const admin = {
+    reports: [],
+
+    async init() {
+        // Cargar reportes al iniciar vista admin
+        this.loadReports();
+    },
+
+    async loadReports() {
+        const container = document.getElementById('admin-reports-list');
+        container.innerHTML = '<p style="text-align:center;padding:20px;">Cargando...</p>';
+        try {
+            const data = await api.getAllReports();
+            this.reports = data;
+            this.renderList(data);
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<p style="text-align:center">Error cargando datos</p>';
+        }
+    },
+
+    renderList(list) {
+        const container = document.getElementById('admin-reports-list');
+        if (list.length === 0) {
+            container.innerHTML = '<p style="text-align:center; margin-top:40px;">No hay reportes.</p>';
+            return;
+        }
+
+        container.innerHTML = list.map(r => `
+            <div class="report-card-admin ${r.categoria?.toLowerCase()}">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>#${r.id} ${r.categoria}</strong>
+                    <span style="font-size:0.85em; background:#e2e8f0; padding:2px 8px; border-radius:4px;">
+                        ${r.estado || 'Reportado'}
+                    </span>
+                </div>
+                <p style="color:#64748b; font-size:0.9em; margin:5px 0;">${r.direccion_referencia}</p>
+                <p style="color:#94a3b8; font-size:0.8em;">${ui.formatDate(r.fecha_reporte)}</p>
+                
+                <div class="admin-actions">
+                    <button onclick="admin.verify(${r.id}, 'CONFIRMADO')" class="btn-action btn-verify">
+                        <i class="fas fa-check"></i> Validar
+                    </button>
+                    <button onclick="admin.verify(${r.id}, 'RECHAZADO')" class="btn-action btn-reject">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                    <button onclick="reports.showDetail(${r.id})" class="btn-action" style="background:#f1f5f9;">
+                        <i class="fas fa-eye"></i> Ver
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    filter(type, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (type === 'todos') this.renderList(this.reports);
+        else if (type === 'pendientes') {
+            this.renderList(this.reports.filter(r => r.estado === 'Reportado'));
+        } else if (type === 'verificados') {
+            this.renderList(this.reports.filter(r => r.estado !== 'Reportado'));
+        }
+    },
+
+    async verify(id, status) {
+        if (!confirm(`¿Estás seguro de marcar como ${status}?`)) return;
+        ui.showLoading();
+        try {
+            await api.verifyReport(id, status);
+            ui.showToast('Estado actualizado');
+            this.loadReports(); // Recargar
+        } catch (e) {
+            ui.showToast('Error: ' + e.message);
+        } finally {
+            ui.hideLoading();
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
 });
+
+
+// ==========================================
+// UTILS MODAL IMAGEN
+// ==========================================
+if (typeof ui !== 'undefined') {
+    ui.showImageModal = function (url) {
+        const modal = document.getElementById('image-modal');
+        const img = document.getElementById('modal-image');
+        if (modal && img) {
+            img.src = url;
+            modal.classList.add('show');
+        }
+    };
+
+    ui.closeImageModal = function () {
+        const modal = document.getElementById('image-modal');
+        const img = document.getElementById('modal-image');
+        if (modal) modal.classList.remove('show');
+        if (img) setTimeout(() => img.src = '', 300); // Limpiar después de transición
+    };
+
+    // Cerrar al hacer clic fuera de la imagen
+    const modal = document.getElementById('image-modal');
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                ui.closeImageModal();
+            }
+        });
+    }
+}
