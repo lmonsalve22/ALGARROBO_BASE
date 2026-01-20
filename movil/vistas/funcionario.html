@@ -127,11 +127,15 @@
 
         </div>
 
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav show" id="bottom-nav">
+        <!-- Bottom Navigation with High Z-Index -->
+        <nav class="bottom-nav show" id="bottom-nav" style="z-index: 2000;">
             <div class="nav-item active" id="nav-admin" onclick="app.showView('admin')" style="display:flex !important">
                 <i class="fas fa-tools"></i>
                 <span>Gestión</span>
+            </div>
+            <div class="nav-item" onclick="app.showView('home')">
+                <i class="fas fa-plus-circle"></i>
+                <span>Crear</span>
             </div>
             <div class="nav-item" onclick="app.showView('map')">
                 <i class="fas fa-map-marked-alt"></i>
