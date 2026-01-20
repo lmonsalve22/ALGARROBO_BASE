@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo</title>
+    <link rel="stylesheet" href="../estilos/styles.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: sans-serif;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #1e293b;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: #1e293b;
+        }
+
+        .msg {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .msg.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .user-info {
+            background: #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div class="header">
+            <h2>Panel Administrativo</h2>
+            <p>Gestión de Cuentas Funcionarias</p>
+        </div>
+
+        <!-- Login Admin -->
+        <div id="login-section">
+            <p style="text-align: center; margin-bottom: 20px;">Inicie sesión con cuenta Administradora</p>
+            <form onsubmit="adminLogin(event)">
+                <div class="form-group">
+                    <label>Email Admin</label>
+                    <input type="email" id="admin_email" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="admin_pass" required>
+                </div>
+                <button type="submit" class="btn">Ingresar</button>
+            </form>
+        </div>
+
+        <!-- Alta Funcionarios -->
+        <div id="create-section" class="hide">
+            <div class="user-info" id="user-info"></div>
+
+            <h3 style="color:#1e293b; margin-top:0;">Crear Nuevo Funcionario</h3>
+            <form onsubmit="createOfficial(event)">
+                <div class="form-group">
+                    <label>Nombre Funcionario</label>
+                    <input type="text" id="nombre" required placeholder="Ej. Roberto Admin">
+                </div>
+                <div class="form-group">
+                    <label>Email Institucional</label>
+                    <input type="email" id="email" required placeholder="funcionario@muni.cl">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña Provisoria</label>
+                    <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                </div>
+                <button type="submit" class="btn">Crear Cuenta</button>
+            </form>
+            <button onclick="logout()"
+                style="margin-top:15px; background:none; border:none; color:#dc2626; cursor:pointer; width:100%;">Cerrar
+                Sesión</button>
+        </div>
+
+        <div id="msg" class="msg"></div>
+
+        <p style="text-align:center; margin-top:20px;">
+            <a href="gestion.html" style="color:#3b82f6; text-decoration:none;">Ir al Login de Funcionarios</a>
+        </p>
+    </div>
+
+    <script src="../scripts/api.js"></script>
+    <script>
+        let adminToken = null;
+
+        // Auto-check login
+        /*
+        if (api.token) {
+            // Podríamos validar token aquí, pero simplificaremos pidiendo login
+            // O podemos intentar usar api.token
+        }
+        */
+
+        async function adminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin_email').value;
+            const pwd = document.getElementById('admin_pass').value;
+            const msg = document.getElementById('msg');
+            msg.style.display = 'none';
+
+            try {
+                // Usamos api.login de api.js
+                const data = await api.login(email, pwd);
+
+                // En una app real, verificaríamos nivel_acceso aquí si viniera en la respuesta
+                // Pero api.login devuelve { token, user: {...} }
+                // Confiamos en que si el user no es admin, el siguiente endpoint fallará con 403
+
+                adminToken = data.token;
+                document.getElementById('login-section').classList.add('hide');
+                document.getElementById('create-section').classList.remove('hide');
+                document.getElementById('user-info').textContent = `Conectado como: ${data.user.nombre}`;
+
+            } catch (error) {
+                msg.className = 'msg error';
+                msg.textContent = 'Error: ' + (error.message || 'Credenciales inválidas');
+                msg.style.display = 'block';
+            }
+        }
+
+        async function createOfficial(e) {
+            e.preventDefault();
+            if (!adminToken) return;
+
+            const btn = e.target.querySelector('button');
+            const msg = document.getElementById('msg');
+
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            btn.disabled = true;
+            btn.textContent = 'Procesando...';
+            msg.style.display = 'none';
+
+            try {
+                // Endpoint Admin
+                const API_URL = 'https://186.67.61.251:8000/api/admin/crear-funcionario';
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ nombre, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = '✓ ' + data.msg;
+                    e.target.reset();
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = '✗ ' + (data.msg || 'Error desconocido');
+                }
+            } catch (error) {
+                console.error(error);
+                msg.className = 'msg error';
+                msg.textContent = '✗ Error de conexión';
+            } finally {
+                msg.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Crear Cuenta';
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Municipal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../estilos/styles.css">
+    <style>
+        body {
+            background-color: #f1f5f9;
+        }
+
+        .admin-header {
+            background: #1e293b;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .filter-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .report-card-admin {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            border-left: 4px solid #94a3b8;
+        }
+
+        .report-card-admin.bache {
+            border-left-color: #ef4444;
+        }
+
+        .report-card-admin.luz {
+            border-left-color: #eab308;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-verify {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .btn-reject {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f8fafc;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hide {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login Admin -->
+    <div id="login-view" class="login-overlay">
+        <div class="auth-container"
+            style="background:white; padding:30px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+            <h2 style="text-align:center; margin-bottom:20px;">Acceso Funcionarios</h2>
+            <form onsubmit="adminApp.login(event)">
+                <div class="form-group">
+                    <label>Email Institucional</label>
+                    <input type="email" id="email" required class="form-control"
+                        style="width:100%; padding:10px; margin:5px 0 15px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="password" required class="form-control"
+                        style="width:100%; padding:10px; margin:5px 0 15px; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <button type="submit" class="btn-submit"
+                    style="width:100%; padding:12px; background:#1e293b; color:white; border:none; border-radius:6px; cursor:pointer;">Entrar</button>
+            </form>
+            <div id="login-error" style="color:red; margin-top:10px; text-align:center;"></div>
+        </div>
+    </div>
+
+    <!-- Panel Principal -->
+    <div id="main-view" class="hide">
+        <div class="admin-header">
+            <h3><i class="fas fa-building"></i> Gestión Municipal</h3>
+            <button onclick="adminApp.logout()" style="background:none; border:none; color:white; cursor:pointer;">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+
+        <div class="container">
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="adminApp.filter('todos', this)">Todos</button>
+                <button class="filter-btn" onclick="adminApp.filter('pendientes', this)">Pendientes</button>
+                <button class="filter-btn" onclick="adminApp.filter('verificados', this)">Verificados</button>
+            </div>
+
+            <div id="reports-list">
+                <!-- Se llena dinámicamente -->
+                <p style="text-align:center; color:#64748b; margin-top:40px;">Cargando reportes...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/api.js"></script>
+    <script>
+        const adminApp = {
+            reports: [],
+
+            init() {
+                if (api.token) {
+                    // Verificar si es funcionario (muy básico, ideal sería endpoint /me que traiga roles)
+                    // Por ahora asumimos que si tiene token puede intentar cargar
+                    this.showMain();
+                }
+            },
+
+            async login(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const pwd = document.getElementById('password').value;
+                const errorDiv = document.getElementById('login-error');
+
+                try {
+                    errorDiv.textContent = 'Autenticando...';
+                    const data = await api.login(email, pwd);
+
+                    // Validar rol (en frontend es visual, backend protege endpoints)
+                    const roles = data.user.roles || [];
+                    if (!roles.includes('Funcionario') && !roles.includes('Admin')) {
+                        // Opcional: Permitir entrar pero avisar
+                    }
+
+                    this.showMain();
+                } catch (err) {
+                    errorDiv.textContent = 'Credenciales inválidas';
+                }
+            },
+
+            logout() {
+                api.clearToken();
+                location.reload();
+            },
+
+            showMain() {
+                document.getElementById('login-view').classList.add('hide');
+                document.getElementById('main-view').classList.remove('hide');
+                this.loadReports();
+            },
+
+            async loadReports() {
+                try {
+                    // Usamos el endpoint público 'todos' para listar, luego detalle para acciones
+                    // OJO: 'todos' es público pero trae coordenadas. Para gestión real necesitaríamos un endpoint admin
+                    // que traiga TODO (incluyendo no activos).
+                    // Por ahora usaremos 'todos' (que trae activos) filtrado en cliente.
+
+                    const data = await api.getAllReports();
+                    // Como el endpoint "todos" es resumido (para mapa), necesitamos más datos.
+                    // Idealmente deberíamos tener un endpoint GET /api/mobile/reportes/gestion
+                    // Pero usaremos lo que hay.
+                    this.reports = data;
+                    this.renderList(data);
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById('reports-list').innerHTML = '<p style="text-align:center">Error cargando datos</p>';
+                }
+            },
+
+            renderList(list) {
+                const container = document.getElementById('reports-list');
+                if (list.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; margin-top:40px;">No hay reportes.</p>';
+                    return;
+                }
+
+                container.innerHTML = list.map(r => `
+                    <div class="report-card-admin ${r.categoria?.toLowerCase()}">
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong>#${r.id} ${r.categoria}</strong>
+                            <span style="font-size:0.85em; background:#e2e8f0; padding:2px 8px; border-radius:4px;">
+                                ${r.estado || 'Reportado'}
+                            </span>
+                        </div>
+                        <p style="color:#64748b; font-size:0.9em; margin:5px 0;">${r.direccion_referencia}</p>
+                        
+                        <div class="admin-actions">
+                            <button onclick="adminApp.verify(${r.id}, 'CONFIRMADO')" class="btn-action btn-verify">
+                                <i class="fas fa-check"></i> Validar
+                            </button>
+                            <button onclick="adminApp.verify(${r.id}, 'RECHAZADO')" class="btn-action btn-reject">
+                                <i class="fas fa-times"></i> Rechazar
+                            </button>
+                            <button onclick="adminApp.viewDetail(${r.id})" class="btn-action" style="background:#f1f5f9;">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            filter(type, btn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                if (type === 'todos') this.renderList(this.reports);
+                else if (type === 'pendientes') {
+                    this.renderList(this.reports.filter(r => r.estado === 'Reportado'));
+                } else if (type === 'verificados') {
+                    this.renderList(this.reports.filter(r => r.estado !== 'Reportado'));
+                }
+            },
+
+            async verify(id, status) {
+                if (!confirm(`¿Estás seguro de marcar como ${status}?`)) return;
+
+                try {
+                    await api.verifyReport(id, status);
+                    alert('Estado actualizado');
+                    this.loadReports(); // Recargar
+                } catch (e) {
+                    alert('Error actualizando: ' + e.message);
+                }
+            },
+
+            async viewDetail(id) {
+                // Abrir en nueva pestaña la app normal o un modal (simplificado: alerta con datos)
+                try {
+                    const data = await api.getReportDetail(id);
+                    alert(`Detalle:\n${data.descripcion}\nAutor: ${data.autor}`);
+                } catch (e) { alert('Error cargando detalle'); }
+            }
+        };
+
+        adminApp.init();
+    </script>
+</body>
+
+</html>
