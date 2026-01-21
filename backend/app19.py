@@ -3180,6 +3180,19 @@ def crear_reporte(current_user_id):
         required = ['categoria_id', 'latitud', 'longitud', 'direccion_referencia']
         if not all(k in d for k in required):
             return jsonify({"msg":"Faltan campos"}), 400
+
+        # VALIDACIÓN GEOGRÁFICA (Algarrobo, Chile)
+        #try:
+            #lat, lng = float(d['latitud']), float(d['longitud'])
+            # Bounding box estimado: 
+            # Norte: -33.20 (Tunquén)
+            # Sur: -33.45 (Límite El Quisco/El Tabo margen)
+            # Oeste: -71.80 (Mar)
+            # Este: -71.50 (Interior)
+            #if not (-33.45 <= lat <= -33.20 and -71.80 <= lng <= -71.50):
+            #    return jsonify({"msg": "La ubicación no corresponde a la comuna de Algarrobo"}), 400
+        #except ValueError:
+             #return jsonify({"msg": "Coordenadas inválidas"}), 400
         
         conn = get_db_connection()
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
@@ -3236,11 +3249,13 @@ def get_todos_reportes():
         conn = get_db_connection()
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
             c.execute("""SELECT r.id, r.latitud, r.longitud, c.nombre as categoria, 
-                        e.nombre as estado, r.direccion_referencia, r.categoria_id
+                        e.nombre as estado, r.estado_id, r.direccion_referencia, r.categoria_id,
+                        r.fecha_reporte
                         FROM reportes_ciudadanos r
                         LEFT JOIN categorias_reporte c ON c.id = r.categoria_id
                         LEFT JOIN estados_reporte e ON e.id = r.estado_id
-                        WHERE r.activo = TRUE""")
+                        WHERE r.activo = TRUE
+                        ORDER BY r.fecha_reporte DESC""")
             rows = c.fetchall()
         return jsonify(rows), 200
     except Exception as e:
@@ -3342,20 +3357,39 @@ def verificar_reporte(current_user_id, rid):
     conn = None
     try:
         d = request.get_json()
-        resultado = d.get('resultado') # CONFIRMADO, RECHAZADO, etc.
-        if not resultado: return jsonify({"msg":"Falta resultado"}), 400
+        estado_id = d.get('estado_id')
+        resultado = d.get('resultado') # Compatibilidad
         
+        new_status = 1
+        if estado_id:
+            new_status = int(estado_id)
+        elif resultado:
+            if resultado == 'CONFIRMADO': new_status = 2
+            elif resultado == 'RECHAZADO': new_status = 5
+            
         conn = get_db_connection()
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as c:
+            # 1. Validar que el estado existe en la BD y obtener su nombre
+            c.execute("SELECT nombre FROM estados_reporte WHERE id = %s", (new_status,))
+            estado_row = c.fetchone()
+            
+            if not estado_row:
+                 return jsonify({"msg":"Estado inválido (no existe en BD)"}), 400
+            
+            nombre_estado = estado_row['nombre']
+            
+            # Usamos el nombre del estado (ej: 'Programado') como resultado
+            # Nota: Asegurarse que el CHECK constraint en reportes_verificaciones permita estos valores
+            # o que la tabla de estados coincida con los valores permitidos.
+            
             c.execute("""INSERT INTO reportes_verificaciones (reporte_id, verificado_por, resultado) 
-                        VALUES (%s, %s, %s) RETURNING id""", (rid, current_user_id, resultado))
+                        VALUES (%s, %s, %s) RETURNING id""", (rid, current_user_id, nombre_estado))
             
             # Actualizar estado reporte
-            new_status = 2 if resultado == 'CONFIRMADO' else 5 
             c.execute("UPDATE reportes_ciudadanos SET estado_id = %s WHERE id = %s", (new_status, rid))
             
         conn.commit()
-        return jsonify({"msg":"Verificado"}), 200
+        return jsonify({"msg":f"Estado actualizado a {nombre_estado}"}), 200
     except Exception as e:
         if conn: conn.rollback()
         logger.error(f"Error verify: {e}")
