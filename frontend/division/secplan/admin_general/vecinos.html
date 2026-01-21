@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="../../../script/router.js"></script>
+    <script src="../../../script/api.js"></script>
+    <script src="../../../script/utils.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Vecinos - Reportes Ciudadanos</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <link rel="stylesheet" href="styles/admin-styles.css">
+
+    <style>
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+
+        .custom-popup {
+            font-family: 'Arial', sans-serif;
+        }
+
+        .popup-content {
+            padding: 10px;
+            min-width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #1e40af;
+        }
+
+        .popup-folio {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 10px;
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .popup-info {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .popup-button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .popup-button:hover {
+            background-color: #2563eb;
+        }
+
+        .filter-button {
+            transition: all 0.2s;
+        }
+
+        .filter-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .filter-button:not(.active) {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .filter-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .legend {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+        }
+
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        #reportDetailsPanel {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        #reportDetailsPanel.show {
+            right: 0;
+        }
+
+        .close-panel-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .close-panel-btn:hover {
+            color: #333;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-reportado {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-verificado {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .status-programado {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .status-reparado {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-cerrado {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .gravedad-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .gravedad-baja {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .gravedad-media {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .gravedad-alta {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .gravedad-critica {
+            background: #7f1d1d;
+            color: white;
+        }
+
+        .report-card {
+            border-left: 4px solid;
+            transition: all 0.2s;
+        }
+
+        .report-card:hover {
+            transform: translateX(4px);
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <div id="headerRender">
+    </div>
+
+    <div class="flex">
+
+        <div id="asideRender">
+        </div>
+
+        <main class="flex-1 p-6">
+
+            <div id="mapView" class="view-content">
+
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-users text-blue-600 mr-2"></i>
+                        App Vecinos - Reportes Ciudadanos
+                    </h2>
+                    <p class="text-gray-600">Visualización geográfica de todos los reportes ciudadanos</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Reportes</p>
+                                <p id="totalReports" class="text-2xl font-bold text-gray-800">-</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-clipboard-list text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Reportados</p>
+                                <p id="reportadosCount" class="text-2xl font-bold text-amber-600">-</p>
+                            </div>
+                            <div class="bg-amber-100 p-3 rounded-full">
+                                <i class="fas fa-exclamation-circle text-amber-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Verificados</p>
+                                <p id="verificadosCount" class="text-2xl font-bold text-blue-600">-</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-check-circle text-blue-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">En Proceso</p>
+                                <p id="procesoCount" class="text-2xl font-bold text-indigo-600">-</p>
+                            </div>
+                            <div class="bg-indigo-100 p-3 rounded-full">
+                                <i class="fas fa-spinner text-indigo-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Resueltos</p>
+                                <p id="resueltosCount" class="text-2xl font-bold text-green-600">-</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-check-double text-green-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm font-medium text-gray-700">Categoría:</label>
+                            <select id="filterCategoria" onchange="applyFilters()"
+                                class="filter-select border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">Todas</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm font-medium text-gray-700">Estado:</label>
+                            <select id="filterEstado" onchange="applyFilters()"
+                                class="filter-select border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">Todos</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm font-medium text-gray-700">Gravedad:</label>
+                            <select id="filterGravedad" onchange="applyFilters()"
+                                class="filter-select border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">Todas</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm font-medium text-gray-700">Fecha desde:</label>
+                            <input type="date" id="filterFechaDesde" onchange="applyFilters()"
+                                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm font-medium text-gray-700">Fecha hasta:</label>
+                            <input type="date" id="filterFechaHasta" onchange="applyFilters()"
+                                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <button onclick="resetFilters()"
+                            class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                            <i class="fas fa-undo mr-1"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Mapa de Reportes</h3>
+                        <div class="flex gap-2">
+                            <button onclick="resetMapView()"
+                                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                <i class="fas fa-home mr-1"></i> Vista Inicial
+                            </button>
+                            <button onclick="toggleMapFullscreen()"
+                                class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                                <i class="fas fa-expand mr-1"></i> Pantalla Completa
+                            </button>
+                        </div>
+                    </div>
+                    <div id="map"></div>
+                </div>
+
+                <!-- Reports List -->
+                <div class="mt-6 bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Listado de Reportes</h3>
+                        <span id="reportCount" class="text-sm text-gray-500"></span>
+                    </div>
+                    <div id="reportsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Details Panel -->
+    <div id="reportDetailsPanel">
+        <button class="close-panel-btn" onclick="closeReportDetails()">&times;</button>
+        <h2 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+            Detalles del Reporte
+        </h2>
+        <div id="reportDetailsContent">
+        </div>
+    </div>
+
+    <script src="../../../script/layout.js"></script>
+    <script src="../../../script/help.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => createHelpButton('vecinos'));</script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+
+        const BASE_URL = 'https://186.67.61.251:8000';
+
+        let map;
+        let markers = [];
+        let allReports = [];
+        let filteredReports = [];
+        let categorias = [];
+        let estados = [];
+        let gravedades = [];
+
+        // Colores por estado
+        const estadoColors = {
+            'Reportado': '#f59e0b',
+            'Verificado': '#3b82f6',
+            'Programado': '#6366f1',
+            'Reparado': '#10b981',
+            'Cerrado': '#6b7280',
+            'default': '#6b7280'
+        };
+
+        // Colores por gravedad
+        const gravedadColors = {
+            'Baja': '#10b981',
+            'Media': '#f59e0b',
+            'Alta': '#ef4444',
+            'Crítica': '#7f1d1d',
+            'default': '#6b7280'
+        };
+
+        function getEstadoColor(estado) {
+            return estadoColors[estado] || estadoColors['default'];
+        }
+
+        function getGravedadColor(gravedad) {
+            return gravedadColors[gravedad] || gravedadColors['default'];
+        }
+
+        function getStatusBadgeClass(estado) {
+            const map = {
+                'Reportado': 'status-reportado',
+                'Verificado': 'status-verificado',
+                'Programado': 'status-programado',
+                'Reparado': 'status-reparado',
+                'Cerrado': 'status-cerrado'
+            };
+            return map[estado] || 'status-reportado';
+        }
+
+        function getGravedadBadgeClass(gravedad) {
+            const map = {
+                'Baja': 'gravedad-baja',
+                'Media': 'gravedad-media',
+                'Alta': 'gravedad-alta',
+                'Crítica': 'gravedad-critica'
+            };
+            return map[gravedad] || 'gravedad-media';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'No especificada';
+            try {
+                return new Date(dateString).toLocaleDateString('es-CL', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const token = localStorage.getItem('authToken');
+
+                // Fetch all data in parallel
+                const [reportsRes, categoriasRes, estadosRes, gravedadesRes] = await Promise.all([
+                    fetch(`${BASE_URL}/api/mobile/reportes/todos`),
+                    fetch(`${BASE_URL}/api/mobile/categorias`),
+                    fetch(`${BASE_URL}/api/mobile/estados`),
+                    fetch(`${BASE_URL}/api/mobile/gravedades`)
+                ]);
+
+                if (!reportsRes.ok) {
+                    throw new Error(`Error HTTP: ${reportsRes.status}`);
+                }
+
+                allReports = await reportsRes.json();
+                categorias = await categoriasRes.json();
+                estados = await estadosRes.json();
+                gravedades = await gravedadesRes.json();
+
+                console.log("Reportes cargados:", allReports.length);
+                console.log("Categorías:", categorias);
+                console.log("Estados:", estados);
+                console.log("Gravedades:", gravedades);
+
+                initializeApp();
+            } catch (error) {
+                console.error("No se pudieron cargar los datos:", error);
+
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                    mapContainer.innerHTML = `<div class="flex justify-center items-center h-full text-center p-4"><p class="text-red-500 font-semibold">Error al cargar los reportes.</p><p class="text-gray-600">${error.message}</p></div>`;
+                }
+            }
+        }
+
+        function initializeApp() {
+            populateFilters();
+            initializeMap();
+            updateStatsCards();
+            filteredReports = [...allReports];
+            loadReportsList();
+        }
+
+        function populateFilters() {
+            // Categorías
+            const categoriaSelect = document.getElementById('filterCategoria');
+            categoriaSelect.innerHTML = '<option value="all">Todas</option>';
+            categorias.forEach(cat => {
+                categoriaSelect.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+            });
+
+            // Estados
+            const estadoSelect = document.getElementById('filterEstado');
+            estadoSelect.innerHTML = '<option value="all">Todos</option>';
+            estados.forEach(est => {
+                estadoSelect.innerHTML += `<option value="${est.id}">${est.nombre}</option>`;
+            });
+
+            // Gravedades
+            const gravedadSelect = document.getElementById('filterGravedad');
+            gravedadSelect.innerHTML = '<option value="all">Todas</option>';
+            gravedades.forEach(grav => {
+                gravedadSelect.innerHTML += `<option value="${grav.id}">${grav.nombre}</option>`;
+            });
+        }
+
+        function initializeMap() {
+            map = L.map('map').setView([-33.366677, -71.673103], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            addMarkersToMap(allReports);
+            addLegend();
+        }
+
+        function addMarkersToMap(reports) {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            const validReports = reports.filter(report => report.latitud && report.longitud);
+
+            validReports.forEach(report => {
+                const lat = parseFloat(report.latitud);
+                const lng = parseFloat(report.longitud);
+
+                const popupContent = `
+                    <div class="popup-content">
+                        <div class="popup-folio"><i class="fas fa-hashtag"></i> ${report.numero_folio || 'Sin folio'}</div>
+                        <div class="popup-title">${report.categoria || 'Sin categoría'}</div>
+                        <div class="popup-info"><strong>Estado:</strong> <span class="status-badge ${getStatusBadgeClass(report.estado)}">${report.estado || 'Sin estado'}</span></div>
+                        <div class="popup-info"><strong>Gravedad:</strong> <span class="gravedad-badge ${getGravedadBadgeClass(report.gravedad)}">${report.gravedad || 'Sin gravedad'}</span></div>
+                        <div class="popup-info"><strong>Dirección:</strong> ${report.direccion_referencia || 'No especificada'}</div>
+                        <div class="popup-info"><strong>Fecha:</strong> ${formatDate(report.fecha_reporte)}</div>
+                        ${report.descripcion ? `<div class="popup-info"><strong>Descripción:</strong> ${report.descripcion.substring(0, 100)}${report.descripcion.length > 100 ? '...' : ''}</div>` : ''}
+                        <button class="popup-button" onclick="showReportDetails(${report.id})">
+                            <i class="fas fa-info-circle mr-1"></i> Ver detalles completos
+                        </button>
+                    </div>`;
+
+                const iconColor = getEstadoColor(report.estado);
+                const customIcon = L.divIcon({
+                    html: `<div style="background-color: ${iconColor}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-exclamation" style="color: white; font-size: 10px;"></i>
+                           </div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12],
+                    popupAnchor: [0, -12],
+                    className: 'custom-div-icon'
+                });
+
+                const marker = L.marker([lat, lng], { icon: customIcon })
+                    .addTo(map)
+                    .bindPopup(popupContent, {
+                        maxWidth: 350,
+                        className: 'custom-popup'
+                    });
+
+                marker.reportId = report.id;
+                marker.estado = report.estado;
+                marker.categoria = report.categoria;
+                markers.push(marker);
+            });
+        }
+
+        function updateStatsCards() {
+            const totalCount = allReports.length;
+            const reportadosCount = allReports.filter(r => r.estado_id === 1).length;
+            const verificadosCount = allReports.filter(r => r.estado_id === 2).length;
+            const procesoCount = allReports.filter(r => r.estado_id === 3).length;
+            const resueltosCount = allReports.filter(r => r.estado_id === 4 || r.estado_id === 5).length;
+
+            document.getElementById('totalReports').textContent = totalCount;
+            document.getElementById('reportadosCount').textContent = reportadosCount;
+            document.getElementById('verificadosCount').textContent = verificadosCount;
+            document.getElementById('procesoCount').textContent = procesoCount;
+            document.getElementById('resueltosCount').textContent = resueltosCount;
+        }
+
+        function addLegend() {
+            if (window.mapLegend) {
+                map.removeControl(window.mapLegend);
+            }
+
+            const legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'legend');
+                div.innerHTML = '<div class="legend-title">Estados de Reporte</div>';
+
+                Object.keys(estadoColors).forEach(estado => {
+                    if (estado !== 'default') {
+                        const color = estadoColors[estado];
+                        div.innerHTML += `
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: ${color}"></div>
+                                <span>${estado}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                return div;
+            };
+
+            window.mapLegend = legend;
+            legend.addTo(map);
+        }
+
+        function applyFilters() {
+            const categoriaId = document.getElementById('filterCategoria').value;
+            const estadoId = document.getElementById('filterEstado').value;
+            const gravedadId = document.getElementById('filterGravedad').value;
+            const fechaDesde = document.getElementById('filterFechaDesde').value;
+            const fechaHasta = document.getElementById('filterFechaHasta').value;
+
+            filteredReports = allReports.filter(report => {
+                // Filter by category
+                if (categoriaId !== 'all' && report.categoria_id != categoriaId) {
+                    return false;
+                }
+
+                // Filter by state
+                if (estadoId !== 'all' && report.estado_id != estadoId) {
+                    return false;
+                }
+
+                // Filter by gravedad
+                if (gravedadId !== 'all' && report.gravedad_id != gravedadId) {
+                    return false;
+                }
+
+                // Filter by date from
+                if (fechaDesde && report.fecha_reporte) {
+                    const reportDate = new Date(report.fecha_reporte).setHours(0, 0, 0, 0);
+                    const fromDate = new Date(fechaDesde).setHours(0, 0, 0, 0);
+                    if (reportDate < fromDate) {
+                        return false;
+                    }
+                }
+
+                // Filter by date to
+                if (fechaHasta && report.fecha_reporte) {
+                    const reportDate = new Date(report.fecha_reporte).setHours(0, 0, 0, 0);
+                    const toDate = new Date(fechaHasta).setHours(0, 0, 0, 0);
+                    if (reportDate > toDate) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            addMarkersToMap(filteredReports);
+            loadReportsList();
+        }
+
+        function resetFilters() {
+            document.getElementById('filterCategoria').value = 'all';
+            document.getElementById('filterEstado').value = 'all';
+            document.getElementById('filterGravedad').value = 'all';
+            document.getElementById('filterFechaDesde').value = '';
+            document.getElementById('filterFechaHasta').value = '';
+
+            filteredReports = [...allReports];
+            addMarkersToMap(filteredReports);
+            loadReportsList();
+        }
+
+        function resetMapView() {
+            map.setView([-33.366677, -71.673103], 13);
+        }
+
+        function toggleMapFullscreen() {
+            const mapContainer = document.getElementById('map');
+
+            if (!document.fullscreenElement) {
+                mapContainer.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function loadReportsList() {
+            const listContainer = document.getElementById('reportsList');
+            const countElement = document.getElementById('reportCount');
+            listContainer.innerHTML = '';
+
+            const validReports = filteredReports.filter(report => report.latitud && report.longitud);
+
+            countElement.textContent = `Mostrando ${validReports.length} de ${allReports.length} reportes`;
+
+            if (validReports.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        <i class="fas fa-search text-4xl mb-4"></i>
+                        <p>No se encontraron reportes con los filtros seleccionados</p>
+                    </div>
+                `;
+                return;
+            }
+
+            validReports.forEach(report => {
+                const estadoColor = getEstadoColor(report.estado);
+                const reportCard = document.createElement('div');
+                reportCard.className = 'report-card bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition';
+                reportCard.style.borderLeftColor = estadoColor;
+                reportCard.onclick = () => focusReportOnMap(report.id);
+
+                reportCard.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div style="background-color: ${estadoColor}; width: 12px; height: 12px; border-radius: 50%; margin-top: 5px;"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-semibold text-gray-800">${report.categoria || 'Sin categoría'}</h4>
+                                <span class="text-xs text-gray-400">#${report.numero_folio || '-'}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 truncate">${report.direccion_referencia || 'Sin dirección'}</p>
+                            <div class="mt-2 flex flex-wrap gap-2 items-center">
+                                <span class="status-badge ${getStatusBadgeClass(report.estado)}">${report.estado || 'Sin estado'}</span>
+                                <span class="gravedad-badge ${getGravedadBadgeClass(report.gravedad)}">${report.gravedad || '-'}</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">
+                                <i class="fas fa-calendar mr-1"></i>
+                                ${formatDate(report.fecha_reporte).split(',')[0]}
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                listContainer.appendChild(reportCard);
+            });
+        }
+
+        function focusReportOnMap(reportId) {
+            const report = allReports.find(r => r.id === reportId);
+            if (report && report.latitud && report.longitud) {
+                const lat = parseFloat(report.latitud);
+                const lng = parseFloat(report.longitud);
+                map.setView([lat, lng], 17);
+
+                markers.forEach(marker => {
+                    if (marker.reportId === reportId) {
+                        marker.openPopup();
+                    }
+                });
+            }
+        }
+
+        function showReportDetails(reportId, editMode = false) {
+            const report = allReports.find(r => r.id === reportId);
+            if (!report) return;
+
+            const panel = document.getElementById('reportDetailsPanel');
+            const content = document.getElementById('reportDetailsContent');
+
+            // Generar opciones para selects
+            const categoriaOptions = categorias.map(c =>
+                `<option value="${c.id}" ${c.id === report.categoria_id ? 'selected' : ''}>${c.nombre}</option>`
+            ).join('');
+
+            const estadoOptions = estados.map(e =>
+                `<option value="${e.id}" ${e.id === report.estado_id ? 'selected' : ''}>${e.nombre}</option>`
+            ).join('');
+
+            const gravedadOptions = gravedades.map(g =>
+                `<option value="${g.id}" ${g.id === report.gravedad_id ? 'selected' : ''}>${g.nombre}</option>`
+            ).join('');
+
+            if (editMode) {
+                // Modo edición
+                content.innerHTML = `
+                    <div class="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Editando Folio</span>
+                            <span class="text-lg font-bold text-amber-700">#${report.numero_folio || 'Sin folio'}</span>
+                        </div>
+                    </div>
+
+                    <form id="editReportForm" onsubmit="saveReportChanges(event, ${report.id})">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                            <select name="categoria_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                ${categoriaOptions}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select name="estado_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                ${estadoOptions}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gravedad</label>
+                            <select name="gravedad_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                ${gravedadOptions}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección de Referencia</label>
+                            <input type="text" name="direccion_referencia" value="${report.direccion_referencia || ''}" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <textarea name="descripcion" rows="4" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">${report.descripcion || ''}</textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="revisado" ${report.revisado ? 'checked' : ''} 
+                                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                <span class="text-sm font-medium text-gray-700">Marcar como Revisado</span>
+                            </label>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-save mr-1"></i> Guardar Cambios
+                            </button>
+                            <button type="button" onclick="showReportDetails(${report.id}, false)" class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-times mr-1"></i> Cancelar
+                            </button>
+                        </div>
+                    </form>
+                `;
+            } else {
+                // Modo visualización
+                content.innerHTML = `
+                    <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Folio</span>
+                            <span class="text-lg font-bold text-blue-700">#${report.numero_folio || 'Sin folio'}</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Categoría</span>
+                        <p class="detail-value text-lg font-semibold">${report.categoria || 'Sin categoría'}</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Estado</span>
+                        <p class="detail-value">
+                            <span class="status-badge ${getStatusBadgeClass(report.estado)}">${report.estado || 'Sin estado'}</span>
+                        </p>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Gravedad</span>
+                        <p class="detail-value">
+                            <span class="gravedad-badge ${getGravedadBadgeClass(report.gravedad)}">${report.gravedad || 'Sin gravedad'}</span>
+                        </p>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Dirección de Referencia</span>
+                        <p class="detail-value">${report.direccion_referencia || 'No especificada'}</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Descripción</span>
+                        <p class="detail-value">${report.descripcion || 'Sin descripción'}</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Coordenadas</span>
+                        <p class="detail-value">
+                            <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>
+                            ${report.latitud}, ${report.longitud}
+                        </p>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Fecha de Reporte</span>
+                        <p class="detail-value">${formatDate(report.fecha_reporte)}</p>
+                    </div>
+
+                    ${report.fecha_actualizacion ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Última Actualización</span>
+                        <p class="detail-value">${formatDate(report.fecha_actualizacion)}</p>
+                    </div>
+                    ` : ''}
+
+                    <div class="detail-item">
+                        <span class="detail-label">Reportado Por</span>
+                        <p class="detail-value">
+                            <i class="fas fa-user text-gray-400 mr-1"></i>
+                            ${report.reportado_por_nombre || 'Anónimo'}
+                            ${report.reportado_por_email ? `<span class="text-sm text-gray-400">(${report.reportado_por_email})</span>` : ''}
+                        </p>
+                    </div>
+
+                    ${report.actualizado_por_nombre ? `
+                    <div class="detail-item">
+                        <span class="detail-label">Actualizado Por</span>
+                        <p class="detail-value">
+                            <i class="fas fa-user-edit text-gray-400 mr-1"></i>
+                            ${report.actualizado_por_nombre}
+                            ${report.actualizado_por_email ? `<span class="text-sm text-gray-400">(${report.actualizado_por_email})</span>` : ''}
+                        </p>
+                    </div>
+                    ` : ''}
+
+                    <div class="detail-item">
+                        <span class="detail-label">Revisado</span>
+                        <p class="detail-value">
+                            ${report.revisado ? '<i class="fas fa-check-circle text-green-500 mr-1"></i> Sí' : '<i class="fas fa-times-circle text-red-500 mr-1"></i> No'}
+                        </p>
+                    </div>
+
+                    <div class="mt-6 flex gap-2">
+                        <button onclick="showReportDetails(${report.id}, true)" class="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors">
+                            <i class="fas fa-edit mr-1"></i> Editar
+                        </button>
+                        <button onclick="focusReportOnMap(${report.id}); closeReportDetails();" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-map-marker-alt mr-1"></i> Ver en Mapa
+                        </button>
+                    </div>
+                `;
+            }
+
+            panel.classList.add('show');
+        }
+
+        async function saveReportChanges(event, reportId) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            const data = {
+                categoria_id: parseInt(formData.get('categoria_id')),
+                estado_id: parseInt(formData.get('estado_id')),
+                gravedad_id: parseInt(formData.get('gravedad_id')),
+                direccion_referencia: formData.get('direccion_referencia'),
+                descripcion: formData.get('descripcion'),
+                revisado: formData.get('revisado') === 'on'
+            };
+
+            try {
+                const token = localStorage.getItem('authToken');
+
+                const response = await fetch(`${BASE_URL}/api/mobile/reportes/${reportId}/actualizar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.msg || 'Error al actualizar el reporte');
+                }
+
+                // Actualizar el reporte en la lista local
+                const reportIndex = allReports.findIndex(r => r.id === reportId);
+                if (reportIndex !== -1) {
+                    allReports[reportIndex] = {
+                        ...allReports[reportIndex],
+                        categoria_id: data.categoria_id,
+                        categoria: categorias.find(c => c.id === data.categoria_id)?.nombre,
+                        estado_id: data.estado_id,
+                        estado: estados.find(e => e.id === data.estado_id)?.nombre,
+                        gravedad_id: data.gravedad_id,
+                        gravedad: gravedades.find(g => g.id === data.gravedad_id)?.nombre,
+                        direccion_referencia: data.direccion_referencia,
+                        descripcion: data.descripcion,
+                        revisado: data.revisado
+                    };
+                }
+
+                // Refrescar la UI
+                updateStatsCards();
+                applyFilters();
+
+                // Mostrar mensaje de éxito
+                showToast('Reporte actualizado correctamente', 'success');
+
+                // Volver al modo visualización
+                showReportDetails(reportId, false);
+
+            } catch (error) {
+                console.error('Error al guardar cambios:', error);
+                showToast(error.message || 'Error al guardar los cambios', 'error');
+            }
+        }
+
+        function closeReportDetails() {
+            const panel = document.getElementById('reportDetailsPanel');
+            panel.classList.remove('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            checkLoginStatus();
+            fetchData();
+        });
+    </script>
+</body>
+
+</html>

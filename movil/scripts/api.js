@@ -168,10 +168,14 @@ const api = {
 
     // ===== VERIFICACIONES =====
 
-    async verifyReport(reportId, resultado) {
+    async verifyReport(reportId, resultadoOrId) {
+        const body = typeof resultadoOrId === 'number'
+            ? { estado_id: resultadoOrId }
+            : { resultado: resultadoOrId };
+
         return await this.request(`/api/mobile/reportes/${reportId}/verificar`, {
             method: 'POST',
-            body: JSON.stringify({ resultado })
+            body: JSON.stringify(body)
         });
     },
 
@@ -189,6 +193,27 @@ const api = {
             method: 'POST',
             body: JSON.stringify({ comentario })
         });
+    },
+
+    async getEstados() {
+        return await this.request('/api/mobile/estados', {
+            method: 'GET',
+            auth: false
+        });
+    },
+
+    async getGravedades() {
+        return await this.request('/api/mobile/gravedades', {
+            method: 'GET',
+            auth: false
+        });
+    },
+
+    async updateReport(reportId, data) {
+        return await this.request(`/api/mobile/reportes/${reportId}/actualizar`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
     }
 };
 
@@ -198,30 +223,78 @@ const api = {
 
 const geo = {
     async getCurrentPosition() {
-        return new Promise((resolve, reject) => {
-            if (!navigator.geolocation) {
-                reject(new Error('Geolocalización no soportada'));
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    resolve({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                        accuracy: position.coords.accuracy
-                    });
-                },
-                (error) => {
-                    reject(error);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
+        // Helper para promisificar getCurrentPosition
+        const getPos = (options) => {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocalización no soportada'));
+                    return;
                 }
-            );
-        });
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        });
+                    },
+                    (error) => reject(error),
+                    options
+                );
+            });
+        };
+
+        // Estrategia: Intentar alta precisión primero (GPS), si falla, caer a baja precisión (Red)
+        try {
+            // Intento 1: Alta precisión (timeout corto 5s)
+            console.log('Intentando obtener ubicación precisa...');
+            return await getPos({
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        } catch (e) {
+            console.warn('Alta precisión falló o demoró, intentando baja precisión...', e);
+
+            // Intento 2: Baja precisión (mayor timeout, acepta caché)
+            // Esto suele funcionar mejor en interiores o iOS cuando el GPS tarda
+            return await getPos({
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 60000 // 1 minuto de antigüedad aceptable
+            });
+        }
+    },
+
+    async getAddress(lat, lng) {
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'ReportesApp/1.0',
+                    'Accept-Language': 'es'
+                }
+            });
+            const data = await response.json();
+
+            if (data && data.address) {
+                // Priorizar calle y número, o nombre del lugar
+                const road = data.address.road || data.address.pedestrian || '';
+                const number = data.address.house_number || '';
+                const suburb = data.address.neighbourhood || data.address.suburb || '';
+
+                let full = road;
+                if (number) full += ` ${number}`;
+                if (suburb && !road) full += `${suburb}`; // Si no hay calle, mostrar barrio
+                if (!full) full = data.display_name.split(',')[0]; // Fallback
+
+                return full || 'Ubicación seleccionada';
+            }
+            return 'Ubicación sin dirección exacta';
+        } catch (error) {
+            console.error('Error geocoding:', error);
+            return 'No se pudo obtener la dirección';
+        }
     }
 };
 

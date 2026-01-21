@@ -347,6 +347,32 @@ const helpContent = {
             'Puedes preguntar sobre montos, estados, profesionales, etc.',
             'El asistente tiene acceso a todos los datos de proyectos'
         ]
+    },
+    vecinos: {
+        title: 'App Vecinos - Reportes Ciudadanos',
+        icon: 'fa-users',
+        description: 'Plataforma de visualización y gestión de reportes ciudadanos. Permite monitorear, revisar y actualizar el estado de las denuncias realizadas por los vecinos de la comuna a través de la aplicación móvil.',
+        features: [
+            '🗺️ Mapa interactivo con todos los reportes ciudadanos geolocalizados',
+            '📊 Tarjetas de estadísticas: total de reportes, pendientes, verificados, en proceso y resueltos',
+            '🔍 Filtros avanzados: por categoría (bache, luminaria, basura, etc.), estado, gravedad y rango de fechas',
+            '📋 Listado de reportes con vista previa de información clave',
+            '✏️ Edición de reportes: cambiar estado, gravedad, categoría, marcar como revisado',
+            '👁️ Panel de detalles completo con información del ciudadano que reportó',
+            '🎨 Marcadores de colores según estado del reporte para identificación rápida',
+            '📍 Geolocalización precisa de cada reporte con coordenadas',
+            '📅 Registro de fechas de creación y última actualización',
+            '🔔 Seguimiento del flujo de trabajo: Reportado → Verificado → Programado → Reparado'
+        ],
+        tips: [
+            '💡 Los colores de los marcadores indican el estado: naranja (reportado), azul (verificado), violeta (programado), verde (reparado)',
+            '💡 Usa los filtros de fecha para analizar reportes de un período específico',
+            '💡 Haz clic en un reporte del listado para centrarlo en el mapa',
+            '💡 Desde el panel de detalles puedes editar el estado y gravedad del reporte',
+            '💡 Los reportes resueltos incluyen los estados "Reparado" y "Cerrado"',
+            '💡 Marca como "Revisado" cuando hayas verificado en terreno',
+            '💡 La descripción del ciudadano puede contener información importante para la gestión'
+        ]
     }
 };
 
@@ -360,7 +386,7 @@ function showHelpModal(viewName) {
         modal = document.createElement('div');
         modal.id = 'helpModal';
         modal.innerHTML = `
-            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeHelpModal(event)">
+            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onclick="closeHelpModal(event)">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
                     <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white">
                         <div class="flex items-center justify-between">

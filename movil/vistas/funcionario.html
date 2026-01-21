@@ -37,13 +37,35 @@
                     <h3 style="margin:0"><i class="fas fa-building"></i> Panel de Control</h3>
                 </div>
 
-                <div class="filter-bar">
-                    <button class="filter-btn active" onclick="admin.filter('todos', this)">Todos</button>
-                    <button class="filter-btn" onclick="admin.filter('pendientes', this)">Pendientes</button>
-                    <button class="filter-btn" onclick="admin.filter('verificados', this)">Verificados</button>
+                <div class="filter-section" style="margin-bottom: 15px;">
+                    <!-- Fila 1: Estado -->
+                    <div class="filter-bar" style="flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+                        <span style="font-size:0.75rem; color:#64748b; width:100%; margin-bottom:4px;">Estado:</span>
+                        <button class="filter-btn active" onclick="admin.filter('todos', this)">Todos</button>
+                        <button class="filter-btn" onclick="admin.filter('pendientes', this)">Pendientes</button>
+                        <button class="filter-btn" onclick="admin.filter('en_proceso', this)">En Proceso</button>
+                        <button class="filter-btn" onclick="admin.filter('resueltos', this)">Resueltos</button>
+                        <button class="filter-btn" onclick="admin.filter('descartados', this)">Descartados</button>
+                    </div>
+                    <!-- Fila 2: Categoría -->
+                    <div class="filter-bar" style="flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+                        <span style="font-size:0.75rem; color:#64748b; width:100%; margin-bottom:4px;">Categoría:</span>
+                        <button class="filter-btn" onclick="admin.filter('cat_bache', this)">🕳️ Bache</button>
+                        <button class="filter-btn" onclick="admin.filter('cat_luz', this)">💡 Luz</button>
+                        <button class="filter-btn" onclick="admin.filter('cat_aceras', this)">🚶 Aceras</button>
+                        <button class="filter-btn" onclick="admin.filter('cat_otro', this)">📋 Otro</button>
+                    </div>
+                    <!-- Fila 3: Tiempo y Otros -->
+                    <div class="filter-bar" style="flex-wrap: wrap; gap: 6px;">
+                        <span style="font-size:0.75rem; color:#64748b; width:100%; margin-bottom:4px;">Otros:</span>
+                        <button class="filter-btn" onclick="admin.filter('hoy', this)">📅 Hoy</button>
+                        <button class="filter-btn" onclick="admin.filter('semana', this)">📆 Esta Semana</button>
+                        <button class="filter-btn" onclick="admin.filter('no_revisados', this)">👁️ Sin Revisar</button>
+                        <button class="filter-btn" onclick="admin.filter('graves', this)">⚠️ Graves</button>
+                    </div>
                 </div>
 
-                <div id="admin-reports-list" style="padding-bottom: 80px;">
+                <div id="admin-reports-list" style="padding-bottom: 100px;">
                     <p style="text-align:center; color:#64748b; margin-top:40px;">Cargando reportes...</p>
                 </div>
             </div>
@@ -86,6 +108,15 @@
                         <textarea name="descripcion" rows="4" placeholder="Detalles técnicos..."></textarea>
                     </div>
                     <div class="form-group">
+                        <label>Gravedad del Problema</label>
+                        <select name="gravedad_id" id="gravedad-select" class="form-control">
+                            <option value="1">Bajo - No urgente</option>
+                            <option value="2" selected>Moderado - Atención normal</option>
+                            <option value="3">Grave - Requiere atención pronta</option>
+                            <option value="4">Muy Grave - Urgente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Evidencia (Fotos)</label>
                         <input type="file" id="photo-input" accept="image/*" multiple
                             onchange="reports.previewPhotos(event)">
@@ -97,8 +128,9 @@
 
             <!-- VISTA: Mapa Global -->
             <div id="view-map" class="view">
-                <div id="full-map"></div>
-                <div class="map-legend">
+                <div id="full-map" style="height: calc(100vh - 180px);"></div>
+                <div class="map-legend"
+                    style="position: relative; z-index: 500; background: white; padding: 10px; margin-bottom: 70px;">
                     <div class="legend-item"><span class="legend-dot bache"></span> Bache</div>
                     <div class="legend-item"><span class="legend-dot luz"></span> Luz</div>
                     <div class="legend-item"><span class="legend-dot aceras"></span> Aceras</div>
@@ -109,6 +141,45 @@
             <!-- VISTA: Detalle de Reporte -->
             <div id="view-report-detail" class="view">
                 <div id="report-detail-content"></div>
+            </div>
+
+            <!-- VISTA: Editar Reporte (Solo Funcionarios) -->
+            <div id="view-edit-report" class="view">
+                <form id="edit-report-form" onsubmit="admin.saveEdit(event)" style="padding-bottom: 100px;">
+                    <input type="hidden" id="edit-report-id">
+                    <div class="form-group">
+                        <label>Dirección de Referencia</label>
+                        <input type="text" name="direccion_referencia" id="edit-direccion" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea name="descripcion" id="edit-descripcion" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select name="categoria_id" id="edit-categoria" class="form-control">
+                            <option value="1">Bache</option>
+                            <option value="2">Luz</option>
+                            <option value="3">Aceras</option>
+                            <option value="4">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select name="estado_id" id="edit-estado" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Gravedad</label>
+                        <select name="gravedad_id" id="edit-gravedad" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:10px;">
+                            <input type="checkbox" id="edit-revisado" name="revisado">
+                            <span>Marcado como Revisado</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-submit">Guardar Cambios</button>
+                </form>
             </div>
 
             <!-- VISTA: Perfil -->
@@ -166,8 +237,8 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>window.APP_MODE = 'funcionario';</script>
-    <script src="../scripts/api.js?v=3"></script>
-    <script src="../scripts/app.js?v=3"></script>
+    <script src="../scripts/api.js?v=4"></script>
+    <script src="../scripts/app.js?v=4"></script>
 </body>
 
 </html>

@@ -83,16 +83,18 @@ const app = {
             register: 'Registrarse',
             login: 'Iniciar Sesión',
             home: 'Inicio',
+            admin: 'Panel de Control',
             map: 'Mapa',
             profile: 'Mi Perfil',
             'report-form': 'Nuevo Reporte',
-            'report-detail': 'Detalle de Reporte'
+            'report-detail': 'Detalle de Reporte',
+            'edit-report': 'Editar Reporte'
         };
 
         document.getElementById('header-title').textContent = titles[viewName] || 'App';
 
         // Mostrar/ocultar botón atrás
-        const showBack = ['register', 'login', 'report-form', 'report-detail'].includes(viewName);
+        const showBack = ['register', 'login', 'report-form', 'report-detail', 'edit-report'].includes(viewName);
         document.getElementById('btn-back').style.display = showBack ? 'block' : 'none';
     },
 
@@ -242,15 +244,32 @@ const reports = {
             maps.setPickerPosition(position.lat, position.lng);
             ui.hideLoading();
             ui.showToast('✓ Ubicación actualizada');
+
+            // Obtener dirección automáticamente
+            const address = await geo.getAddress(position.lat, position.lng);
+            // Usar ID para mayor especificidad (asegurarse de agregar id="direccion_referencia" en el HTML)
+            // O buscar dentro del formulario activo
+            const activeForm = document.querySelector('.view.active form');
+            if (activeForm) {
+                const input = activeForm.querySelector('input[name="direccion_referencia"]');
+                if (input) input.value = address;
+            }
         } catch (error) {
             ui.hideLoading();
             ui.showToast('✗ No se pudo obtener la ubicación');
         }
     },
 
-    previewPhotos(event) {
+    previewPhotos(eventOrFiles) {
         // Obtenemos los nuevos archivos seleccionados
-        const newFiles = Array.from(event.target.files);
+        let newFiles = [];
+        if (eventOrFiles.target && eventOrFiles.target.files) {
+            newFiles = Array.from(eventOrFiles.target.files);
+            // Limpiamos el input para permitir seleccionar la misma foto de nuevo si se borró
+            eventOrFiles.target.value = '';
+        } else { // Asumimos que es FileList o Array
+            newFiles = Array.from(eventOrFiles);
+        }
 
         // Si no hay archivos nuevos, no hacemos nada (usuario canceló)
         if (newFiles.length === 0) return;
@@ -318,9 +337,14 @@ const reports = {
         ui.showLoading();
 
         try {
-            // Crear reporte (simulado por ahora, falta endpoint en backend)
+            // Obtener el ID de categoría del input que está dentro del formulario que disparó el evento
+            const categoryInput = form.querySelector('#report-category-id') || document.getElementById('report-category-id');
+            const categoryId = parseInt(categoryInput.value);
+
+            // Crear reporte en el backend
             const reportData = {
-                categoria_id: parseInt(document.getElementById('report-category-id').value),
+                categoria_id: categoryId,
+                gravedad_id: parseInt(formData.get('gravedad_id')) || 1,
                 latitud: position.lat,
                 longitud: position.lng,
                 direccion_referencia: formData.get('direccion_referencia'),
@@ -516,6 +540,31 @@ const maps = {
         // Marker arrastrable
         appState.maps.pickerMarker = L.marker(center, { draggable: true })
             .addTo(appState.maps.picker);
+
+        // Permitir mover el marcador haciendo click/tap en el mapa
+        appState.maps.picker.on('click', async (e) => {
+            appState.maps.pickerMarker.setLatLng(e.latlng);
+            // Actualizar dirección
+            const address = await geo.getAddress(e.latlng.lat, e.latlng.lng);
+
+            const activeForm = document.querySelector('.view.active form');
+            if (activeForm) {
+                const input = activeForm.querySelector('input[name="direccion_referencia"]');
+                if (input) input.value = address;
+            }
+        });
+
+        // Evento dragend para actualizar dirección al soltar el marcador
+        appState.maps.pickerMarker.on('dragend', async (e) => {
+            const latlng = e.target.getLatLng();
+            const address = await geo.getAddress(latlng.lat, latlng.lng);
+
+            const activeForm = document.querySelector('.view.active form');
+            if (activeForm) {
+                const input = activeForm.querySelector('input[name="direccion_referencia"]');
+                if (input) input.value = address;
+            }
+        });
     },
 
     initDetailMap(lat, lng) {
@@ -620,6 +669,30 @@ const admin = {
     reports: [],
 
     async init() {
+        // Cargar estados dinámicamente si no existen
+        if (!appState.estados) {
+            try {
+                appState.estados = await api.getEstados();
+            } catch (e) {
+                console.error('Error cargando estados', e);
+                appState.estados = [
+                    { id: 1, nombre: 'Reportado' }, { id: 2, nombre: 'Verificado' },
+                    { id: 3, nombre: 'Programado' }, { id: 4, nombre: 'Reparado' }, { id: 5, nombre: 'Descartado' }
+                ];
+            }
+        }
+        // Cargar gravedades
+        if (!appState.gravedades) {
+            try {
+                appState.gravedades = await api.getGravedades();
+            } catch (e) {
+                console.error('Error cargando gravedades', e);
+                appState.gravedades = [
+                    { id: 1, nombre: 'Bajo' }, { id: 2, nombre: 'Moderado' },
+                    { id: 3, nombre: 'Grave' }, { id: 4, nombre: 'Muy Grave' }
+                ];
+            }
+        }
         // Cargar reportes al iniciar vista admin
         this.loadReports();
     },
@@ -644,56 +717,212 @@ const admin = {
             return;
         }
 
-        container.innerHTML = list.map(r => `
+        container.innerHTML = list.map(r => {
+            const currentStatusId = r.estado_id || 1;
+            const currentGravedadId = r.gravedad_id || 1;
+
+            return `
             <div class="report-card-admin ${r.categoria?.toLowerCase()}">
-                <div style="display:flex; justify-content:space-between;">
-                    <strong>#${r.id} ${r.categoria}</strong>
-                    <span style="font-size:0.85em; background:#e2e8f0; padding:2px 8px; border-radius:4px;">
-                        ${r.estado || 'Reportado'}
-                    </span>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <strong>#${r.id} ${r.categoria}</strong>
+                        <p style="color:#64748b; font-size:0.85em; margin:2px 0;">
+                            <i class="fas fa-user" style="margin-right:4px;"></i>${r.reportado_por_nombre || 'Usuario'}
+                        </p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.85em; background:#e2e8f0; padding:2px 8px; border-radius:4px;">
+                            ${r.estado || 'Reportado'}
+                        </span>
+                        <span style="font-size:0.75em; display:block; margin-top:4px; color:#64748b;">
+                            ${r.gravedad || 'Bajo'}
+                        </span>
+                    </div>
                 </div>
                 <p style="color:#64748b; font-size:0.9em; margin:5px 0;">${r.direccion_referencia}</p>
                 <p style="color:#94a3b8; font-size:0.8em;">${ui.formatDate(r.fecha_reporte)}</p>
                 
-                <div class="admin-actions">
-                    <button onclick="admin.verify(${r.id}, 'CONFIRMADO')" class="btn-action btn-verify">
-                        <i class="fas fa-check"></i> Validar
-                    </button>
-                    <button onclick="admin.verify(${r.id}, 'RECHAZADO')" class="btn-action btn-reject">
-                        <i class="fas fa-times"></i> Rechazar
-                    </button>
-                    <button onclick="reports.showDetail(${r.id})" class="btn-action" style="background:#f1f5f9;">
-                        <i class="fas fa-eye"></i> Ver
-                    </button>
+                <div class="admin-actions" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="reports.showDetail(${r.id})" class="btn-action" style="background:#f1f5f9; flex:1;">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button onclick="admin.openEdit(${r.id})" class="btn-action" style="background:#3b82f6; color:white; flex:1;">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:120px; background:#f8fafc; padding:8px; border-radius:6px;">
+                            <label style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:4px;">Estado:</label>
+                            <select onchange="admin.updateReport(${r.id}, 'estado_id', this.value)" style="width:100%; padding:6px; border-radius:4px; border:1px solid #cbd5e1;">
+                                ${appState.estados.map(est => `
+                                    <option value="${est.id}" ${currentStatusId == est.id ? 'selected' : ''}>${est.nombre}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width:120px; background:#f8fafc; padding:8px; border-radius:6px;">
+                            <label style="font-size:0.75rem; color:#64748b; display:block; margin-bottom:4px;">Gravedad:</label>
+                            <select onchange="admin.updateReport(${r.id}, 'gravedad_id', this.value)" style="width:100%; padding:6px; border-radius:4px; border:1px solid #cbd5e1;">
+                                ${appState.gravedades.map(g => `
+                                    <option value="${g.id}" ${currentGravedadId == g.id ? 'selected' : ''}>${g.nombre}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <label style="display:flex; align-items:center; gap:8px; background:#f0fdf4; padding:8px; border-radius:6px; cursor:pointer;">
+                        <input type="checkbox" ${r.revisado ? 'checked' : ''} onchange="admin.updateReport(${r.id}, 'revisado', this.checked)">
+                        <span style="font-size:0.85rem; color:#16a34a;">Revisado</span>
+                    </label>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     },
 
     filter(type, btn) {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        if (type === 'todos') this.renderList(this.reports);
-        else if (type === 'pendientes') {
-            this.renderList(this.reports.filter(r => r.estado === 'Reportado'));
-        } else if (type === 'verificados') {
-            this.renderList(this.reports.filter(r => r.estado !== 'Reportado'));
+        let filtered = this.reports;
+        switch (type) {
+            case 'pendientes':
+                filtered = this.reports.filter(r => r.estado_id === 1);
+                break;
+            case 'en_proceso':
+                filtered = this.reports.filter(r => [2, 3].includes(r.estado_id));
+                break;
+            case 'resueltos':
+                filtered = this.reports.filter(r => r.estado_id === 4);
+                break;
+            case 'descartados':
+                filtered = this.reports.filter(r => r.estado_id === 5);
+                break;
+            case 'no_revisados':
+                filtered = this.reports.filter(r => !r.revisado);
+                break;
+            case 'graves':
+                filtered = this.reports.filter(r => r.gravedad_id >= 3);
+                break;
+            // Categorías
+            case 'cat_bache':
+                filtered = this.reports.filter(r => r.categoria_id === 1 || r.categoria?.toLowerCase() === 'bache');
+                break;
+            case 'cat_luz':
+                filtered = this.reports.filter(r => r.categoria_id === 2 || r.categoria?.toLowerCase() === 'luz');
+                break;
+            case 'cat_aceras':
+                filtered = this.reports.filter(r => r.categoria_id === 3 || r.categoria?.toLowerCase() === 'aceras');
+                break;
+            case 'cat_otro':
+                filtered = this.reports.filter(r => r.categoria_id === 4 || r.categoria?.toLowerCase() === 'otro');
+                break;
+            // Tiempo
+            case 'hoy':
+                const hoy = new Date().toISOString().split('T')[0];
+                filtered = this.reports.filter(r => r.fecha_reporte?.startsWith(hoy));
+                break;
+            case 'semana':
+                const ahora = new Date();
+                const hace7Dias = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
+                filtered = this.reports.filter(r => {
+                    if (!r.fecha_reporte) return false;
+                    const fechaReporte = new Date(r.fecha_reporte);
+                    return fechaReporte >= hace7Dias;
+                });
+                break;
+            default:
+                filtered = this.reports;
         }
+        this.renderList(filtered);
     },
 
-    async verify(id, status) {
-        if (!confirm(`¿Estás seguro de marcar como ${status}?`)) return;
+    async updateReport(id, field, value) {
         ui.showLoading();
         try {
-            await api.verifyReport(id, status);
-            ui.showToast('Estado actualizado');
-            this.loadReports(); // Recargar
+            const data = {};
+            data[field] = value;
+
+            // Auto-marcar como revisado cuando se cambia estado o gravedad
+            if (field === 'estado_id' || field === 'gravedad_id') {
+                data.revisado = true;
+            }
+
+            await api.updateReport(id, data);
+            ui.showToast('✓ Actualizado');
+            this.loadReports();
         } catch (e) {
-            ui.showToast('Error: ' + e.message);
+            ui.showToast('✗ Error: ' + e.message);
+            this.loadReports();
         } finally {
             ui.hideLoading();
         }
+    },
+
+    // Abrir vista de edición completa
+    async openEdit(reportId) {
+        ui.showLoading();
+        try {
+            const report = await api.getReportDetail(reportId);
+            this.populateEditForm(report);
+            app.showView('edit-report');
+        } catch (e) {
+            ui.showToast('✗ Error cargando reporte');
+        } finally {
+            ui.hideLoading();
+        }
+    },
+
+    populateEditForm(report) {
+        document.getElementById('edit-report-id').value = report.id;
+        document.getElementById('edit-direccion').value = report.direccion_referencia || '';
+        document.getElementById('edit-descripcion').value = report.descripcion || '';
+        document.getElementById('edit-categoria').value = report.categoria_id || 1;
+        document.getElementById('edit-revisado').checked = report.revisado || false;
+
+        // Poblar selectores dinámicos
+        const estadoSelect = document.getElementById('edit-estado');
+        estadoSelect.innerHTML = appState.estados.map(e =>
+            `<option value="${e.id}" ${report.estado_id == e.id ? 'selected' : ''}>${e.nombre}</option>`
+        ).join('');
+
+        const gravedadSelect = document.getElementById('edit-gravedad');
+        gravedadSelect.innerHTML = appState.gravedades.map(g =>
+            `<option value="${g.id}" ${report.gravedad_id == g.id ? 'selected' : ''}>${g.nombre}</option>`
+        ).join('');
+    },
+
+    async saveEdit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const reportId = document.getElementById('edit-report-id').value;
+
+        ui.showLoading();
+        try {
+            const data = {
+                direccion_referencia: document.getElementById('edit-direccion').value,
+                descripcion: document.getElementById('edit-descripcion').value,
+                categoria_id: parseInt(document.getElementById('edit-categoria').value),
+                estado_id: parseInt(document.getElementById('edit-estado').value),
+                gravedad_id: parseInt(document.getElementById('edit-gravedad').value),
+                revisado: document.getElementById('edit-revisado').checked
+            };
+
+            await api.updateReport(reportId, data);
+            ui.showToast('✓ Reporte actualizado');
+            app.showView('admin');
+            this.loadReports();
+        } catch (e) {
+            ui.showToast('✗ Error: ' + e.message);
+        } finally {
+            ui.hideLoading();
+        }
+    },
+
+    // Mantener por compatibilidad
+    async changeStatus(id, newStatusId) {
+        await this.updateReport(id, 'estado_id', parseInt(newStatusId));
     }
 };
 

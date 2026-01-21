@@ -92,6 +92,16 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Gravedad del Problema</label>
+                        <select name="gravedad_id" id="gravedad-select" class="form-control">
+                            <option value="1">Bajo - No urgente</option>
+                            <option value="2" selected>Moderado - Atención normal</option>
+                            <option value="3">Grave - Requiere atención pronta</option>
+                            <option value="4">Muy Grave - Urgente</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label>Fotos (hasta 5)</label>
                         <input type="file" id="photo-input" accept="image/*" multiple
                             onchange="reports.previewPhotos(event)">
@@ -183,8 +193,8 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>window.APP_MODE = 'vecino';</script>
-    <script src="../scripts/api.js?v=3"></script>
-    <script src="../scripts/app.js?v=3"></script>
+    <script src="../scripts/api.js?v=4"></script>
+    <script src="../scripts/app.js?v=4"></script>
 </body>
 
 </html>

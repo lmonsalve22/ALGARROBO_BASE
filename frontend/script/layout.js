@@ -117,7 +117,8 @@ function renderSidebar(containerId = "sidebarContainer") {
         chat: "chat.html",
         geomapas: "geomapas.html",
         hitos: "hitos.html",
-        observacion: "observacion.html"
+        observacion: "observacion.html",
+        vecinos: "vecinos.html"
     };
 
     const linkClasses = (file) =>
@@ -225,6 +226,12 @@ function renderSidebar(containerId = "sidebarContainer") {
                     <a href="${pages.chat}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.chat)}">
                         <i class="fas fa-comments w-5 text-center"></i>
                         <span>ChatBot IA</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="${pages.vecinos}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.vecinos)}">
+                        <i class="fas fa-users w-5 text-center"></i>
+                        <span class="font-medium">App Vecinos</span>
                     </a>
                 </li>
             </ul>
