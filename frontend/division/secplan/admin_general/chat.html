@@ -501,7 +501,7 @@
 
             MAX_TEXT_PAYLOAD_LENGTH: 80000,
 
-            MAX_PROJECTS_SUMMARY: 100
+            MAX_PROJECTS_SUMMARY: 500
         };
 
         const API_BASE = 'https://186.67.61.251:8000';
@@ -979,7 +979,7 @@
                 const projects = context.filteredProjects || [];
                 const totalProyectos = projects.length;
 
-                // 1. Pre-ordenamiento y Mapeo Optimizado para AI
+                // 1. Mapeo de datos para reducción de tokens
                 const projectsData = projects
                     .sort((a, b) => a.id - b.id)
                     .slice(0, CHAT_CONFIG.MAX_PROJECTS_SUMMARY)
