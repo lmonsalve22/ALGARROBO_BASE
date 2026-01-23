@@ -979,38 +979,35 @@
                 const projects = context.filteredProjects || [];
                 const totalProyectos = projects.length;
 
-                // 1. Mapeo a Lista Compacta de Una Sola Línea (Optimización para Escaneo Exhaustivo)
-                const projectsMarkdown = projects
+                // 1. Matriz de Datos Ultra-Densa (Optimización de Atención)
+                const projectsMatrix = projects
                     .sort((a, b) => a.id - b.id)
                     .slice(0, CHAT_CONFIG.MAX_PROJECTS_SUMMARY)
-                    .map(p => `ID:${p.id} | N:${p.nombre || 'S/N'} | E:${p.estado_nombre || p.estado_proyecto || 'S/E'} | M:$${(p.monto || 0).toLocaleString('es-CL')} | F:${p.financiamiento_nombre || p.financiamiento || 'S/F'} | P:${[p.profesional_1, p.profesional_2].filter(Boolean).join(', ')} | A:${p.anno_ejecucion || 'N/A'}`).join('\n');
+                    .map(p => `[ID:${p.id}][N:${p.nombre || 'S/N'}][E:${p.estado_nombre || p.estado_proyecto || 'S/E'}][M:${p.monto || 0}][F:${p.financiamiento_nombre || p.financiamiento || 'S/F'}]`).join('\n');
 
-                // 2. System Prompt: Auditor
-                systemPrompt = `Eres un Auditor Municipal experto (SECPLAN).
-                Tu objetivo es auditar la lista de proyectos y dar respuestas CON PRECISIÓN MATEMÁTICA.
-
-                LISTA DE CARGA (Un proyecto por línea):
-                ${projectsMarkdown}
+                // 2. System Prompt: Estructura DATA -> INSTRUCTIONS (Recency Bias)
+                systemPrompt = `Eres el Auditor de Datos SECPLAN. 
+                Tu única fuente de verdad es la BASE DE DATOS a continuación.
+                
+                ### BASE DE DATOS PROYECTOS (${projects.length} registros):
+                ${projectsMatrix}
                 ---------------------------------------------------
-                ${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `[NOTA: Lista limitada a los primeros ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} items]` : ''}
-
-                REGLA DE ORO DE ESCANEO:
-                No resumas sin mirar. Escanea CADA LÍNEA de la lista de carga buscando el criterio solicitado (ej. "Escuela"). Si hay 500 líneas, revisa las 500.
-
-                PROTOCOLO DE RESPUESTA:
-                1. Identifica mentalmente TODOS los IDs que cumplen el criterio.
-                2. Realiza el conteo final basado exclusivamente en esos IDs.
-                3. Si el usuario te corrige, vuelve a escanear línea por línea.
+                
+                ### REGLAS CRÍTICAS DE AUDITORÍA (LEER ÚLTIMO - ALTA PRIORIDAD):
+                1. **EXHAUSTIVIDAD:** Escanea CADA línea de la BASE DE DATOS. No te detengas al encontrar los primeros.
+                2. **NO ALUCINAR:** Si el usuario incluye nombres en su pregunta, IGNÓRALOS para el conteo. Usa SOLO la BASE DE DATOS arriba.
+                3. **VERIFICACIÓN POR ID:** Por cada registro que encuentres, anota su ID.
+                4. **CUMPLIMIENTO DE FILTRO:** Si preguntan por una palabra (ej: "Escuela"), el nombre debe contenerla. Recuerda que "Escuela El Yeco" != "Escuela San José".
 
                 ESTRUCTURA DE RESPUESTA:
                 [RESPUESTA]
-                - Indica el total exacto.
-                - Si son menos de 10 proyectos, lístalos brevemente por nombre.
-                - Si son más de 10, destaca el de mayor inversión.
+                - Total exacto encontrado.
+                - Si Total < 20: Lista los IDs y Nombres encontrados (eje: "ID:45 - Nombre Proyecto").
+                - Si Total >= 20: Indica el total y el proyecto de mayor monto.
                 [/RESPUESTA]
 
                 [PREGUNTAS]
-                (3 preguntas estratégicas sobre contratos, plazos o montos)
+                (3 preguntas estratégicas)
                 [/PREGUNTAS]`;
             }
 
