@@ -1057,7 +1057,7 @@
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${API_KEY} `,
+                    'Authorization': `Bearer ${API_KEY}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(requestBody)
@@ -1065,7 +1065,7 @@
 
             if (!response.ok) {
                 const errText = await response.text();
-                throw new Error(`API ${response.status}: ${errText} `);
+                throw new Error(`API ${response.status}: ${errText}`);
             }
 
             const data = await response.json();
@@ -1097,7 +1097,7 @@
 
         function addMessageToChat(sender, text, preguntas = []) {
             const wrapper = document.createElement('div');
-            wrapper.className = `message - wrapper ${sender} `;
+            wrapper.className = `message-wrapper ${sender}`;
 
             const avatar = document.createElement('div');
             avatar.className = 'avatar';
@@ -1134,7 +1134,7 @@
                     preguntas.forEach(q => {
                         const chip = document.createElement('button');
                         chip.className = 'suggestion-chip';
-                        chip.innerHTML = `< i class="fas fa-arrow-right text-xs" ></i > ${q} `;
+                        chip.innerHTML = `<i class="fas fa-arrow-right text-xs"></i> ${q}`;
                         chip.onclick = () => {
                             DOM.chatInput.value = q;
                             sendMessage();
@@ -1173,7 +1173,7 @@
         function clearChat() {
             if (!confirm("¿Estás seguro de que quieres borrar todo el historial del chat?")) return;
             DOM.messagesArea.innerHTML = `
-                    < div class="message-wrapper bot" >
+                <div class="message-wrapper bot">
                     <div class="avatar"><i class="fas fa-robot"></i></div>
                     <div class="flex-1">
                         <div class="message-content markdown-body">
@@ -1182,8 +1182,7 @@
                         </div>
                         <div class="message-meta text-gray-500">Hoy, ${new Date().toLocaleTimeString()}</div>
                     </div>
-                </div >
-                    `;
+                </div>`;
             AppState.chatHistory = [];
         }
 
@@ -1199,7 +1198,7 @@
             const blob = new Blob([txt], { type: 'text/plain' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `chat - geoportal - ${Date.now()}.txt`;
+            a.download = `chat-geoportal-${Date.now()}.txt`;
             a.click();
             showToast("Conversación exportada correctamente", "success");
         }
