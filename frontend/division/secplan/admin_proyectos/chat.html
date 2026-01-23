@@ -1,29 +1,44 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <script src="../../../script/router.js"></script> 
+    <script src="../../../script/router.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente Inteligente Geoportal - ZhipuAI Integration</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Marked.js para Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
+
     <style>
         /* --- Estilos Generales --- */
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
         /* Scrollbar personalizada */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
 
         /* --- Estilos Chat --- */
         .chat-container {
@@ -64,7 +79,7 @@
             font-size: 0.95rem;
             line-height: 1.6;
             position: relative;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .message-wrapper.bot .message-content {
@@ -75,7 +90,8 @@
         }
 
         .message-wrapper.user .message-content {
-            background-color: #4f46e5; /* Indigo 600 */
+            background-color: #4f46e5;
+            /* Indigo 600 */
             color: white;
             border-bottom-right-radius: 0.25rem;
             box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
@@ -91,9 +107,16 @@
             flex-shrink: 0;
             font-size: 0.9rem;
         }
-        
-        .bot .avatar { background-color: #e0e7ff; color: #4338ca; }
-        .user .avatar { background-color: #c7d2fe; color: #312e81; }
+
+        .bot .avatar {
+            background-color: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .user .avatar {
+            background-color: #c7d2fe;
+            color: #312e81;
+        }
 
         .message-meta {
             font-size: 0.75rem;
@@ -103,18 +126,60 @@
             gap: 0.5rem;
             align-items: center;
         }
-        
-        .bot .message-meta { justify-content: flex-start; }
-        .user .message-meta { justify-content: flex-end; }
+
+        .bot .message-meta {
+            justify-content: flex-start;
+        }
+
+        .user .message-meta {
+            justify-content: flex-end;
+        }
 
         /* Markdown Styles dentro del Chat */
-        .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; font-size: 1.1em; }
-        .markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin-bottom: 0.5em; }
-        .markdown-body p { margin-bottom: 0.5em; }
-        .markdown-body code { background-color: rgba(0,0,0,0.1); padding: 0.1em 0.3em; border-radius: 0.2rem; font-family: monospace; }
-        .user .markdown-body code { background-color: rgba(255,255,255,0.2); }
-        .markdown-body pre { background-color: #1e293b; color: #f1f5f9; padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.5rem 0; }
-        .markdown-body pre code { background-color: transparent; color: inherit; padding: 0; }
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3 {
+            font-weight: 700;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            font-size: 1.1em;
+        }
+
+        .markdown-body ul,
+        .markdown-body ol {
+            padding-left: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-body p {
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-body code {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 0.1em 0.3em;
+            border-radius: 0.2rem;
+            font-family: monospace;
+        }
+
+        .user .markdown-body code {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .markdown-body pre {
+            background-color: #1e293b;
+            color: #f1f5f9;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .markdown-body pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
 
         /* Sugerencias */
         .suggestion-chips {
@@ -123,6 +188,7 @@
             gap: 0.5rem;
             margin-top: 0.75rem;
         }
+
         .suggestion-chip {
             background-color: white;
             border: 1px solid #cbd5e1;
@@ -136,6 +202,7 @@
             align-items: center;
             gap: 0.4rem;
         }
+
         .suggestion-chip:hover {
             background-color: #f1f5f9;
             border-color: #94a3b8;
@@ -144,8 +211,15 @@
 
         /* Animaciones */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Proyecto Lista */
@@ -153,7 +227,7 @@
             background-color: #eff6ff !important;
             border-color: #4f46e5 !important;
         }
-        
+
         /* Toast Notification */
         #toast-container {
             position: fixed;
@@ -164,21 +238,30 @@
             flex-direction: column;
             gap: 10px;
         }
+
         .toast {
             background: #1e293b;
             color: white;
             padding: 12px 24px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             font-size: 0.9rem;
             animation: slideIn 0.3s ease-out;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         /* Loading Dots */
@@ -191,17 +274,35 @@
             animation: typing 1.4s infinite ease-in-out both;
             margin: 0 2px;
         }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
         @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
         }
 
         .loading-overlay {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.8);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -210,18 +311,19 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
-    
+
     <!-- Header inyectado por layout.js -->
     <div id="headerRender"></div>
-    
+
     <div class="flex flex-1 overflow-hidden">
         <!-- Aside/Sidebar inyectado por layout.js -->
         <div id="asideRender"></div>
 
         <!-- Main Content -->
         <main class="flex-1 flex flex-col p-6 overflow-hidden relative">
-            
+
             <div class="mb-6 flex justify-between items-center">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -234,16 +336,17 @@
             <!-- 1. Barra de Filtros -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4 flex-shrink-0">
                 <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
-                    
+
                     <!-- Buscador -->
                     <div class="w-full md:w-1/4">
-                        <label for="filterSearch" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Buscar</label>
+                        <label for="filterSearch"
+                            class="block text-xs font-semibold text-gray-500 uppercase mb-1">Buscar</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-search text-gray-400"></i>
                             </div>
-                            <input type="text" id="filterSearch" 
-                                class="pl-10 block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2" 
+                            <input type="text" id="filterSearch"
+                                class="pl-10 block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2"
                                 placeholder="Nombre, código...">
                         </div>
                     </div>
@@ -252,24 +355,30 @@
                     <div class="flex flex-1 w-full gap-3">
                         <!-- Área -->
                         <div class="flex-1">
-                            <label for="filterArea" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Área</label>
-                            <select id="filterArea" class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
+                            <label for="filterArea"
+                                class="block text-xs font-semibold text-gray-500 uppercase mb-1">Área</label>
+                            <select id="filterArea"
+                                class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
                                 <option value="">Cargando...</option>
                             </select>
                         </div>
-                        
+
                         <!-- Estado -->
                         <div class="flex-1">
-                            <label for="filterStatus" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Estado</label>
-                            <select id="filterStatus" class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
+                            <label for="filterStatus"
+                                class="block text-xs font-semibold text-gray-500 uppercase mb-1">Estado</label>
+                            <select id="filterStatus"
+                                class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
                                 <option value="">Cargando...</option>
                             </select>
                         </div>
 
                         <!-- Financiamiento -->
                         <div class="flex-1">
-                            <label for="filterFinancing" class="block text-xs font-semibold text-gray-500 uppercase mb-1">Financiamiento</label>
-                            <select id="filterFinancing" class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
+                            <label for="filterFinancing"
+                                class="block text-xs font-semibold text-gray-500 uppercase mb-1">Financiamiento</label>
+                            <select id="filterFinancing"
+                                class="block w-full rounded-md border-gray-300 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2">
                                 <option value="">Cargando...</option>
                             </select>
                         </div>
@@ -277,10 +386,12 @@
 
                     <!-- Acciones -->
                     <div class="flex gap-2">
-                        <button onclick="clearFilters()" class="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition">
+                        <button onclick="clearFilters()"
+                            class="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition">
                             <i class="fas fa-times"></i> Limpiar
                         </button>
-                        <button onclick="selectAllFiltered()" class="px-4 py-2 bg-indigo-50 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-100 transition">
+                        <button onclick="selectAllFiltered()"
+                            class="px-4 py-2 bg-indigo-50 text-indigo-600 text-sm font-medium rounded-md hover:bg-indigo-100 transition">
                             <i class="fas fa-check-double"></i> Sel. Visibles
                         </button>
                     </div>
@@ -289,25 +400,26 @@
 
             <!-- 2. Contenedor Flex: Lista Proyectos (Izq) + Chat (Der) -->
             <div class="flex gap-4 flex-1 min-h-0">
-                
+
                 <!-- Columna Izquierda: Lista de Proyectos -->
                 <div class="w-1/3 bg-white rounded-lg shadow border border-gray-200 flex flex-col relative">
                     <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center rounded-t-lg">
                         <span class="font-semibold text-gray-700 text-sm">Proyectos Disponibles</span>
-                        <span id="visibleCount" class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">0</span>
+                        <span id="visibleCount"
+                            class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">0</span>
                     </div>
-                    
+
                     <div id="projectsLoading" class="loading-overlay hidden">
                         <div class="flex flex-col items-center">
                             <i class="fas fa-spinner fa-spin text-indigo-600 text-2xl mb-2"></i>
                             <span class="text-xs text-gray-500">Cargando datos...</span>
                         </div>
                     </div>
-                    
+
                     <div id="projectListContainer" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scroll">
                         <!-- Items renderizados por JS -->
                     </div>
-                    
+
                     <div class="p-3 border-t border-gray-100 text-xs text-gray-400 bg-gray-50 rounded-b-lg">
                         <i class="fas fa-info-circle mr-1"></i> Selecciona para analizar en el chat.
                     </div>
@@ -316,20 +428,25 @@
                 <!-- Columna Derecha: Chat UI (Lógica ZhipuAI) -->
                 <div class="w-2/3 chat-container">
                     <!-- Header Chat -->
-                    <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
+                    <div
+                        class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
                         <div class="flex items-center gap-2">
                             <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                             <span class="text-sm font-bold text-gray-700">Asistente Municipal (GLM-4)</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span id="chatContextBadge" class="hidden text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full flex items-center gap-1">
-                                <i class="fas fa-database"></i> <span id="selectedCountMsg">0</span> proyectos en contexto
+                            <span id="chatContextBadge"
+                                class="hidden text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full flex items-center gap-1">
+                                <i class="fas fa-database"></i> <span id="selectedCountMsg">0</span> proyectos en
+                                contexto
                             </span>
                             <div class="h-4 w-px bg-gray-300 mx-1"></div>
-                            <button onclick="clearChat()" class="text-gray-400 hover:text-red-500 transition" title="Limpiar chat">
+                            <button onclick="clearChat()" class="text-gray-400 hover:text-red-500 transition"
+                                title="Limpiar chat">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            <button onclick="exportConversation()" class="text-gray-400 hover:text-indigo-600 transition" title="Exportar conversación">
+                            <button onclick="exportConversation()"
+                                class="text-gray-400 hover:text-indigo-600 transition" title="Exportar conversación">
                                 <i class="fas fa-download"></i>
                             </button>
                         </div>
@@ -343,7 +460,8 @@
                             <div class="flex-1">
                                 <div class="message-content markdown-body">
                                     <p><strong>¡Hola! Soy tu asistente potenciado</strong></p>
-                                    <p>Estoy conectado a los datos del Geoportal. Selecciona proyectos de la lista izquierda y hazme preguntas sobre:</p>
+                                    <p>Estoy conectado a los datos del Geoportal. Selecciona proyectos de la lista
+                                        izquierda y hazme preguntas sobre:</p>
                                     <ul>
                                         <li>Análisis de montos y presupuestos.</li>
                                         <li>Estados de avance por área.</li>
@@ -366,18 +484,22 @@
                     <div class="p-4 bg-white border-t border-gray-100">
                         <!-- El formulario maneja el envío correctamente ahora -->
                         <form id="chatForm" class="flex items-end gap-2">
-                            <button type="button" id="voiceButton" class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition" title="Dictar por voz">
+                            <button type="button" id="voiceButton"
+                                class="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition"
+                                title="Dictar por voz">
                                 <i class="fas fa-microphone"></i>
                             </button>
-                            
+
                             <div class="flex-1 relative">
-                                <input type="text" id="chatInput" 
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3 pr-12" 
+                                <input type="text" id="chatInput"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3 pr-12"
                                     placeholder="Escribe tu pregunta aquí..." autocomplete="off">
-                                <div id="charCounter" class="absolute bottom-2 right-3 text-[10px] text-gray-400">0/500</div>
+                                <div id="charCounter" class="absolute bottom-2 right-3 text-[10px] text-gray-400">0/500
+                                </div>
                             </div>
-                            
-                            <button type="submit" id="sendButton" class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg shadow-sm transition-colors flex items-center justify-center w-11 h-11">
+
+                            <button type="submit" id="sendButton"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg shadow-sm transition-colors flex items-center justify-center w-11 h-11">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </form>
@@ -386,7 +508,7 @@
             </div>
         </main>
     </div>
-    
+
     <!-- Contenedor de Toasts -->
     <div id="toast-container"></div>
 
@@ -395,10 +517,10 @@
         // --- CONFIGURACIÓN ZHIPU AI ---
         const API_KEY = "1dbcda64e67c4d31a7e9e5565efc5cae.M5ZIv5sFPbdOwgKw";
         //const API_URL = "https://api.z.ai/api/paas/v4/chat/completions";
-        const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"; 
-        const MODEL_NAME = "GLM-4.5-Flash"; 
+        const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+        const MODEL_NAME = "GLM-4.5-Flash";
         //const MODEL_NAME = "glm-4.5-flash"; 
-        
+
         // Configuración Chat
         const CHAT_CONFIG = {
             MAX_HISTORY_LENGTH: 10,
@@ -425,7 +547,7 @@
             filterFinancing: document.getElementById('filterFinancing'),
             visibleCount: document.getElementById('visibleCount'),
             projectsLoading: document.getElementById('projectsLoading'),
-            
+
             // Chat
             messagesArea: document.getElementById('messagesArea'),
             chatForm: document.getElementById('chatForm'),
@@ -438,7 +560,7 @@
         };
 
         // --- 1. LÓGICA DE PROYECTOS (Geoportal) ---
-        
+
         const API_BASE = 'https://186.67.61.251:8000';
 
         function getAuthHeaders() {
@@ -460,8 +582,8 @@
                 if (!response.ok) throw new Error(`Error API: ${response.status}`);
                 AppState.allProjects = await response.json();
                 AppState.filterProject = AppState.allProjects;
-                
-                initFilters(); 
+
+                initFilters();
             } catch (error) {
                 console.error('Error al cargar proyectos:', error);
                 DOM.projectListContainer.innerHTML = `
@@ -507,14 +629,14 @@
             const fin = DOM.filterFinancing.value;
 
             const filtered = AppState.allProjects.filter(p => {
-                const matchTxt = (p.nombre && p.nombre.toLowerCase().includes(txt)) || 
-                                 (p.codigo && p.codigo.toLowerCase().includes(txt));
+                const matchTxt = (p.nombre && p.nombre.toLowerCase().includes(txt)) ||
+                    (p.codigo && p.codigo.toLowerCase().includes(txt));
                 const matchArea = area === "" || p.area === area;
                 const matchStatus = status === "" || p.estado_proyecto === status;
                 const matchFin = fin === "" || p.financiamiento === fin;
                 return matchTxt && matchArea && matchStatus && matchFin;
             });
-            AppState.filterProject = filtered; 
+            AppState.filterProject = filtered;
 
             renderProjectList(filtered);
             DOM.visibleCount.textContent = filtered.length;
@@ -537,14 +659,14 @@
                 AppState.selectedIds.add(id);
                 cb.checked = true;
                 const card = cb.closest('.cursor-pointer');
-                if(card) card.classList.add('project-card-selected');
+                if (card) card.classList.add('project-card-selected');
             });
             updateContextUI();
         }
 
         function renderProjectList(list) {
             DOM.projectListContainer.innerHTML = "";
-            if(list.length === 0) {
+            if (list.length === 0) {
                 DOM.projectListContainer.innerHTML = `<div class="p-4 text-center text-gray-400 text-sm">No hay proyectos con estos filtros.</div>`;
                 return;
             }
@@ -581,10 +703,10 @@
         }
 
         function getStatusBadgeColor(status) {
-            if(status === 'Ejecución') return 'bg-green-100 text-green-700';
-            if(status === 'Terminado') return 'bg-gray-100 text-gray-700';
-            if(status === 'Licitación') return 'bg-yellow-100 text-yellow-700';
-            if(status === 'Diseño') return 'bg-blue-100 text-blue-700';
+            if (status === 'Ejecución') return 'bg-green-100 text-green-700';
+            if (status === 'Terminado') return 'bg-gray-100 text-gray-700';
+            if (status === 'Licitación') return 'bg-yellow-100 text-yellow-700';
+            if (status === 'Diseño') return 'bg-blue-100 text-blue-700';
             return 'bg-gray-100 text-gray-600';
         }
 
@@ -613,18 +735,20 @@
             return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumSignificantDigits: 3 }).format(num);
         }
 
-        // --- 2. LÓGICA DE CHAT (ZhipuAI Integration) ---
+
+
+        // --- 3. LÓGICA DE CHAT (ZhipuAI Integration) ---
 
         function initChat() {
             // ✅ SOLUCIÓN: Solo el evento 'submit' del formulario
             DOM.chatForm.addEventListener('submit', sendMessage);
-            
+
             DOM.chatInput.addEventListener('input', updateCharCounter);
             DOM.voiceButton.addEventListener('click', toggleVoiceRecognition);
 
             // Inicializar timestamp
             const now = new Date();
-            document.getElementById('initial-timestamp').textContent = `Hoy, ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+            document.getElementById('initial-timestamp').textContent = `Hoy, ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
 
             initializeVoiceRecognition();
         }
@@ -695,8 +819,8 @@
 
             // Preparar Contexto (Proyectos Seleccionados)
             const selectedProjects = AppState.allProjects.filter(p => AppState.selectedIds.has(p.id));
-            const contextData = selectedProjects.length > 0 
-                ? `Contexto de Proyectos Seleccionados (JSON):\n${JSON.stringify(selectedProjects, null, 2)}\n\nAnaliza estos datos para responder.` 
+            const contextData = selectedProjects.length > 0
+                ? `Contexto de Proyectos Seleccionados (JSON):\n${JSON.stringify(selectedProjects, null, 2)}\n\nAnaliza estos datos para responder.`
                 : "No hay proyectos seleccionados actualmente. Responde de forma general o pide al usuario que seleccione proyectos.";
 
             try {
@@ -717,25 +841,75 @@
             console.log(AppState.filterProject)
             AppState.chatHistory.push({ role: "user", content: userMessage });
 
-            const promptSistema = `Eres un asistente experto en análisis de datos municipales.
-            ${systemContext}
-            Instrucciones:
-            - Responde siempre en español.
-            - Usa formato Markdown para estructurar la información (listas, tablas, negritas).
-            - Si tienes datos de proyectos en el contexto, usa números y cifras reales del JSON.
-            - Al final de tu respuesta, genera exactamente 3 preguntas de seguimiento relevantes que pudiera hacer el usuario.
-            - Responde solo usando datos de la base de datos en el contexto.
+            // Pasar los datos filtrados actuales al contexto
+            // 1. Optimización y Pre-ordenamiento de Datos (Mejora #1 y #2)
+            const contextProjects = AppState.filterProject
+                .sort((a, b) => a.id - b.id) // Ordenar por ID para consistencia
+                .map(p => ({
+                    id: p.id,
+                    nombre: p.nombre,
+                    estado: p.estado_proyecto || "Sin Estado",
+                    categoria: p.area || "Sin Categoría",
+                    financiamiento: p.financiamiento || "N/A",
+                    monto: p.monto || 0,
+                    avance: (p.porcentaje_avance || 0) + "%"
+                }));
 
-            Base de datos ${JSON.stringify(AppState.filterProject)}
+            const dataContext = contextProjects.length > 0
+                ? JSON.stringify(contextProjects)
+                : "No hay proyectos visibles en la lista actual. Si el usuario pregunta generalidades, indica que necesita limpiar filtros.";
+
+            const promptSistema = `Eres un Auditor Municipal experto en Control de Gestión (SECPLAN).
+            Tu objetivo es auditar los datos y entregar respuestas matemáticamente exactas y explicaciones estratégicas.
+
+            DATOS DISPONIBLES (Ordenados por ID):
+            ${dataContext}
+
+            DICCIONARIO SEMÁNTICO Y EMOJIS (Mapeo Inteligente):
+            - **Sinónimos (Mapeo Semántico):**
+                * "Calles", "Pavimento", "Bacheo" -> Busca en Categoría 'Vialidad'.
+                * "Colegio", "Escuela", "Clases" -> Busca en Categoría 'Educación'.
+                * "Luz", "Luminarias", "Postes" -> Busca en Categoría 'Energización'.
+                * "Agua", "Alcantarillado" -> Busca en Categoría 'Saneamiento'.
+                * "Plaza", "Parque", "Sede" -> Busca en Categoría 'Espacios Públicos'.
+            - **Indicadores Visuales (Emojis):**
+                * 📝 Diseño
+                * 🚧 En ejecución
+                * ✅ Ejecutado / Terminado / Recepcionado
+                * 📢 Licitación / Bases
+                * ⚠️ Subsanación / Reevaluación / En preparación
+
+            EJEMPLOS DE RAZONAMIENTO (FEW-SHOT LEARNING):
+            [Caso 1: Conteo Simple]
+            Usuario: "¿Cuántos proyectos de agua hay?"
+            Tu Pensamiento: "Palabra clave 'agua' -> Mapeo a 'Saneamiento'. Escaneo lista... ID 114 (Saneamiento), ID 115 (Saneamiento). Total = 2."
+            Tu Respuesta: "Actualmente constan **2 proyectos** 💧 relacionados con Saneamiento..."
+
+            INSTRUCCIONES DE RAZONAMIENTO "SCRATCHPAD" OBLIGATORIO:
+            Antes de responder, DEBES realizar un proceso interno de validación paso a paso:
+            1.  **BÚSQUEDA POR ID:** Si la pregunta incluye un número (ej: 114), verifica primero si corresponde a un ID exacto.
+            2.  **CONTEO BASADO EN EVIDENCIA:** Si piden "Cuántos...", recorre mentalmente la lista y cuenta los IDs que cumplen la condición.
+                *   ADVERTENCIA: Si no encuentras nada, di explícitamente que hay 0, no inventes.
+            3.  **ADAPTABILIDAD:** 
+                *   Si el resultado son **menos de 5 proyectos**: Menciónalos uno por uno por su nombre (en *cursiva*) + Emoji de estado.
+                *   Si el resultado son **más de 5 proyectos**: Da el total y destaca casos relevantes (ej: el de mayor monto).
+
+            REGLAS DE FORMATO Y ESTILO:
+            - **Moneda:** Siempre en Pesos Chilenos con separador de miles y signo peso (ej: **$150.000.000**).
+            - **Estilo:** Usa **Negritas** para cifras clave y *Cursivas* para nombres de proyectos. Usa Emojis para dar contexto visual.
+            - **Tono:** Profesional, técnico pero claro.
+
+            ESTRUCTURA DE RESPUESTA REQUERIDA:
             
-            Formato de salida requerido:
             [RESPUESTA]
-            ... (tu respuesta en markdown) ...
+            (Tu análisis de auditoría. Incluye respuesta directa y contexto holístico.)
             [/RESPUESTA]
+
             [PREGUNTAS]
-            1. Primera pregunta
-            2. Segunda pregunta
-            3. Tercera pregunta
+            (Genera 3 preguntas de seguimiento DIVERSAS):
+            1. (Detalle específico financiero o de avance)
+            2. (Comparativa con otras áreas o fuentes de financiamiento)
+            3. (Estado crítico o proyectos próximos a término)
             [/PREGUNTAS]`;
 
             const requestBody = {
@@ -763,7 +937,7 @@
 
             const data = await response.json();
             const rawContent = data.choices[0].message.content;
-            
+
             // Parsear respuesta
             let respuestaFinal = "";
             let preguntasFinal = [];
@@ -778,7 +952,7 @@
                 const lines = matchPreg[1].split('\n').filter(l => l.trim());
                 lines.forEach(l => {
                     const m = l.match(/^\d+\.\s*(.+)/);
-                    if(m) preguntasFinal.push(m[1].trim());
+                    if (m) preguntasFinal.push(m[1].trim());
                 });
             }
 
@@ -801,26 +975,26 @@
             // Contenido
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content markdown-body';
-            
+
             if (sender === 'user') {
                 contentDiv.textContent = text;
             } else {
                 // Parsear Markdown
                 contentDiv.innerHTML = marked.parse(sanitizeInput(text));
-                
+
                 // Botones de acción (Copiar / Hablar)
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'flex gap-2 mt-3 border-t border-gray-200 pt-2 opacity-60 hover:opacity-100 transition';
-                
+
                 const btnCopy = document.createElement('button');
                 btnCopy.className = 'text-xs flex items-center gap-1 hover:text-indigo-600';
                 btnCopy.innerHTML = '<i class="fas fa-copy"></i> Copiar';
                 btnCopy.onclick = () => { navigator.clipboard.writeText(text); showToast("Texto copiado al portapapeles", "success"); };
-                
+
                 const btnSpeak = document.createElement('button');
                 btnSpeak.className = 'text-xs flex items-center gap-1 hover:text-indigo-600';
                 btnSpeak.innerHTML = '<i class="fas fa-volume-up"></i> Escuchar';
-                btnSpeak.onclick = function() { speakText(text, this); };
+                btnSpeak.onclick = function () { speakText(text, this); };
 
                 actionsDiv.appendChild(btnCopy);
                 actionsDiv.appendChild(btnSpeak);
@@ -837,7 +1011,7 @@
                         chip.onclick = () => {
                             DOM.chatInput.value = q;
                             // Aquí llamamos sendMessage() sin evento (null), lo cual es seguro por el chequeo `if (e)`
-                            sendMessage(); 
+                            sendMessage();
                         };
                         chipsContainer.appendChild(chip);
                     });
@@ -873,7 +1047,7 @@
         }
 
         function clearChat() {
-            if(!confirm("¿Estás seguro de que quieres borrar todo el historial del chat?")) return;
+            if (!confirm("¿Estás seguro de que quieres borrar todo el historial del chat?")) return;
             // Mensaje de bienvenida
             DOM.messagesArea.innerHTML = `
                 <div class="message-wrapper bot">
@@ -899,7 +1073,7 @@
                 const content = wrapper.querySelector('.message-content').innerText;
                 txt += `${role}\n${content}\n\n`;
             });
-            
+
             const blob = new Blob([txt], { type: 'text/plain' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -912,13 +1086,13 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            
+
             let icon = '<i class="fas fa-info-circle"></i>';
-            if(type === 'success') icon = '<i class="fas fa-check-circle text-green-400"></i>';
-            if(type === 'error') icon = '<i class="fas fa-exclamation-triangle text-red-400"></i>';
+            if (type === 'success') icon = '<i class="fas fa-check-circle text-green-400"></i>';
+            if (type === 'error') icon = '<i class="fas fa-exclamation-triangle text-red-400"></i>';
 
             toast.innerHTML = `${icon} <span>${message}</span>`;
-            
+
             container.appendChild(toast);
 
             setTimeout(() => {
@@ -937,4 +1111,5 @@
     </script>
     <script src="../../../script/layout.js"></script>
 </body>
+
 </html>
