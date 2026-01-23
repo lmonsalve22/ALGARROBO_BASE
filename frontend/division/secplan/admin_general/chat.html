@@ -1028,25 +1028,33 @@
                 Pensamiento: "Palabra 'agua' -> Saneamiento. Escaneo lista... ID 114 (Saneamiento), ID 115 (Saneamiento). Total = 2."
                 R: "Constan **2 proyectos** 💧 relacionados con Saneamiento..."
 
+                [Caso 2: Lógica de Filtro / Restricción]
+                U: "Muestrame solo los del año 2025" o "Solo financiamiento PMB"
+                Pensamiento: "1. Detecto Restricción: 'Año 2025' o 'PMB'.
+                2. Aplico Filtro Riguroso:
+                   - Item 1: ¿Cumple? No -> Descartar.
+                   - Item 2: ¿Cumple? Sí -> Mantener.
+                3. Genero respuesta solo con los items que pasaron el filtro."
+
                 INSTRUCCIONES DE RAZONAMIENTO "SCRATCHPAD" (OBLIGATORIO):
                 Antes de responder, realiza una validación interna paso a paso:
-                1. **BÚSQUEDA POR ID:** Si hay un número (ej: 114), confirma si es ID.
-                2. **CONTEO POR EVIDENCIA:** Si piden "Cuántos", cuenta los IDs internamente uno a uno.
-                   * Advertencia: Si es 0, dilo explícitamente.
-                3. **ADAPTABILIDAD:**
-                   * Si N < 5: Lista los proyectos por nombre (*cursiva*) + Emoji.
-                   * Si N > 5: Da el total y destaca el de mayor monto.
+                1. **ANÁLISIS DE INTENCIÓN:** ¿El usuario está pidiendo *todos* los datos o está aplicando un FILTRO (por año, estado, financiamiento)?
+                2. **EJECUCIÓN DE FILTRO:** Si hay filtro, rechaza cualquier proyecto que no cumpla EXACTAMENTE la condición (ej: "2024" no es "2025").
+                3. **CONTEO FINAL:** Cuenta solo los aprobados post-filtro. Si quedan 0, dilo claramente.
+                4. **ADAPTABILIDAD:**
+                   * Si N < 5: Lista los proyectos filtrados por nombre (*cursiva*) + Emoji.
+                   * Si N > 5: Da el total filtrado y destaca el de mayor monto.
 
                 ESTRUCTURA DE RESPUESTA:
                 [RESPUESTA]
-                (Análisis técnico. Usa negritas para cifras y cursivas para nombres. Usa formato chileno $1.000.000)
+                    (Análisis técnico.Usa negritas para cifras y cursivas para nombres.Usa formato chileno $1.000.000)
                 [/RESPUESTA]
 
                 [PREGUNTAS]
-                (3 preguntas estratégicas):
-                1. (Detalle financiero/técnico)
-                2. (Comparativa de áreas)
-                3. (Estado crítico/fechas)
+                    (3 preguntas estratégicas):
+                1.(Detalle financiero / técnico)
+                2.(Comparativa de áreas)
+                3.(Estado crítico / fechas)
                 [/PREGUNTAS]`;
             }
 
@@ -1064,7 +1072,7 @@
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${API_KEY}`,
+                    'Authorization': `Bearer ${API_KEY} `,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(requestBody)
@@ -1072,7 +1080,7 @@
 
             if (!response.ok) {
                 const errText = await response.text();
-                throw new Error(`API ${response.status}: ${errText}`);
+                throw new Error(`API ${response.status}: ${errText} `);
             }
 
             const data = await response.json();
@@ -1104,7 +1112,7 @@
 
         function addMessageToChat(sender, text, preguntas = []) {
             const wrapper = document.createElement('div');
-            wrapper.className = `message-wrapper ${sender}`;
+            wrapper.className = `message - wrapper ${sender} `;
 
             const avatar = document.createElement('div');
             avatar.className = 'avatar';
@@ -1141,7 +1149,7 @@
                     preguntas.forEach(q => {
                         const chip = document.createElement('button');
                         chip.className = 'suggestion-chip';
-                        chip.innerHTML = `<i class="fas fa-arrow-right text-xs"></i> ${q}`;
+                        chip.innerHTML = `< i class="fas fa-arrow-right text-xs" ></i > ${q} `;
                         chip.onclick = () => {
                             DOM.chatInput.value = q;
                             sendMessage();
@@ -1180,7 +1188,7 @@
         function clearChat() {
             if (!confirm("¿Estás seguro de que quieres borrar todo el historial del chat?")) return;
             DOM.messagesArea.innerHTML = `
-                <div class="message-wrapper bot">
+                    < div class="message-wrapper bot" >
                     <div class="avatar"><i class="fas fa-robot"></i></div>
                     <div class="flex-1">
                         <div class="message-content markdown-body">
@@ -1189,8 +1197,8 @@
                         </div>
                         <div class="message-meta text-gray-500">Hoy, ${new Date().toLocaleTimeString()}</div>
                     </div>
-                </div>
-            `;
+                </div >
+                    `;
             AppState.chatHistory = [];
         }
 
@@ -1200,13 +1208,13 @@
                 const isBot = wrapper.classList.contains('bot');
                 const role = isBot ? "IA:" : "Tú:";
                 const content = wrapper.querySelector('.message-content').innerText;
-                txt += `${role}\n${content}\n\n`;
+                txt += `${role} \n${content} \n\n`;
             });
 
             const blob = new Blob([txt], { type: 'text/plain' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `chat-geoportal-${Date.now()}.txt`;
+            a.download = `chat - geoportal - ${Date.now()}.txt`;
             a.click();
             showToast("Conversación exportada correctamente", "success");
         }
