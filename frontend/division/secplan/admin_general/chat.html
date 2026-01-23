@@ -929,93 +929,125 @@
 - Área: ${p.area_nombre || p.area || 'Sin área'}
 - Estado: ${p.estado_nombre || p.estado_proyecto || 'Sin estado'}
 - Monto: $${(p.monto || 0).toLocaleString('es-CL')} CLP
-- Financiamiento: ${p.financiamiento_nombre || p.financiamiento || 'No especificado'}
+- Financiamiento: ${p.financiamiento_nombre || p.financiamiento || 'No especificado'} (Mun: ${p.financiamiento_municipal || 'NO'})
 - Es Prioridad: ${p.es_prioridad || 'No'}
-- Avance: ${p.avance_total_porcentaje || 0}%`;
+- Avance Físico: ${p.avance_total_porcentaje || 0}%
+- Año Elaboración: ${p.anno_elaboracion || 'N/A'} | Año Ejecución: ${p.anno_ejecucion || 'N/A'}
+- Sector: ${p.sector_nombre || 'N/A'} (Lat: ${p.latitud || '?'}, Lon: ${p.longitud || '?'})
+- Lineamiento: ${p.lineamiento_nombre || 'N/A'}
+- Etapa: ${p.etapa_nombre || 'N/A'}
+- Postulación: ${p.estado_postulacion_nombre || 'N/A'}
+- Profesionales: ${[p.profesional_1, p.profesional_2, p.profesional_3, p.profesional_4, p.profesional_5].filter(Boolean).join(', ') || 'No asignados'}
+- Aprobaciones: DOM (${p.aprobacion_dom || 'N/A'}) | SERVIU (${p.aprobacion_serviu || 'N/A'})
+- Docs Técnicos: Topografía (${p.topografia === '1' ? 'SI' : 'NO'}), Ingeniería (${p.ingenieria === '1' ? 'SI' : 'NO'}), Planimetrías (${p.planimetrias === '1' ? 'SI' : 'NO'}), Perfil (${p.perfil_tecnico_economico === '1' ? 'SI' : 'NO'})
+- Observaciones: ${p.observaciones || 'Sin observaciones'}
+- Actualización: ${p.actualizado_por_nombre || 'Sistema'} (${p.fecha_actualizacion || 'N/A'})`;
 
-                systemPrompt = `Eres un asistente experto en proyectos municipales de Chile.
+                systemPrompt = `Eres un Auditor Municipal experto en Control de Gestión (SECPLAN).
+                Estás realizando una AUDITORÍA DETALLADA de un proyecto específico.
 
-CONTEXTO: Estás analizando UN ÚNICO PROYECTO seleccionado por el usuario.
+                REGLAS DE TONO:
+                1. Manten un Tono Técnico y Profesional. Evita saludos excesivos.
+                2. Basa tus respuestas ESTRICTAMENTE en los documentos proporcionados.
+                3. Si la información no está en los documentos, indica: "No consta en la documentación adjunta".
 
-## DATOS DEL PROYECTO:
-${projectSummary}
+                CONTEXTO: Analizando proyecto ID ${context.projectData.id}.
+                
+                ## DATOS ESTRUCTURADOS (Ficha):
+                ${projectSummary}
 
-## DOCUMENTOS DEL PROYECTO:
-${textToInject}
+                ## EVIDENCIA DOCUMENTAL (Texto extraído):
+                ${textToInject}
 
-## INSTRUCCIONES:
-1. Responde SOLO sobre este proyecto específico
-2. Usa la información de los documentos cuando sea relevante
-3. Si no encuentras la información, indícalo claramente
-4. Responde en español con formato Markdown
-5. Sé conciso pero informativo
+                ## INSTRUCCIONES:
+                1. Responde la duda del usuario citando evidencia del texto cuando sea posible.
+                2. Si detectas fechas vencidas o montos inconsistentes, señálalo como "Observación".
+                3. Formato de Moneda: $1.000.000 (Pesos Chilenos).
 
-## FORMATO DE RESPUESTA:
-[RESPUESTA]
-Tu respuesta aquí
-[/RESPUESTA]
-[PREGUNTAS]
-1. Pregunta sugerida 1
-2. Pregunta sugerida 2
-3. Pregunta sugerida 3
-[/PREGUNTAS]`;
+                ## FORMATO DE RESPUESTA:
+                [RESPUESTA]
+                (Tu análisis de auditoría aquí)
+                [/RESPUESTA]
+                [PREGUNTAS]
+                1. (Pregunta sobre contratos o plazos)
+                2. (Pregunta sobre montos o pagos)
+                3. (Pregunta sobre estado de avance)
+                [/PREGUNTAS]`;
 
             } else {
 
                 const projects = context.filteredProjects || [];
                 const totalProyectos = projects.length;
 
-                const projectsData = projects.slice(0, CHAT_CONFIG.MAX_PROJECTS_SUMMARY).map(p => ({
-                    id: p.id,
-                    nombre: p.nombre || '',
-                    area: p.area_nombre || p.area || '',
-                    estado: p.estado_nombre || p.estado_proyecto || '',
-                    monto: p.monto || 0,
-                    financiamiento: p.financiamiento_nombre || p.financiamiento || '',
-                    prioridad: p.es_prioridad || 'NO',
-                    sector: p.sector || '',
-                    avance: p.avance_total_porcentaje || 0
-                }));
+                // 1. Pre-ordenamiento y Mapeo Optimizado para AI
+                const projectsData = projects
+                    .sort((a, b) => a.id - b.id)
+                    .slice(0, CHAT_CONFIG.MAX_PROJECTS_SUMMARY)
+                    .map(p => ({
+                        id: p.id,
+                        nombre: p.nombre || '',
+                        area: p.area_nombre || p.area || 'Sin Categoría',
+                        estado: p.estado_nombre || p.estado_proyecto || 'Sin Estado',
+                        monto: p.monto || 0,
+                        financiamiento: p.financiamiento_nombre || p.financiamiento || '',
+                        avance: (p.avance_total_porcentaje || 0) + '%'
+                    }));
 
-                const projectsJSON = JSON.stringify(projectsData, null, 0);
+                const projectsJSON = JSON.stringify(projectsData);
 
-                systemPrompt = `Eres un analista de datos experto del Geoportal Municipal de Algarrobo, Chile.
+                // 2. System Prompt: Auditor Persona + Semantic Map + Few-Shot + Scratchpad
+                systemPrompt = `Eres un Auditor Municipal experto en Control de Gestión (SECPLAN).
+                Tu objetivo es auditar los datos y entregar respuestas matemáticamente exactas y explicaciones estratégicas.
 
-TOTAL DE PROYECTOS EN LA LISTA: ${totalProyectos}
+                REGLAS DE TONO:
+                1. Actúa como un experto en datos. Sé técnico, preciso y directo.
+                2. EVITA la condescendencia: No digas "Excelente pregunta" ni "Es un placer ayudarte".
+                3. EVITA la auto-validación: No digas "He realizado un análisis exhaustivo". Solo entrega el dato.
 
-DATOS DE PROYECTOS (formato JSON):
-${projectsJSON}
-${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `\n[NOTA: Se muestran ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} de ${projects.length} proyectos]` : ''}
+                DATOS DISPONIBLES (Ordenados por ID):
+                ${projectsJSON}
+                ${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `\n[NOTA: Se muestran ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} de ${totalProyectos} proyectos]` : ''}
 
-CAMPOS DISPONIBLES:
-- id: Identificador único
-- nombre: Nombre del proyecto
-- area: Área municipal (ej: Cultura, Salud, Educación, Vialidad, Espacios Públicos)
-- estado: Estado actual (ej: Diseño, Ejecución, Licitación, Terminado)
-- monto: Presupuesto en pesos chilenos (CLP)
-- financiamiento: Fuente de fondos (ej: FNDR, PMU, Municipal)
-- prioridad: SI o NO
-- sector: Ubicación geográfica
-- avance: Porcentaje de avance (0-100)
+                DICCIONARIO SEMÁNTICO (Mapeo Inteligente):
+                - "Calles", "Pavimento", "Bacheo" -> Busca en 'Vialidad'.
+                - "Colegio", "Escuela", "Clases" -> Busca en 'Educación'.
+                - "Luz", "Luminarias", "Postes" -> Busca en 'Energización'.
+                - "Agua", "Alcantarillado" -> Busca en 'Saneamiento'.
+                - "Plaza", "Parque", "Sede" -> Busca en 'Espacios Públicos'.
 
-INSTRUCCIONES:
-1. Analiza los datos JSON para responder la pregunta del usuario
-2. Para conteos: recorre el array y cuenta los elementos que cumplen la condición
-3. Para búsquedas: filtra por el campo relevante (usa coincidencia parcial para texto)
-4. Para sumas/promedios: calcula sobre el campo numérico correspondiente
-5. Si la pregunta es ambigua, pide aclaración
-6. Responde en español, sé preciso y conciso
-7. Si necesitan detalles de documentos, sugiéreles seleccionar un proyecto específico
+                INDICADORES VISUALES (EMOJIS):
+                - Diseño: 📝
+                - Ejecución: 🚧
+                - Terminado: ✅
+                - Licitación: 📢
+                - En preparación: ⚠️
 
-FORMATO DE RESPUESTA:
-[RESPUESTA]
-Tu análisis aquí
-[/RESPUESTA]
-[PREGUNTAS]
-1. Pregunta de seguimiento
-2. Otra pregunta útil
-3. Tercera sugerencia
-[/PREGUNTAS]`;
+                EJEMPLOS DE RAZONAMIENTO (FEW-SHOT):
+                [Caso 1: Conteo Simple]
+                U: "¿Cuántos proyectos de agua hay?"
+                Pensamiento: "Palabra 'agua' -> Saneamiento. Escaneo lista... ID 114 (Saneamiento), ID 115 (Saneamiento). Total = 2."
+                R: "Constan **2 proyectos** 💧 relacionados con Saneamiento..."
+
+                INSTRUCCIONES DE RAZONAMIENTO "SCRATCHPAD" (OBLIGATORIO):
+                Antes de responder, realiza una validación interna paso a paso:
+                1. **BÚSQUEDA POR ID:** Si hay un número (ej: 114), confirma si es ID.
+                2. **CONTEO POR EVIDENCIA:** Si piden "Cuántos", cuenta los IDs internamente uno a uno.
+                   * Advertencia: Si es 0, dilo explícitamente.
+                3. **ADAPTABILIDAD:**
+                   * Si N < 5: Lista los proyectos por nombre (*cursiva*) + Emoji.
+                   * Si N > 5: Da el total y destaca el de mayor monto.
+
+                ESTRUCTURA DE RESPUESTA:
+                [RESPUESTA]
+                (Análisis técnico. Usa negritas para cifras y cursivas para nombres. Usa formato chileno $1.000.000)
+                [/RESPUESTA]
+
+                [PREGUNTAS]
+                (3 preguntas estratégicas):
+                1. (Detalle financiero/técnico)
+                2. (Comparativa de áreas)
+                3. (Estado crítico/fechas)
+                [/PREGUNTAS]`;
             }
 
             const recentHistory = AppState.chatHistory.slice(-CHAT_CONFIG.MAX_HISTORY_LENGTH);
