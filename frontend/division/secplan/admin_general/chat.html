@@ -979,67 +979,38 @@
                 const projects = context.filteredProjects || [];
                 const totalProyectos = projects.length;
 
-                // 1. Mapeo a Markdown Detallado (Solicitud Usuario)
+                // 1. Mapeo a Lista Compacta de Una Sola Línea (Optimización para Escaneo Exhaustivo)
                 const projectsMarkdown = projects
                     .sort((a, b) => a.id - b.id)
                     .slice(0, CHAT_CONFIG.MAX_PROJECTS_SUMMARY)
-                    .map(p => `
----
-### Proyecto ID: ${p.id}
-- **Nombre**: ${p.nombre || 'Sin nombre'}
-- **Código**: ${p.codigo || 'N/A'}
-- **Área**: ${p.area_nombre || p.area || 'Sin área'}
-- **Estado**: ${p.estado_nombre || p.estado_proyecto || 'Sin estado'}
-- **Monto**: $${(p.monto || 0).toLocaleString('es-CL')}
-- **Financiamiento**: ${p.financiamiento_nombre || p.financiamiento || 'No especificado'}
-- **Avance**: ${p.avance_total_porcentaje || 0}%
-- **Año**: ${p.anno_ejecucion || 'N/A'}
-- **Profesionales**: ${[p.profesional_1, p.profesional_2, p.profesional_3].filter(Boolean).join(', ') || 'N/A'}`).join('\n');
+                    .map(p => `ID:${p.id} | N:${p.nombre || 'S/N'} | E:${p.estado_nombre || p.estado_proyecto || 'S/E'} | M:$${(p.monto || 0).toLocaleString('es-CL')} | F:${p.financiamiento_nombre || p.financiamiento || 'S/F'} | P:${[p.profesional_1, p.profesional_2].filter(Boolean).join(', ')} | A:${p.anno_ejecucion || 'N/A'}`).join('\n');
 
                 // 2. System Prompt: Auditor
                 systemPrompt = `Eres un Auditor Municipal experto (SECPLAN).
-                Tu objetivo es auditar la lista de proyectos y dar respuestas EXACTAS.
+                Tu objetivo es auditar la lista de proyectos y dar respuestas CON PRECISIÓN MATEMÁTICA.
 
-                DATOS DISPONIBLES (Formato Markdown):
+                LISTA DE CARGA (Un proyecto por línea):
                 ${projectsMarkdown}
                 ---------------------------------------------------
-                ${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `[NOTA: Lista truncada a ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} items]` : ''}
+                ${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `[NOTA: Lista limitada a los primeros ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} items]` : ''}
 
-                PROTOCOLO DE BÚSQUEDA Y VERIFICACIÓN (OBLIGATORIO):
-                Para evitar errores de omisión en listas largas, DEBES seguir estos pasos mentalmente:
+                REGLA DE ORO DE ESCANEO:
+                No resumas sin mirar. Escanea CADA LÍNEA de la lista de carga buscando el criterio solicitado (ej. "Escuela"). Si hay 500 líneas, revisa las 500.
 
-                PASO 1: ESCANEO AMPLIO(Borrador)
-                    - Lee la lista completa buscando TODAS las posibles coincidencias.
-                - Anota mentalmente los IDs candidatos.
-
-                    PASO 2: FILTRADO RIGUROSO(Verificación)
-                        - Revisa cada candidato del paso 1.
-                            - Aplica la restricción del usuario(ej: "¿Dice 2025?").
-                - Si no cumple EXACTAMENTE, descártalo.
-
-                    PASO 3: CONTEO FINAL
-                        - Cuenta solo los que pasaron el Paso 2.
-                            - Si el resultado es 0, dilo.
-
-                EJEMPLO FEW - SHOT(Mental):
-                U: "Proyectos FNDR"
-                Scan: IDs 10, 12, 15 tienen "FNDR".
-                    Verify:
-                - 10: "FNDR 2024" -> Cumple "FNDR" ? Sí.
-                - 12 : "PMB" -> No.
-                - 15: "FNDR Circular 33" -> Cumple ? Sí.
-                    Total : 2.
+                PROTOCOLO DE RESPUESTA:
+                1. Identifica mentalmente TODOS los IDs que cumplen el criterio.
+                2. Realiza el conteo final basado exclusivamente en esos IDs.
+                3. Si el usuario te corrige, vuelve a escanear línea por línea.
 
                 ESTRUCTURA DE RESPUESTA:
                 [RESPUESTA]
-                    (Análisis técnico.Usa negritas para cifras y cursivas para nombres.Usa formato chileno $1.000.000)
+                - Indica el total exacto.
+                - Si son menos de 10 proyectos, lístalos brevemente por nombre.
+                - Si son más de 10, destaca el de mayor inversión.
                 [/RESPUESTA]
 
                 [PREGUNTAS]
-                    (3 preguntas estratégicas):
-                1.(Detalle financiero / técnico)
-                2.(Comparativa de áreas)
-                3.(Estado crítico / fechas)
+                (3 preguntas estratégicas sobre contratos, plazos o montos)
                 [/PREGUNTAS]`;
             }
 
