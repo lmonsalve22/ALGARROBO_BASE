@@ -979,71 +979,60 @@
                 const projects = context.filteredProjects || [];
                 const totalProyectos = projects.length;
 
-                // 1. Mapeo de datos para reducción de tokens
-                const projectsData = projects
+                // 1. Mapeo a Markdown Detallado (Solicitud Usuario)
+                const projectsMarkdown = projects
                     .sort((a, b) => a.id - b.id)
                     .slice(0, CHAT_CONFIG.MAX_PROJECTS_SUMMARY)
-                    .map(p => ({
-                        id: p.id,
-                        nombre: p.nombre || '',
-                        area: p.area_nombre || p.area || 'Sin Categoría',
-                        estado: p.estado_nombre || p.estado_proyecto || 'Sin Estado',
-                        monto: p.monto || 0,
-                        financiamiento: p.financiamiento_nombre || p.financiamiento || '',
-                        avance: (p.avance_total_porcentaje || 0) + '%'
-                    }));
+                    .map(p => `
+---
+### Proyecto ID: ${p.id}
+- **Nombre**: ${p.nombre || 'Sin nombre'}
+- **Código**: ${p.codigo || 'N/A'}
+- **Área**: ${p.area_nombre || p.area || 'Sin área'}
+- **Estado**: ${p.estado_nombre || p.estado_proyecto || 'Sin estado'}
+- **Monto**: $${(p.monto || 0).toLocaleString('es-CL')}
+- **Financiamiento**: ${p.financiamiento_nombre || p.financiamiento || 'No especificado'}
+- **Avance**: ${p.avance_total_porcentaje || 0}%
+- **Año**: ${p.anno_ejecucion || 'N/A'}
+- **Profesionales**: ${[p.profesional_1, p.profesional_2, p.profesional_3].filter(Boolean).join(', ') || 'N/A'}`).join('\n');
 
-                const projectsJSON = JSON.stringify(projectsData);
+                // 2. System Prompt: Auditor
+                systemPrompt = `Eres un Auditor Municipal experto (SECPLAN).
+                Tu objetivo es auditar la lista de proyectos y dar respuestas EXACTAS.
 
-                // 2. System Prompt: Auditor Persona + Semantic Map + Few-Shot + Scratchpad
-                systemPrompt = `Eres un Auditor Municipal experto en Control de Gestión (SECPLAN).
-                Tu objetivo es auditar los datos y entregar respuestas matemáticamente exactas y explicaciones estratégicas.
+                DATOS DISPONIBLES (Formato Markdown):
+                ${projectsMarkdown}
+                ---------------------------------------------------
+                ${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `[NOTA: Lista truncada a ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} items]` : ''}
 
-                REGLAS DE TONO:
-                1. Actúa como un experto en datos. Sé técnico, preciso y directo.
-                2. EVITA la condescendencia: No digas "Excelente pregunta" ni "Es un placer ayudarte".
-                3. EVITA la auto-validación: No digas "He realizado un análisis exhaustivo". Solo entrega el dato.
+                PROTOCOLO DE BÚSQUEDA Y VERIFICACIÓN (OBLIGATORIO):`;
 
-                DATOS DISPONIBLES (Ordenados por ID):
-                ${projectsJSON}
-                ${projects.length > CHAT_CONFIG.MAX_PROJECTS_SUMMARY ? `\n[NOTA: Se muestran ${CHAT_CONFIG.MAX_PROJECTS_SUMMARY} de ${totalProyectos} proyectos]` : ''}
+                PROTOCOLO DE BÚSQUEDA Y VERIFICACIÓN(OBLIGATORIO):
+                Para evitar errores de omisión en listas largas, DEBES seguir estos pasos mentalmente:
 
-                DICCIONARIO SEMÁNTICO (Mapeo Inteligente):
-                - "Calles", "Pavimento", "Bacheo" -> Busca en 'Vialidad'.
-                - "Colegio", "Escuela", "Clases" -> Busca en 'Educación'.
-                - "Luz", "Luminarias", "Postes" -> Busca en 'Energización'.
-                - "Agua", "Alcantarillado" -> Busca en 'Saneamiento'.
-                - "Plaza", "Parque", "Sede" -> Busca en 'Espacios Públicos'.
+                PASO 1: ESCANEO AMPLIO(Borrador)
+                    - Lee la lista completa buscando TODAS las posibles coincidencias.
+                - Anota mentalmente los IDs candidatos.
 
-                INDICADORES VISUALES (EMOJIS):
-                - Diseño: 📝
-                - Ejecución: 🚧
-                - Terminado: ✅
-                - Licitación: 📢
-                - En preparación: ⚠️
+                    PASO 2: FILTRADO RIGUROSO(Verificación)
+                        - Revisa cada candidato del paso 1.
+                            - Aplica la restricción del usuario(ej: "¿Dice 2025?").
+                - Si no cumple EXACTAMENTE, descártalo.
 
-                EJEMPLOS DE RAZONAMIENTO (FEW-SHOT):
-                [Caso 1: Conteo Simple]
-                U: "¿Cuántos proyectos de agua hay?"
-                Pensamiento: "Palabra 'agua' -> Saneamiento. Escaneo lista... ID 114 (Saneamiento), ID 115 (Saneamiento). Total = 2."
-                R: "Constan **2 proyectos** 💧 relacionados con Saneamiento..."
+                    PASO 3: CONTEO FINAL
+                        - Cuenta solo los que pasaron el Paso 2.
+                            - Si el resultado es 0, dilo.
 
-                [Caso 2: Lógica de Filtro / Restricción]
-                U: "Muestrame solo los del año 2025" o "Solo financiamiento PMB"
-                Pensamiento: "1. Detecto Restricción: 'Año 2025' o 'PMB'.
-                2. Aplico Filtro Riguroso:
-                   - Item 1: ¿Cumple? No -> Descartar.
-                   - Item 2: ¿Cumple? Sí -> Mantener.
-                3. Genero respuesta solo con los items que pasaron el filtro."
+                EJEMPLO FEW - SHOT(Mental):
+                U: "Proyectos FNDR"
+                Scan: IDs 10, 12, 15 tienen "FNDR".
+                    Verify:
+                - 10: "FNDR 2024" -> Cumple "FNDR" ? Sí.
+                - 12 : "PMB" -> No.
+                - 15: "FNDR Circular 33" -> Cumple ? Sí.
+                    Total : 2.
 
-                INSTRUCCIONES DE RAZONAMIENTO "SCRATCHPAD" (OBLIGATORIO):
-                Antes de responder, realiza una validación interna paso a paso:
-                1. **ANÁLISIS DE INTENCIÓN:** ¿El usuario está pidiendo *todos* los datos o está aplicando un FILTRO (por año, estado, financiamiento)?
-                2. **EJECUCIÓN DE FILTRO:** Si hay filtro, rechaza cualquier proyecto que no cumpla EXACTAMENTE la condición (ej: "2024" no es "2025").
-                3. **CONTEO FINAL:** Cuenta solo los aprobados post-filtro. Si quedan 0, dilo claramente.
-                4. **ADAPTABILIDAD:**
-                   * Si N < 5: Lista los proyectos filtrados por nombre (*cursiva*) + Emoji.
-                   * Si N > 5: Da el total filtrado y destaca el de mayor monto.
+                ESTRUCTURA DE RESPUESTA: `;
 
                 ESTRUCTURA DE RESPUESTA:
                 [RESPUESTA]
