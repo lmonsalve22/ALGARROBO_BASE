@@ -5,26 +5,37 @@ from PIL import Image
 import pytesseract
 import subprocess
 import pathlib
+import time
 
+SOFFICE = r"C:\Program Files\LibreOffice\program\soffice.exe"
 
+def extract_doc(archivo):
+    archivo = pathlib.Path(archivo)
+    outdir = archivo.parent
 
-soffice = r"C:\Program Files\LibreOffice\program\soffice.exe"
-outdir = r"C:\Users\Administrador\algarrobo\docs"
-
-
-def estract_doc(archivo):
+    # 1️⃣ Convertir
     subprocess.run([
-        soffice,
+        SOFFICE,
         "--headless",
         "--convert-to", "txt:Text",
-        archivo,
-        "--outdir", outdir
+        str(archivo),
+        "--outdir", str(outdir)
     ], check=True)
 
-    # Leer el txt generado
-    txt_path = pathlib.Path(archivo).with_suffix(".txt")
-    text = txt_path.read_text(encoding="utf-8", errors="ignore")
-    return text
+    # 2️⃣ Esperar un pelín (Windows + LO lo necesita)
+    time.sleep(0.5)
+
+    # 3️⃣ Buscar el txt generado
+    txt_files = list(outdir.glob("*.txt"))
+
+    if not txt_files:
+        raise FileNotFoundError("LibreOffice no generó ningún .txt")
+
+    # el más reciente (el recién convertido)
+    txt_path = max(txt_files, key=lambda p: p.stat().st_mtime)
+
+    # 4️⃣ Leer contenido
+    return txt_path.read_text(encoding="utf-8", errors="ignore")
 
 
 def extract_text_from_file(file_path, extension):
@@ -33,12 +44,12 @@ def extract_text_from_file(file_path, extension):
             reader = PdfReader(file_path)
             return "\n".join(page.extract_text() or "" for page in reader.pages)
 
-        elif extension in ( "docx"):
+        elif extension == "docx":
             doc = Document(file_path)
             return "\n".join(p.text for p in doc.paragraphs)
         
-        elif extension in ("doc"):
-            doc = estract_doc(file_path)
+        elif extension == "doc":
+            doc = extract_doc(file_path)
             return doc
 
         elif extension in ("xls", "xlsx"):
