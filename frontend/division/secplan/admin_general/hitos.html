@@ -129,38 +129,7 @@
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-            z-index: 2000;
-            border-left: 4px solid transparent;
-        }
 
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        .toast.success {
-            border-left-color: #10b981;
-        }
-
-        .toast.error {
-            border-left-color: #ef4444;
-        }
-
-        .toast.warning {
-            border-left-color: #f59e0b;
-        }
 
         .loading {
             display: inline-block;
@@ -550,18 +519,13 @@
         </div>
     </div>
 
-    <div id="toast" class="toast">
-        <span id="toastIcon"></span>
-        <span id="toastMessage" class="font-medium text-gray-800 text-sm"></span>
-    </div>
+
 
     <script src="../../../script/layout.js"></script>
     <script src="../../../script/help.js"></script>
     <script>document.addEventListener('DOMContentLoaded', () => createHelpButton('hitos'));</script>
 
     <script>
-
-        const API_BASE = 'https://186.67.61.251:8000';
         let allProjects = [];
         let categoriasHito = [];
 

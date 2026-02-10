@@ -9,32 +9,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoportal Municipal - Gestión Documental</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <link rel="stylesheet" href="styles/admin-styles.css">
 
     <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 95%, 1) 0, transparent 50%);
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
         .card-hover {
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
         }
 
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
             z-index: 1000;
-            animation: fadeIn 0.2s;
+            animation: fadeIn 0.3s ease-out;
         }
 
         .modal.active {
@@ -45,147 +78,68 @@
 
         .modal-content {
             background: white;
-            border-radius: 12px;
-            padding: 2rem;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
             width: 95%;
-            max-width: 600px;
+            max-width: 700px;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s;
-            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .modal-content-viewer {
             background: white;
-            border-radius: 12px;
+            border-radius: 1.5rem;
             width: 95%;
             max-width: 95%;
             height: 90vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            animation: slideUp 0.3s;
-            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            background: #f8fafc;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+            background: white;
         }
 
         .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
             font-size: 1.5rem;
-            cursor: pointer;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             color: #64748b;
-            transition: color 0.2s;
-        }
-
-        .close-btn:hover {
-            color: #1e293b;
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        label {
-            display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
-            font-size: 0.875rem;
-            color: #1e293b;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 0.625rem 0.875rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-        }
-
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
         .file-upload-wrapper {
-            position: relative;
-            width: 100%;
-            height: 120px;
             border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 1rem;
+            height: 160px;
             background: #f8fafc;
+            transition: all 0.3s ease;
         }
 
         .file-upload-wrapper:hover {
-            border-color: #4f46e5;
-            background: #eef2ff;
+            border-color: #6366f1;
+            background: #f5f3ff;
+            transform: scale(1.01);
         }
 
-        .file-upload-wrapper input[type="file"] {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
 
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transform: translateX(400px);
-            transition: transform 0.3s;
-            z-index: 2000;
-        }
-
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        .toast.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .toast.error {
-            border-left: 4px solid #ef4444;
-        }
-
-        .toast.warning {
-            border-left: 4px solid #f59e0b;
-        }
 
         .loading {
             display: inline-block;
@@ -291,41 +245,44 @@
         <main class="flex-1 p-6">
             <div id="documentsView" class="view-content">
 
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gestión Documental</h2>
-                    <p class="text-gray-600">Repositorio central de archivos SECPLAC</p>
+                <div class="mb-8">
+                    <h2 class="text-4xl font-extrabold text-gray-900 tracking-tight">Gestión Documental</h2>
+                    <p class="text-gray-500 font-medium mt-2">Repositorio central de archivos técnicos y legales SECPLAC
+                    </p>
                 </div>
 
-                <div class="bg-white rounded-lg shadow p-4 mb-6 border-l-4 border-indigo-500">
-                    <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center">
+                <div class="glass-panel rounded-2xl shadow-xl p-6 mb-8 border-l-8 border-indigo-600">
+                    <div class="flex flex-col md:flex-row gap-6 justify-between items-end md:items-center">
 
                         <div class="w-full md:w-1/3">
-                            <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Buscar
+                            <label for="searchInput"
+                                class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">Buscar
                                 Proyecto</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
+                            <div class="relative group">
+                                <div
+                                    class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-indigo-600">
+                                    <i class="fas fa-search"></i>
                                 </div>
                                 <input type="text" id="searchInput"
-                                    class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    class="pl-12 block w-full rounded-xl border-gray-200 bg-white/50 focus:bg-white transition-all shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-sm py-3"
                                     placeholder="Nombre, código o sector...">
                             </div>
                         </div>
 
-                        <div class="flex flex-1 w-full gap-3">
+                        <div class="flex flex-1 w-full gap-4">
                             <div class="flex-1">
                                 <label for="filterArea"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                                    class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">Área</label>
                                 <select id="filterArea"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    class="block w-full rounded-xl border-gray-200 bg-white/50 focus:bg-white transition-all shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-sm py-3 px-4">
                                     <option value="">Todas las áreas</option>
                                 </select>
                             </div>
                             <div class="flex-1">
                                 <label for="filterStatus"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                    class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">Estado</label>
                                 <select id="filterStatus"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    class="block w-full rounded-xl border-gray-200 bg-white/50 focus:bg-white transition-all shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-sm py-3 px-4">
                                     <option value="">Todos los estados</option>
                                 </select>
                             </div>
@@ -333,32 +290,36 @@
 
                         <div>
                             <button onclick="clearFilters()"
-                                class="mt-6 w-full md:w-auto px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-md hover:bg-gray-200 transition flex items-center justify-center gap-2">
-                                <i class="fas fa-times-circle"></i> Limpiar
+                                class="w-full md:w-auto px-6 py-3 bg-white border border-gray-200 text-gray-600 text-sm font-bold rounded-xl hover:bg-gray-50 transition-all shadow-sm hover:shadow flex items-center justify-center gap-2">
+                                <i class="fas fa-undo-alt"></i> Restablecer
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
-                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="glass-panel rounded-2xl shadow-lg p-8 mb-8 border border-white/50">
+                    <div class="flex flex-col md:flex-row gap-6 items-end">
                         <div class="flex-1 w-full">
-                            <label for="projectSelect" class="block text-sm font-medium text-gray-700 mb-1">
-                                1. Seleccionar Proyecto
+                            <label for="projectSelect"
+                                class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3 block">
+                                <i class="fas fa-folder-tree mr-2"></i> 1. Seleccionar Proyecto Destino
                                 <span id="projectCountBadge"
-                                    class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0</span>
+                                    class="ml-3 text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">0</span>
                             </label>
                             <select id="projectSelect"
-                                class="w-full py-3 px-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
-                                <option value="" disabled selected>-- Selecciona un proyecto --</option>
+                                class="w-full py-4 px-5 bg-white border border-gray-200 text-gray-900 text-base rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm">
+                                <option value="" disabled selected>-- Elige un proyecto para gestionar sus documentos --
+                                </option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-2">Al seleccionar, se cargarán los documentos existentes.
+                            <p class="text-xs text-gray-400 mt-3 font-medium italic">
+                                <i class="fas fa-info-circle mr-1"></i> Al seleccionar el proyecto, se habilitarán las
+                                opciones de carga y descarga.
                             </p>
                         </div>
                         <div class="w-full md:w-auto">
                             <button onclick="loadProjects()"
-                                class="w-full md:w-auto px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
-                                <i class="fas fa-sync-alt"></i> Actualizar
+                                class="w-full md:w-auto px-8 py-4 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition-all shadow-lg flex items-center justify-center gap-3 active:scale-95">
+                                <i class="fas fa-sync-alt"></i> Actualizar Listado
                             </button>
                         </div>
                     </div>
@@ -367,28 +328,33 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
                     <div class="lg:col-span-1">
-                        <div class="bg-white rounded-lg shadow p-6 h-full flex flex-col items-center justify-center text-center border border-dashed border-gray-300 hover:border-indigo-500 transition cursor-pointer group"
+                        <div class="glass-panel rounded-2xl shadow-lg p-8 h-full flex flex-col items-center justify-center text-center border border-dashed border-indigo-200 hover:border-indigo-500 hover:bg-indigo-50/30 transition-all cursor-pointer group animate-fade-in"
                             onclick="openUploadModal()">
                             <div
-                                class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition">
-                                <i class="fas fa-cloud-upload-alt text-3xl text-indigo-600"></i>
+                                class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-300">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-white"></i>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Subir Documento</h3>
-                            <p class="text-gray-500 text-sm mb-4">Adjunta archivos técnicos, planos o legales.</p>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Subir Documento</h3>
+                            <p class="text-gray-500 text-sm mb-6 px-4">Adjunta archivos técnicos, planos o legales para
+                                este proyecto.</p>
                             <span
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-md shadow-indigo-200">
+                                class="px-8 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-md shadow-indigo-200 active:scale-95">
                                 Iniciar Carga
                             </span>
                         </div>
                     </div>
 
                     <div class="lg:col-span-2">
-                        <div class="bg-white rounded-lg shadow overflow-hidden h-full">
+                        <div
+                            class="glass-panel rounded-2xl shadow-lg overflow-hidden h-full flex flex-col border border-white/50">
                             <div
-                                class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                                <h3 class="font-semibold text-gray-800">Historial de Carga (Sesión)</h3>
+                                class="px-6 py-5 border-b border-gray-100 bg-white/50 flex justify-between items-center">
+                                <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                                    <i class="fas fa-history text-indigo-500"></i>
+                                    Historial de Carga (Sesión)
+                                </h3>
                                 <span id="sessionCount"
-                                    class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded-full">0</span>
+                                    class="text-xs font-bold bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">0</span>
                             </div>
                             <div class="overflow-x-auto max-h-64 overflow-y-auto">
                                 <table class="min-w-full divide-y divide-gray-200">
@@ -422,24 +388,25 @@
                 </div>
 
                 <div id="projectDocumentsPanel"
-                    class="hidden bg-white rounded-lg shadow border border-gray-200 fade-in">
+                    class="hidden glass-panel rounded-2xl shadow-xl border border-white/50 fade-in overflow-hidden mb-8">
 
                     <div
-                        class="px-6 py-4 border-b border-gray-200 bg-indigo-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                        class="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white flex flex-col md:flex-row justify-between items-center gap-6">
                         <div>
-                            <h3 class="font-bold text-indigo-900 flex items-center gap-2">
-                                <i class="fas fa-folder-open"></i>
+                            <h3 class="text-xl font-bold text-indigo-950 flex items-center gap-3">
+                                <i class="fas fa-folder-open text-indigo-600 text-2xl"></i>
                                 Documentos del Proyecto
                                 <span id="selectedProjectNameDisplay"
-                                    class="font-normal text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-200 text-sm"></span>
+                                    class="font-semibold text-indigo-700 bg-white shadow-sm px-3 py-1 rounded-lg border border-indigo-100 text-sm"></span>
                             </h3>
-                            <p class="text-xs text-indigo-600 mt-1">Archivos almacenados en el servidor</p>
+                            <p class="text-sm text-indigo-500 mt-1 font-medium italic">Repositorio oficial de
+                                expedientes municipales</p>
                         </div>
                         <div>
                             <button onclick="downloadProjectZip()" id="btnDownloadZip"
-                                class="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-2">
+                                class="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-3 active:scale-95">
                                 <i class="fas fa-file-archive"></i>
-                                <span>Descargar Todo (ZIP)</span>
+                                <span>Descargar Expediente (ZIP)</span>
                             </button>
                         </div>
                     </div>
@@ -454,6 +421,9 @@
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Nombre Archivo</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Proyecto</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Descripción</th>
@@ -479,6 +449,50 @@
                         <div id="docsEmpty" class="hidden p-8 text-center">
                             <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
                             <p class="text-gray-500">Este proyecto aún no tiene documentos subidos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl shadow-xl border border-white/50 fade-in mt-12 overflow-hidden">
+                    <div class="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+                            <i class="fas fa-layer-group text-gray-400"></i>
+                            Explorador de Documentos Global
+                        </h3>
+                        <p class="text-sm text-gray-500 mt-1">Acceso a la totalidad de la base documental del sistema
+                        </p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Tipo</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Nombre</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Proyecto</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Fecha</th>
+                                    <th
+                                        class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allDocumentsBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                        <div id="allDocsLoading" class="hidden p-8 text-center">
+                            <i class="fas fa-spinner fa-spin text-gray-400 text-2xl"></i>
+                        </div>
+                        <div id="allDocsEmpty" class="hidden p-8 text-center">
+                            <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">No se encontraron documentos generales en el sistema.</p>
                         </div>
                     </div>
                 </div>
@@ -581,35 +595,20 @@
         </div>
     </div>
 
-    <div id="toast" class="toast">
-        <span id="toastIcon"></span>
-        <span id="toastMessage" class="font-medium text-gray-800"></span>
-    </div>
+
 
     <script src="../../../script/layout.js"></script>
     <script src="../../../script/help.js"></script>
     <script>document.addEventListener('DOMContentLoaded', () => createHelpButton('documento'));</script>
 
     <script>
-
-        const API_BASE = 'https://186.67.61.251:8000';
         let allProjects = [];
         let currentViewerBlobUrl = null;
 
-        function getAuthHeaders() {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                console.error("No se encontró token.");
-                showToast("Sesión no iniciada", "error");
-                return null;
-            }
-            return {
-                'Authorization': `Bearer ${token}`
-            };
-        }
-
         document.addEventListener('DOMContentLoaded', function () {
             loadProjects();
+            loadDocuments();
+            loadAllDocuments(); // New global list
 
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('filterArea').addEventListener('change', applyFilters);
@@ -617,33 +616,90 @@
 
             document.getElementById('projectSelect').addEventListener('change', function (e) {
                 const pid = e.target.value;
-                const projectName = e.target.options[e.target.selectedIndex].text;
-
                 if (pid) {
-                    loadProjectDocuments(pid, projectName);
+                    loadDocuments(pid);
                 } else {
-                    document.getElementById('projectDocumentsPanel').classList.add('hidden');
+                    loadDocuments();
                 }
             });
         });
 
-        async function loadProjects() {
-            const headers = getAuthHeaders();
-            if (!headers) return;
+        async function loadAllDocuments() {
+            const tbody = document.getElementById('allDocumentsBody');
+            const loading = document.getElementById('allDocsLoading');
+            const empty = document.getElementById('allDocsEmpty');
+            if (!tbody) return;
 
+            loading.classList.remove('hidden');
+            if (empty) empty.classList.add('hidden');
+            tbody.innerHTML = '';
+
+            try {
+                const docs = await api.get('/documentos');
+
+                if (docs.length === 0) {
+                    if (empty) empty.classList.remove('hidden');
+                } else {
+                    docs.forEach(doc => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-indigo-50/50 transition-colors group";
+
+                        let typeIcon = 'fa-file';
+                        let typeColor = 'text-slate-400';
+                        if (doc.tipo_documento) {
+                            const t = doc.tipo_documento.toLowerCase();
+                            if (t.includes('pdf')) { typeIcon = 'fa-file-pdf'; typeColor = 'text-rose-500'; }
+                            else if (t.includes('imagen') || t.includes('foto') || t.includes('jpg') || t.includes('png')) { typeIcon = 'fa-file-image'; typeColor = 'text-emerald-500'; }
+                            else if (t.includes('plano') || t.includes('dwg')) { typeIcon = 'fa-drafting-compass'; typeColor = 'text-cyan-500'; }
+                            else if (t.includes('word') || t.includes('doc')) { typeIcon = 'fa-file-word'; typeColor = 'text-blue-600'; }
+                            else if (t.includes('excel') || t.includes('xlsx') || t.includes('csv')) { typeIcon = 'fa-file-excel'; typeColor = 'text-green-600'; }
+                        }
+
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-tighter">
+                                    ${doc.tipo_documento || 'General'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i class="fas ${typeIcon} ${typeColor}"></i>
+                                </div>
+                                ${doc.nombre || doc.archivo_nombre}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500 italic">
+                                <i class="fas fa-project-diagram mr-1 opacity-50 text-xs"></i> ${doc.proyecto_nombre || '-'}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500">
+                                ${new Date(doc.fecha_subida).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <button onclick="openViewer(${doc.documento_id}, '${doc.nombre || doc.archivo_nombre}')" 
+                                    class="text-indigo-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-indigo-600 shadow-sm hover:shadow-indigo-200 border border-transparent hover:border-indigo-700 active:scale-90" 
+                                    title="Visualizar">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-red-500">Error cargando documentos</td></tr>`;
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        async function loadProjects() {
             const select = document.getElementById('projectSelect');
             select.innerHTML = '<option value="" disabled selected>Cargando...</option>';
             select.disabled = true;
 
             try {
-                const response = await fetch(`${API_BASE}/proyectos`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) throw new Error('Error al cargar proyectos');
-
-                allProjects = await response.json();
+                allProjects = await api.get('/proyectos');
 
                 updateFilterOptions();
                 applyFilters();
@@ -746,84 +802,88 @@
             countBadge.textContent = projectList.length;
         }
 
-        async function loadProjectDocuments(pid, projectName) {
-            const panel = document.getElementById('projectDocumentsPanel');
-            const tbody = document.getElementById('projectDocsBody');
+        // Renamed and modified function
+        async function loadDocuments(projectId) {
+            currentProjectId = projectId;
+            const tableBody = document.getElementById('projectDocsBody'); // Assuming this is the correct tbody
             const loading = document.getElementById('docsLoading');
             const empty = document.getElementById('docsEmpty');
-            const nameDisplay = document.getElementById('selectedProjectNameDisplay');
+            const panel = document.getElementById('projectDocumentsPanel'); // Assuming this panel still exists
 
-            const headers = getAuthHeaders();
-            if (!headers) return;
-
+            // Show panel and loading state
             panel.classList.remove('hidden');
-            nameDisplay.textContent = projectName;
-            tbody.innerHTML = '';
+            tableBody.innerHTML = '';
             loading.classList.remove('hidden');
             empty.classList.add('hidden');
 
             try {
-                const response = await fetch(`${API_BASE}/proyectos/${pid}/documentos`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) throw new Error('Error al obtener documentos');
-
-                const data = await response.json();
-                const docs = data.documentos || [];
+                let docs = [];
+                if (projectId) {
+                    const data = await api.get(`/proyectos/${projectId}/documentos`);
+                    docs = data.documentos || [];
+                } else {
+                    docs = await api.get('/documentos');
+                }
 
                 loading.classList.add('hidden');
-                console.log(docs)
+                console.log(docs);
+
                 if (docs.length === 0) {
                     empty.classList.remove('hidden');
                 } else {
                     docs.forEach(doc => {
                         const tr = document.createElement('tr');
-                        tr.className = "hover:bg-gray-50 transition";
+                        tr.className = "hover:bg-indigo-50/50 transition-colors group";
 
                         let typeIcon = 'fa-file';
-                        let typeColor = 'text-gray-400';
+                        let typeColor = 'text-slate-400';
                         if (doc.tipo_documento) {
                             const t = doc.tipo_documento.toLowerCase();
-                            if (t.includes('pdf')) { typeIcon = 'fa-file-pdf'; typeColor = 'text-red-500'; }
-                            else if (t.includes('imagen') || t.includes('foto')) { typeIcon = 'fa-file-image'; typeColor = 'text-purple-500'; }
-                            else if (t.includes('plano')) { typeIcon = 'fa-drafting-compass'; typeColor = 'text-blue-500'; }
-                            else if (t.includes('word') || t.includes('doc')) { typeIcon = 'fa-file-word'; typeColor = 'text-blue-700'; }
+                            if (t.includes('pdf')) { typeIcon = 'fa-file-pdf'; typeColor = 'text-rose-500'; }
+                            else if (t.includes('imagen') || t.includes('foto') || t.includes('jpg') || t.includes('png')) { typeIcon = 'fa-file-image'; typeColor = 'text-emerald-500'; }
+                            else if (t.includes('plano') || t.includes('dwg')) { typeIcon = 'fa-drafting-compass'; typeColor = 'text-cyan-500'; }
+                            else if (t.includes('word') || t.includes('doc')) { typeIcon = 'fa-file-word'; typeColor = 'text-blue-600'; }
+                            else if (t.includes('excel') || t.includes('xlsx') || t.includes('csv')) { typeIcon = 'fa-file-excel'; typeColor = 'text-green-600'; }
                         }
 
                         tr.innerHTML = `
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 rounded text-gray-800">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-tighter">
                                     ${doc.tipo_documento || 'General'}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center gap-2">
-                                <i class="fas ${typeIcon} ${typeColor}"></i>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i class="fas ${typeIcon} ${typeColor}"></i>
+                                </div>
                                 ${doc.nombre || doc.archivo_nombre}
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">${doc.descripcion || '-'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                ${new Date(doc.fecha_subida).toLocaleDateString('es-CL')} 
-                                <span class="text-xs text-gray-300 ml-1">${new Date(doc.fecha_subida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500 italic">
+                                ${doc.proyecto_nombre || '-'}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 text-sm text-slate-500 font-medium">${doc.descripcion || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-400">
+                                ${new Date(doc.fecha_subida).toLocaleDateString('es-CL')} 
+                                <span class="text-[10px] opacity-60 ml-1 font-normal">${new Date(doc.fecha_subida).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-500">
                                 ${formatBytes(doc.archivo_size)}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <button onclick="openViewer(${doc.documento_id}, '${doc.nombre || doc.archivo_nombre}')" class="text-indigo-600 hover:text-indigo-900 transition mx-1 p-2 rounded-full hover:bg-indigo-50" title="Ver documento">
+                                <button onclick="openViewer(${doc.documento_id}, '${doc.nombre || doc.archivo_nombre}')" 
+                                    class="text-indigo-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-indigo-600 shadow-sm hover:shadow-indigo-200 border border-transparent hover:border-indigo-700 active:scale-90" 
+                                    title="Visualizar">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
+                            </td>`;
+                        tableBody.appendChild(tr);
                     });
                 }
             } catch (error) {
                 console.error('Error cargando docs:', error);
                 loading.classList.add('hidden');
                 showToast('Error al cargar lista de documentos', 'error');
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-500">Error de carga</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-500">Error de carga</td></tr>';
             }
         }
 
@@ -876,30 +936,22 @@
             }, 300);
         }
 
-        function downloadDocumentById(docId, fileName) {
-            const token = localStorage.getItem("authToken");
-            fetch(`${API_BASE}/documentos/${docId}/view`, {
-                headers: { "Authorization": "Bearer " + token }
-            })
-                .then(res => {
-                    if (!res.ok) throw new Error("Error al descargar");
-                    return res.blob();
-                })
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = fileName || 'documento';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    showToast("Descarga iniciada", "success");
-                })
-                .catch(err => {
-                    console.error(err);
-                    showToast("No se pudo descargar el archivo", "error");
-                });
+        async function downloadDocumentById(docId, fileName) {
+            try {
+                const blob = await api.getBlob(`/documentos/${docId}/view`);
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName || 'documento';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showToast("Descarga iniciada", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("No se pudo descargar el archivo", "error");
+            }
         }
 
         async function downloadProjectZip() {
@@ -916,17 +968,7 @@
             btn.innerHTML = '<span class="loading-dark"></span> Procesando...';
 
             try {
-                const response = await fetch(`${API_BASE}/proyectos/${pid}/documentos/descargar`, {
-                    method: 'GET',
-                    headers: headers
-                });
-
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(errText || 'Error al descargar');
-                }
-
-                const blob = await response.blob();
+                const blob = await api.getBlob(`/proyectos/${pid}/documentos/descargar`);
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -1010,8 +1052,7 @@
                 showToast("Documento subido exitosamente");
                 addToLog(pid, fileInput.files[0].name, "success");
                 closeUploadModal();
-                const select = document.getElementById('projectSelect');
-                loadProjectDocuments(pid, select.options[select.selectedIndex].text);
+                loadDocuments(pid);
             } catch (error) {
                 showToast(error.message, "error");
                 addToLog(pid, fileInput.files[0].name, "error");

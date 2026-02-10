@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mantenedor de Usuarios - Municipalidad de Algarrobo</title>
-    
+
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
         rel="stylesheet">
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="../division/secplan/admin_general/styles/admin-styles.css">
@@ -22,38 +22,72 @@
 
     <style>
         :root {
-            --primary: #1e40af;
-            --primary-dark: #1e3a8a;
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
             --accent: #f59e0b;
-            --bg-body: #f8fafc;
         }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-body);
-            color: #1e293b;
+            background-color: #f8fafc;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 95%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 95%, 1) 0, transparent 50%);
+            color: #0f172a;
+            min-height: 100vh;
         }
 
         main {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem 1.5rem;
+            padding: 3rem 2rem;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
         }
 
         .page-header {
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
         }
 
         .card-modern {
             background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 1.5rem;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            border: 1px solid rgba(241, 245, 249, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+            margin-bottom: 2rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-modern:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        input,
+        select {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border-radius: 12px !important;
+        }
+
+        input:focus,
+        select:focus {
+            background: #fff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08) !important;
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
@@ -65,21 +99,22 @@
     <main>
         <div class="page-header">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 leading-tight">Gestión de Usuarios</h1>
-                <p class="text-gray-500">Administración centralizada de accesos y permisos</p>
+                <h1 class="text-4xl font-extrabold text-slate-900 leading-tight tracking-tight">Gestión de Usuarios</h1>
+                <p class="text-slate-500 font-medium text-lg mt-1">Control de accesos y perfiles administrativos</p>
             </div>
             <a href="index.html"
-                class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition-all font-medium">
+                class="flex items-center gap-2 px-6 py-3 bg-white/70 backdrop-blur-sm border border-slate-200 rounded-2xl text-slate-600 hover:bg-white hover:text-indigo-600 transition-all font-bold shadow-sm">
                 <i class="fas fa-arrow-left"></i> Volver al Portal
             </a>
         </div>
 
-        <section class="card-modern">
-            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <i class="fas fa-user-plus"></i>
+        <section class="card-modern glass-panel">
+            <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200">
+                    <i class="fas fa-user-plus text-xl"></i>
                 </div>
-                <h2 class="text-xl font-bold">Crear Nuevo Usuario</h2>
+                <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Configurar Usuario</h2>
             </div>
 
             <form id="formUser">
@@ -123,21 +158,22 @@
                     </div>
                 </div>
 
-                <div class="mt-8 flex justify-end">
+                <div class="mt-10 flex justify-end">
                     <button type="submit" id="submitBtn"
-                        class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all font-bold">
+                        class="flex items-center gap-3 px-10 py-4 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all font-bold text-lg">
                         <i class="fas fa-save"></i> Guardar Usuario
                     </button>
                 </div>
             </form>
         </section>
 
-        <section class="card-modern text-sky-800">
-            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <i class="fas fa-users"></i>
+        <section class="card-modern glass-panel mt-12">
+            <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-100">
+                    <i class="fas fa-users text-xl"></i>
                 </div>
-                <h2 class="text-xl font-bold">Listado de Usuarios</h2>
+                <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Directorio Administrativo</h2>
             </div>
 
             <div class="overflow-x-auto">
@@ -150,6 +186,8 @@
                             <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Rol</th>
                             <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
                                 Estado</th>
+                            <th class="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
+                                Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="usersBody" class="divide-y divide-gray-50"></tbody>
@@ -221,10 +259,22 @@
                     <td class="px-4 py-4 text-sm text-gray-600">${u.division || '<span class="text-gray-300 italic">Sin asignar</span>'}</td>
                     <td class="px-4 py-4 text-sm font-medium text-blue-600">${u.nivel_acceso || '-'}</td>
                     <td class="px-4 py-4 text-center">${statusBadge}</td>
+                    <td class="px-4 py-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick='editUser(${JSON.stringify(u)})' class="text-amber-600 hover:text-amber-800 p-2 rounded-full hover:bg-amber-50 transition-colors" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick='deleteUser(${u.user_id})' class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors" title="Eliminar">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
+
+        let editingUserId = null;
 
         document.getElementById("formUser").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -236,18 +286,30 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
 
                 const formData = utils.serializeForm(e.target);
-
-                const result = await api.post('/users', {
+                // Ensure nivel_acceso is string for backend compatibility
+                const payload = {
                     ...formData,
                     nivel_acceso: String(formData.nivel_acceso)
-                });
+                };
 
-                await api.put(`/users/${result.user_id}/roles`, {
-                    roles: [parseInt(formData.nivel_acceso)]
-                });
+                if (editingUserId) {
+                    // Update existing user
+                    await api.put(`/users/${editingUserId}`, payload);
+                    // Update role
+                    await api.put(`/users/${editingUserId}/roles`, {
+                        roles: [parseInt(formData.nivel_acceso)]
+                    });
+                    showToast("Usuario actualizado correctamente");
+                } else {
+                    // Create new user
+                    const result = await api.post('/users', payload);
+                    await api.put(`/users/${result.user_id}/roles`, {
+                        roles: [parseInt(formData.nivel_acceso)]
+                    });
+                    showToast("Usuario creado y rol asignado correctamente");
+                }
 
-                showToast("Usuario creado y rol asignado correctamente");
-                e.target.reset();
+                resetForm();
                 loadUsers();
             } catch (error) {
                 showToast(error.message, "error");
@@ -256,6 +318,75 @@
                 btn.innerHTML = originalHTML;
             }
         });
+
+        function editUser(user) {
+            console.log("Editing user:", user); // Debug
+            editingUserId = user.user_id;
+
+            // Update UI for editing
+            document.querySelector(".card-modern h2").textContent = "Editar Usuario";
+
+            const submitBtn = document.getElementById("submitBtn");
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar Usuario';
+            submitBtn.className = "flex items-center gap-2 px-6 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 shadow-lg shadow-amber-500/30 transition-all font-bold";
+
+            // Populate form
+            document.getElementById("email").value = user.email || '';
+            document.getElementById("nombre").value = user.nombre || '';
+            document.getElementById("password").required = false; // Password optional when editing
+            document.getElementById("password").placeholder = "Dejar en blanco para mantener";
+
+            if (user.division_id) document.getElementById("division_id").value = user.division_id;
+            if (user.nivel_acceso) document.getElementById("role_id").value = user.nivel_acceso;
+
+            // Add cancel button if not exists
+            if (!document.getElementById("cancelEditBtn")) {
+                const cancelBtn = document.createElement("button");
+                cancelBtn.id = "cancelEditBtn";
+                cancelBtn.type = "button"; // Prevent submit
+                cancelBtn.className = "flex items-center gap-2 px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-all font-bold mr-3";
+                cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+                cancelBtn.onclick = (e) => {
+                    e.preventDefault();
+                    resetForm();
+                };
+                submitBtn.parentNode.insertBefore(cancelBtn, submitBtn);
+            }
+
+            // Scroll to form
+            document.querySelector("main").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            editingUserId = null;
+            document.getElementById("formUser").reset();
+            document.querySelector(".card-modern h2").textContent = "Crear Nuevo Usuario";
+
+            const submitBtn = document.getElementById("submitBtn");
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Usuario';
+            submitBtn.className = "flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all font-bold";
+
+            document.getElementById("password").required = true;
+            document.getElementById("password").placeholder = "••••••••";
+
+            const cancelBtn = document.getElementById("cancelEditBtn");
+            if (cancelBtn) cancelBtn.remove();
+        }
+
+        async function deleteUser(id) {
+            if (!confirm("¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.")) {
+                return;
+            }
+
+            try {
+                await api.delete(`/users/${id}`);
+                showToast("Usuario eliminado correctamente");
+                loadUsers();
+            } catch (error) {
+                console.error(error);
+                showToast(error.message || "Error al eliminar usuario", "error");
+            }
+        }
     </script>
 </body>
 

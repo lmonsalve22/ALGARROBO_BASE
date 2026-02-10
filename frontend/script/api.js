@@ -42,8 +42,11 @@ const api = {
             }
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || errorData.message || `Error ${response.status}`);
+                const errorText = await response.text().catch(() => '');
+                console.error(`[API ${response.status}] ${endpoint} Response:`, errorText);
+                let errorData = {};
+                try { errorData = JSON.parse(errorText); } catch (e) { }
+                throw new Error(errorData.detail || errorData.error || errorData.message || `Error ${response.status}`);
             }
 
             if (responseType === 'blob') {

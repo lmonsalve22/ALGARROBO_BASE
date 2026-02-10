@@ -1,10 +1,5 @@
 
-
-# app21.py - Versión mejorada con:
-# - RLock para evitar deadlocks (mejora #5)
-# - Expiración automática de sesiones (mejora #4)
-# - Context manager para conexiones (mejora #2)
-# - Reconexión lazy sin health checks agresivos (mejora #1)
+# app21.py - Versión mejorada con manejo de desconexiones NeonDB
 import os
 import traceback
 import time
@@ -12,18 +7,190 @@ import psycopg2
 import psycopg2.extras
 import psycopg2.pool
 import bcrypt
-import secrets
-import threading
 import logging
+import threading
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from datetime import datetime, timedelta
 from functools import wraps
-from werkzeug.utils import secure_filename
-import zipfile
-import io
-import json
 from contextlib import contextmanager
+import secrets
+
+# -----------------------
+# CONFIGURACIÓN DE LOGGING
+# -----------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("municipal_api.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# -----------------------
+# CONFIG
+# -----------------------
+DB_CONNECTION_STRING = os.getenv(
+    "DATABASE_URL",
+    "postgresql://neondb_owner:npg_xHS7sA1FDPqI@ep-hidden-grass-a4sa46kc-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
+)
+APP_HOST = "0.0.0.0"
+APP_PORT = int(os.getenv("PORT", 8000))
+DEBUG = os.getenv("FLASK_DEBUG", "True").lower() in ("1", "true", "yes")
+
+app = Flask(__name__)
+
+@app.after_request
+def add_cors_headers(response):
+    if request.path.startswith('/api'):
+        logger.info(f"REQUEST {request.method} {request.path} -> {response.status_code}")
+    
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Access-Control-Allow-Credentials'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    return response
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    response = jsonify({"error": str(e)})
+    response.status_code = 500
+    if hasattr(e, 'code'):
+        response.status_code = e.code
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Access-Control-Allow-Credentials'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    return response
+
+logger.info("Backend Municipal iniciando...")
+
+# Pool de conexiones global
+connection_pool = None
+pool_lock = threading.RLock()
+
+# Sesiones
+active_sessions = {}
+sessions_lock = threading.Lock()
+SESSION_EXPIRY_HOURS = 1
+
+# -----------------------
+# UTIL: inicialización y gestión del pool de conexiones
+# -----------------------
+def init_connection_pool(max_retries=5):
+    """
+    Inicializa el pool de conexiones a la base de datos con reintentos
+    NeonDB puede desconectar conexiones inactivas.
+    """
+    global connection_pool
+    
+    for attempt in range(max_retries):
+        try:
+            with pool_lock:
+                if connection_pool and not connection_pool.closed:
+                    try:
+                        connection_pool.closeall()
+                        logger.info("Pool anterior cerrado correctamente")
+                    except Exception as e:
+                        logger.warning(f"Error cerrando pool anterior: {e}")
+                
+                connection_pool = psycopg2.pool.ThreadedConnectionPool(
+                    minconn=2,
+                    maxconn=10,
+                    dsn=DB_CONNECTION_STRING,
+                    keepalives=1,
+                    keepalives_idle=30,
+                    keepalives_interval=10,
+                    keepalives_count=5,
+                    connect_timeout=10,
+                    application_name="municipal_api"
+                )
+                
+                # Verificar que el pool funciona
+                test_conn = connection_pool.getconn()
+                with test_conn.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                connection_pool.putconn(test_conn)
+                
+                logger.info("Pool de conexiones inicializado correctamente")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Intento {attempt + 1} de inicialización del pool fallido: {e}")
+            if attempt < max_retries - 1:
+                wait_time = (2 ** attempt) + 1
+                logger.info(f"Reintentando en {wait_time} segundos...")
+                time.sleep(wait_time)
+            else:
+                logger.error("No se pudo inicializar el pool después de varios intentos")
+                connection_pool = None
+                return False
+
+def is_connection_error(exception):
+    error_messages = [
+        "connection", "timeout", "closed", "terminated", "reset", 
+        "network", "unreachable", "refused", "broken", "idle"
+    ]
+    error_str = str(exception).lower()
+    return any(msg in error_str for msg in error_messages)
+
+def get_db_connection(max_retries=3):
+    global connection_pool
+    last_exception = None
+    
+    for attempt in range(max_retries):
+        try:
+            if connection_pool is None or connection_pool.closed:
+                logger.info("Pool no disponible, inicializando...")
+                if not init_connection_pool():
+                    raise Exception("No se pudo inicializar el pool de conexiones")
+            
+            conn = connection_pool.getconn()
+            
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                    return conn
+            except Exception as e:
+                logger.warning(f"Conexión no válida detectada: {e}")
+                try:
+                    connection_pool.putconn(conn, close=True)
+                except:
+                    pass
+                raise e
+                
+        except Exception as e:
+            last_exception = e
+            logger.warning(f"Intento {attempt + 1} de conexión fallido: {e}")
+            
+            if is_connection_error(e):
+                logger.info("Detectado error de conexión, reinicializando pool...")
+                try:
+                    with pool_lock:
+                        if connection_pool and not connection_pool.closed:
+                            connection_pool.closeall()
+                        connection_pool = None
+                except Exception as pool_error:
+                    logger.error(f"Error cerrando el pool: {pool_error}")
+            
+            if attempt < max_retries - 1:
+                wait_time = (2 ** attempt) + 1
+                logger.info(f"Reintentando en {wait_time} segundos...")
+                time.sleep(wait_time)
+    
+    logger.error(f"No se pudo establecer conexión después de {max_retries} intentos")
+    raise last_exception or Exception("Error desconocido al obtener conexión")
+
+def release_db_connection(conn):
+    try:
+        if connection_pool and conn:
+            connection_pool.putconn(conn)
+    except Exception as e:
+        logger.error(f"Error al devolver la conexión al pool: {e}")
+        try:
+            conn.close()
+        except:
+            pass
 
 #-------------------------
 
@@ -118,156 +285,7 @@ health_check_running = False
 # -----------------------
 # UTIL: inicialización y gestión del pool de conexiones
 # -----------------------
-def init_connection_pool(max_retries=5):
-    """
-    Inicializa el pool de conexiones a la base de datos con reintentos
-    NeonDB puede desconectar conexiones inactivas, por lo que necesitamos
-    un pool que se recupere automáticamente
-    """
-    global connection_pool
-    
-    for attempt in range(max_retries):
-        try:
-            with pool_lock:
-                # Si ya hay un pool activo, cerrarlo primero
-                if connection_pool and not connection_pool.closed:
-                    try:
-                        connection_pool.closeall()
-                        logger.info("Pool anterior cerrado correctamente")
-                    except Exception as e:
-                        logger.warning(f"Error cerrando pool anterior: {e}")
-                
-                # Crear nuevo pool con parámetros optimizados para NeonDB
-                connection_pool = psycopg2.pool.ThreadedConnectionPool(
-                    minconn=2,        # Mínimo de conexiones
-                    maxconn=10,       # Máximo de conexiones
-                    dsn=DB_CONNECTION_STRING,
-                    # Parámetros de keepalive para mantener conexiones activas
-                    keepalives=1,
-                    keepalives_idle=30,     # Tiempo de inactividad antes de enviar keepalive
-                    keepalives_interval=10, # Intervalo entre keepalives
-                    keepalives_count=5,     # Número de keepalives antes de desconectar
-                    # Timeout de conexión
-                    connect_timeout=10,
-                    # Otras opciones útiles para NeonDB
-                    application_name="municipal_api"
-                )
-                
-                # Verificar que el pool funciona
-                test_conn = connection_pool.getconn()
-                with test_conn.cursor() as cursor:
-                    cursor.execute("SELECT 1")
-                connection_pool.putconn(test_conn)
-                
-                logger.info("Pool de conexiones inicializado correctamente")
-                return True
-                
-        except Exception as e:
-            logger.error(f"Intento {attempt + 1} de inicialización del pool fallido: {e}")
-            if attempt < max_retries - 1:
-                # Backoff exponencial
-                wait_time = (2 ** attempt) + 1
-                logger.info(f"Reintentando en {wait_time} segundos...")
-                time.sleep(wait_time)
-            else:
-                logger.error("No se pudo inicializar el pool después de varios intentos")
-                connection_pool = None
-                return False
 
-def is_connection_error(exception):
-    """
-    Determina si una excepción está relacionada con problemas de conexión
-    """
-    error_messages = [
-        "connection", "timeout", "closed", "terminated", "reset", 
-        "network", "unreachable", "refused", "broken", "idle"
-    ]
-    error_str = str(exception).lower()
-    return any(msg in error_str for msg in error_messages)
-
-def get_db_connection(max_retries=3):
-    """
-    Obtiene una conexión del pool con reintentos automáticos y manejo robusto de errores
-    Específicamente diseñado para manejar las desconexiones periódicas de NeonDB
-    """
-    global connection_pool
-    
-    last_exception = None
-    
-    for attempt in range(max_retries):
-        try:
-            # Si el pool no existe o está cerrado, inicializarlo
-            if connection_pool is None or connection_pool.closed:
-                logger.info("Pool no disponible, inicializando...")
-                if not init_connection_pool():
-                    raise Exception("No se pudo inicializar el pool de conexiones")
-            
-            # Obtener conexión del pool
-            conn = connection_pool.getconn()
-            
-            # Verificar que la conexión funciona (health check rápido)
-            try:
-                with conn.cursor() as cursor:
-                    cursor.execute("SELECT 1")
-                    # Si llegamos aquí, la conexión está activa
-                    return conn
-            except Exception as e:
-                # La conexión no es válida, devolverla y marcar para cierre
-                logger.warning(f"Conexión no válida detectada: {e}")
-                try:
-                    connection_pool.putconn(conn, close=True)
-                except:
-                    pass
-                raise e
-                
-        except Exception as e:
-            last_exception = e
-            logger.warning(f"Intento {attempt + 1} de conexión fallido: {e}")
-            
-            # Si es un error de conexión, intentar reinicializar el pool
-            if is_connection_error(e):
-                logger.info("Detectado error de conexión, reinicializando pool...")
-                try:
-                    with pool_lock:
-                        if connection_pool and not connection_pool.closed:
-                            connection_pool.closeall()
-                        connection_pool = None
-                except Exception as pool_error:
-                    logger.error(f"Error cerrando el pool: {pool_error}")
-            
-            if attempt < max_retries - 1:
-                # Backoff exponencial
-                wait_time = (2 ** attempt) + 1
-                logger.info(f"Reintentando en {wait_time} segundos...")
-                time.sleep(wait_time)
-    
-    # Si llegamos aquí, todos los intentos fallaron
-    logger.error(f"No se pudo establecer conexión después de {max_retries} intentos")
-    raise last_exception or Exception("Error desconocido al obtener conexión")
-
-def release_db_connection(conn):
-    """Devuelve la conexión al pool de forma segura"""
-    try:
-        if connection_pool and conn:
-            connection_pool.putconn(conn)
-    except Exception as e:
-        logger.error(f"Error al devolver la conexión al pool: {e}")
-        try:
-            conn.close()
-        except:
-            pass
-
-# MEJORA #2: Context manager para garantizar liberación de conexiones
-@contextmanager
-def db_connection():
-    """Context manager que garantiza la liberación de conexiones incluso en excepciones"""
-    conn = None
-    try:
-        conn = get_db_connection()
-        yield conn
-    finally:
-        if conn:
-            release_db_connection(conn)
 
 # MEJORA #4: Funciones de gestión de sesiones con expiración
 def create_session(user_id):
@@ -521,6 +539,8 @@ def session_required(f):
         token = None
         if auth.startswith("Bearer "):
             token = auth.split(" ", 1)[1].strip()
+        elif request.args.get("token"):
+            token = request.args.get("token")
         elif auth:
             token = auth.strip()
 
@@ -802,19 +822,28 @@ def get_users(current_user_id):
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute("""
                 SELECT u.user_id, u.email, u.nombre, u.nivel_acceso,
-                       d.nombre AS division, u.activo
+                       d.nombre AS division, d.division_id,
+                       u.activo
                 FROM users u
                 LEFT JOIN divisiones d ON u.division_id = d.division_id
+                ORDER BY u.nombre
             """)
             rows = cur.fetchall()
+            # Map division_nombre for frontend
+            for r in rows:
+                r["division_nombre"] = r["division"] # maintain compatibility
         return jsonify(rows)
+
     except Exception as e:
         logger.error(f"Error en get_users: {e}")
         traceback.print_exc()
-        return jsonify({"message": "Error interno"}), 500
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
     finally:
         if conn:
             release_db_connection(conn)
+
+
+
 
 
 @app.route("/users", methods=["POST"])
@@ -830,16 +859,19 @@ def create_user(current_user_id):
         division_id = data.get("division_id")
 
         hashed = bcrypt.hashpw(data["password"].encode(), bcrypt.gensalt()).decode()
+        
+        # Mapear es_activo a activo
+        activo = data.get("es_activo", True)
 
         conn = get_db_connection()
         if not conn:
             return jsonify({"message": "Error de conexión a BD"}), 500
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO users (email, password_hash, nombre, nivel_acceso, division_id)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO users (email, password_hash, nombre, nivel_acceso, division_id, activo)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING user_id
-            """, (data["email"], hashed, data["nombre"], data["nivel_acceso"], division_id))
+            """, (data["email"], hashed, data["nombre"], data["nivel_acceso"], division_id, activo))
             new_id = cur.fetchone()[0]
         conn.commit()
 
@@ -869,6 +901,11 @@ def update_user(current_user_id, user_id):
         allowed = {"nombre", "email", "nivel_acceso", "division_id", "activo", "password"}
 
         for k, v in data.items():
+            if k == "es_activo": # Mapear es_activo a activo
+                fields.append("activo = %s")
+                values.append(v)
+                continue
+            
             if k not in allowed:
                 continue
             if k == "password":
@@ -1327,36 +1364,39 @@ def create_proyecto(current_user_id):
     try:
         data = request.get_json()
 
-        forbidden = {"id", "user_id", "actualizado_por", "fecha_actualizacion"}
-        data = {k: v for k, v in data.items() if k not in forbidden}
+        # Remove keys that shouldn't be set directly or are set automatically
+        forbidden = {"id", "user_id", "actualizado_por", "fecha_actualizacion", "fecha_creacion"}
+        clean_data = {k: v for k, v in data.items() if k not in forbidden and v != ""}
 
-        data["user_id"] = current_user_id
-        data["actualizado_por"] = current_user_id
+        clean_data["user_id"] = current_user_id
+        clean_data["actualizado_por"] = current_user_id
+        clean_data["fecha_actualizacion"] = datetime.now()
 
-        cols = ", ".join(data.keys())
-        placeholders = ", ".join(["%s"] * len(data))
+        if not clean_data:
+             return jsonify({"message": "No data provided"}), 400
 
-        sql = f"""
-            INSERT INTO proyectos ({cols})
-            VALUES ({placeholders})
-            RETURNING id
-        """
+        cols = ", ".join(clean_data.keys())
+        placeholders = ", ".join(["%s"] * len(clean_data))
+        
+        sql = f"INSERT INTO proyectos ({cols}) VALUES ({placeholders}) RETURNING id"
 
         conn = get_db_connection()
         with conn.cursor() as cur:
-            cur.execute(sql, tuple(data.values()))
+            cur.execute(sql, tuple(clean_data.values()))
             pid = cur.fetchone()[0]
-
         conn.commit()
 
         return jsonify({
             "message": "Proyecto creado",
             "proyecto_id": pid
         }), 201
-
+    except Exception as e:
+        logger.error(f"Error creating project: {e}")
+        return jsonify({"message": "Error creating project", "error": str(e)}), 500
     finally:
         if conn:
             release_db_connection(conn)
+
 
 @app.route("/proyectos/<int:pid>", methods=["PUT"])
 @session_required
@@ -1882,6 +1922,9 @@ def upload_documento(current_user_id, pid):
 
             documento_id = cur.fetchone()[0]
 
+            # Actualizar fecha del proyecto
+            cur.execute("UPDATE proyectos SET fecha_actualizacion = NOW() WHERE id = %s", (pid,))
+
         conn.commit()
 
         log_auditoria(
@@ -2008,6 +2051,45 @@ def descargar_documentos_proyecto(current_user_id, pid):
     except Exception as e:
         logger.error(f"Error descargando documentos proyecto {pid}: {e}")
         traceback.print_exc()
+        return jsonify({"message": "Error interno"}), 500
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+
+@app.route("/documentos", methods=["GET"])
+@session_required
+def get_all_documentos(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({"message": "Error conexión BD"}), 500
+
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT
+                    d.documento_id,
+                    d.proyecto_id,
+                    p.nombre as proyecto_nombre,
+                    d.tipo_documento,
+                    d.nombre,
+                    d.descripcion,
+                    d.url,
+                    d.archivo_nombre,
+                    d.archivo_extension,
+                    d.archivo_size,
+                    d.fecha_subida
+                FROM proyectos_documentos d
+                LEFT JOIN proyectos p ON p.id = d.proyecto_id
+                ORDER BY d.fecha_subida DESC
+            """)
+            documentos = cur.fetchall()
+
+        return jsonify(documentos)
+
+    except Exception as e:
+        logger.error(f"Error listando todos los documentos: {e}")
         return jsonify({"message": "Error interno"}), 500
     finally:
         if conn:
@@ -2354,6 +2436,9 @@ def create_proyecto_hito(current_user_id, pid):
             current_user_id
         ))
         hito_id = cur.fetchone()[0]
+
+        # Actualizar fecha del proyecto
+        cur.execute("UPDATE proyectos SET fecha_actualizacion = NOW() WHERE id = %s", (pid,))
 
     conn.commit()
     release_db_connection(conn)

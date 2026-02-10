@@ -44,14 +44,14 @@ RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO proyectos_hitos (
         proyecto_id,
-        tipo_hito,
+        categoria_hito,
         fecha,
         observacion,
         creado_por
     )
     VALUES (
         NEW.id,
-        'Postulación',
+        (SELECT id FROM hitoscalendario WHERE nombre = 'POSTULACION_FONDO' LIMIT 1),
         COALESCE(NEW.fecha_postulacion, CURRENT_DATE),
         NEW.observaciones,
         NEW.user_id
