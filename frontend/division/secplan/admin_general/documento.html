@@ -674,11 +674,17 @@
                                 ${new Date(doc.fecha_subida).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <button onclick="openViewer(${doc.documento_id}, '${doc.nombre || doc.archivo_nombre}')" 
-                                    class="text-indigo-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-indigo-600 shadow-sm hover:shadow-indigo-200 border border-transparent hover:border-indigo-700 active:scale-90" 
-                                    title="Visualizar">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                                ${(() => {
+                                const ext = (doc.archivo_extension || doc.archivo_nombre || '').split('.').pop().toLowerCase();
+                                const isPdf = ext === 'pdf';
+                                const safeName = (doc.nombre || doc.archivo_nombre || '').replace(/'/g, "\\'");
+                                if (isPdf) {
+                                    return `<button onclick="openViewer(${doc.documento_id}, '${safeName}')" class="text-indigo-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-indigo-600 shadow-sm hover:shadow-indigo-200 border border-transparent hover:border-indigo-700 active:scale-90" title="Visualizar"><i class="fas fa-eye"></i></button>
+                                        <button onclick="downloadDocumentById(${doc.documento_id}, '${safeName}')" class="text-emerald-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-emerald-600 shadow-sm hover:shadow-emerald-200 border border-transparent hover:border-emerald-700 active:scale-90" title="Descargar"><i class="fas fa-download"></i></button>`;
+                                } else {
+                                    return `<button onclick="downloadDocumentById(${doc.documento_id}, '${safeName}')" class="text-emerald-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-emerald-600 shadow-sm hover:shadow-emerald-200 border border-transparent hover:border-emerald-700 active:scale-90" title="Descargar"><i class="fas fa-download"></i></button>`;
+                                }
+                            })()}
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -870,11 +876,17 @@
                                 ${formatBytes(doc.archivo_size)}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <button onclick="openViewer(${doc.documento_id}, '${doc.nombre || doc.archivo_nombre}')" 
-                                    class="text-indigo-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-indigo-600 shadow-sm hover:shadow-indigo-200 border border-transparent hover:border-indigo-700 active:scale-90" 
-                                    title="Visualizar">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                                ${(() => {
+                                const ext = (doc.archivo_extension || doc.archivo_nombre || '').split('.').pop().toLowerCase();
+                                const isPdf = ext === 'pdf';
+                                const safeName = (doc.nombre || doc.archivo_nombre || '').replace(/'/g, "\\'");
+                                if (isPdf) {
+                                    return `<button onclick="openViewer(${doc.documento_id}, '${safeName}')" class="text-indigo-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-indigo-600 shadow-sm hover:shadow-indigo-200 border border-transparent hover:border-indigo-700 active:scale-90" title="Visualizar"><i class="fas fa-eye"></i></button>
+                                        <button onclick="downloadDocumentById(${doc.documento_id}, '${safeName}')" class="text-emerald-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-emerald-600 shadow-sm hover:shadow-emerald-200 border border-transparent hover:border-emerald-700 active:scale-90" title="Descargar"><i class="fas fa-download"></i></button>`;
+                                } else {
+                                    return `<button onclick="downloadDocumentById(${doc.documento_id}, '${safeName}')" class="text-emerald-600 hover:text-white transition-all mx-1 p-2.5 rounded-xl hover:bg-emerald-600 shadow-sm hover:shadow-emerald-200 border border-transparent hover:border-emerald-700 active:scale-90" title="Descargar"><i class="fas fa-download"></i></button>`;
+                                }
+                            })()}
                             </td>`;
                         tableBody.appendChild(tr);
                     });
