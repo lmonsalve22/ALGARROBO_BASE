@@ -1,0 +1,74 @@
+<!-- Vista 0: Contenedor para Nuevos Gráficos (Vistas 2) -->
+<style>
+    .v2-container {
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .v2-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 300px;
+    }
+
+    .v2-header {
+        grid-column: 1 / -1;
+        padding: 1rem;
+        border-bottom: 2px solid var(--color-primary);
+        margin-bottom: 1rem;
+    }
+
+    /* Optimización para PDF */
+    @media print {
+        .v2-container {
+            display: block;
+            background: white;
+        }
+
+        .v2-card {
+            page-break-inside: avoid;
+            margin-bottom: 2rem;
+            box-shadow: none;
+            border: 1px solid #ccc;
+        }
+    }
+</style>
+
+<div class="v2-container" id="vistas2Container">
+    <div class="v2-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h1 style="margin:0; font-size: 1.5rem; color: var(--color-primary);">Reporte de Inteligencia Delictual</h1>
+            <p class="text-muted" style="margin:0;">Gráficos de Inteligencia Avanzada</p>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <!-- Los gráficos se inyectarán aquí -->
+    <div class="v2-card">
+        <i class="fa-solid fa-chart-line" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+        <p class="text-muted">Esperando configuración de gráfico...</p>
+    </div>
+
+    <div class="v2-card">
+        <i class="fa-solid fa-chart-bar" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+        <p class="text-muted">Esperando configuración de gráfico...</p>
+    </div>
+</div>
+
+<script>
+    (function initVistas2() {
+        console.log("🚀 Vistas2: Vista 0 inicializada correctamente.");
+        // Aquí se puede añadir lógica para rellenar con STATE_DATA si es necesario
+    })();
+</script>

@@ -1,0 +1,227 @@
+<!-- Vista 15: Efectividad de la Respuesta Policial -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-handcuffs"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>RATIOS DE EFECTIVIDAD (CEAD)</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué tan efectiva es la respuesta policial ante el delito?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Relación entre casos
+            reportados y detenciones realizadas. Un ratio alto indica mayor capacidad operativa y disuasión.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v15_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="kpi-card" style="border-top: 4px solid #10b981;">
+            <div class="kpi-label">Ratio de Efectividad</div>
+            <div class="kpi-value" id="v15_ratio_val">--%</div>
+            <div
+                style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between;">
+                <span>Histórico: <span id="v15_ratio_hist">--%</span></span>
+                <span id="v15_eff_delta">--</span>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Detenciones (Est.)</div>
+            <div class="kpi-value" id="v15_detenidos_val">--</div>
+            <div class="kpi-change">Promedio: <span id="v15_detenidos_avg">--</span></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Casos Totales</div>
+            <div class="kpi-value" id="v15_casos_val">--</div>
+            <div class="kpi-change">Promedio: <span id="v15_casos_avg">--</span></div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card chart-card" style="padding: 1.5rem;">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
+            <i class="fa-solid fa-chart-line" style="color: #10b981;"></i> Evolución de la Tasa de Respuesta
+        </h3>
+        <div class="chart-wrapper" style="height: 400px;">
+            <canvas id="v15_chart_dual"></canvas>
+        </div>
+    </div>
+
+    <div
+        style="margin-top: 1.5rem; padding: 1rem; background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 8px; font-size: 0.8rem; color: #166534; line-height: 1.5;">
+        <i class="fa-solid fa-shield-halved"></i> <strong>Análisis Operativo:</strong> Si los casos suben pero el ratio
+        de detención baja, existe un <strong>"Gap de Respuesta"</strong> que puede incentivar la reincidencia. La meta
+        estratégica es mantener un ratio superior al promedio regional.
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> La <strong>Efectividad Policial</strong> se mide como la razón entre
+        detenidos y delitos registrados en el año. Una tasa alta indica mayor capacidad de respuesta operativa. Este
+        indicador debe interpretarse en conjunto con el volumen absoluto de delitos: una tasa alta con alto volumen
+        sigue siendo una situación de riesgo.
+    </div>
+</div>
+
+<script>
+    (async function initVista15_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        let data = [];
+        let years = [];
+
+        try {
+            // Usar nombres de columnas explícitos: 'año', 'tipoVal', 'frecuencia'
+            if (S.allDataHistory_total && S.allDataHistory_total.length > 0) {
+                // Obtener años únicos
+                years = [...new Set(S.allDataHistory_total.map(r => r.año))].sort((a, b) => a - b).slice(-10);
+
+                // Procesar datos
+                data = years.map(yr => {
+                    const yearRows = S.allDataHistory_total.filter(r => r.año === yr);
+
+                    // Sumar Casos (Solo 'Casos' para no duplicar con 'Denuncia')
+                    const cases = yearRows
+                        .filter(r => r.tipoVal === 'Casos')
+                        .reduce((acc, r) => acc + (r.frecuencia || 0), 0);
+
+                    // Sumar Detenciones (Sumar 'Detenciones' + 'Aprehendido' para capturar todo positivo policial)
+                    const arrests = yearRows
+                        .filter(r => r.tipoVal === 'Detenciones' || r.tipoVal === 'Aprehendido')
+                        .reduce((acc, r) => acc + (r.frecuencia || 0), 0);
+
+                    const ratio = cases > 0 ? (arrests / cases * 100) : 0;
+
+                    return { year: yr, cases, arrests, ratio };
+                }).filter(d => d.cases > 0);
+            }
+        } catch (e) {
+            console.warn('Vista 15: Error procesando datos', e);
+        }
+
+        if (data.length === 0) {
+            console.warn('Vista 15: No hay datos disponibles para mostrar');
+            return;
+        }
+
+        // --- Renderizado KPIs ---
+        const current = data[data.length - 1];
+        const prev = data[data.length - 2] || current;
+
+        // Promedios históricos
+        const avgCases = Math.round(data.reduce((a, b) => a + b.cases, 0) / data.length);
+        const avgArrests = Math.round(data.reduce((a, b) => a + b.arrests, 0) / data.length);
+        const avgRatio = (data.reduce((a, b) => a + b.ratio, 0) / data.length).toFixed(1);
+
+        const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+        setTxt('v15_ratio_val', `${current.ratio.toFixed(1)}%`);
+        setTxt('v15_ratio_hist', `${avgRatio}%`);
+        setTxt('v15_detenidos_val', parseInt(current.arrests).toLocaleString('es-CL'));
+        setTxt('v15_detenidos_avg', parseInt(avgArrests).toLocaleString('es-CL'));
+        setTxt('v15_casos_val', parseInt(current.cases).toLocaleString('es-CL'));
+        setTxt('v15_casos_avg', parseInt(avgCases).toLocaleString('es-CL'));
+
+        const effDelta = prev.ratio > 0 ? ((current.ratio - prev.ratio) / prev.ratio * 100) : 0;
+        const deltaEl = document.getElementById('v15_eff_delta');
+        if (deltaEl) {
+            deltaEl.textContent = `${effDelta >= 0 ? '+' : ''}${effDelta.toFixed(1)}%`;
+            deltaEl.style.color = effDelta >= 0 ? '#10b981' : '#ef4444';
+        }
+
+        // --- Dual Axis Chart ---
+        const ctx = document.getElementById('v15_chart_dual').getContext('2d');
+        new Chart(ctx, {
+            data: {
+                labels: data.map(d => d.year),
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Casos Totales',
+                        data: data.map(d => d.cases),
+                        backgroundColor: 'rgba(51, 65, 85, 0.2)',
+                        yAxisID: 'yCases',
+                        order: 2
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Detenciones + Aprehensiones',
+                        data: data.map(d => d.arrests),
+                        backgroundColor: '#3b82f6',
+                        yAxisID: 'yCases',
+                        order: 1
+                    },
+                    {
+                        type: 'line',
+                        label: 'Ratio Efectividad (%)',
+                        data: data.map(d => d.ratio),
+                        borderColor: '#10b981',
+                        borderWidth: 4,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#fff',
+                        fill: false,
+                        yAxisID: 'yRatio',
+                        order: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yCases: {
+                        position: 'left',
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Frecuencia Absoluta', font: { family: 'Outfit', weight: '700' } }
+                    },
+                    yRatio: {
+                        position: 'right',
+                        min: 0,
+                        // max: 100, // Dejar auto para ver mejor la variación si es baja
+                        grid: { display: false },
+                        title: { display: true, text: 'Ratio (%)', font: { family: 'Outfit', weight: '700' } },
+                        ticks: { callback: v => v + '%' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista15').then(txt => {
+                const el = document.getElementById('v15_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

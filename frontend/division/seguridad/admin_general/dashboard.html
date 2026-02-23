@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguridad - Geoportal Municipal</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config for Base Layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#6366f1', secondary: '#ec4899', accent: '#8b5cf6' }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS for WebJS / Security Dashboard -->
+    <link rel="stylesheet" href="cssweb/styles.css?v=3">
+
+    <style>
+        .nav-link.active {
+            background-color: #2563eb !important;
+            /* bg-blue-600 */
+            color: white !important;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .nav-link.active i,
+        .nav-link.active span {
+            color: white !important;
+        }
+
+        .view-container {
+            position: relative;
+            min-height: calc(100vh - 120px);
+            background: #f8fafc;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 overflow-hidden font-['Outfit'] h-screen flex flex-col">
+
+    <!-- Global Header injected here -->
+    <div id="headerRender"></div>
+
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- Local Sidebar replacing original secplan asideRender -->
+        <aside id="sidebarContainer"
+            class="w-72 bg-white border-r border-gray-200 hidden lg:flex flex-col overflow-y-auto font-['Outfit'] h-full shadow-lg relative z-10">
+        </aside>
+
+        <!-- Main Content -->
+        <main id="mainContent" class="flex-1 overflow-y-auto relative bg-slate-50">
+            <!-- Header Security Controls (Export, Arrows, etc.) -->
+            <header
+                class="header bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button class="btn btn--accent hidden" id="btnExportPdf">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Exportar PDF</span>
+                    </button>
+                    <button
+                        class="btn border border-gray-300 rounded px-3 py-1 text-sm bg-white hover:bg-gray-50 flex items-center gap-2"
+                        id="btnExportSingle" onclick="PDFModule.exportSinglePage()">
+                        <i class="fa-solid fa-file-export text-gray-500"></i>
+                        <span class="font-medium text-gray-700">Generar Hoja</span>
+                    </button>
+                    <button
+                        class="btn btn--primary hidden bg-blue-600 text-white rounded px-3 py-1 text-sm flex items-center gap-2 hover:bg-blue-700"
+                        id="btnExportCover" onclick="window.PDFModuleV2 && window.PDFModuleV2.exportReport()">
+                        <i class="fa-solid fa-book"></i>
+                        <span>Informe PDF</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <!-- Indicador de Comuna -->
+                    <div id="btnComuna" title="Comuna analizada en este reporte"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg">
+                        <i class="fa-solid fa-location-dot text-blue-500 text-xs"></i>
+                        <div class="flex flex-col leading-tight">
+                            <span class="text-[0.6rem] font-bold text-slate-400 tracking-wider uppercase">Comuna</span>
+                            <span id="btnComunaText" class="text-sm font-bold text-slate-800">Cargando...</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones Nav -->
+                    <div class="flex items-center gap-3 pl-6 border-l border-slate-200">
+                        <button id="btnNavPrev"
+                            class="hidden items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 hover:shadow-sm transition-all text-left">
+                            <i class="fa-solid fa-chevron-left text-blue-500 text-sm"></i>
+                            <div class="leading-tight">
+                                <div class="text-[0.65rem] text-slate-400 font-bold uppercase tracking-wider">ANTERIOR
+                                </div>
+                                <div id="navPrevText"
+                                    class="text-sm text-slate-800 font-semibold max-w-[120px] truncate">--</div>
+                            </div>
+                        </button>
+
+                        <button id="btnNavNext"
+                            class="hidden items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 hover:shadow-sm transition-all text-right">
+                            <div class="leading-tight">
+                                <div class="text-[0.65rem] text-slate-400 font-bold uppercase tracking-wider">SIGUIENTE
+                                </div>
+                                <div id="navNextText"
+                                    class="text-sm text-slate-800 font-semibold max-w-[120px] truncate">--</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-blue-500 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <section id="viewContainer" class="view-container p-6">
+                <!-- Data loaded dynamically -->
+                <div class="flex items-center justify-center p-20 text-gray-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mr-3 text-blue-500"></i>
+                    <span class="font-medium text-lg">Cargando visualización...</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scritps from layout.js (Global header logic) -->
+    <script src="../../../script/layout.js"></script>
+
+    <!-- Base Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+    <!-- WebJS Scripts -->
+    <!-- Global Configuration -->
+    <script src="js/config/columns.js?v=2" defer></script>
+    <script src="js/utils/logger.js?v=1" defer></script>
+
+    <!-- Core Architecture -->
+    <script src="js/rid-core.js?v=1" defer></script>
+    <script src="js/utils/ui-helper.js?v=1" defer></script>
+    <script src="js/utils/view-controller.js?v=1" defer></script>
+
+    <!-- Data Layer -->
+    <script src="js/data.js?v=4" defer></script>
+    <script src="js/data_cead.js?v=4" defer></script>
+    <script src="js/data_manager.js?v=5" defer></script>
+
+    <!-- App Scripts -->
+    <script src="js/utils/waiter.js?v=1" defer></script>
+    <script src="js/utils/chart-helper.js?v=4" defer></script>
+    <script src="js/utils/chart-enhancer.js?v=3" defer></script>
+    <script src="js/ia2.js?v=2" defer></script>
+    <script src="js/app.js?v=3" defer></script>
+    <script src="js/pdf.js?v=3" defer></script>
+    <script src="js/pdf_vistas2.js?v=1" defer></script>
+
+    <script>
+        const VIEW_TITLES = {
+            'vista1': 'Resumen Ejecutivo',
+            'vista2': 'Tendencia Reciente',
+            'vista3': 'Comparativo Temporal',
+            'vista4': 'Estacionalidad Mensual',
+            'vista5': 'Delitos Críticos',
+            'vista6': 'Evolución por Delito',
+            'vista7': 'Evolución Delitos',
+            'vista8': 'Correlaciones',
+            'vista9': 'Puntos Débiles',
+            'vista10': 'Vs. Región',
+            'vista11': 'Ranking Histórico',
+            'vista12': 'Vs. País',
+            'vista13': 'Vs. Comunas Similares',
+            'vista14': 'Aporte Regional',
+            'vista15': 'Efectividad Policial',
+            'vista16': 'Efectividad Comparada',
+            'vista17': 'Proporcionalidad',
+            'vista18': 'Gravedad por Delito',
+            'vista19': 'IDI Comparativo',
+            'vista20': 'Tendencia 20 Años',
+            'vista21': 'Momentum y Rachas',
+            'vista22': 'Priorización',
+            'vista23': 'Categoría',
+            'vista24': 'Reporte Ejecutivo',
+            'vista25': 'Auditoría Técnica'
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Block standard asideRender from layout.js
+            const originalAside = document.getElementById("asideRender");
+            if (originalAside) originalAside.style.display = 'none';
+
+            if (window.App) {
+                const vistasEstrategicas = Array.from({ length: 25 }, (_, i) => `vista${i + 1}`);
+
+                App.config.viewsPath = 'vistas2';
+                App.config.defaultView = 'vista1';
+                App.config.views = vistasEstrategicas;
+
+                const originalLoadView = App.loadView;
+
+                function updateNavigationUI(currentViewName) {
+                    const views = App.config.views;
+                    const currentIndex = views.indexOf(currentViewName);
+
+                    const prevBtn = document.getElementById('btnNavPrev');
+                    const nextBtn = document.getElementById('btnNavNext');
+                    const prevText = document.getElementById('navPrevText');
+                    const nextText = document.getElementById('navNextText');
+
+                    if (prevBtn && nextBtn && currentIndex !== -1) {
+                        if (currentIndex > 0) {
+                            const prevView = views[currentIndex - 1];
+                            if (prevText) prevText.textContent = VIEW_TITLES[prevView] || prevView;
+                            prevBtn.disabled = false;
+                            prevBtn.onclick = () => App.loadView(prevView);
+                            prevBtn.style.display = 'flex';
+                        } else prevBtn.style.display = 'none';
+
+                        if (currentIndex < views.length - 1) {
+                            const nextView = views[currentIndex + 1];
+                            if (nextText) nextText.textContent = VIEW_TITLES[nextView] || nextView;
+                            nextBtn.disabled = false;
+                            nextBtn.onclick = () => App.loadView(nextView);
+                            nextBtn.style.display = 'flex';
+                        } else nextBtn.style.display = 'none';
+                    }
+                }
+
+                App.loadView = async function (viewName) {
+                    await originalLoadView.call(this, viewName);
+                    if (this.elements.coverBtn) {
+                        this.elements.coverBtn.style.display = 'inline-flex';
+                        this.elements.coverBtn.onclick = function () { window.PDFModuleV2.exportReport(); };
+                    }
+
+                    updateNavigationUI(viewName);
+
+                    const sidebarLinks = document.querySelectorAll('.nav-link');
+                    if (sidebarLinks.length > 0) {
+                        sidebarLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.dataset.view === viewName) {
+                                link.classList.add('active');
+                                link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
+                        });
+                    }
+                };
+
+                App.loadSidebar = async function () {
+                    try {
+                        const response = await fetch('sidebar2.html');
+                        const html = await response.text();
+                        this.elements.sidebar.innerHTML = html;
+                        this.initNavigation();
+
+                        if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
+                            const comLabel = document.getElementById('sidebarComuna');
+                            if (comLabel) comLabel.textContent = window.STATE_DATA.comunaName;
+                        }
+                    } catch (error) {
+                        console.error('Error loading sidebar2:', error);
+                    }
+                };
+
+                function updateGlobalUI(comunaName) {
+                    const btnText = document.getElementById('btnComunaText');
+                    if (btnText) btnText.textContent = comunaName;
+
+                    const sbText = document.getElementById('sidebarComuna');
+                    if (sbText) sbText.textContent = comunaName;
+                }
+
+                window.addEventListener('dataManagerLoaded', (e) => {
+                    updateGlobalUI(e.detail.meta.comuna);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,314 @@
+<!-- Vista 1: Situación General Semanal (Resumen Ejecutivo) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Cuál es el estado actual de seguridad en la comuna esta semana?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Indicadores clave de
+            volumen, variación y nivel de riesgo normalizado.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v1_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card" style="position: relative; overflow: hidden;">
+            <div class="kpi-label">Casos Totales</div>
+            <div class="kpi-value" id="v1_casos">--</div>
+            <div class="kpi-change" id="v1_casos_delta">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Variación Interanual</div>
+            <div class="kpi-value" id="v1_var_anual">--</div>
+            <div class="kpi-change" id="v1_var_anual_label">vs misma semana año anterior</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Tasa x 100k hab.</div>
+            <div class="kpi-value" id="v1_tasa">--</div>
+            <div class="kpi-change kpi-change--neutral">Frecuencia poblacional</div>
+        </div>
+        <div class="kpi-card" id="v1_risk_card">
+            <div class="kpi-label">Nivel de Riesgo</div>
+            <div class="kpi-value" id="v1_risk_level">--</div>
+            <div class="kpi-change kpi-change--neutral" id="v1_zscore">Z-Score: --</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Row 1: Top 5 Delitos -->
+<div class="card chart-card" style="margin-bottom: 1.5rem;">
+    <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-ranking-star" style="color: var(--color-primary);"></i> Top 5 Delitos con Mayor Volumen
+    </h3>
+    <div class="chart-wrapper" style="height: 320px;">
+        <canvas id="v1_chart_bar"></canvas>
+    </div>
+</div>
+
+<!-- Row 2: Tendencia -->
+<div class="card chart-card">
+    <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-chart-line" style="color: var(--color-primary);"></i> Línea de Tendencia (Últimas 8
+        Semanas)
+    </h3>
+    <div class="chart-wrapper" style="height: 280px;"> <!-- Reduced height ~15% -->
+        <canvas id="v1_chart_trend"></canvas>
+    </div>
+</div>
+
+
+
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Resumen ejecutivo semanal basado en datos del sistema <strong>STOP
+            (Carabineros)</strong>. Los KPIs comparan la semana actual contra la anterior y el mismo período del año
+        previo. El ranking de delitos refleja la frecuencia absoluta; la media móvil de 4 semanas suaviza la
+        variabilidad para identificar tendencias estructurales.
+    </div>
+</div>
+
+<script>
+    (async function initVista1_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        // Header
+        UIHelper.fillHeaders(S.comunaName, S.semanaDetalle);
+
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const casos = totalRow[C.CASOS_ACTUAL] || 0;
+        const casosAnt = totalRow[C.CASOS_ANT] || 0;
+        // Correct key for Year Prev
+        const casosYearAnt = totalRow[C.CASOS_YEAR_ANT] || 0;
+        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
+
+        // KPIs
+        const deltaSem = casosAnt > 0 ? ((casos - casosAnt) / casosAnt * 100) : 0;
+        // deltaAnual uses 'casos' vs 'casosYearAnt'
+        const deltaAnual = casosYearAnt > 0 ? ((casos - casosYearAnt) / casosYearAnt * 100) : 0;
+
+        // Enhanced Labels with previous values
+        const labelSem = `vs sem. ant. (${casosAnt})`;
+        const labelAnual = `vs año ant. (${casosYearAnt})`;
+
+        UIHelper.renderKpi('v1_casos', 'v1_casos_delta', casos, deltaSem, true, labelSem);
+
+        // Var Anual Card
+        UIHelper.renderColoredPercent('v1_var_anual', deltaAnual, true);
+        const lblAnualEl = document.getElementById('v1_var_anual_label');
+        if (lblAnualEl) lblAnualEl.textContent = labelAnual;
+
+        UIHelper.setText('v1_tasa', (casos / factorPob).toFixed(1));
+
+        // Z-Score y Riesgo
+        let zSum = 0, zCount = 0;
+        S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana).forEach(r => {
+            zSum += (r[C.Z_SCORE] || 0);
+            zCount++;
+        });
+        const avgZ = zCount > 0 ? (zSum / zCount) : 0;
+
+        UIHelper.setText('v1_zscore', `Z-Score: ${avgZ.toFixed(2)}`);
+
+        let riskLevel = 'BAJO', riskColor = '#10b981', bg = 'rgba(16, 185, 129, 0.1)';
+        if (avgZ > 1.5) { riskLevel = 'ALTO'; riskColor = '#ef4444'; bg = 'rgba(239, 68, 68, 0.1)'; }
+        else if (avgZ > 0.5) { riskLevel = 'MEDIO'; riskColor = '#f59e0b'; bg = 'rgba(245, 158, 11, 0.1)'; }
+
+        const vRisk = document.getElementById('v1_risk_level');
+        if (vRisk) {
+            vRisk.textContent = riskLevel;
+            vRisk.style.color = riskColor;
+        }
+
+        const vRiskCard = document.getElementById('v1_risk_card');
+        if (vRiskCard) {
+            vRiskCard.style.background = bg;
+            vRiskCard.style.borderColor = riskColor;
+        }
+
+        // --- Gráfico de Barras: Top 5 ---
+        const top5Data = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
+            .sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0))
+            .slice(0, 5);
+
+        new Chart(document.getElementById('v1_chart_bar'), {
+            type: 'bar',
+            data: {
+                labels: top5Data.map(d => d[C.DELITO]), // Nombres Completos (sin truncar)
+                datasets: [{
+                    label: 'Casos',
+                    data: top5Data.map(d => d[C.CASOS_ACTUAL]),
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { right: 40 } }, // Space for labels
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        formatter: (value) => {
+                            if (!casos || casos === 0) return value;
+                            const pct = ((value / casos) * 100).toFixed(1);
+                            return `${value} (${pct}%)`;
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Outfit' } },
+                        title: { display: true, text: 'Total de Casos (Semana Actual)', font: { weight: 'bold' } }
+                    },
+                    y: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '600' } } }
+                }
+            }
+        });
+
+        // --- Gráfico de Tendencia: 8 Semanas ---
+        const last8_IDs = [...new Set(S.allDataHistory_total.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 8).reverse();
+        const trendData = last8_IDs.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id)?.[C.CASOS_ACTUAL] || 0);
+        // Use central date formatter (YYYY/MM)
+        const trendLabels = last8_IDs.map(id => S.getDateLabel(id));
+
+        // --- 1. Calcular Pendiente (Regresión Lineal Simple) ---
+        const n = trendData.length;
+        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        trendData.forEach((y, x) => {
+            sumX += x;
+            sumY += y;
+            sumXY += x * y;
+            sumXX += x * x;
+        });
+
+        // Slope computation
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+
+        // Linear Regression Data (y = mx + b)
+        const linearData = trendData.map((_, x) => slope * x + intercept);
+
+        // Colors
+        const trendColor = slope >= 0 ? '#ef4444' : '#10b981'; // Red / Green
+
+        // --- 2. Promedio ---
+        const avgVal = trendData.reduce((a, b) => a + b, 0) / n;
+        const avgData = Array(n).fill(avgVal);
+
+        new Chart(document.getElementById('v1_chart_trend'), {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    {
+                        label: 'Datos Reales', // Raw Data
+                        data: trendData,
+                        borderColor: 'rgba(59, 130, 246, 0.5)', // Blue-500 dimmed
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        fill: true,
+                        datalabels: {
+                            display: (ctx) => ctx.dataIndex % 2 === 0, // Show label every 2 points
+                            align: 'top',
+                            color: '#64748b',
+                            font: { size: 10 },
+                            offset: 4
+                        }
+                    },
+                    {
+                        label: 'Tendencia Lineal', // Regression Line
+                        data: linearData,
+                        borderColor: trendColor, // Dynamic Color
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        fill: false,
+                        datalabels: {
+                            display: (ctx) => ctx.dataIndex === n - 1, // Show only on last point
+                            align: 'right',
+                            anchor: 'end',
+                            color: trendColor,
+                            font: { weight: 'bold' },
+                            formatter: () => `m = ${slope.toFixed(2)}`
+                        }
+                    },
+                    {
+                        label: `Promedio (${avgVal.toFixed(1)})`,
+                        data: avgData,
+                        borderColor: '#94a3b8', // Slate-400
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false,
+                        datalabels: { display: false }
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 20, right: 60, left: 10, bottom: 0 }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        align: 'center',
+                        labels: { font: { family: 'Outfit', size: 11 }, usePointStyle: true, boxWidth: 6, padding: 15 }
+                    },
+                    datalabels: { clip: false }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit', size: 10 } } },
+                    y: {
+                        beginAtZero: true,
+                        grace: '20%',
+                        title: { display: true, text: 'Total de Casos Semanales', font: { weight: 'bold' } }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista1').then(txt => {
+                document.getElementById('v1_ia_analysis').innerHTML = txt;
+            });
+        }
+    })();
+</script>

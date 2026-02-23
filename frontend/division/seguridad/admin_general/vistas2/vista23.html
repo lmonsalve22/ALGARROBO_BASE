@@ -1,0 +1,325 @@
+<!-- Vista 23: Categoría (Antes Decisiones Tácticas) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-layer-group"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>ANÁLISIS POR CATEGORÍA</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Cómo se comportan las cifras a partir de distintas clasificaciones de delitos?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+            Análisis multidimensional del fenómeno delictual agrupando los casos según su severidad, modus operandi y
+            naturaleza jurídica.
+        </p>
+    </div>
+
+    <!-- IA Analysis (Standardized Format) -->
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v23_ia_analysis">Analizando categorías...</span>
+    </div>
+
+
+
+    <!-- FIGURAS (Starting directly after Context Summary) -->
+    <div style="border-top: 2px solid #e2e8f0; padding-top: 2.5rem;">
+        <div style="margin-bottom: 2rem;display: none;">
+            <h3 style="color: #1e293b; font-size: 1.4rem; font-weight: 800; margin: 0;">
+                <i class="fa-solid fa-chart-pie" style="color: var(--color-primary); margin-right: 10px;"></i>
+                Visualización por Categorías
+            </h3>
+            <p style="color: #64748b; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                Gráficos que descomponen el total delictual según sus atributos de <strong>Impacto</strong>,
+                <strong>Modus Operandi</strong> y <strong>Naturaleza</strong>.
+            </p>
+        </div>
+
+        <!-- FIGURA 1 -->
+        <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                <div
+                    style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
+                    1</div>
+                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Severidad (12 Semanas)
+                </h4>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start;">
+                <div style="height: 320px; position: relative;">
+                    <canvas id="v23_chart_1"></canvas>
+                </div>
+                <div class="card"
+                    style="padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h5
+                        style="margin: 0 0 12px 0; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        Distribución Actual (Severidad)</h5>
+                    <div id="v23_list_1" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FIGURA 2 -->
+        <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                <div
+                    style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
+                    2</div>
+                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Modus Operandi (12
+                    Semanas)</h4>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start;">
+                <div style="height: 320px; position: relative;">
+                    <canvas id="v23_chart_2"></canvas>
+                </div>
+                <div class="card"
+                    style="padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h5
+                        style="margin: 0 0 12px 0; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        Distribución Actual (Modus)</h5>
+                    <div id="v23_list_2" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FIGURA 3 -->
+        <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                <div
+                    style="background: #10b981; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
+                    3</div>
+                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Naturaleza Jurídica (12
+                    Semanas)</h4>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start;">
+                <div style="height: 320px; position: relative;">
+                    <canvas id="v23_chart_3"></canvas>
+                </div>
+                <div class="card"
+                    style="padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h5
+                        style="margin: 0 0 12px 0; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        Distribución Actual (Naturaleza)</h5>
+                    <div id="v23_list_3" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1.25rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.6;">
+        <strong>Nota Metodológica:</strong> Esta vista clasifica los delitos utilizando una taxonomía multidimensional
+        basada en tres ejes:
+        <ul style="margin: 0.5rem 0 0.75rem 0; padding-left: 1.25rem;">
+            <li><strong>Impacto (Severidad):</strong> Permite ver la evolución temporal de cada nivel de gravedad por
+                separado.</li>
+            <li><strong>Modus Operandi:</strong> Muestra si alguna modalidad delictual está ganando terreno a lo largo
+                del trimestre.</li>
+            <li><strong>Naturaleza Jurídica:</strong> Evolución del volumen de casos según el bien jurídico protegido
+                por la ley.</li>
+        </ul>
+        Permite identificar patrones estructurales que no son visibles en el conteo simple de casos.
+    </div>
+</div>
+
+<style>
+    .comuna-fill {
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+</style>
+
+<script>
+    (async function initVista23_Final() {
+        // --- DATA CLASSES EMBEDDED ---
+        const DELITO_CLASS = [
+            { id: 8, delito: "Amenazas con Armas", impacto_severidad: "Delitos contra la Vida", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Contra las Personas" },
+            { id: 17, delito: "Amenazas y Riñas", impacto_severidad: "Delitos contra la Integridad Física", modus_operandi: "Conflictos Interpersonales/Domésticos", naturaleza_juridica: "Contra las Personas" },
+            { id: 20, delito: "Consumo de Alcohol y de Drogas en la Vía Pública", impacto_severidad: "Delitos de Convivencia y Menor Gravedad", modus_operandi: "Delitos de Oportunidad", naturaleza_juridica: "Orden Público / Convivencia" },
+            { id: 15, delito: "Daños", impacto_severidad: "Delitos de Convivencia y Menor Gravedad", modus_operandi: "Fuerza/Intrusión", naturaleza_juridica: "Contra la Propiedad" },
+            { id: 7, delito: "Delitos en Contexto de Violencia Intrafamiliar", impacto_severidad: "Delitos contra la Integridad Física", modus_operandi: "Conflictos Interpersonales/Domésticos", naturaleza_juridica: "Contra las Personas" },
+            { id: 1, delito: "Homicidios y Femicidios", impacto_severidad: "Delitos contra la Vida", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Contra las Personas" },
+            { id: 16, delito: "Hurtos", impacto_severidad: "Delitos de Convivencia y Menor Gravedad", modus_operandi: "Delitos de Oportunidad", naturaleza_juridica: "Contra la Propiedad" },
+            { id: 19, delito: "Incivilidades", impacto_severidad: "Delitos de Convivencia y Menor Gravedad", modus_operandi: "Delitos de Oportunidad", naturaleza_juridica: "Orden Público / Convivencia" },
+            { id: 9, delito: "Lesiones graves", impacto_severidad: "Delitos contra la Integridad Física", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Contra las Personas" },
+            { id: 11, delito: "Lesiones leves", impacto_severidad: "Delitos contra la Integridad Física", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Contra las Personas" },
+            { id: 10, delito: "Lesiones menos graves", impacto_severidad: "Delitos contra la Integridad Física", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Contra las Personas" },
+            { id: 12, delito: "Ley de Control de Armas", impacto_severidad: "Delitos contra la Vida", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Leyes Especiales" },
+            { id: 13, delito: "Ley de Drogas", impacto_severidad: "Delitos contra la Vida", modus_operandi: "Control Territorial", naturaleza_juridica: "Leyes Especiales" },
+            { id: 21, delito: "Otros desórdenes públicos", impacto_severidad: "Delitos de Convivencia y Menor Gravedad", modus_operandi: "Delitos de Oportunidad", naturaleza_juridica: "Orden Público / Convivencia" },
+            { id: 14, delito: "Otros Robos con Fuerza en las Cosas", impacto_severidad: "Delitos contra el Patrimonio Grave", modus_operandi: "Fuerza/Intrusión", naturaleza_juridica: "Contra la Propiedad" },
+            { id: 18, delito: "Receptación", impacto_severidad: "Delitos contra el Patrimonio Grave", modus_operandi: "Fuerza/Intrusión", naturaleza_juridica: "Contra la Propiedad" },
+            { id: 3, delito: "Robos con Violencia e Intimidación", impacto_severidad: "Delitos contra la Vida", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Contra la Propiedad (y Personas)" },
+            { id: 6, delito: "Robos de Vehículos y sus Accesorios", impacto_severidad: "Delitos contra el Patrimonio Grave", modus_operandi: "Fuerza/Intrusión", naturaleza_juridica: "Contra la Propiedad" },
+            { id: 4, delito: "Robos en Lugares Habitados y No Habitados", impacto_severidad: "Delitos contra el Patrimonio Grave", modus_operandi: "Fuerza/Intrusión", naturaleza_juridica: "Contra la Propiedad" },
+            { id: 5, delito: "Robos por Sorpresa", impacto_severidad: "Delitos contra la Integridad Física", modus_operandi: "Delitos de Oportunidad", naturaleza_juridica: "Contra la Propiedad" },
+            { id: 2, delito: "Violaciones y Delitos Sexuales", impacto_severidad: "Delitos contra la Vida", modus_operandi: "Violencia/Apremio", naturaleza_juridica: "Contra las Personas" }
+        ];
+
+        // --- PALETTES ---
+        const SEV_COLORS = { "Delitos contra la Vida": "#ef4444", "Delitos contra la Integridad Física": "#f59e0b", "Delitos contra el Patrimonio Grave": "#3b82f6", "Delitos de Convivencia y Menor Gravedad": "#10b981" };
+        const MODUS_COLORS = { "Violencia/Apremio": "#ef4444", "Fuerza/Intrusión": "#f59e0b", "Delitos de Oportunidad": "#3b82f6", "Conflictos Interpersonales/Domésticos": "#8b5cf6", "Control Territorial": "#06b6d4" };
+        const NAT_COLORS = { "Contra las Personas": "#ef4444", "Contra la Propiedad": "#f59e0b", "Orden Público / Convivencia": "#3b82f6", "Leyes Especiales": "#8b5cf6", "Contra la Propiedad (y Personas)": "#06b6d4" };
+
+        const waitForData = () => new Promise(res => {
+            const check = () => (window.STATE_DATA?.isLoaded) ? res() : setTimeout(check, 100);
+            check();
+        });
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        const classify = (name) => {
+            if (!name) return null;
+            const n = name.trim().toLowerCase();
+            return DELITO_CLASS.find(d => {
+                const dL = d.delito.toLowerCase();
+                return n === dL || n.includes(dL) || dL.includes(n);
+            }) || null;
+        };
+
+        // --- CURRENT STATS ---
+        const currentRows = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
+
+        // ==========================================
+        // AGGREGATIONS
+        // ==========================================
+        const sevAct = {}, modAct = {}, natAct = {};
+        currentRows.forEach(r => {
+            const cls = classify(r[C.DELITO]);
+            if (!cls) return;
+            const v = r[C.CASOS_ACTUAL] || 0;
+            const va = r[C.CASOS_ANT] || 0;
+            sevAct[cls.impacto_severidad] = (sevAct[cls.impacto_severidad] || 0) + v;
+            if (!modAct[cls.modus_operandi]) modAct[cls.modus_operandi] = { v: 0, va: 0 };
+            modAct[cls.modus_operandi].v += v; modAct[cls.modus_operandi].va += va;
+            if (!natAct[cls.naturaleza_juridica]) natAct[cls.naturaleza_juridica] = { v: 0, va: 0 };
+            natAct[cls.naturaleza_juridica].v += v; natAct[cls.naturaleza_juridica].va += va;
+        });
+
+        // TREND CHARTS (12 WEEKS)
+        // ==========================================
+
+        // --- TRENDS ---
+        const getWeekLabel = (id) => {
+            const row = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id);
+            if (!row) return 'S' + id;
+            const yr = row['año'] || row.anio || '??';
+            const wk = row['semana_numero'] || '??';
+            return `Semana ${wk}/${yr}`;
+        };
+
+        const uniqueWeeks = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
+        const labels = uniqueWeeks.map(w => getWeekLabel(w));
+
+        const getSeries = (keyField) => {
+            const vals = [...new Set(DELITO_CLASS.map(d => d[keyField]))];
+            const dataset = {};
+            vals.forEach(v => dataset[v] = uniqueWeeks.map(w => {
+                const rows = S.allDataHistory.filter(r => r[C.ID_SEMANA] === w);
+                return rows.reduce((acc, r) => {
+                    const cls = classify(r[C.DELITO]);
+                    return acc + (cls && cls[keyField] === v ? (r[C.CASOS_ACTUAL] || 0) : 0);
+                }, 0);
+            }));
+            return dataset;
+        };
+
+        // Fig 1, 2 & 3 (Trends)
+        const hSev = getSeries('impacto_severidad');
+        new Chart(document.getElementById('v23_chart_1'), {
+            type: 'line',
+            data: { labels: labels, datasets: Object.entries(hSev).map(([l, d]) => ({ label: l, data: d, borderColor: SEV_COLORS[l], tension: 0.3, fill: false })) },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Casos Semanales', font: { weight: 'bold' } } } }
+            }
+        });
+
+        const hMod = getSeries('modus_operandi');
+        new Chart(document.getElementById('v23_chart_2'), {
+            type: 'line',
+            data: { labels: labels, datasets: Object.entries(hMod).map(([l, d]) => ({ label: l, data: d, borderColor: MODUS_COLORS[l], tension: 0.3, fill: false })) },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Casos Semanales', font: { weight: 'bold' } } } }
+            }
+        });
+
+        const hNat = getSeries('naturaleza_juridica');
+        new Chart(document.getElementById('v23_chart_3'), {
+            type: 'line',
+            data: { labels: labels, datasets: Object.entries(hNat).map(([l, d]) => ({ label: l, data: d, borderColor: NAT_COLORS[l] || '#cbd5e1', tension: 0.3, fill: false })) },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Casos Semanales', font: { weight: 'bold' } } } }
+            }
+        });
+
+        // Matrix removed per request.
+
+        // --- POPULATE SIDEBAR CARDS ---
+        const renderList = (id, data, colors) => {
+            const container = document.getElementById(id);
+            if (!container) return;
+            const total = Object.values(data).reduce((acc, obj) => acc + (typeof obj === 'number' ? obj : obj.v), 0);
+
+            const sorted = Object.entries(data)
+                .map(([name, val]) => ({ name, v: typeof val === 'number' ? val : val.v }))
+                .sort((a, b) => b.v - a.v);
+
+            container.innerHTML = sorted.map(item => {
+                const pct = total > 0 ? (item.v / total * 100) : 0;
+                const color = colors[item.name] || '#cbd5e1';
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap;">
+                            <div style="width: 8px; height: 8px; border-radius: 2px; background: ${color}; flex-shrink: 0;"></div>
+                            <span style="color: #334155; font-weight: 600; text-overflow: ellipsis; overflow: hidden;">${item.name}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <span style="color: #1e293b; font-weight: 800;">${item.v}</span>
+                            <span style="color: #94a3b8; font-size: 0.65rem; width: 35px; text-align: right;">${pct.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        renderList('v23_list_1', sevAct, SEV_COLORS);
+        renderList('v23_list_2', modAct, MODUS_COLORS);
+        renderList('v23_list_3', natAct, NAT_COLORS);
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista23').then(txt => {
+                const el = document.getElementById('v23_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+    })();
+</script>

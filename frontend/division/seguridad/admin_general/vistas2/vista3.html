@@ -1,0 +1,282 @@
+<!-- Vista 3: Comparativo Temporal Múltiple -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Estamos mejor o peor que en periodos anteriores?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Triple comparación: semana
+            anterior (corto plazo), misma semana año anterior (estacionalidad) y promedio histórico (contexto
+            estructural).</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v3_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <!-- Max/Min/Avg Cards -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #ef4444;">
+            <div
+                style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+                MÁXIMO HISTÓRICO
+            </div>
+            <div id="v3_max_val" style="font-size: 2.2rem; font-weight: 900; color: #ef4444;">--</div>
+            <div id="v3_max_date" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">--</div>
+        </div>
+        <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #10b981;">
+            <div
+                style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+                MÍNIMO HISTÓRICO
+            </div>
+            <div id="v3_min_val" style="font-size: 2.2rem; font-weight: 900; color: #10b981;">--</div>
+            <div id="v3_min_date" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">--</div>
+        </div>
+        <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #f59e0b;">
+            <div
+                style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+                PROMEDIO
+            </div>
+            <div id="v3_avg_val" style="font-size: 2.2rem; font-weight: 900; color: #f59e0b;">--</div>
+            <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Últimas 52 Semanas</div>
+        </div>
+    </div>
+
+    <!-- Nota de Datos: Semana 46/2025 -->
+    <div
+        style="display: flex; align-items: flex-start; gap: 10px; background: #fef9c3; border-left: 3px solid #f59e0b; border-radius: 6px; padding: 0.6rem 0.9rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: #78350f;">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-top: 2px; flex-shrink: 0;"></i>
+        <span><strong>Nota de Datos:</strong> La <strong>Semana 46/2025</strong> ha sido excluida del análisis
+            histórico. Los valores semanales de ese período no se encuentran disponibles en el sistema STOP.</span>
+    </div>
+    <div style="margin-bottom: 2rem;">
+        <h4
+            style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+            Detalle Comparativo
+        </h4>
+        <table style="width: 100%; border-collapse: collapse; font-family: 'Outfit';">
+            <thead>
+                <tr style="text-align: left; font-size: 0.75rem; color: #64748b; border-bottom: 2px solid #f1f5f9;">
+                    <th style="padding: 0.5rem;">Indicador</th>
+                    <th style="padding: 0.5rem;">Referencia Temporal</th>
+                    <th style="padding: 0.5rem; text-align: right;">Casos</th>
+                </tr>
+            </thead>
+            <tbody id="v3_table_body" style="font-size: 0.85rem;">
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sparkline Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+        <h4 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin: 0;">Perspectiva Anual (52 Semanas)</h4>
+        <div style="font-size: 0.7rem; color: #64748b; font-weight: 600;">
+            <span style="color: var(--color-primary);">■</span> Semana Actual destacada
+        </div>
+    </div>
+
+    <!-- Sparkline Container -->
+    <div class="chart-wrapper"
+        style="height: 120px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px;">
+        <canvas id="v3_sparkline"></canvas>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista compara la semana actual con puntos críticos históricos (máximos,
+        mínimos y promedios) para contextualizar el nivel de actividad delictual. El <strong>máximo histórico</strong>
+        indica el peor registro de las últimas 52 semanas; el <strong>mínimo</strong>, el mejor. La línea punteada en el
+        gráfico representa el promedio anual como referencia de normalidad estadística.
+    </div>
+</div>
+
+<script>
+    (async function initVista3_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        // Comuna y Semana
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        // Get History (Last 52 weeks for context)
+        // ⚠️ Semana 46/2025 excluida: valores no disponibles en sistema STOP.
+        const SEMANAS_EXCLUIDAS = new Set(
+            S.allDataHistory_total
+                .filter(r => Number(r[C.SEMANA_ANO]) === 46 && Number(r[C.ANIO]) === 2025)
+                .map(r => r[C.ID_SEMANA])
+        );
+        const historyCols = S.allDataHistory_total.filter(r =>
+            r[C.CASOS_ACTUAL] !== undefined && !SEMANAS_EXCLUIDAS.has(r[C.ID_SEMANA])
+        );
+
+        // Sort by ID_SEMANA descending to identify current, prev, etc.
+        historyCols.sort((a, b) => b[C.ID_SEMANA] - a[C.ID_SEMANA]);
+
+        // Warn in console if any weeks were excluded
+        if (SEMANAS_EXCLUIDAS.size > 0) {
+            console.warn(`⚠️ [Vista 3] Semana(s) excluida(s) por falta de datos en STOP:`, [...SEMANAS_EXCLUIDAS]);
+        }
+
+        // Current Week
+        const currentRow = historyCols.find(r => r[C.ID_SEMANA] === S.currentSemana) || historyCols[0];
+        const casosActual = currentRow?.[C.CASOS_ACTUAL] || 0;
+        const fechaActual = S.semanaDetalle;
+
+        // Previous Week
+        const prevRow = historyCols.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1)) || historyCols[1];
+        const casosAnt = prevRow?.[C.CASOS_ACTUAL] || 0; // Fixed: Use CASOS_ACTUAL of previous row
+        const fechaAnt = prevRow ? (S.getDateLabel ? S.getDateLabel(prevRow[C.ID_SEMANA]) : 'Semana Ant.') : '--';
+
+        // Calculate Stats (Max, Min, Avg) over last 52 weeks
+        const weeks52 = historyCols.slice(0, 52); // Ensure we only look at last year window
+        if (weeks52.length === 0) return;
+
+        let maxVal = -1, minVal = 999999, sumVal = 0;
+        let maxRow = null, minRow = null;
+
+        weeks52.forEach(r => {
+            const val = r[C.CASOS_ACTUAL] || 0;
+            sumVal += val;
+
+            if (val > maxVal) { maxVal = val; maxRow = r; }
+            if (val < minVal) { minVal = val; minRow = r; }
+        });
+
+        const avgVal = sumVal / weeks52.length;
+        const maxDate = maxRow ? (S.getDateLabel ? S.getDateLabel(maxRow[C.ID_SEMANA]) : `S${maxRow[C.ID_SEMANA]}`) : '--';
+        const minDate = minRow ? (S.getDateLabel ? S.getDateLabel(minRow[C.ID_SEMANA]) : `S${minRow[C.ID_SEMANA]}`) : '--';
+
+        // Update Cards
+        document.getElementById('v3_max_val').textContent = ChartHelper.formatNumber(maxVal);
+        document.getElementById('v3_max_date').textContent = maxDate;
+
+        document.getElementById('v3_min_val').textContent = ChartHelper.formatNumber(minVal);
+        document.getElementById('v3_min_date').textContent = minDate;
+
+        document.getElementById('v3_avg_val').textContent = ChartHelper.formatNumber(avgVal.toFixed(1));
+
+        // Update Table
+        const tbody = document.getElementById('v3_table_body');
+
+        // Define rows with colors
+        const tableData = [
+            { label: 'Semana Actual', date: fechaActual, val: casosActual, color: '#3b82f6', bg: '#eff6ff' }, // Blue
+            { label: 'Semana Anterior', date: fechaAnt, val: casosAnt, color: '#ef4444', bg: '#fef2f2' }, // Red (Requested)
+            { label: 'Mínimo Histórico', date: minDate, val: minVal, color: '#10b981', bg: '#ecfdf5' }, // Green
+            { label: 'Promedio (52 Sem)', date: 'Último Año', val: avgVal.toFixed(1), color: '#f59e0b', bg: '#fffbeb' } // Yellow
+        ];
+
+        tbody.innerHTML = tableData.map(r => `
+            <tr style="border-bottom: 1px solid #f1f5f9; background-color: ${r.bg || 'transparent'};">
+                <td style="padding: 12px 8px; font-weight: 700; color: ${r.color};">
+                    ${r.label}
+                </td>
+                <td style="padding: 12px 8px; color: #64748b; font-size: 0.8rem;">
+                    ${r.date}
+                </td>
+                <td style="padding: 12px 8px; text-align: right; font-weight: 800; color: #1e293b; font-size: 1rem;">
+                    ${ChartHelper.formatNumber(r.val)}
+                </td>
+            </tr>
+        `).join('');
+
+        // Sparkline Data Preparation (Reverse for Chronological Order)
+        const sparkRows = [...weeks52].reverse(); // Oldest -> Newest
+        const sparkLabels = sparkRows.map(r => S.getDateLabel ? S.getDateLabel(r[C.ID_SEMANA]) : `S${r[C.ID_SEMANA]}`);
+        const sparkData = sparkRows.map(r => r[C.CASOS_ACTUAL] || 0);
+
+        const sparkCtx = document.getElementById('v3_sparkline').getContext('2d');
+
+        // Determine point styles (Max=Red, Min=Green, Current=Blue)
+        const pointColors = sparkData.map((v, i) => {
+            if (v === maxVal) return '#ef4444'; // Red
+            if (v === minVal) return '#10b981'; // Green
+            if (i === sparkData.length - 1) return '#3b82f6'; // Blue
+            return 'transparent';
+        });
+
+        const pointRadii = sparkData.map((v, i) => {
+            if (v === maxVal || v === minVal || i === sparkData.length - 1) return 5;
+            return 0;
+        });
+
+        new Chart(sparkCtx, {
+            type: 'line',
+            data: {
+                labels: sparkLabels,
+                datasets: [
+                    // Average Line (Background)
+                    {
+                        label: 'Promedio',
+                        data: Array(sparkData.length).fill(avgVal),
+                        borderColor: '#f59e0b', // Yellow
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        pointRadius: 0,
+                        fill: false,
+                        order: 1
+                    },
+                    // Main Series
+                    {
+                        data: sparkData,
+                        borderColor: '#94a3b8',
+                        borderWidth: 1.5,
+                        pointRadius: pointRadii,
+                        pointBackgroundColor: pointColors,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1,
+                        fill: false,
+                        tension: 0.3,
+                        order: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    y: { display: false, beginAtZero: false },
+                    x: { display: false }
+                }
+            }
+        });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista3').then(txt => {
+                const el = document.getElementById('v3_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

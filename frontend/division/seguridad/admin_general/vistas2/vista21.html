@@ -1,0 +1,250 @@
+<!-- Vista 21: Momentum y Rachas -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-bolt"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>INTELIGENCIA DE TENDENCIAS</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            Momentum Delictual y Rachas de Crecimiento
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+            Análisis de aceleración estadística (CAGR 4S) y detección de patrones de aumento semanal consecutivo.
+        </p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Momentum:</strong> <span id="v21_ia_analysis">Analizando aceleración...</span>
+    </div>
+
+    <!-- Rachas Alert Section -->
+    <h3 class="section-title mb-lg" style="font-size: 1rem; margin-top: 2rem;">
+        <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary);"></i> Diagnóstico de Rachas
+        (Persistencia Temporal)
+    </h3>
+    <div id="v21_rachas_container"
+        style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+
+        <!-- Alza 2 Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #f97316; background: #fffaf5;">
+            <h4
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #9a3412; text-transform: uppercase;">
+                ALZA (2 SEMANAS)</h4>
+            <div id="v21_streak_alza_2" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
+            </div>
+        </div>
+
+        <!-- Alza 3+ Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #ef4444; background: #fef2f2;">
+            <h4
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #991b1b; text-transform: uppercase;">
+                ALZA (3+ SEMANAS)</h4>
+            <div id="v21_streak_alza_3" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
+            </div>
+        </div>
+
+        <!-- Baja 2 Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #60a5fa; background: #eff6ff;">
+            <h4
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #1e40af; text-transform: uppercase;">
+                BAJA (2 SEMANAS)</h4>
+            <div id="v21_streak_baja_2" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
+            </div>
+        </div>
+
+        <!-- Baja 3+ Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #10b981; background: #f0fdf4;">
+            <h4
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #064e3b; text-transform: uppercase;">
+                BAJA (3+ SEMANAS)</h4>
+            <div id="v21_streak_baja_3" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Momentum Chart -->
+    <div class="card chart-card">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-gauge-high" style="color: #3b82f6;"></i> Momentum Delictual (Aceleración)</span>
+            <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">CAGR 4 Semanas</span>
+        </h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">
+            Tasa de crecimiento compuesto de corto plazo. Valores > 0% indican aceleración.
+        </p>
+        <div class="chart-wrapper" style="height: 450px;">
+            <canvas id="v21_chart_momentum"></canvas>
+        </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem 1.25rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.6;">
+        <strong>Nota Metodológica:</strong> Esta vista combina dos indicadores complementarios para evaluar la dinámica
+        de crecimiento delictual:
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem;">
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
+                <div style="font-weight: 800; color: #3b82f6; font-size: 0.8rem; margin-bottom: 4px;">
+                    <i class="fa-solid fa-gauge-high"></i> RACHAS DE CRECIMIENTO
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; line-height: 1.5;">
+                    Una <strong>racha</strong> es una secuencia de semanas <em>consecutivas</em> en que un delito
+                    aumenta respecto a la semana anterior. Una racha de 3+ semanas es una señal de alerta táctica: el
+                    fenómeno no es ruido estadístico, sino un patrón sostenido que requiere intervención. Cuanto más
+                    larga la racha, mayor la urgencia operativa.
+                </p>
+            </div>
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
+                <div style="font-weight: 800; color: #ef4444; font-size: 0.8rem; margin-bottom: 4px;">
+                    <i class="fa-solid fa-rocket"></i> ACELERACIÓN (MOMENTUM / CAGR)
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; line-height: 1.5;">
+                    El <strong>Momentum</strong> mide la <em>velocidad de cambio</em> usando el CAGR ajustado a 4
+                    semanas. Un CAGR positivo indica que el delito está creciendo de forma compuesta: no solo aumenta,
+                    sino que cada semana crece <em>más rápido</em> que la anterior. Un CAGR negativo indica
+                    desaceleración o disipación activa.
+                </p>
+            </div>
+        </div>
+        <div style="margin-top: 0.75rem; font-size: 0.78rem; color: #94a3b8;">
+            <strong>Regla de decisión:</strong> Un delito con <strong>racha larga + CAGR alto</strong> es la prioridad
+            táctica máxima. Un delito con racha larga pero CAGR bajo puede estar estabilizándose.
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista21_V3() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // --- 1. Streak Logic ---
+        const crimes = [...new Set(S.allDataHistory.map(r => r[C.DELITO]))];
+        const streaks = {
+            alza_2: [], alza_3: [],
+            baja_2: [], baja_3: []
+        };
+
+        crimes.forEach(delito => {
+            const records = S.allDataHistory
+                .filter(r => r[C.DELITO] === delito)
+                .sort((a, b) => a[C.ID_SEMANA] - b[C.ID_SEMANA]);
+
+            if (records.length < 4) return;
+            const lastRow = records[records.length - 1];
+
+            const rAlza = lastRow[C.RACHA_ALZA] || 0;
+            const rBaja = lastRow[C.RACHA_BAJA] || 0;
+
+            // Sort logic for Alza
+            if (rAlza >= 3) streaks.alza_3.push({ delito, val: rAlza });
+            else if (rAlza === 2) streaks.alza_2.push({ delito, val: rAlza });
+
+            // Sort logic for Baja
+            if (rBaja >= 3) streaks.baja_3.push({ delito, val: rBaja });
+            else if (rBaja === 2) streaks.baja_2.push({ delito, val: rBaja });
+        });
+
+        const renderStreak = (id, list, symbol, color) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (list.length > 0) {
+                el.innerHTML = list.map(item => `
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #334155; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 4px 0; display: flex; justify-content: space-between;">
+                        <span>${item.delito}</span>
+                        <span style="color: ${color}; font-weight: 800;">${symbol}${item.val}</span>
+                    </div>
+                `).join('');
+            } else {
+                el.innerHTML = '<span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Ninguno</span>';
+            }
+        };
+
+        renderStreak('v21_streak_alza_2', streaks.alza_2, '▲', '#ea580c');
+        renderStreak('v21_streak_alza_3', streaks.alza_3, '▲', '#dc2626');
+        renderStreak('v21_streak_baja_2', streaks.baja_2, '▼', '#2563eb');
+        renderStreak('v21_streak_baja_3', streaks.baja_3, '▼', '#059669');
+
+
+        // --- 2. Momentum Chart (CAGR 4S) ---
+        const lastBatch = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
+        const momentumData = lastBatch
+            .filter(r => r[C.DELITO] !== 'Total' && (r[C.T31_CAGR_4S] !== 0))
+            .sort((a, b) => b[C.T31_CAGR_4S] - a[C.T31_CAGR_4S]);
+
+        const ctx = document.getElementById('v21_chart_momentum').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: momentumData.map(d => d[C.DELITO]),
+                datasets: [{
+                    label: '% Aceleración (CAGR 4S)',
+                    data: momentumData.map(d => d[C.T31_CAGR_4S]),
+                    backgroundColor: momentumData.map(d => d[C.T31_CAGR_4S] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        color: '#475569',
+                        font: { weight: 'bold', size: 10 },
+                        formatter: (v) => v.toFixed(1) + '%'
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { font: { family: 'Outfit' } },
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Variación CAGR 4S (%)' }
+                    },
+                    y: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '600', size: 10 } } }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista21').then(txt => {
+                const el = document.getElementById('v21_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

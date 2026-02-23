@@ -1,0 +1,260 @@
+<!-- Vista 4: Estacionalidad Mensual Histórica (CEAD) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-calendar-check"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="periodo-fill">HISTÓRICO 2005-2025</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿En qué meses del año históricamente se presenta mayor delincuencia?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Patrón estacional promedio
+            (Índice Estacional %) que permite anticipar picos predecibles.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v4_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <div class="cards-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem;">
+        <div class="card chart-card" style="padding: 1.5rem;">
+            <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
+                <i class="fa-solid fa-spider" style="color: #f59e0b;"></i> Radar de Estacionalidad Mensual
+            </h3>
+            <div class="chart-wrapper" style="height: 400px;">
+                <canvas id="v4_chart_radar"></canvas>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Predictive Alert -->
+            <div id="v4_alert"
+                style="padding: 1.5rem; border-radius: 12px; border: 1px solid #fdf2f2; background: #fffaf0; display: flex; gap: 15px; align-items: flex-start;">
+                <div
+                    style="width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #92400e;">Alerta
+                        Predictiva</h4>
+                    <p id="v4_prediction_text" style="margin: 0; font-size: 0.85rem; color: #b45309; line-height: 1.4;">
+                        Analizando patrones estacionales...</p>
+                </div>
+            </div>
+
+            <div class="card" style="flex: 1; padding: 1.5rem;">
+                <h4
+                    style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+                    Meses más Críticos</h4>
+                <div id="v4_top_months" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <div
+                style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; line-height: 1.4;">
+                <i class="fa-solid fa-circle-info"></i> El <strong>Índice Estacional</strong> indica cuánto se aleja el
+                mes del promedio anual (100%). Un valor de 125% significa que ese mes es un 25% más violento que el
+                promedio.
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="methodological-note"
+    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1.25rem; border-radius: 0 8px 8px 0; margin-top: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
+    <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-top: 3px;"></i>
+    <div>
+        <h4 style="margin: 0 0 0.25rem 0; font-size: 0.9rem; font-weight: 800; color: var(--color-text);">Explicación
+            del Índice Estacional (100%)</h4>
+        <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5;">
+            El índice compara cada mes contra el promedio anual (línea del 100%). Para detectar patrones confiables,
+            cruzamos dos fuentes:
+            <br>• <strong>CEAD:</strong> Visión estructural basada en <strong>20 años de datos históricos</strong>.
+            <br>• <strong>STOP:</strong> Visión operativa reciente basada en datos <strong>desde el año 2023</strong>.
+            <br>Si ambas líneas sobresalen del 100% en el mismo mes, indica un patrón de alta certeza estadística.
+        </p>
+    </div>
+</div>
+
+<script>
+    (async function initVista4_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    const ceadReady = window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded;
+                    const stopReady = window.STATE_DATA && window.STATE_DATA.isLoaded;
+                    if (ceadReady && stopReady) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S_CEAD = window.STATE_DATA_CEAD;
+        const C_CEAD = window.COLS_CEAD;
+        const S_STOP = window.STATE_DATA;
+        const C_STOP = window.COLS; // Assuming COLS has MES, otherwise we check raw prop
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S_CEAD.comunaName);
+
+        // --- Helper to Calculate Seasonal Index ---
+        const calcSeasonalIndex = (dataList, colMes, colCasos) => {
+            const groups = Array.from({ length: 12 }, (_, i) => ({ mes: i + 1, sum: 0, count: 0 }));
+
+            dataList.forEach(r => {
+                // Try to get month from column mapping or direct property
+                let m = r[colMes];
+                if (m === undefined && r.mes) m = r.mes; // Fallback
+                if (m === undefined && r.Mes) m = r.Mes; // Fallback
+
+                const val = r[colCasos] || 0;
+
+                if (m >= 1 && m <= 12) {
+                    groups[m - 1].sum += val;
+                    groups[m - 1].count++;
+                }
+            });
+
+            const avgs = groups.map(g => g.count > 0 ? (g.sum / g.count) : 0);
+            const totalAvg = avgs.reduce((a, b) => a + b, 0) / 12;
+            return avgs.map(m => totalAvg > 0 ? (m / totalAvg * 100) : 0); // Return Index %
+        };
+
+        // 1. Calculate CEAD Index
+        const idxCEAD = calcSeasonalIndex(S_CEAD.allDataHistory_total, C_CEAD.MES, C_CEAD.CASOS_ACTUAL);
+
+        // 2. Calculate STOP Index (Use history total to get all records)
+        // STOP data might need 'mes' from date if not explicit. Assuming 'mes' exists as per config.
+        const idxSTOP = calcSeasonalIndex(S_STOP.allDataHistory_total, 'mes', C_STOP.CASOS_ACTUAL);
+
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        // --- Top Months (Using CEAD as primary reference for list, but considering both) ---
+        // We stick to CEAD for the "Top Months" list to keep it simple, or average them?
+        // Let's use an average of both indices for the ranking to be more robust
+        const combinedIndex = idxCEAD.map((v, i) => (v + idxSTOP[i]) / 2);
+
+        const sortedMonths = combinedIndex.map((idx, i) => ({ name: monthNames[i], idx, idxC: idxCEAD[i], idxS: idxSTOP[i] }))
+            .sort((a, b) => b.idx - a.idx);
+
+        const container = document.getElementById('v4_top_months');
+        container.innerHTML = sortedMonths.slice(0, 3).map((m, i) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: ${i === 0 ? '#fffbeb' : '#f8fafc'}; border: 1px solid ${i === 0 ? '#fef3c7' : '#e2e8f0'}; border-radius: 8px;">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-size: 0.9rem; font-weight: 800; color: #1e293b;">${m.name}</span>
+                    <span style="font-size: 0.65rem; color: #64748b;">Comb: ${m.idx.toFixed(0)}%</span>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; color: #f59e0b; font-weight: 700;">CEAD: ${m.idxC.toFixed(0)}%</div>
+                    <div style="font-size: 0.75rem; color: #3b82f6; font-weight: 700;">STOP: ${m.idxS.toFixed(0)}%</div>
+                </div>
+            </div>
+        `).join('');
+
+        // --- Alert Text ---
+        const nextMonth = (new Date().getMonth() + 1) % 12;
+        const nextIdx = combinedIndex[nextMonth];
+        const nextMonthName = monthNames[nextMonth];
+        const predText = document.getElementById('v4_prediction_text');
+
+        if (nextIdx > 115) {
+            predText.innerHTML = `<strong>${nextMonthName} (Alta Probabilidad)</strong> → Convergencia de datos indica mes crítico (~${nextIdx.toFixed(0)}%). Reforzar preventiva.`;
+        } else if (nextIdx < 85) {
+            predText.innerHTML = `<strong>${nextMonthName} (Baja Histórica)</strong> → Ambos modelos proyectan baja actividad.`;
+        } else {
+            predText.innerHTML = `<strong>${nextMonthName} (Estándar)</strong> → Comportamiento dentro de rangos normales.`;
+        }
+
+        // --- Chart ---
+        const ctx = document.getElementById('v4_chart_radar').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: monthNames,
+                datasets: [
+                    {
+                        label: 'Estacionalidad CEAD',
+                        data: idxCEAD,
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: '#f59e0b', // Amber/Orange
+                        borderWidth: 3,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#f59e0b',
+                        fill: true
+                    },
+                    {
+                        label: 'Estacionalidad STOP',
+                        data: idxSTOP,
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)', // Blue transparent
+                        borderColor: '#3b82f6', // Blue
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#3b82f6',
+                        fill: false
+                    },
+                    {
+                        label: 'Promedio (100%)',
+                        data: Array(12).fill(100),
+                        borderColor: '#94a3b8',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        min: 0,
+                        // Add buffer for max value
+                        max: Math.max(...idxCEAD, ...idxSTOP, 100) + 10,
+                        ticks: { display: false, stepSize: 20 },
+                        grid: { color: '#e2e8f0' },
+                        angleLines: { color: '#e2e8f0' },
+                        pointLabels: {
+                            font: { family: 'Outfit', size: 11, weight: '600' },
+                            color: '#64748b'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Outfit' }, boxWidth: 12 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return ` ${context.dataset.label}: ${context.raw.toFixed(1)}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista4').then(txt => {
+                const el = document.getElementById('v4_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

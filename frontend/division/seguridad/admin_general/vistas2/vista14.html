@@ -1,0 +1,338 @@
+<!-- Vista 14: Aporte Comunal al Problema Regional -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-chart-pie"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="region-fill">PROPORCIÓN REGIONAL</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué peso tiene nuestra comuna en la región?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Análisis de
+            responsabilidad relativa: porcentaje de delitos regionales ocurridos en la comuna y su evolución en el
+            tiempo.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v14_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
+        <!-- Donut Contribution -->
+        <div class="card"
+            style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase;">
+                Aporte al Total Regional</h4>
+            <div style="position: relative; width: 220px; height: 220px;">
+                <canvas id="v14_chart_donut"></canvas>
+                <div
+                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                    <div id="v14_pct_label"
+                        style="font-size: 2.2rem; font-weight: 950; color: #1e293b; line-height: 1;">
+                        --%</div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
+                        de la
+                        región</div>
+                </div>
+            </div>
+            <div id="v14_summary_text"
+                style="margin-top: 1rem; font-size: 0.85rem; color: #475569; font-weight: 600; text-align: center;">
+                --
+                de cada 100 delitos regionales ocurren en esta comuna.</div>
+
+            <!-- Temporal Comparison Title -->
+            <div
+                style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1.5rem; margin-bottom: 0.75rem; width: 100%; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-clock-rotate-left"></i> REFERENCIAL TEMPORAL DE APORTE
+                <div style="flex: 1; height: 1px; background: #f1f5f9;"></div>
+            </div>
+
+            <!-- Trajectory Cards Container -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem; width: 100%;">
+                <div id="v14_ref_prev" class="trajectory-card"></div>
+                <div id="v14_ref_lastyear" class="trajectory-card"></div>
+                <div id="v14_ref_acum" class="trajectory-card"></div>
+            </div>
+        </div>
+
+        <style>
+            .trajectory-card {
+                padding: 0.75rem;
+                border-radius: 12px;
+                border: 1px solid #e2e8f0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                transition: transform 0.2s;
+            }
+
+            .trajectory-card:hover {
+                transform: translateY(-2px);
+            }
+        </style>
+
+        <!-- Time Series Evolution -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="card" style="padding: 1.5rem; flex: 1;">
+                <h3 class="section-title mb-lg" style="font-size: 0.95rem; color: #1e293b;">
+                    <i class="fa-solid fa-chart-line" style="color: #3b82f6;"></i> Evolución del Aporte
+                    Comunal (Últimas 12
+                    Semanas)
+                </h3>
+
+                <!-- Explanation Box -->
+                <div
+                    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 10px; border-radius: 4px; margin-bottom: 1rem; font-size: 0.8rem; color: #475569;">
+                    <strong>¿Cómo se llena este gráfico?</strong><br>
+                    Este gráfico compara semanalmente los delitos de la comuna frente al total regional:
+                    <code>(Casos Comuna / Casos Región) * 100</code>.
+                </div>
+
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="v14_chart_evolution"></canvas>
+                </div>
+            </div>
+
+            <!-- Alert Block -->
+            <div id="v14_alert_box"
+                style="padding: 1.25rem; border-radius: 12px; display: none; gap: 15px; align-items: center;">
+                <div
+                    style="width: 48px; height: 48px; border-radius: 50%; background: #ef4444; color: white; display:flex; align-items:center; justify-content:center; font-size: 1.5rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">CRECIMIENTO SOSTENIDO DEL
+                        APORTE</h4>
+                    <p style="margin: 0; font-size: 0.85rem;">La proporción de delitos regionales
+                        provenientes de esta comuna ha
+                        crecido por 3 semanas consecutivas. Se recomienda auditoría de focos locales.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Nota Metodológica -->
+    <div class="row" style="margin-top: 2rem;">
+        <div
+            style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+            <strong>Nota Metodológica:</strong> El <strong>Aporte Regional</strong> se calcula como el cociente entre
+            los casos comunales y el total regional de la semana. Un porcentaje creciente indica que la comuna concentra
+            una proporción mayor del problema regional, lo que puede señalar una gestión insuficiente o un fenómeno
+            delictual localizado que requiere intervención focalizada.
+        </div>
+    </div>
+
+    <script>
+        (async function initVista14_V3() {
+            const waitForData = () => {
+                return new Promise((resolve) => {
+                    const check = () => {
+                        if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                        else setTimeout(check, 100);
+                    };
+                    check();
+                });
+            };
+
+            await waitForData();
+            const S = window.STATE_DATA;
+            const C = window.COLS;
+
+            document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+            const currentSemanaVar = S.currentSemana;
+            const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === currentSemanaVar) || {};
+            const comCases = totalRow[C.CASOS_ACTUAL] || 0;
+            const regCases = totalRow[C.CASOS_SEM_REG] || (comCases * 5);
+
+            const pct = regCases > 0 ? ((comCases / regCases) * 100).toFixed(1) : '0.0';
+
+            document.getElementById('v14_pct_label').textContent = `${pct}%`;
+            document.getElementById('v14_summary_text').textContent = `${parseFloat(pct).toFixed(0)} de cada 100 delitos regionales ocurren en esta comuna.`;
+
+            // --- Temporal Calculations ---
+            const prevRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (currentSemanaVar - 1));
+            const prevPct = prevRow && prevRow[C.CASOS_SEM_REG] ? ((prevRow[C.CASOS_ACTUAL] / prevRow[C.CASOS_SEM_REG]) * 100).toFixed(1) : '--';
+
+            const lastYearRow = S.allDataHistory_total.find(r => r[C.ANIO] == (totalRow[C.ANIO] - 1) && r[C.SEMANA_ANO] == totalRow[C.SEMANA_ANO]);
+            const lastYearPct = lastYearRow && lastYearRow[C.CASOS_SEM_REG] ? ((lastYearRow[C.CASOS_ACTUAL] / lastYearRow[C.CASOS_SEM_REG]) * 100).toFixed(1) : '--';
+
+            const totalComAcum = S.allDataHistory_total.filter(r => r[C.ANIO] == totalRow[C.ANIO] && r[C.SEMANA_ANO] <= totalRow[C.SEMANA_ANO]).reduce((a, b) => a + (b[C.CASOS_ACTUAL] || 0), 0);
+            const totalRegAcum = S.allDataHistory_total.filter(r => r[C.ANIO] == totalRow[C.ANIO] && r[C.SEMANA_ANO] <= totalRow[C.SEMANA_ANO]).reduce((a, b) => a + (b[C.CASOS_SEM_REG] || (b[C.CASOS_ACTUAL] * 5)), 0);
+            const acumPct = totalRegAcum > 0 ? ((totalComAcum / totalRegAcum) * 100).toFixed(1) : '--';
+
+
+            // --- Helper: Render Trajectory Card ---
+            const renderRefCardV14 = (id, label, pastPct, currentPct, icon) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                const isDataReady = pastPct !== '--' && pastPct !== null;
+                const cVal = parseFloat(currentPct);
+                const pVal = isDataReady ? parseFloat(pastPct) : 0;
+                const diff = isDataReady ? (cVal - pVal) : 0;
+
+                let color = '#94a3b8';
+                let bg = '#f8fafc';
+                let labelStatus = 'ESTABLE';
+                let iconStatus = 'fa-minus';
+
+                if (!isDataReady) {
+                    labelStatus = 'SIN DATOS';
+                } else if (diff < 0) { // Lower contribution = Improvement
+                    color = '#10b981';
+                    bg = '#f0fdf4';
+                    labelStatus = `MEJORA ${diff.toFixed(1)}%`;
+                    iconStatus = 'fa-arrow-down'; // Down arrow because lowering % is good
+                } else if (diff > 0) { // Higher contribution = Deterioration
+                    color = '#ef4444';
+                    bg = '#fef2f2';
+                    labelStatus = `ALZA +${diff.toFixed(1)}%`;
+                    iconStatus = 'fa-arrow-up';
+                }
+
+                el.style.borderTop = `4px solid ${color}`;
+                el.style.background = bg;
+                el.innerHTML = `
+                    <div style="font-size: 0.6rem; font-weight: 800; color: #64748b; text-transform: uppercase;">
+                        <i class="fa-solid ${icon}"></i> ${label}
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0;">
+                        <div style="text-align: center;">
+                            <span style="display: block; font-size: 0.5rem; color: #94a3b8; font-weight: 700;">ANT.</span>
+                            <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">${pastPct}${isDataReady ? '%' : ''}</span>
+                        </div>
+                        <i class="fa-solid fa-right-long" style="color: #cbd5e1; font-size: 0.7rem;"></i>
+                        <div style="text-align: center;">
+                            <span style="display: block; font-size: 0.5rem; color: var(--color-primary); font-weight: 700;">HOY</span>
+                            <span style="font-size: 1.1rem; color: #1e293b; font-weight: 900;">${currentPct}%</span>
+                        </div>
+                    </div>
+                    <div style="background: ${color}; color: white; font-size: 0.55rem; font-weight: 950; padding: 2px 8px; border-radius: 20px;">
+                        <i class="fa-solid ${iconStatus}"></i> ${labelStatus}
+                    </div>
+                `;
+            };
+
+            renderRefCardV14('v14_ref_prev', 'Semana Anterior', prevPct, pct, 'fa-clock');
+            renderRefCardV14('v14_ref_lastyear', 'Misma Sem. Año Ant.', lastYearPct, pct, 'fa-calendar-day');
+            renderRefCardV14('v14_ref_acum', 'Proporción Acumulada', acumPct, pct, 'fa-layer-group');
+
+
+            // --- Evolution Line Chart ---
+            const last12 = S.allDataHistory_total
+                .filter(r => r[C.ID_SEMANA] <= currentSemanaVar && r[C.ID_SEMANA] > (currentSemanaVar - 12))
+                .sort((a, b) => a[C.ID_SEMANA] - b[C.ID_SEMANA]);
+
+            const pctsHistory = last12.map(r => {
+                const c = r[C.CASOS_ACTUAL] || 0;
+                const reg = r[C.CASOS_SEM_REG] || (c * 5);
+                return reg > 0 ? ((c / reg) * 100).toFixed(1) : 0;
+            });
+
+            // Trend Check for Alert
+            if (pctsHistory.length >= 3) {
+                const p1 = parseFloat(pctsHistory[pctsHistory.length - 1]);
+                const p2 = parseFloat(pctsHistory[pctsHistory.length - 2]);
+                const p3 = parseFloat(pctsHistory[pctsHistory.length - 3]);
+
+                if (p1 > p2 && p2 > p3) {
+                    const alert = document.getElementById('v14_alert_box');
+                    alert.style.display = 'flex';
+                    alert.style.backgroundColor = '#fef2f2';
+                    alert.style.border = '1px solid #fee2e2';
+                    alert.style.color = '#991b1b';
+                }
+            }
+
+            // --- Donut Chart ---
+            const donutCtx = document.getElementById('v14_chart_donut').getContext('2d');
+            new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [S.comunaName, 'Resto de la Región'],
+                    datasets: [{
+                        data: [parseFloat(pct), 100 - parseFloat(pct)],
+                        backgroundColor: ['#1e293b', '#f1f5f9'],
+                        borderWidth: 0,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+
+            // --- Line Chart ---
+            const lineCtx = document.getElementById('v14_chart_evolution').getContext('2d');
+            new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: last12.map(r => S.getDateLabel(r[C.ID_SEMANA])),
+                    datasets: [{
+                        label: '% Aporte Comunal',
+                        data: pctsHistory,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderWidth: 2,
+                        borderWidth: 3
+                    }]
+                },
+                plugins: [ChartDataLabels],
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 20 } },
+                    plugins: {
+                        datalabels: {
+                            display: (context) => context.dataIndex % 2 === 0, // Show every other label
+                            align: 'top',
+                            offset: 4,
+                            backgroundColor: '#fff',
+                            borderRadius: 4,
+                            color: '#3b82f6',
+                            font: { size: 9, weight: 'bold' },
+                            formatter: (v) => v ? `${v}%` : '',
+                            padding: 2
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { family: 'Outfit' }, callback: v => v + '%' }
+                        },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Outfit', size: 10 } } }
+                    }
+                }
+            });
+
+
+            // IA Integration
+            if (typeof IAModule !== 'undefined') {
+                IAModule.getInterpretation('vista14').then(txt => {
+                    const el = document.getElementById('v14_ia_analysis');
+                    if (el) el.innerHTML = txt;
+                });
+            }
+
+        })();
+    </script>

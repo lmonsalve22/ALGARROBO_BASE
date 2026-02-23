@@ -1,0 +1,182 @@
+<!-- Vista 22: Priorización Estratégica (Matriz de Focalización) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-bullseye"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>INTELIGENCIA ESTRATÉGICA (STOP)</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Dónde debemos concentrar los recursos hoy?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Cruze de volumen de casos
+            vs aceleración de la tendencia. Los delitos en el cuadrante superior derecho son la prioridad máxima (Alto
+            Volumen + Alza Crítica).</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v22_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <!-- Focus Grid (11 Crimes Breakdown) -->
+    <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b; margin-bottom: 1rem;">
+        <i class="fa-solid fa-layer-group" style="color: #4f46e5;"></i> Focalización Táctica (<span
+            id="v22_crime_count">--</span> Delitos STOP)
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+
+        <!-- Column 1: Critical (High Volume + High Rise) -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #ef4444; background: #fff1f2;">
+            <h4
+                style="margin: 0 0 4px 0; font-size: 0.8rem; font-weight: 900; color: #991b1b; text-transform: uppercase;">
+                1. ALARMA / FOCO</h4>
+            <div style="font-size: 0.65rem; color: #b91c1c; margin-bottom: 8px; font-style: italic;">
+                Alza &gt;10% <strong>y</strong> volumen &gt;5 casos
+            </div>
+            <div id="v22_col_1" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled -->
+            </div>
+        </div>
+
+        <!-- Column 2: Warning (Rise) -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #f97316; background: #fff7ed;">
+            <h4
+                style="margin: 0 0 4px 0; font-size: 0.8rem; font-weight: 900; color: #9a3412; text-transform: uppercase;">
+                2. ALERTA</h4>
+            <div style="font-size: 0.65rem; color: #c2410c; margin-bottom: 8px; font-style: italic;">
+                Cualquier alza (&gt;0%) sin cumplir criterio de Alarma
+            </div>
+            <div id="v22_col_2" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled -->
+            </div>
+        </div>
+
+        <!-- Column 3: Stable -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #3b82f6; background: #eff6ff;">
+            <h4
+                style="margin: 0 0 4px 0; font-size: 0.8rem; font-weight: 900; color: #1e3a8a; text-transform: uppercase;">
+                3. MONITOREO</h4>
+            <div style="font-size: 0.65rem; color: #1d4ed8; margin-bottom: 8px; font-style: italic;">
+                Estable o baja, pero volumen &gt;10 casos
+            </div>
+            <div id="v22_col_3" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled -->
+            </div>
+        </div>
+
+        <!-- Column 4: Success/Low -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #10b981; background: #f0fdf4;">
+            <h4
+                style="margin: 0 0 4px 0; font-size: 0.8rem; font-weight: 900; color: #064e3b; text-transform: uppercase;">
+                4. CONTROL</h4>
+            <div style="font-size: 0.65rem; color: #047857; margin-bottom: 8px; font-style: italic;">
+                Bajo volumen (&le;10 casos) y sin alza
+            </div>
+            <div id="v22_col_4" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled -->
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="methodological-note"
+    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1rem; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #475569; line-height: 1.5; margin-top: 2rem;">
+    <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 6px;"></i>
+    <strong>Nota Metodológica:</strong> Cada delito se clasifica en una de cuatro categorías según su <strong>volumen de
+        casos</strong> y su <strong>variación porcentual respecto a la semana anterior</strong>. El porcentaje mostrado
+    a la derecha de cada delito indica si aumentó o disminuyó en la semana actual comparado con la semana previa: <span
+        style="color:#ef4444; font-weight:700;">+X%</span> = alza, <span
+        style="color:#10b981; font-weight:700;">-X%</span> = baja. Los delitos en <strong>ALARMA/FOCO</strong> combinan
+    alto volumen con alza significativa y son la prioridad táctica inmediata.
+</div>
+
+<script>
+    (async function initVista22_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // --- Data Processing for 4-Column Grid ---
+        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
+            .map(r => {
+                const act = r[C.CASOS_ACTUAL] || 0;
+                const ant = r[C.CASOS_ANT] || 0;
+                const delta = ant > 0 ? ((act - ant) / ant * 100) : (act > 0 ? 100 : 0);
+                return { x: act, y: delta, label: r[C.DELITO] };
+            })
+            // Filter to ensure we have the main crimes (assuming allDataHistory has them)
+            .sort((a, b) => b.x - a.x); // Sort by volume
+
+        // Categories
+        const cols = { 1: [], 2: [], 3: [], 4: [] };
+
+        currentData.forEach(d => {
+            if (d.y > 10 && d.x > 5) {
+                cols[1].push(d); // High Rise + High Volume
+            } else if (d.y > 0) {
+                cols[2].push(d); // Rise
+            } else if (d.x > 10) {
+                cols[3].push(d); // High Volume but stable/dropping
+            } else {
+                cols[4].push(d); // Low/Stable
+            }
+        });
+
+        const renderCol = (id, list) => {
+            const el = document.getElementById(id);
+            if (list.length > 0) {
+                el.innerHTML = list.map(d => `
+                    <div style="padding: 8px; background: rgba(255,255,255,0.6); border-radius: 4px; font-size: 0.75rem;">
+                        <div style="font-weight: 700; color: #1e293b;">${d.label}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                            <span style="color: #64748b;">${d.x} casos</span>
+                            <span style="font-weight: 700; color: ${d.y > 0 ? '#ef4444' : '#10b981'}; font-size: 0.7rem;">${d.y > 0 ? '+' : ''}${d.y.toFixed(0)}% <span style="font-weight:400; color:#94a3b8;">vs ant.</span></span>
+                        </div>
+                    </div>
+                 `).join('');
+            } else {
+                el.innerHTML = '<span style="font-size:0.7rem; color:#94a3b8;">--</span>';
+            }
+        };
+
+        // --- Update dynamic crime count in title ---
+        const crimeCount = currentData.length;
+        const countEl = document.getElementById('v22_crime_count');
+        if (countEl) countEl.textContent = crimeCount;
+
+        renderCol('v22_col_1', cols[1]);
+        renderCol('v22_col_2', cols[2]);
+        renderCol('v22_col_3', cols[3]);
+        renderCol('v22_col_4', cols[4]);
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista22').then(txt => {
+                const el = document.getElementById('v22_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

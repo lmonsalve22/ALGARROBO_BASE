@@ -16,6 +16,11 @@ function renderHeader(containerId = "headerRender") {
     const userName = user?.nombre || user?.nombre_completo || user?.username || "Usuario";
     const roleName = user?.roles?.[0]?.nombre || user?.role || user?.nivel_acceso || "Invitado";
     const avatarInitial = (userName.charAt(0) || "U").toUpperCase();
+    const userDivision = user?.division?.nombre?.toLowerCase() || 'secplan';
+    const userRoles = user?.roles || [];
+    const userRole = userRoles.length > 0 ? userRoles[0].nombre.toLowerCase() : 'admin_general';
+    let dashLink = `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html`;
+    if (user?.nivel_acceso == 10) dashLink = '/ALGARROBO_BASE/frontend/administracion/index.html';
 
     container.innerHTML = `
     <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300 font-['Outfit']">
@@ -23,7 +28,7 @@ function renderHeader(containerId = "headerRender") {
             <div class="flex justify-between items-center">
 
                 <div class="flex items-center gap-4">
-                    <a href="/ALGARROBO_BASE/frontend/division/secplan/admin_general/dashboard.html" class="group flex items-center gap-3">
+                    <a href="${dashLink}" class="group flex items-center gap-3">
                         <div class="relative w-10 h-10">
                             <div class="absolute inset-0 bg-blue-600 rounded-xl rotate-3 group-hover:rotate-6 transition-transform opacity-20"></div>
                             <div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg flex items-center justify-center text-white transform group-hover:-translate-y-0.5 transition-all duration-300">

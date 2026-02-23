@@ -1,0 +1,312 @@
+<!-- Vista 10: Comparativo Regional (STOP) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-map"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="region-fill">CONTEXTO REGIONAL</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Cómo nos posicionamos frente a nuestra región?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Comparación de tasas
+            delictuales ajustadas por población contra el promedio regional y análisis de posición en ranking.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v10_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
+        <!-- Relative Position Gauge -->
+        <div class="card"
+            style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                Posición Relativa Regional</h4>
+            <div style="position: relative; width: 220px; height: 110px;">
+                <canvas id="v10_chart_gauge"></canvas>
+                <div id="v10_gauge_val"
+                    style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 2.2rem; font-weight: 950; color: #1e293b;">
+                    --%</div>
+            </div>
+            <p style="margin: 1rem 0 0 0; font-size: 0.85rem; color: #475569; font-weight: 600;" id="v10_gauge_label">
+                Cargando ranking...</p>
+        </div>
+
+        <!-- Regional Trend and KPIs -->
+        <div style="display: grid; grid-template-rows: auto 1fr auto; gap: 1rem;">
+            <div style="display: flex; gap: 1rem;">
+                <div class="card" style="flex: 1; padding: 1.25rem; border-left: 4px solid #3b82f6;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">RANKING
+                        REGIONAL</div>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <span id="v10_rank_val" style="font-size: 2rem; font-weight: 900; color: #1e293b;">--</span>
+                        <span id="v10_rank_total" style="font-size: 0.9rem; font-weight: 600; color: #94a3b8;">/
+                            --</span>
+                    </div>
+                </div>
+                <div class="card" style="flex: 1; padding: 1.25rem; border-left: 4px solid #10b981;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">TENDENCIA
+                        RANKING</div>
+                    <div id="v10_rank_trend"
+                        style="font-size: 1.2rem; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-minus"></i> ESTABLE
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 1.25rem; background: #f8fafc;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; font-weight: 800; color: #1e293b;">Comparativo de
+                        Tasas (x 100k)</h4>
+                    <i class="fa-solid fa-circle-info" style="color: #94a3b8; font-size: 0.8rem;"
+                        title="Tasa de casos por cada 100.000 habitantes. Permite comparar la violencia real independientemente del tamaño poblacional."></i>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">Tasa Comunal</div>
+                        <div style="font-weight: 900; color: #1e293b;" id="v10_tasa_com">--</div>
+                    </div>
+                    <div style="height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
+                        <div id="v10_bar_com"
+                            style="height: 100%; width: 0%; background: #3b82f6; transition: width 1s;"></div>
+                    </div>
+
+                    <div
+                        style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top: 5px;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">Promedio Regional</div>
+                        <div style="font-weight: 900; color: #64748b;" id="v10_tasa_reg">--</div>
+                    </div>
+                    <div style="height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
+                        <div id="v10_bar_reg"
+                            style="height: 100%; width: 0%; background: #94a3b8; transition: width 1s;"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; font-size: 0.7rem; color: #64748b; font-style: italic;">
+                    * Normalizado por población residente (Ine)
+                </div>
+            </div>
+
+            <!-- Infografía Comunal -->
+            <div id="v10_infografia" class="card"
+                style="padding: 1rem; background: #fff; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                        Posición vs Regional</div>
+                    <div id="v10_info_status" style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">--</div>
+                </div>
+                <div id="v10_info_icon" style="font-size: 1.5rem; color: #cbd5e1;">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Análisis de posición relativa (Ranking) basado en la semana policial actual
+        versus la semana anterior. Las tasas están ajustadas por cada 100.000 habitantes. Un ranking más bajo (cercano a
+        1) indica mayor criticidad.
+    </div>
+</div>
+
+<script>
+    (async function initVista10_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.region-fill').forEach(el => el.textContent = S.regionName || 'Región Metropolitana');
+
+        // Data calculation - Fetch total communes in the region from official count JSON
+        let totalComunas = 52; // Fallback
+        try {
+            const conteoRes = await fetch('data/comunas/data_comuna_conteo.json');
+            if (conteoRes.ok) {
+                const conteoData = await conteoRes.json();
+                const miConteo = conteoData.find(c => c.codcom == S.codcom);
+                if (miConteo && miConteo.comunas) {
+                    totalComunas = miConteo.comunas;
+                    LOG.info(`📍 Vista 10: Total Regional detectado: ${totalComunas} comunas.`);
+                }
+            }
+        } catch (e) {
+            LOG.warn('⚠️ Vista 10: No se pudo cargar data_comuna_conteo, usando fallback 52.', e);
+        }
+
+        // Asumiendo que 1 = PEOR (Más delitos)
+        const currentRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.RANK_REG_PROY] || Math.round(totalComunas / 2);
+        const prevRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1))?.[C.RANK_REG_PROY] || currentRank;
+
+        // Gauge mide "Gravedad Relativa": 100% = Rank 1 (Peor), 0% = Rank 52 (Mejor)
+        // Invertimos la lógica visual para que "Alto" sea "Malo"
+        const severityPct = totalComunas > 1
+            ? ((totalComunas - currentRank) / (totalComunas - 1) * 100)
+            : 50;
+
+        // STOP Ranking by Rate Integration (ranking_regional_tasa_sem)
+        const rankTasaSem = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.RANK_REG_TASA] || null;
+
+        document.getElementById('v10_rank_val').textContent = currentRank;
+        document.getElementById('v10_rank_total').textContent = `/ ${totalComunas}`;
+        document.getElementById('v10_gauge_val').textContent = `${currentRank}°`;
+
+        // Add STOP Rank by Rate indicator
+        if (rankTasaSem) {
+            const rankCard = document.getElementById('v10_rank_val').parentElement.parentElement;
+            rankCard.insertAdjacentHTML('beforeend', `
+                <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span title="Ranking calculado según Tasa por 100k hab. (Semanal - STOP)"><i class="fa-solid fa-users" style="color:#3b82f6; margin-right:4px;"></i> Rank Tasa Semanal:</span>
+                    <strong style="color: #1e293b; font-size: 0.9rem;">${rankTasaSem}</strong>
+                </div>
+             `);
+        }
+
+        const gLabel = document.getElementById('v10_gauge_label');
+        // Rank 1-10 (Top 20%) es Crítico
+        if (currentRank <= totalComunas * 0.2) {
+            gLabel.textContent = 'CRÍTICO: TOP 20% REGIONAL';
+            gLabel.style.color = '#ef4444'; // Rojo
+        } else if (currentRank <= totalComunas * 0.5) {
+            gLabel.textContent = 'SITUACIÓN MEDIA-ALTA';
+            gLabel.style.color = '#f97316'; // Naranja
+        } else if (currentRank <= totalComunas * 0.8) {
+            gLabel.textContent = 'MEJOR QUE PROMEDIO';
+            gLabel.style.color = '#eab308'; // Amarillo
+        } else {
+            gLabel.textContent = 'ZONA SEGURA (TOP 20% MEJOR)';
+            gLabel.style.color = '#10b981'; // Verde
+        }
+
+        const trendEl = document.getElementById('v10_rank_trend');
+        const diff = currentRank - prevRank;
+
+        // Si diff es negativo (ej. 8 - 10 = -2), bajamos hacia el 1 => EMPEORAMOS
+        if (diff < 0) {
+            trendEl.innerHTML = `<i class="fa-solid fa-arrow-up"></i> SUBIÓ ${Math.abs(diff)} PUESTOS (PEOR)`;
+            trendEl.style.color = '#ef4444'; // Rojo
+        } else if (diff > 0) {
+            // Si diff es positivo (ej. 12 - 10 = +2), subimos hacia el 52 => MEJORAMOS
+            trendEl.innerHTML = `<i class="fa-solid fa-arrow-down"></i> BAJÓ ${diff} PUESTOS (MEJOR)`;
+            trendEl.style.color = '#10b981'; // Verde
+        } else {
+            trendEl.innerHTML = `<i class="fa-solid fa-minus"></i> SIN CAMBIO`;
+            trendEl.style.color = '#64748b';
+        }
+
+        // Tasa comparison - Use pre-calculated rates from production pipeline
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const tasaCom = (totalRow[C.TASA_SEMANAL] || 0).toFixed(1);
+        const tasaReg = (totalRow[C.TASA_REGIONAL_SEMANAL] || totalRow[C.TASA_REGIONAL] || 0).toFixed(1);
+
+        document.getElementById('v10_tasa_com').textContent = tasaCom;
+        document.getElementById('v10_tasa_reg').textContent = tasaReg;
+
+        const maxTasa = Math.max(parseFloat(tasaCom), parseFloat(tasaReg)) * 1.2;
+
+        // Colores barras: Si tasa comunal > regional -> Rojo, sino Azul
+        const colorCom = parseFloat(tasaCom) > parseFloat(tasaReg) ? '#ef4444' : '#3b82f6';
+
+        // Update bars
+        setTimeout(() => {
+            const barCom = document.getElementById('v10_bar_com');
+            const barReg = document.getElementById('v10_bar_reg');
+            if (barCom) {
+                barCom.style.width = `${(tasaCom / maxTasa * 100)}%`;
+                barCom.style.backgroundColor = colorCom;
+            }
+            if (barReg) barReg.style.width = `${(tasaReg / maxTasa * 100)}%`;
+        }, 300);
+
+        // --- Infografía Logic (User Request) ---
+        // "comunal sobre/bajo 3-5"
+        // Calculate difference percentage relative to region
+        const tComVal = parseFloat(tasaCom);
+        const tRegVal = parseFloat(tasaReg);
+        const diffPct = tRegVal > 0 ? ((tComVal - tRegVal) / tRegVal * 100) : 0;
+
+        const infoStatus = document.getElementById('v10_info_status');
+        const infoIcon = document.getElementById('v10_info_icon');
+        const infoCard = document.getElementById('v10_infografia');
+
+        if (diffPct > 5) {
+            infoStatus.innerHTML = `<span style="color:#ef4444;">SOBRE REGIÓN (>5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-arrow-trend-up" style="color:#ef4444;"></i>`;
+            infoCard.style.borderLeft = "4px solid #ef4444";
+        } else if (diffPct > 3) {
+            infoStatus.innerHTML = `<span style="color:#f97316;">SOBRE REGIÓN (3-5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-angle-up" style="color:#f97316;"></i>`;
+            infoCard.style.borderLeft = "4px solid #f97316";
+        } else if (diffPct < -5) {
+            infoStatus.innerHTML = `<span style="color:#10b981;">BAJO REGIÓN (>5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-arrow_trend-down" style="color:#10b981;"></i>`;
+            infoCard.style.borderLeft = "4px solid #10b981";
+        } else if (diffPct < -3) {
+            infoStatus.innerHTML = `<span style="color:#3b82f6;">BAJO REGIÓN (3-5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-angle-down" style="color:#3b82f6;"></i>`;
+            infoCard.style.borderLeft = "4px solid #3b82f6";
+        } else {
+            infoStatus.innerHTML = `<span style="color:#64748b;">EN PROMEDIO (+/- 3%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-minus" style="color:#64748b;"></i>`;
+            infoCard.style.borderLeft = "4px solid #cbd5e1";
+        }
+
+        // --- Semi-Doughnut Gauge Chart ---
+        const gaugeCtx = document.getElementById('v10_chart_gauge').getContext('2d');
+        // Color Gauge: Rojo si es muy grave (High Severity %), Verde si es bajo
+        const gaugeColor = severityPct > 80 ? '#ef4444' : severityPct > 50 ? '#f97316' : '#10b981';
+
+        new Chart(gaugeCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [severityPct, 100 - severityPct],
+                    backgroundColor: [gaugeColor, '#f1f5f9'],
+                    borderWidth: 0,
+                    circumference: 180,
+                    rotation: 270,
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '80%',
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista10').then(txt => {
+                const el = document.getElementById('v10_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

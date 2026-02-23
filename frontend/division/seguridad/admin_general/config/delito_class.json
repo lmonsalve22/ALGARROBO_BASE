@@ -1,0 +1,170 @@
+[
+    {
+        "id": 1,
+        "delito": "Amenazas con Armas",
+        "impacto_severidad": "Delitos contra la Vida",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 2,
+        "delito": "Amenazas y Riñas",
+        "impacto_severidad": "Delitos contra la Integridad Física",
+        "modus_operandi": "Conflictos Interpersonales/Domésticos",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Otros"
+    },
+    {
+        "id": 3,
+        "delito": "Consumo de Alcohol y de Drogas en la Vía Pública",
+        "impacto_severidad": "Delitos de Convivencia y Menor Gravedad",
+        "modus_operandi": "Delitos de Oportunidad",
+        "naturaleza_juridica": "Orden Público / Convivencia",
+        "violencia": "Otros"
+    },
+    {
+        "id": 4,
+        "delito": "Daños",
+        "impacto_severidad": "Delitos de Convivencia y Menor Gravedad",
+        "modus_operandi": "Fuerza/Intrusión",
+        "naturaleza_juridica": "Contra la Propiedad",
+        "violencia": "Otros"
+    },
+    {
+        "id": 5,
+        "delito": "Delitos en Contexto de Violencia Intrafamiliar",
+        "impacto_severidad": "Delitos contra la Integridad Física",
+        "modus_operandi": "Conflictos Interpersonales/Domésticos",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 6,
+        "delito": "Homicidios y Femicidios",
+        "impacto_severidad": "Delitos contra la Vida",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 7,
+        "delito": "Hurtos",
+        "impacto_severidad": "Delitos de Convivencia y Menor Gravedad",
+        "modus_operandi": "Delitos de Oportunidad",
+        "naturaleza_juridica": "Contra la Propiedad",
+        "violencia": "A la Propiedad"
+    },
+    {
+        "id": 8,
+        "delito": "Incivilidades",
+        "impacto_severidad": "Delitos de Convivencia y Menor Gravedad",
+        "modus_operandi": "Delitos de Oportunidad",
+        "naturaleza_juridica": "Orden Público / Convivencia",
+        "violencia": "Otros"
+    },
+    {
+        "id": 9,
+        "delito": "Lesiones graves",
+        "impacto_severidad": "Delitos contra la Integridad Física",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 10,
+        "delito": "Lesiones leves",
+        "impacto_severidad": "Delitos contra la Integridad Física",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 11,
+        "delito": "Lesiones menos graves",
+        "impacto_severidad": "Delitos contra la Integridad Física",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 12,
+        "delito": "Ley de Control de Armas",
+        "impacto_severidad": "Delitos contra la Vida",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Leyes Especiales",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 13,
+        "delito": "Ley de Drogas",
+        "impacto_severidad": "Delitos contra la Vida",
+        "modus_operandi": "Control Territorial",
+        "naturaleza_juridica": "Leyes Especiales",
+        "violencia": "Otros"
+    },
+    {
+        "id": 14,
+        "delito": "Otros desórdenes públicos",
+        "impacto_severidad": "Delitos de Convivencia y Menor Gravedad",
+        "modus_operandi": "Delitos de Oportunidad",
+        "naturaleza_juridica": "Orden Público / Convivencia",
+        "violencia": "Otros"
+    },
+    {
+        "id": 15,
+        "delito": "Otros Robos con Fuerza en las Cosas",
+        "impacto_severidad": "Delitos contra el Patrimonio Grave",
+        "modus_operandi": "Fuerza/Intrusión",
+        "naturaleza_juridica": "Contra la Propiedad",
+        "violencia": "A la Propiedad"
+    },
+    {
+        "id": 16,
+        "delito": "Receptación",
+        "impacto_severidad": "Delitos contra el Patrimonio Grave",
+        "modus_operandi": "Fuerza/Intrusión",
+        "naturaleza_juridica": "Contra la Propiedad",
+        "violencia": "A la Propiedad"
+    },
+    {
+        "id": 17,
+        "delito": "Robos con Violencia e Intimidación",
+        "impacto_severidad": "Delitos contra la Vida",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    },
+    {
+        "id": 18,
+        "delito": "Robos de Vehículos y sus Accesorios",
+        "impacto_severidad": "Delitos contra el Patrimonio Grave",
+        "modus_operandi": "Fuerza/Intrusión",
+        "naturaleza_juridica": "Contra la Propiedad",
+        "violencia": "A la Propiedad"
+    },
+    {
+        "id": 19,
+        "delito": "Robos en Lugares Habitados y No Habitados",
+        "impacto_severidad": "Delitos contra el Patrimonio Grave",
+        "modus_operandi": "Fuerza/Intrusión",
+        "naturaleza_juridica": "Contra la Propiedad",
+        "violencia": "A la Propiedad"
+    },
+    {
+        "id": 20,
+        "delito": "Robos por Sorpresa",
+        "impacto_severidad": "Delitos contra la Integridad Física",
+        "modus_operandi": "Delitos de Oportunidad",
+        "naturaleza_juridica": "Contra la Propiedad",
+        "violencia": "A la Propiedad"
+    },
+    {
+        "id": 21,
+        "delito": "Violaciones y Delitos Sexuales",
+        "impacto_severidad": "Delitos contra la Vida",
+        "modus_operandi": "Violencia/Apremio",
+        "naturaleza_juridica": "Contra las Personas",
+        "violencia": "Violentos"
+    }
+]

@@ -1,0 +1,431 @@
+<!-- Vista 17: Proporcionalidad Delictual (Rediseño Estilo V1 + Zoom Inteligente) -->
+<style>
+    /* Estilos copiados y adaptados de Vista 1 */
+    .v17-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .v17-kpi-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+
+    .v17-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .v17-kpi-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .v17-kpi-val {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1e293b;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .v17-kpi-sub {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #94a3b8;
+    }
+
+    .v17-highlight {
+        border-top: 4px solid #3b82f6;
+    }
+
+    .v17-bar-container {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: 1rem;
+        position: relative;
+    }
+
+    .v17-bar-fill {
+        height: 100%;
+        transition: width 0.6s ease;
+        border-radius: 99px;
+    }
+</style>
+
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600;">
+            <i class="fa-solid fa-people-roof"></i> <span class="comuna-fill">--</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            PROPORCIONALIDAD DELICTUAL
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <!-- Question Section tipo V1 -->
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.02em;">
+            ¿Nuestra carga delictual es proporcional a nuestra población?
+        </h2>
+        <p style="color: #64748b; margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+            Matriz de eficiencia: Casos vs Población. Busca identificar sobrecarga relativa dentro del grupo de pares.
+        </p>
+    </div>
+
+    <!-- Loading -->
+    <div id="v17_loading" style="padding: 3rem; text-align: center; color: #94a3b8;">
+        <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">Analizando relaciones poblacionales...</p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="v17_content" style="display: none;">
+
+        <!-- KPIs Grid -->
+        <div class="v17-kpi-grid">
+
+            <div class="v17-kpi-card v17-highlight">
+                <div class="v17-kpi-label">Peso Poblacional</div>
+                <div class="v17-kpi-val" id="v17_pct_pob">--%</div>
+                <div class="v17-kpi-sub">del total del Clúster</div>
+                <div class="v17-bar-container">
+                    <div id="v17_bar_pob" class="v17-bar-fill" style="width: 0%; background: #94a3b8;"></div>
+                </div>
+            </div>
+
+            <div class="v17-kpi-card v17-highlight">
+                <div class="v17-kpi-label">Peso Delictual</div>
+                <div class="v17-kpi-val" id="v17_pct_del">--%</div>
+                <div class="v17-kpi-sub">del total de Casos</div>
+                <div class="v17-bar-container">
+                    <div id="v17_bar_del" class="v17-bar-fill" style="width: 0%; background: #3b82f6;"></div>
+                </div>
+            </div>
+
+            <div class="v17-kpi-card" style="border: 2px solid #e2e8f0; border-color: transparent;">
+                <div class="v17-kpi-label">Índice de Desproporción</div>
+                <div class="v17-kpi-val" id="v17_idx_desp">--</div>
+                <div class="v17-kpi-sub" id="v17_idx_msg" style="font-weight: 700;">--</div>
+                <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 8px;">1.0 = Equilibrio</div>
+            </div>
+
+        </div>
+
+        <!-- Analysis Section: Efficiency Matrix Top 10 ZOOM -->
+        <div class="card chart-card">
+            <h4 class="section-title mb-lg"
+                style="font-size: 1rem; color: #1e293b; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-crosshairs" style="color: var(--color-primary);"></i>
+                Matriz de Eficiencia (Top 10 Cercanos en Población)
+            </h4>
+
+            <div class="chart-wrapper" style="height: 350px;">
+                <canvas id="v17_matrix"></canvas>
+            </div>
+
+            <div style="font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 8px;">
+                * Se muestran las 10 comunas con magnitud (Población/Casos) más similar a la tuya.
+                Línea diagonal = Tasa Promedio del Clúster. Arriba = Sobrecarga.
+            </div>
+        </div>
+
+        <!-- Optional: Comparisons -->
+        <div class="card" style="padding: 1.5rem; border-left: 4px solid #3b82f6; margin-top: 2rem;">
+            <h4 style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">
+                ⚖️ Tasa de Carga Normalizada
+            </h4>
+            <div
+                style="margin-top: 1rem; display: flex; gap: 2rem; align-items: flex-end; justify-content: space-around;">
+
+                <div style="text-align: center;">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 4px;"><span
+                            class="comuna-fill">TU COMUNA</span></div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #1e293b;" id="v17_tasa_me">--</div>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 4px;">PROMEDIO
+                        CLÚSTER</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #64748b;" id="v17_tasa_clus">--</div>
+                </div>
+
+                <div style="text-align: center;">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 4px;">PROMEDIO
+                        REGIONAL</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #64748b;" id="v17_tasa_reg">--</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> El <strong>Gráfico de Casos vs Población</strong> filtra las 10 comunas
+        más cercanas en términos de magnitud demográfica y delictual.
+        El <strong>Índice de Desproporción</strong> divide el % de delitos que aporta la comuna por su % de población en
+        el clúster.
+        Un valor &gt; 1.0 indica que gestiona más delitos de los que teóricamente le corresponderían por tamaño.
+    </div>
+</div>
+
+<script>
+    (async function initVista17() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => {
+                const sData = window.STATE_DATA;
+                const cData = window.COMUNAS_DATA;
+                if (sData?.isLoaded && cData && cData.length > 0) return resolve(true);
+                setTimeout(check, 200);
+            };
+            check();
+            setTimeout(() => resolve(false), 10000);
+        });
+
+        const ready = await waitForData();
+        const loadingEl = document.getElementById('v17_loading');
+        const contentEl = document.getElementById('v17_content');
+
+        if (!ready) {
+            loadingEl.innerHTML = '<p style="color:#ef4444">Datos no disponibles.</p>';
+            return;
+        }
+
+        const S = window.STATE_DATA;
+        const allComunas = window.COMUNAS_DATA;
+
+        const miData = allComunas.find(c => c.codcom == S.codcom);
+        if (!miData) return;
+
+        const miCluster = miData.clase_poblacion;
+        const miRegion = miData.Codreg;
+
+        const clusterComunas = allComunas.filter(c => c.clase_poblacion === miCluster);
+        const regionComunas = allComunas.filter(c => c.Codreg === miRegion);
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        loadingEl.style.display = 'none';
+        contentEl.style.display = 'block';
+
+        // ── KPIs ──
+        const totalPobClus = clusterComunas.reduce((s, c) => s + (c.poblacion || (c.factor_poblacion * 100000) || 0), 0);
+        const totalDelClus = clusterComunas.reduce((s, c) => s + (c.frecuencia_total || 0), 0);
+
+        const miPob = miData.poblacion || (miData.factor_poblacion * 100000);
+        const miDel = miData.frecuencia_total || 0;
+
+        const pctPob = (miPob / totalPobClus) * 100;
+        const pctDel = (miDel / totalDelClus) * 100;
+        const idx = pctPob > 0 ? (pctDel / pctPob) : 0;
+
+        document.getElementById('v17_pct_pob').textContent = pctPob.toFixed(1) + '%';
+        document.getElementById('v17_pct_del').textContent = pctDel.toFixed(1) + '%';
+        document.getElementById('v17_bar_pob').style.width = Math.min(100, pctPob * 2) + '%';
+        document.getElementById('v17_bar_del').style.width = Math.min(100, pctDel * 2) + '%';
+
+        const barDel = document.getElementById('v17_bar_del');
+        if (pctDel > pctPob) barDel.style.backgroundColor = '#ef4444';
+        else barDel.style.backgroundColor = '#10b981';
+
+        const idxEl = document.getElementById('v17_idx_desp');
+        const msgEl = document.getElementById('v17_idx_msg');
+        idxEl.textContent = idx.toFixed(2);
+
+        // Estilo de tarjeta de índice
+        const cardIdx = idxEl.parentElement;
+
+        if (idx > 1.2) {
+            cardIdx.style.borderColor = '#ef4444';
+            cardIdx.style.background = '#fef2f2';
+            idxEl.style.color = '#ef4444';
+            msgEl.textContent = 'SOBRECARGA SIGNIFICATIVA';
+            msgEl.style.color = '#ef4444';
+        } else if (idx < 0.9) {
+            cardIdx.style.borderColor = '#10b981';
+            cardIdx.style.background = '#f0fdf4';
+            idxEl.style.color = '#10b981';
+            msgEl.textContent = 'EFICIENCIA / SUBCARGA';
+            msgEl.style.color = '#10b981';
+        } else {
+            cardIdx.style.borderColor = '#3b82f6';
+            cardIdx.style.background = '#eff6ff';
+            idxEl.style.color = '#3b82f6';
+            msgEl.textContent = 'EQUILIBRADO';
+            msgEl.style.color = '#3b82f6';
+        }
+
+        // ── Matriz Top 10 Vecinos (ZOOM INTELIGENTE) ──
+        // 1. Normalizar para distancia
+        const pobs = clusterComunas.map(c => c.poblacion || (c.factor_poblacion * 100000) || 0);
+        const dels = clusterComunas.map(c => c.frecuencia_total || 0);
+
+        const minP = Math.min(...pobs), maxP = Math.max(...pobs), rngP = maxP - minP || 1;
+        const minD = Math.min(...dels), maxD = Math.max(...dels), rngD = maxD - minD || 1;
+
+        const myPN = (miPob - minP) / rngP;
+        const myDN = (miDel - minD) / rngD;
+
+        // 2. Calcular vecinos más cercanos
+        const neighbors = clusterComunas.map(c => {
+            const p = c.poblacion || (c.factor_poblacion * 100000) || 0;
+            const d = c.frecuencia_total || 0;
+            const pN = (p - minP) / rngP;
+            const dN = (d - minD) / rngD;
+            const dist = Math.sqrt(Math.pow(pN - myPN, 2) + Math.pow(dN - myDN, 2));
+            return { ...c, dist, p, d };
+        })
+            .filter(c => c.codcom != S.codcom)
+            .sort((a, b) => a.dist - b.dist)
+            .slice(0, 10);
+
+        const dataScatter = neighbors.map(c => ({
+            x: c.p,
+            y: c.d,
+            label: c.Comuna
+        }));
+
+        const dataMe = [{
+            x: miPob,
+            y: miDel,
+            label: S.comunaName
+        }];
+
+        // 3. ZOOM: Determinar límites dinámicos basados estrictamente en los puntos visibles
+        const allPointsX = [...dataScatter.map(d => d.x), miPob];
+        const allPointsY = [...dataScatter.map(d => d.y), miDel];
+
+        // Calcular min y max de los datos
+        const minValX = Math.min(...allPointsX);
+        const maxValX = Math.max(...allPointsX);
+        const minValY = Math.min(...allPointsY);
+        const maxValY = Math.max(...allPointsY);
+
+        // Agregar "padding" del 10% para que los puntos no toquen los bordes
+        const rangeX = maxValX - minValX || 1000;
+        const rangeY = maxValY - minValY || 10;
+
+        const minViewX = Math.max(0, minValX - rangeX * 0.1);
+        const maxViewX = maxValX + rangeX * 0.1;
+        const minViewY = Math.max(0, minValY - rangeY * 0.1);
+        const maxViewY = maxValY + rangeY * 0.1;
+
+        // 4. Línea de Proporcionalidad AJUSTADA al Zoom
+        const slope = totalDelClus / totalPobClus;
+        const lineData = [
+            { x: minViewX, y: minViewX * slope },
+            { x: maxViewX, y: maxViewX * slope }
+        ];
+
+        const ctxMx = document.getElementById('v17_matrix').getContext('2d');
+        new Chart(ctxMx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Ref. Proporcional',
+                        data: lineData,
+                        showLine: true,
+                        borderColor: '#cbd5e1',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        datalabels: { display: false }
+                    },
+                    {
+                        label: 'Vecinos',
+                        data: dataScatter,
+                        backgroundColor: '#3b82f6',
+                        pointRadius: 7,
+                        datalabels: {
+                            align: 'top',
+                            color: '#64748b',
+                            font: { size: 9, weight: 'bold' },
+                            formatter: (v) => v.label,
+                            offset: 4,
+                            clip: false
+                        }
+                    },
+                    {
+                        label: S.comunaName,
+                        data: dataMe,
+                        backgroundColor: '#ef4444',
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        pointRadius: 11,
+                        datalabels: {
+                            align: 'top',
+                            color: '#ef4444',
+                            font: { size: 10, weight: '900' },
+                            formatter: (v) => v.label,
+                            offset: 6
+                        }
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: { display: true, text: 'Población', font: { weight: 'bold' } },
+                        grid: { color: '#f8fafc' },
+                        min: minViewX,
+                        max: maxViewX,
+                        ticks: {
+                            callback: function (value) { return value.toLocaleString('es-CL'); }
+                        }
+                    },
+                    y: {
+                        title: { display: true, text: 'Casos Semanales', font: { weight: 'bold' } },
+                        grid: { color: '#f8fafc' },
+                        min: minViewY,
+                        max: maxViewY
+                    }
+                },
+                plugins: {
+                    legend: { display: true, position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.raw.label}: ${ctx.raw.y} casos / ${parseInt(ctx.raw.x).toLocaleString()} hab`
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // ── Pie de página ──
+        const tasaMe = miData.tasa_semanal || 0;
+        const tasaClusAvg = clusterComunas.reduce((s, c) => s + (c.tasa_semanal || 0), 0) / clusterComunas.length;
+        const tasaRegAvg = regionComunas.reduce((s, c) => s + (c.tasa_semanal || 0), 0) / regionComunas.length;
+
+        document.getElementById('v17_tasa_me').textContent = tasaMe.toFixed(1);
+        document.getElementById('v17_tasa_clus').textContent = tasaClusAvg.toFixed(1);
+        document.getElementById('v17_tasa_reg').textContent = tasaRegAvg.toFixed(1);
+
+    })();
+</script>

@@ -1,0 +1,208 @@
+<!-- Vista 8: Correlaciones Delictuales (STOP) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué delitos suelen moverse juntos?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Detección de patrones de
+            asociación estadística (Correlación de Pearson) entre tipologías delictuales en las últimas 12 semanas.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v8_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <!-- Main Heatmap Container -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem; position: relative; overflow-x: auto;">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
+            <i class="fa-solid fa-table-cells" style="color: #4f46e5;"></i> Matriz de Correlación Delictual
+        </h3>
+        <table id="v8_heatmap" style="width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px;">
+            <thead>
+                <tr id="v8_head"></tr>
+            </thead>
+            <tbody id="v8_body"></tbody>
+        </table>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <!-- Top Associations -->
+        <div class="card" style="padding: 1.5rem; background: #f8fafc;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-link" style="color: #4f46e5;"></i> Principales Asociaciones
+            </h4>
+            <div id="v8_associations_list" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Interpretation -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="background: #eef2ff; border: 1px solid #e0e7ff; padding: 1.25rem; border-radius: 12px;">
+                <h4 style="margin: 0 0 8px 0; color: #3730a3; font-size: 0.85rem; font-weight: 800;">NOTAS DE
+                    INTELIGENCIA</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: #4338ca; line-height: 1.5;">Una correlación alta
+                    (<strong>> 0.80</strong>) sugiere que ambos delitos podrían compartir los mismos factores de riesgo
+                    sociales o territoriales, o que están siendo ejecutados por las mismas bandas delictuales.</p>
+            </div>
+
+            <div
+                style="display: flex; gap: 10px; align-items: center; font-size: 0.75rem; color: #64748b; font-weight: 600; padding: 0.5rem;">
+                <span>LEYENDA:</span>
+                <span
+                    style="display: inline-block; width: 15px; height: 15px; background: #ef4444; border-radius: 2px;"></span>
+                Alta
+                <span
+                    style="display: inline-block; width: 15px; height: 15px; background: #f97316; border-radius: 2px;"></span>
+                Media
+                <span
+                    style="display: inline-block; width: 15px; height: 15px; background: #fcd34d; border-radius: 2px;"></span>
+                Baja
+                <span
+                    style="display: inline-block; width: 15px; height: 15px; background: #cbd5e1; border-radius: 2px;"></span>
+                Diagonal
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Correlaciones</strong>,
+        permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas basadas en evidencia.
+    </div>
+</div>
+
+<script>
+    (async function initVista8_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        // --- Correlation Logic ---
+        const last12Weeks = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
+        const topDelitosData = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
+            .map(d => {
+                const total = S.allDataHistory
+                    .filter(r => r[C.DELITO] === d && last12Weeks.includes(r[C.ID_SEMANA]))
+                    .reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
+                return { name: d, total };
+            })
+            .filter(d => d.name !== 'Total' && d.name !== 'TOTAL') // Exclude explicit totals
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 8);
+
+        const topDelitos = topDelitosData.map(d => d.name);
+
+        const series = topDelitos.map(delito => {
+            return last12Weeks.map(id => {
+                const row = S.allDataHistory.find(r => r[C.DELITO] === delito && r[C.ID_SEMANA] === id);
+                return row ? (row[C.CASOS_ACTUAL] || 0) : 0;
+            });
+        });
+
+        const pearson = (x, y) => {
+            const n = x.length;
+            if (n === 0) return 0;
+            const mx = x.reduce((a, b) => a + b, 0) / n;
+            const my = y.reduce((a, b) => a + b, 0) / n;
+            const num = x.reduce((s, _, i) => s + (x[i] - mx) * (y[i] - my), 0);
+            const den = Math.sqrt(x.reduce((s, v) => s + Math.pow(v - mx, 2), 0)) * Math.sqrt(y.reduce((s, v) => s + Math.pow(v - my, 2), 0));
+            if (den === 0) return 0; // Prevent NaN for constant arrays
+            return num / den;
+        };
+
+        const matrix = series.map((s1, i) => series.map((s2, j) => i === j ? 1 : pearson(s1, s2)));
+
+        // --- Render Heatmap ---
+        const head = document.getElementById('v8_head');
+        const body = document.getElementById('v8_body');
+
+        if (topDelitos.length === 0) {
+            body.innerHTML = '<tr><td colspan="9" style="padding:20px; text-align:center; color:#64748b;">No hay suficientes datos para generar correlaciones.</td></tr>';
+            return;
+        }
+
+        head.innerHTML = '<th></th>' + topDelitos.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 2px; border: 1px solid #f1f5f9; background: #f8fafc; vertical-align: bottom; height: auto;"><div style="white-space: normal; text-align: center; width: 100%; min-width: 60px; line-height: 1.1;">${n}</div></th>`).join('');
+
+        const getColor = (v) => {
+            const val = Math.abs(v);
+            if (isNaN(val)) return { bg: '#f8fafc', text: '#94a3b8' };
+            if (val >= 0.8) return { bg: '#ef4444', text: 'white' }; // Red
+            if (val >= 0.6) return { bg: '#f97316', text: 'white' }; // Orange
+            if (val >= 0.4) return { bg: '#fcd34d', text: '#78350f' }; // Yellow
+            if (val >= 0.2) return { bg: '#fef3c7', text: '#92400e' }; // Amber
+            return { bg: '#f8fafc', text: '#94a3b8' };
+        };
+
+        body.innerHTML = matrix.map((row, i) => `
+            <tr>
+                <td style="font-size: 0.65rem; font-weight: 700; color: #1e293b; border: 1px solid #f1f5f9; padding: 8px 4px; background: #f8fafc; white-space: normal; max-width: 150px;">${topDelitos[i]}</td>
+                ${row.map((v, j) => {
+            if (i === j) return `<td style="background: #cbd5e1; color: #64748b; font-size: 0.7rem; font-weight: 600; text-align: center; border: 1px solid #fff;">-</td>`;
+            const c = getColor(v);
+            return `<td style="background: ${c.bg}; color: ${c.text}; font-size: 0.7rem; font-weight: 800; text-align: center; border: 1px solid #fff; cursor: help;" title="Correlación: ${v.toFixed(3)}">${v.toFixed(1)}</td>`
+        }).join('')}
+            </tr>
+            `).join('');
+
+        // --- Top Associations List ---
+        const associations = [];
+        for (let i = 0; i < matrix.length; i++) {
+            for (let j = i + 1; j < matrix.length; j++) {
+                if (matrix[i][j] > 0.5) associations.push({ d1: topDelitos[i], d2: topDelitos[j], val: matrix[i][j] });
+            }
+        }
+        associations.sort((a, b) => b.val - a.val);
+
+        const list = document.getElementById('v8_associations_list');
+        list.innerHTML = associations.slice(0, 4).map(a => `
+            <div style="display: flex; gap: 10px; align-items: center; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #ef4444;">
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">${a.d1}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">+ ${a.d2}</div>
+                </div>
+                <div style="text-align: right; font-weight: 900; color: #ef4444;">r = ${a.val.toFixed(2)}</div>
+            </div>
+        `).join('') || '<div class="text-muted" style="font-size:0.8rem; padding:10px;">No se detectan asociaciones fuertes esta semana.</div>';
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista8').then(txt => {
+                const el = document.getElementById('v8_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

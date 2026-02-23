@@ -1,0 +1,330 @@
+<!-- Vista 11: Benchmark Histórico Multianual (2005-2025) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-ranking-star"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>EVOLUCIÓN ESTRATÉGICA 20 AÑOS</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Nuestra posición relativa ha mejorado o empeorado en la década?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Evolución del ranking
+            regional año a año para distinguir mejoras de gestión real frente a variaciones sistémicas del entorno.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v11_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <!-- Stats Cards -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #4f46e5;">
+            <div
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Promedio Posición</div>
+            <div id="v11_stat_avg" style="font-size: 1.4rem; font-weight: 950; color: #1e293b;">--</div>
+        </div>
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: #94a3b8 solid 4px;">
+            <div
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Posición Actual</div>
+            <div id="v11_stat_current" style="font-size: 1.4rem; font-weight: 950; color: #1e293b;">--</div>
+        </div>
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #10b981;">
+            <div
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Mejor Posición</div>
+            <div id="v11_stat_best" style="font-size: 1.1rem; font-weight: 900; color: #1e293b;">--</div>
+        </div>
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #ef4444;">
+            <div
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Peor Posición</div>
+            <div id="v11_stat_worst" style="font-size: 1.1rem; font-weight: 900; color: #1e293b;">--</div>
+        </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-chart-line" style="color: #f59e0b;"></i> Trayectoria Histórica Regional de
+                Ranking
+                (Anual)</span>
+            <div id="v11_trajectory_badge"
+                style="background: #1e293b; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">
+                CALCULANDO TRAYECTORIA...</div>
+        </h3>
+        <div class="chart-wrapper" style="height: 380px;">
+            <canvas id="v11_chart_ranking"></canvas>
+        </div>
+    </div>
+
+    <!-- Annual Heatmap summary -->
+    <div class="card" style="padding: 1.5rem;">
+        <h4
+            style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
+            <span>Matriz de Variación Anual</span>
+            <div style="display: flex; gap: 8px; font-size: 0.65rem; font-weight: 600;">
+                <span style="color:#10b981;">● Mejora</span>
+                <span style="color:#cbd5e1;">● Igual</span>
+                <span style="color:#ef4444;">● Empeora</span>
+            </div>
+        </h4>
+        <div id="v11_heatmap_years" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+            <!-- Filled by JS -->
+        </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica (Análisis 20 Años):</strong> Esta vista presenta un benchmark histórico profundo que
+        integra dos metodologías de evaluación: 1. Ranking por Volumen (carga operativa bruta) y 2. Ranking por Tasa
+        (normalizada x 100k hab.). La comparación de ambas trayectorias permite distinguir mejoras en la gestión de
+        seguridad real frente a variaciones demográficas o sistémicas, identificando si la posición relativa es
+        estructural o circunstancial.
+    </div>
+</div>
+
+<script>
+    (async function initVista11_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+        const C = window.COLS_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Fetch total communes in the region from official count JSON
+        let totalComunas = 52; // Fallback
+        try {
+            const conteoRes = await fetch('data/comunas/data_comuna_conteo.json');
+            if (conteoRes.ok) {
+                const conteoData = await conteoRes.json();
+                const miConteo = conteoData.find(c => c.codcom == (S.codcom || (window.STATE_DATA && window.STATE_DATA.codcom)));
+                if (miConteo && miConteo.comunas) {
+                    totalComunas = miConteo.comunas;
+                    console.log(`📍 Vista 11: Total Regional detectado: ${totalComunas} comunas.`);
+                }
+            }
+        } catch (e) {
+            console.warn('⚠️ Vista 11: No se pudo cargar data_comuna_conteo, usando fallback 52.', e);
+        }
+
+        // Solo Casos (tipoValCod == 1,2)
+        const totalCasos = S.allDataHistory_total.filter(r => String(r[C.TIPO_VAL_COD]).includes('1,2'));
+
+        // Process Rankings by Year
+        const years = [...new Set(totalCasos.map(r => r[C.ANIO]))].sort();
+        const rankingsVol = years.map(yr => {
+            const row = totalCasos.filter(r => r[C.ANIO] === yr).slice(-1)[0];
+            const rankVal = row ? (row[C.RANKING_REG_ANUAL] || row[C.RANKING] || 25) : 25;
+            return Math.round(rankVal);
+        });
+
+        const rankingsTasa = years.map(yr => {
+            const row = totalCasos.filter(r => r[C.ANIO] === yr).slice(-1)[0];
+            const rankValTasa = row ? (row[C.RANKING_REG_ANUAL_TASA] || row[C.RANK_REG_TASA] || row[C.RANKING] || 25) : 25;
+            return Math.round(rankValTasa);
+        });
+
+        // --- Calculate Stats ---
+        const avgVol = Math.round(rankingsVol.reduce((a, b) => a + b, 0) / rankingsVol.length);
+        const avgTasa = Math.round(rankingsTasa.reduce((a, b) => a + b, 0) / rankingsTasa.length);
+
+        const currentVol = rankingsVol[rankingsVol.length - 1];
+        const currentTasa = rankingsTasa[rankingsTasa.length - 1];
+
+        // Best/Worst Logic: 1 (BAD), 52 (GOOD). Higher is better.
+        const bestVol = Math.max(...rankingsVol);
+        const bestTasa = Math.max(...rankingsTasa);
+        const worstVol = Math.min(...rankingsVol);
+        const worstTasa = Math.min(...rankingsTasa);
+
+        const renderDoubleVal = (v1, v2, label1 = 'Vol', label2 = 'Tasa', sub1 = '', sub2 = '') => `
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div style="font-size: 1.1rem; font-weight: 950; color: #1e293b;">
+                    ${v1}° <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 700;">(${label1})</span>
+                    ${sub1 ? `<span style="font-size: 0.7rem; color: #64748b; font-weight: 600; margin-left: 2px;">[${sub1}]</span>` : ''}
+                </div>
+                <div style="font-size: 1.1rem; font-weight: 950; color: #f59e0b;">
+                    ${v2}° <span style="font-size: 0.65rem; color: #f59e0b; font-weight: 700;">(${label2})</span>
+                    ${sub2 ? `<span style="font-size: 0.7rem; color: #b45309; font-weight: 600; margin-left: 2px;">[${sub2}]</span>` : ''}
+                </div>
+            </div>
+        `;
+
+        // Calculate Metrics for each category to show along rankings
+        const allYearRows = years.map(yr => totalCasos.filter(r => r[C.ANIO] === yr).slice(-1)[0]).filter(Boolean);
+
+        // Avg
+        const avgFreq = Math.round(allYearRows.reduce((a, b) => a + (b[C.TOTAL_ANIO_REAL] || 0), 0) / allYearRows.length);
+        const avgRateVal = (allYearRows.reduce((a, b) => a + (b[C.TASA_ANUAL_REAL] || 0), 0) / allYearRows.length).toFixed(1);
+
+        // Current
+        const currentDataRow = allYearRows[allYearRows.length - 1] || {};
+        const curFreq = parseInt(currentDataRow[C.TOTAL_ANIO_REAL] || 0).toLocaleString('es-CL');
+        const curRate = parseFloat(currentDataRow[C.TASA_ANUAL_REAL] || 0).toFixed(1);
+
+        const currentDataRowPrevYr = allYearRows[allYearRows.length - 2] || {};
+
+        console.log("=== DEBUG VISTA 11 (Posición Actual) ===");
+        console.log(`Año evaluado [${currentDataRow[C.ANIO]}]:`);
+        console.log("TOTAL_ANIO_REAL (Crudo):", currentDataRow[C.TOTAL_ANIO_REAL]);
+        console.log("TASA_ANUAL_REAL (Crudo):", currentDataRow[C.TASA_ANUAL_REAL]);
+        console.log("→ Fila extraída (Extremo):", currentDataRow);
+        console.log("→ TODAS las filas filtradas para este año:", totalCasos.filter(r => r[C.ANIO] === currentDataRow[C.ANIO]));
+        console.log("----------------------------------------");
+        if (currentDataRowPrevYr[C.ANIO]) {
+            console.log(`Año evaluado previo [${currentDataRowPrevYr[C.ANIO]}]:`);
+            console.log("TOTAL_ANIO_REAL (Crudo):", currentDataRowPrevYr[C.TOTAL_ANIO_REAL]);
+            console.log("TASA_ANUAL_REAL (Crudo):", currentDataRowPrevYr[C.TASA_ANUAL_REAL]);
+            console.log("→ Fila extraída (Extremo):", currentDataRowPrevYr);
+            console.log("→ TODAS las filas filtradas para este previo:", totalCasos.filter(r => r[C.ANIO] === currentDataRowPrevYr[C.ANIO]));
+        }
+        console.log("========================================");
+
+        // Best Vol Year Metrics
+        const bestVolRow = allYearRows.find(r => Math.round(r[C.RANKING_REG_ANUAL] || r[C.RANKING] || 0) === bestVol);
+        const bVolFreq = bestVolRow ? parseInt(bestVolRow[C.TOTAL_ANIO_REAL] || 0).toLocaleString('es-CL') : '--';
+
+        // Worst Vol Year Metrics
+        const worstVolRow = allYearRows.find(r => Math.round(r[C.RANKING_REG_ANUAL] || r[C.RANKING] || 0) === worstVol);
+        const wVolFreq = worstVolRow ? parseInt(worstVolRow[C.TOTAL_ANIO_REAL] || 0).toLocaleString('es-CL') : '--';
+
+        // Best Tasa Year Metrics
+        const bestTasaRow = allYearRows.find(r => Math.round(r[C.RANKING_REG_ANUAL_TASA] || r[C.RANK_REG_TASA] || r[C.RANKING] || 0) === bestTasa);
+        const bTasaRate = bestTasaRow ? parseFloat(bestTasaRow[C.TASA_ANUAL_REAL] || 0).toFixed(1) : '--';
+
+        // Worst Tasa Year Metrics
+        const worstTasaRow = allYearRows.find(r => Math.round(r[C.RANKING_REG_ANUAL_TASA] || r[C.RANK_REG_TASA] || r[C.RANKING] || 0) === worstTasa);
+        const wTasaRate = worstTasaRow ? parseFloat(worstTasaRow[C.TASA_ANUAL_REAL] || 0).toFixed(1) : '--';
+
+        document.getElementById('v11_stat_avg').innerHTML = renderDoubleVal(avgVol, avgTasa, 'Vol', 'Tasa', avgFreq, avgRateVal);
+        document.getElementById('v11_stat_current').innerHTML = renderDoubleVal(currentVol, currentTasa, 'Vol', 'Tasa', curFreq, curRate);
+        document.getElementById('v11_stat_best').innerHTML = renderDoubleVal(bestVol, bestTasa, 'Vol', 'Tasa', bVolFreq, bTasaRate);
+        document.getElementById('v11_stat_worst').innerHTML = renderDoubleVal(worstVol, worstTasa, 'Vol', 'Tasa', wVolFreq, wTasaRate);
+
+
+        // Trajectory Logic (based on volume)
+        const badge = document.getElementById('v11_trajectory_badge');
+        const first = rankingsVol[0], last = rankingsVol[rankingsVol.length - 1];
+        const diff = last - first;
+
+        if (diff > 3) { badge.textContent = 'MEJORA SOSTENIDA'; badge.style.background = '#10b981'; } // High rank # is good
+        else if (diff < -3) { badge.textContent = 'DETERIORO RELATIVO'; badge.style.background = '#ef4444'; }
+        else { badge.textContent = 'ESTABILIDAD ESTRUCTURAL'; badge.style.background = '#64748b'; }
+
+        // --- Chart ---
+        const ctx = document.getElementById('v11_chart_ranking').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Ranking por Volumen',
+                        data: rankingsVol,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'transparent',
+                        tension: 0.4,
+                        pointRadius: 4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Ranking por Tasa',
+                        data: rankingsTasa,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        reverse: true, // 1 at top
+                        min: 1,
+                        max: totalComunas,
+                        ticks: { stepSize: 10, font: { family: 'Outfit' } },
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Posición (1 = Peor / Menos es Mejor)', font: { weight: '800' } }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: true, position: 'top', labels: { font: { family: 'Outfit', weight: '700' } } },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        callbacks: {
+                            label: (c) => ` ${c.dataset.label}: ${c.raw}°`
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- Heatmap Years (Variation) ---
+        const heatmap = document.getElementById('v11_heatmap_years');
+        heatmap.innerHTML = years.map((yr, i) => {
+            const rank = rankingsVol[i];
+            let color = '#94a3b8';
+            let icon = ''; // Dot
+
+            if (i > 0) {
+                const prev = rankingsVol[i - 1];
+                if (rank > prev) { color = '#10b981'; icon = '<i class="fa-solid fa-arrow-up" style="font-size:0.6rem"></i>'; } // Improved
+                else if (rank < prev) { color = '#ef4444'; icon = '<i class="fa-solid fa-arrow-down" style="font-size:0.6rem"></i>'; } // Worsened
+                else { color = '#cbd5e1'; icon = '<i class="fa-solid fa-minus" style="font-size:0.6rem"></i>'; } // Same
+            } else {
+                // First year: Absolute
+                color = rank <= 10 ? '#ef4444' : rank <= 25 ? '#f59e0b' : '#10b981';
+            }
+
+            return `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                    <div style="width: 38px; height: 38px; background: ${color}; color: ${color === '#cbd5e1' ? '#64748b' : 'white'}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.2);">
+                        ${rank}
+                    </div>
+                    <span style="font-size: 0.65rem; font-weight: 700; color: #64748b;">'${yr.toString().slice(2)}</span>
+                </div>
+            `;
+        }).join('');
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista11').then(txt => {
+                const el = document.getElementById('v11_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

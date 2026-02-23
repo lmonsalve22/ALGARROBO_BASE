@@ -1,0 +1,204 @@
+<!-- Vista 19: Diagnóstico de Delitos Emergentes (Nuevas Amenazas) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-burst"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>INTELIGENCIA PREVENTIVA (CEAD)</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué nuevos delitos están apareciendo en la comuna?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Detección de tipologías
+            delictuales con crecimiento explosivo o aparición reciente que no formaban parte del perfil histórico
+            tradicional.</p>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v19_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <!-- Tabs or Split View -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+        <!-- Short Term (STOP) -->
+        <div class="card" style="padding: 1.5rem; border-left: 8px solid #ef4444;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                <h3 class="section-title mb-lg" style="font-size: 1rem; color: #991b1b; margin:0;"><i
+                        class="fa-solid fa-bolt"></i> Corto Plazo (STOP)</h3>
+                <span
+                    style="font-size: 0.7rem; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-weight: 700;">Últimas
+                    Semanas</span>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; font-size: 0.7rem; color: #64748b; border-bottom: 2px solid #f1f5f9;">
+                        <th style="padding: 5px;">DELITO</th>
+                        <th style="padding: 5px; text-align: right;">VAR %</th>
+                        <th style="padding: 5px; text-align: center;">ALERTA</th>
+                    </tr>
+                </thead>
+                <tbody id="v19_table_stop" style="font-size: 0.8rem;">
+                    <!-- Filled by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Long Term (CEAD) -->
+        <div class="card" style="padding: 1.5rem; border-left: 8px solid #f97316;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                <h3 class="section-title mb-lg" style="font-size: 1rem; color: #9a3412; margin:0;"><i
+                        class="fa-solid fa-arrow-trend-up"></i> Largo Plazo (CEAD)</h3>
+                <span
+                    style="font-size: 0.7rem; background: #ffedd5; color: #9a3412; padding: 2px 8px; border-radius: 4px; font-weight: 700;">Tendencia
+                    Anual</span>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; font-size: 0.7rem; color: #64748b; border-bottom: 2px solid #f1f5f9;">
+                        <th style="padding: 5px;">DELITO</th>
+                        <th style="padding: 5px; text-align: right;">Z-SCORE</th>
+                        <th style="padding: 5px; text-align: center;">TENDENCIA</th>
+                    </tr>
+                </thead>
+                <tbody id="v19_table_cead" style="font-size: 0.8rem;">
+                    <!-- Filled by JS -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card" style="padding: 1.5rem; border-top: 4px solid #ef4444;">
+            <h4 style="margin:0 0 10px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Alerta de
+                Frecuencia
+                Atípica</h4>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">Se identifican delitos que superan
+                su
+                desviación estándar en más de 2 sigmas. Estos eventos no son ruido estadístico, sino cambios de
+                comportamiento delictual.</p>
+        </div>
+        <div
+            style="background: #1e293b; color: white; border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 20px;">
+            <div style="font-size: 3rem; color: #ef4444; opacity: 0.5;"><i class="fa-solid fa-microscope"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
+                    Z-Score
+                    Máximo</div>
+                <div id="v19_max_z" style="font-size: 2rem; font-weight: 950; color: #ef4444;">--</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>IDI
+            Comparativo</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
+        estratégicas basadas en evidencia.
+    </div>
+</div>
+
+<script>
+    (async function initVista19_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
+            const S_STOP = window.STATE_DATA;
+            const C_STOP = window.COLS;
+
+            // Short Term: Rising in last week
+            const stopData = S_STOP.allDataHistory.filter(r => r[C_STOP.ID_SEMANA] === S_STOP.currentSemana)
+                .map(r => {
+                    const act = r[C_STOP.CASOS_ACTUAL] || 0;
+                    const ant = r[C_STOP.CASOS_ANT] || 0;
+                    const delta = ant > 0 ? ((act - ant) / ant * 100) : (act > 0 ? 100 : 0);
+                    return { ...r, delta };
+                })
+                .filter(r => r.delta > 0)
+                .sort((a, b) => b.delta - a.delta)
+                .slice(0, 5);
+
+            const tbodyStop = document.getElementById('v19_table_stop');
+            if (stopData.length > 0) {
+                tbodyStop.innerHTML = stopData.map(r => `
+                    <tr style="border-bottom: 1px solid #f8fafc;">
+                        <td style="padding: 8px; font-weight: 700; color: #1e293b;">${r[C_STOP.DELITO]}</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700; color: #ef4444;">+${r.delta.toFixed(0)}%</td>
+                        <td style="padding: 8px; text-align: center;">
+                            <span class="pill-sm pill-sm-danger" style="font-size: 0.65rem;">ALZA</span>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbodyStop.innerHTML = '<tr><td colspan="3" style="padding: 1rem; text-align: center; color: #94a3b8; font-size: 0.75rem;">Sin alzas recientes.</td></tr>';
+            }
+        }
+
+        const S = window.STATE_DATA_CEAD;
+        const C = window.COLS_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Long Term: Emerging (High Z-Score)
+        const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
+
+        const emerging = currentData
+            .filter(r => (r[C.Z_SCORE] || 0) > 1.0 && r.stop_delito !== 'NO APLICA')
+            .sort((a, b) => (b[C.Z_SCORE] || 0) - (a[C.Z_SCORE] || 0))
+            .slice(0, 5);
+
+        const tbodyCead = document.getElementById('v19_table_cead');
+        if (emerging.length > 0) {
+            tbodyCead.innerHTML = emerging.map(r => `
+                <tr style="border-bottom: 1px solid #f8fafc;">
+                    <td style="padding: 8px; font-weight: 700; color: #1e293b;">
+                        ${r.stop_delito || r[C.DELITO]}
+                    </td>
+                    <td style="padding: 8px; text-align: right;">
+                        <span style="font-weight: 800; color: #f97316;">${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
+                    </td>
+                    <td style="padding: 8px; text-align: center;">
+                        <span style="font-size: 0.65rem; color: #9a3412; font-weight: 700;">ATÍPICO</span>
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('v19_max_z').textContent = (emerging[0][C.Z_SCORE] || 0).toFixed(2);
+        } else {
+            tbodyCead.innerHTML = '<tr><td colspan="3" style="padding: 1rem; text-align: center; color: #94a3b8; font-size: 0.75rem;">Sin tendencias atípicas (Z > 1.0).</td></tr>';
+            document.getElementById('v19_max_z').textContent = 'N/A';
+        }
+
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista19').then(txt => {
+                const el = document.getElementById('v19_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

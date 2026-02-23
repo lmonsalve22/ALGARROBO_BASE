@@ -1,0 +1,248 @@
+<!-- Vista 24: Resumen Ejecutivo para Autoridades (Executive Dashboard) -->
+<div id="v24_report_container"
+    style="background: white; padding: 2.5rem; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Outfit'; position: relative; max-width: 1000px; margin: 0 auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);">
+
+    <!-- Watermark Logo -->
+    <i class="fa-solid fa-shield-halved"
+        style="position: absolute; top: 100px; left: 50%; transform: translateX(-50%); font-size: 30rem; color: rgba(0,0,0,0.015); pointer-events: none;"></i>
+
+    <!-- Header Section -->
+    <div
+        style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e293b; padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <div
+                    style="width: 40px; height: 40px; background: #1e293b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <h1 style="font-size: 1.8rem; font-weight: 950; color: #1e293b; margin: 0; letter-spacing: -0.01em;">
+                    REPORTE DE INTELIGENCIA DELICTUAL</h1>
+            </div>
+            <div class="location-source-row"
+                style="font-size: 0.9rem; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 15px; margin-top: 8px;">
+                <span class="comuna-fill" style="color:#1e293b; font-weight: 800;">--</span>
+                <span style="color: #cbd5e1;">/</span>
+                <span class="semana-fill" style="color:#1e293b; font-weight: 800;">--</span>
+                <div id="sourceBadgeContainer" style="margin-left: auto;"></div>
+            </div>
+        </div>
+        <div id="v24_status_badge"
+            style="padding: 10px 20px; border-radius: 8px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase;">
+            STATUS: --
+        </div>
+    </div>
+
+    <!-- Triple Summary Panel -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div style="border: 2px solid #f1f5f9; padding: 1.5rem; border-radius: 12px; text-align: center;">
+            <div
+                style="font-size: 0.8rem; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                Carga Delictual</div>
+            <div id="v24_kpi_total" style="font-size: 2.8rem; font-weight: 950; color: #1e293b; line-height: 1;">--
+            </div>
+            <div id="v24_kpi_delta" style="font-size: 0.9rem; font-weight: 700; margin-top: 5px;">--% vs ant.</div>
+        </div>
+        <div style="border: 2px solid #f1f5f9; padding: 1.5rem; border-radius: 12px; text-align: center;">
+            <div
+                style="font-size: 0.8rem; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                Nivel de Riesgo</div>
+            <div id="v24_kpi_risk" style="font-size: 1.8rem; font-weight: 950; color: #1e293b; line-height: 1.5;">
+                MODERADO</div>
+            <div id="v24_kpi_z" style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">Z-Score: --</div>
+        </div>
+        <div style="border: 2px solid #f1f5f9; padding: 1.5rem; border-radius: 12px; text-align: center;">
+            <div
+                style="font-size: 0.8rem; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                Rank Regional</div>
+            <div id="v24_kpi_rank" style="font-size: 2.8rem; font-weight: 950; color: #1e293b; line-height: 1;">--</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">de <span id="v24_total_comunas">--</span>
+                comunas</div>
+        </div>
+    </div>
+
+    <!-- Main Findings -->
+    <div
+        style="background: #f8fafc; padding: 2rem; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2.5rem;">
+        <h3
+            style="margin: 0 0 1.5rem 0; font-size: 1.1rem; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-magnifying-glass-chart" style="color: #3b82f6;"></i> HALLAZGOS PRINCIPALES DE LA
+            SEMANA
+        </h3>
+        <div id="v24_findings_list" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Filled by JS -->
+        </div>
+    </div>
+
+    <!-- Comparison Summary -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+        <div>
+            <h4
+                style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px;">
+                Alertas Críticas</h4>
+            <div id="v24_critical_alerts" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+        <div>
+            <h4
+                style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px;">
+                Tendencia de Corto Plazo</h4>
+            <div class="chart-wrapper" style="height: 180px;">
+                <canvas id="v24_mini_chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Signature -->
+    <div
+        style="margin-top: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e2e8f0; padding-top: 2rem;">
+        <div style="font-size: 0.75rem; color: #94a3b8;">
+            Generado automáticamente por el Sistema Integrado de Seguridad<br>
+            Fuente: Carabineros de Chile (STOP) | Fecha Gen: <span id="v24_gen_date">--/--/--</span>
+        </div>
+        <div style="text-align: center;">
+            <div style="width: 200px; border-bottom: 1px solid #1e293b; margin-bottom: 5px;"></div>
+            <div style="font-size: 0.85rem; font-weight: 800; color: #1e293b;">DIRECCIÓN DE SEGURIDAD</div>
+            <div style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Aprobación de
+                Mando</div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Reporte
+            Ejecutivo</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+        basadas en evidencia.
+    </div>
+</div>
+
+<script>
+    (async function initVista24_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+        document.getElementById('v24_gen_date').textContent = new Date().toLocaleDateString();
+
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const cases = totalRow[C.CASOS_ACTUAL] || 0;
+        const prev = totalRow[C.CASOS_ANT] || 0;
+        const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
+        // Asignar el ranking buscando las columnas correctas disponibles en los datos
+        const rank = totalRow['ranking_regional_proy_anual'] || totalRow['ranking_regional_tasa_sem'] || totalRow[C.RANK_REG_TASA] || null;
+
+        // Fetch total communes in the region for ranking display
+        let totalComunas = 52; // Fallback
+        try {
+            const conteoRes = await fetch('data/comunas/data_comuna_conteo.json');
+            if (conteoRes.ok) {
+                const conteoData = await conteoRes.json();
+                const miConteo = conteoData.find(c => c.codcom == S.codcom);
+                if (miConteo && miConteo.comunas) {
+                    totalComunas = miConteo.comunas;
+                }
+            }
+        } catch (e) { }
+        document.getElementById('v24_total_comunas').textContent = totalComunas;
+
+        // Populate KPIs
+        document.getElementById('v24_kpi_total').textContent = cases; // Removed ChartHelper dependency for safety if not loaded
+        const dEl = document.getElementById('v24_kpi_delta');
+        dEl.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% vs ant.`;
+        dEl.style.color = delta > 0 ? '#ef4444' : '#10b981';
+        document.getElementById('v24_kpi_rank').textContent = rank || '--';
+
+        // Status Badge Logic
+        const status = document.getElementById('v24_status_badge');
+
+        if (delta > 15) {
+            status.textContent = 'STATUS: CRÍTICO';
+            status.style.background = '#fef2f2';
+            status.style.color = '#ef4444';
+            status.style.border = '2px solid #ef4444';
+            document.getElementById('v24_kpi_risk').textContent = "ALTO";
+            document.getElementById('v24_kpi_risk').style.color = "#ef4444";
+        } else if (delta < -5) {
+            status.textContent = 'STATUS: FAVORABLE';
+            status.style.background = '#f0fdf4';
+            status.style.color = '#10b981';
+            status.style.border = '2px solid #10b981';
+            document.getElementById('v24_kpi_risk').textContent = "BAJO";
+            document.getElementById('v24_kpi_risk').style.color = "#10b981";
+        } else {
+            status.textContent = 'STATUS: ESTABLE';
+            status.style.background = '#f8fafc';
+            status.style.color = '#64748b';
+            status.style.border = '2px solid #cbd5e1';
+            document.getElementById('v24_kpi_risk').textContent = "MODERADO";
+            document.getElementById('v24_kpi_risk').style.color = "#f59e0b";
+        }
+
+        // Findings
+        const findingsList = document.getElementById('v24_findings_list');
+        const topCrimes = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana).sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0)).slice(0, 2);
+
+        findingsList.innerHTML = [
+            `El volumen total de delitos registra un comportamiento ${delta > 0 ? 'al alza' : 'a la baja'} respecto a la semana anterior.`,
+            `La tipología con mayor impacto esta semana es <strong>${topCrimes[0]?.[C.DELITO] || '--'}</strong> con ${topCrimes[0]?.[C.CASOS_ACTUAL] || 0} casos.`,
+            `La comuna ocupa la posición <strong>${rank}</strong> en el ranking regional proyectado anual.`
+        ].map(txt => `<div style="display: flex; gap: 10px; align-items: baseline; font-size: 1rem; color: #1e293b;"><i class="fa-solid fa-circle-check" style="color:#3b82f6; font-size:0.8rem;"></i> <span>${txt}</span></div>`).join('');
+
+        // Alerts
+        const alertsContainer = document.getElementById('v24_critical_alerts');
+        const critical = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana && (r[C.CASOS_ACTUAL] > r[C.CASOS_ANT] * 1.2)).slice(0, 2);
+        if (critical.length > 0) {
+            alertsContainer.innerHTML = critical.map(a => `
+                <div style="background: #fef2f2; padding: 10px; border-radius: 6px; border-left: 4px solid #ef4444; font-size: 0.85rem; font-weight: 700; color: #991b1b;">
+                    ALZA EXPLOSIVA: ${a[C.DELITO]} (+${((a[C.CASOS_ACTUAL] - a[C.CASOS_ANT]) / a[C.CASOS_ANT] * 100).toFixed(0)}%)
+                </div>
+            `).join('');
+        } else {
+            alertsContainer.innerHTML = '<div style="font-size:0.85rem; color:#64748b;">No se detectan anomalías críticas específicas.</div>';
+        }
+
+        // Mini Trend Chart
+        const last8 = [...new Set(S.allDataHistory_total.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 8).reverse();
+        const trendValues = last8.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id)?.[C.CASOS_ACTUAL] || 0);
+
+        const miniCtx = document.getElementById('v24_mini_chart').getContext('2d');
+        new Chart(miniCtx, {
+            type: 'line',
+            data: {
+                labels: last8.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id % 100}`),
+                datasets: [{
+                    data: trendValues,
+                    borderColor: '#1e293b',
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    fill: false,
+                    tension: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } }
+            }
+        });
+
+    })();
+</script>
