@@ -1179,6 +1179,14 @@ def get_proyectos4(current_user_id):
             cur.execute("""
                 SELECT
                     p.*,
+                    
+                    GREATEST(
+                        p.fecha_actualizacion,
+                        (SELECT MAX(creado_en) FROM proyectos_hitos WHERE proyecto_id = p.id),
+                        (SELECT MAX(creado_en) FROM proyectos_observaciones WHERE proyecto_id = p.id),
+                        (SELECT MAX(fecha_subida) FROM proyectos_documentos WHERE proyecto_id = p.id),
+                        (SELECT MAX(fecha_creacion) FROM proyectos_geomapas WHERE proyecto_id = p.id)
+                    ) AS ult_modificacion,
 
                     u.nombre AS user_nombre,
                     ua.nombre AS actualizado_por_nombre,
@@ -1236,6 +1244,14 @@ def get_proyectos_chat(current_user_id):
             cur.execute(""" 
                 SELECT
                     p.*,
+                    
+                    GREATEST(
+                        p.fecha_actualizacion,
+                        (SELECT MAX(creado_en) FROM proyectos_hitos WHERE proyecto_id = p.id),
+                        (SELECT MAX(creado_en) FROM proyectos_observaciones WHERE proyecto_id = p.id),
+                        (SELECT MAX(fecha_subida) FROM proyectos_documentos WHERE proyecto_id = p.id),
+                        (SELECT MAX(fecha_creacion) FROM proyectos_geomapas WHERE proyecto_id = p.id)
+                    ) AS ult_modificacion,
                     a.nombre AS area,
                     le.nombre AS lineamiento,
                     f.nombre AS financiamiento,
@@ -1273,6 +1289,14 @@ def get_proyectos(current_user_id):
             cur.execute(""" 
                 SELECT
                     p.*,
+
+                    GREATEST(
+                        p.fecha_actualizacion,
+                        (SELECT MAX(creado_en) FROM proyectos_hitos WHERE proyecto_id = p.id),
+                        (SELECT MAX(creado_en) FROM proyectos_observaciones WHERE proyecto_id = p.id),
+                        (SELECT MAX(fecha_subida) FROM proyectos_documentos WHERE proyecto_id = p.id),
+                        (SELECT MAX(fecha_creacion) FROM proyectos_geomapas WHERE proyecto_id = p.id)
+                    ) AS ult_modificacion,
 
                     u.nombre AS user_nombre,
                     ua.nombre AS actualizado_por_nombre,
@@ -1357,6 +1381,102 @@ def get_proyectos(current_user_id):
             proyectos = cur.fetchall()
 
         return jsonify(proyectos)
+
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+@app.route("/proyectos_actividad_reciente", methods=["GET"])
+@session_required
+def get_proyectos_actividad_reciente(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT
+                    'proyecto' as tipo,
+                    p.id as proyecto_id,
+                    p.nombre as proyecto_nombre,
+                    a.nombre as area_nombre,
+                    p.monto, p.avance_total_porcentaje, es.nombre as estado_nombre,
+                    'Proyecto actualizado' as descripcion_actividad,
+                    p.fecha_actualizacion as fecha
+                FROM proyectos p
+                LEFT JOIN areas a ON a.id = p.area_id
+                LEFT JOIN estados_proyecto es ON es.id = p.estado_proyecto_id
+                WHERE p.fecha_actualizacion IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    'documento' as tipo,
+                    p.id as proyecto_id,
+                    p.nombre as proyecto_nombre,
+                    a.nombre as area_nombre,
+                    p.monto, p.avance_total_porcentaje, es.nombre as estado_nombre,
+                    'Documento subido' || coalesce(': ' || doc.nombre, '') as descripcion_actividad,
+                    doc.fecha_subida as fecha
+                FROM proyectos_documentos doc
+                INNER JOIN proyectos p ON p.id = doc.proyecto_id
+                LEFT JOIN areas a ON a.id = p.area_id
+                LEFT JOIN estados_proyecto es ON es.id = p.estado_proyecto_id
+                WHERE doc.fecha_subida IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    'hito' as tipo,
+                    p.id as proyecto_id,
+                    p.nombre as proyecto_nombre,
+                    a.nombre as area_nombre,
+                    p.monto, p.avance_total_porcentaje, es.nombre as estado_nombre,
+                    'Hito creado/modificado' as descripcion_actividad,
+                    h.creado_en as fecha
+                FROM proyectos_hitos h
+                INNER JOIN proyectos p ON p.id = h.proyecto_id
+                LEFT JOIN areas a ON a.id = p.area_id
+                LEFT JOIN estados_proyecto es ON es.id = p.estado_proyecto_id
+                WHERE h.creado_en IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    'observacion' as tipo,
+                    p.id as proyecto_id,
+                    p.nombre as proyecto_nombre,
+                    a.nombre as area_nombre,
+                    p.monto, p.avance_total_porcentaje, es.nombre as estado_nombre,
+                    'Observación agregada' as descripcion_actividad,
+                    o.creado_en as fecha
+                FROM proyectos_observaciones o
+                INNER JOIN proyectos p ON p.id = o.proyecto_id
+                LEFT JOIN areas a ON a.id = p.area_id
+                LEFT JOIN estados_proyecto es ON es.id = p.estado_proyecto_id
+                WHERE o.creado_en IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    'geomapa' as tipo,
+                    p.id as proyecto_id,
+                    p.nombre as proyecto_nombre,
+                    a.nombre as area_nombre,
+                    p.monto, p.avance_total_porcentaje, es.nombre as estado_nombre,
+                    'Geomapa creado/modificado' || coalesce(': ' || g.nombre, '') as descripcion_actividad,
+                    g.fecha_creacion as fecha
+                FROM proyectos_geomapas g
+                INNER JOIN proyectos p ON p.id = g.proyecto_id
+                LEFT JOIN areas a ON a.id = p.area_id
+                LEFT JOIN estados_proyecto es ON es.id = p.estado_proyecto_id
+                WHERE g.fecha_creacion IS NOT NULL
+
+                ORDER BY fecha DESC
+                LIMIT 20;
+            """)
+            actividad = cur.fetchall()
+
+        return jsonify(actividad)
 
     finally:
         if conn:

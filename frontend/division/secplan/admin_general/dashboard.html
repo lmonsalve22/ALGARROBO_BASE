@@ -719,8 +719,13 @@
 
         async function loadDashboardData() {
             try {
-                const projects = await api.get('/proyectos');
+                // Ejecutar promesas en paralelo para mayor velocidad
+                const [projects, activities] = await Promise.all([
+                    api.get('/proyectos'),
+                    api.get('/proyectos_actividad_reciente')
+                ]);
                 updateDashboard(projects);
+                renderRecentProjects(activities); // Ahora renderizamos la actividad en lugar de proyectos
             } catch (error) {
                 console.error('Error cargando dashboard:', error);
             }
@@ -798,7 +803,7 @@
             document.getElementById('lastUpdate').textContent = new Date().toLocaleString('es-CL');
 
             createAllCharts(projects);
-            renderRecentProjects(projects);
+            createAllCharts(projects);
         }
 
         function createAllCharts(projects) {
@@ -1029,24 +1034,15 @@
             });
         }
 
-        function renderRecentProjects(projects) {
+        function renderRecentProjects(activities) {
             const container = document.getElementById('recentProjectsContainer');
             if (!container) return;
 
-            // Ordenar por fecha de actualización (más reciente primero)
-            const sorted = [...projects].sort((a, b) => {
-                const dateA = new Date(a.fecha_actualizacion || 0);
-                const dateB = new Date(b.fecha_actualizacion || 0);
-                return dateB - dateA;
-            });
-
-            const recent = sorted.slice(0, 10);
-
-            if (recent.length === 0) {
+            if (!activities || activities.length === 0) {
                 container.innerHTML = `
                     <div class="flex items-center justify-center py-8 text-gray-400">
                         <i class="fas fa-inbox text-3xl mr-3"></i>
-                        <span>No hay proyectos registrados</span>
+                        <span>No hay actividad reciente registrada</span>
                     </div>`;
                 return;
             }
@@ -1060,24 +1056,39 @@
                 'default': 'bg-gray-100 text-gray-700'
             };
 
-            container.innerHTML = recent.map((p, idx) => {
-                const estado = p.estado_nombre || 'Sin estado';
-                const area = p.area_nombre || 'Sin área';
-                const monto = p.monto ? utils.formatCompactNumber(parseFloat(p.monto)) : '$0';
-                const avance = ((parseFloat(p.avance_total_porcentaje) || 0) * 100).toFixed(0);
-                const fecha = p.fecha_actualizacion
-                    ? new Date(p.fecha_actualizacion).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            // Colores por tipo de entidad
+            const typeColors = {
+                'proyecto': { bg: 'from-indigo-500 to-indigo-600', icon: 'fa-briefcase' },
+                'documento': { bg: 'from-emerald-500 to-emerald-600', icon: 'fa-file-alt' },
+                'hito': { bg: 'from-amber-500 to-amber-600', icon: 'fa-flag' },
+                'observacion': { bg: 'from-rose-500 to-rose-600', icon: 'fa-comment-alt' },
+                'geomapa': { bg: 'from-cyan-500 to-cyan-600', icon: 'fa-map-marked-alt' },
+                'default': { bg: 'from-gray-500 to-gray-600', icon: 'fa-bell' }
+            };
+
+            container.innerHTML = activities.map((act, idx) => {
+                const estado = act.estado_nombre || 'Sin estado';
+                const area = act.area_nombre || 'Sin área';
+                const monto = act.monto ? utils.formatCompactNumber(parseFloat(act.monto)) : '$0';
+                const avance = ((parseFloat(act.avance_total_porcentaje) || 0) * 100).toFixed(0);
+                const fecha = act.fecha
+                    ? new Date(act.fecha).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                     : 'Sin fecha';
+
                 const statusClass = statusColors[estado] || statusColors['default'];
+                const typeStyle = typeColors[act.tipo] || typeColors['default'];
 
                 return `
                     <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer group">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                            ${idx + 1}
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br ${typeStyle.bg} flex items-center justify-center text-white font-bold text-sm shadow-md" title="Módulo: ${act.tipo}">
+                            <i class="fas ${typeStyle.icon}"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">${p.nombre || 'Sin nombre'}</h4>
-                            <div class="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                            <h4 class="font-semibold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">${act.proyecto_nombre || 'Sin nombre'}</h4>
+                            <div class="mt-1 text-xs font-medium text-gray-600 decoration-slice">
+                                ${act.descripcion_actividad}
+                            </div>
+                            <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
                                 <span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i> ${area}</span>
                                 <span class="flex items-center gap-1"><i class="fas fa-coins text-xs"></i> ${monto}</span>
                                 <span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i> ${avance}%</span>
