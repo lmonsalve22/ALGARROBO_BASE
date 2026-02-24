@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="../../../script/router.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenedor de Pasos - Licitaciones - Algarrobo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .row-hover:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div id="headerRender"></div>
+    <div class="flex">
+        <div id="asideRender"></div>
+        <main class="flex-1 p-8">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Maestro de Pasos (Workflow)</h1>
+                        <p class="text-gray-600">Configuración de los 32 niveles obligatorios de Mercado Público</p>
+                    </div>
+                    <button onclick="openCreateModal()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all transform hover:scale-[1.02] flex items-center gap-2">
+                        <i class="fas fa-plus"></i>
+                        Nuevo Paso
+                    </button>
+                </div>
+
+                <div class="glass-card rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-800 text-white text-sm">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold w-20">Orden</th>
+                                <th class="px-6 py-4 font-semibold">Nombre del Hito / Paso</th>
+                                <th class="px-6 py-4 font-semibold">Doc. Requerido</th>
+                                <th class="px-6 py-4 font-semibold text-center w-32">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pasosMaestroTable" class="divide-y divide-gray-100 bg-white">
+                            <!-- Carga dinámica -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Editar Paso -->
+    <div id="modalPaso"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-all">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Editar Paso Maestro</h3>
+            <form id="formPaso" class="space-y-4">
+                <input type="hidden" id="editPasoId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Paso</label>
+                    <input type="text" id="editNombre"
+                        class="w-full border-gray-200 rounded-xl p-3 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Documento Sugerido / Requerido</label>
+                    <input type="text" id="editDoc"
+                        class="w-full border-gray-200 rounded-xl p-3 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="Ej: Bases Administrativas PDF">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descripción de la Tarea</label>
+                    <textarea id="editDesc" rows="3"
+                        class="w-full border-gray-200 rounded-xl p-3 bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="editActivo" class="w-4 h-4 text-blue-600 rounded">
+                    <label for="editActivo" class="text-sm font-medium text-gray-700">Paso Activo en el Workflow</label>
+                </div>
+                <div class="pt-6 flex space-x-3">
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-semibold transition-colors">Cancelar</button>
+                    <button type="submit"
+                        class="flex-1 px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-900 font-semibold shadow-md transition-colors">Guardar
+                        Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../../../script/layout.js"></script>
+    <script src="../../../script/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadPasos);
+
+        let isEdit = false;
+
+        async function loadPasos() {
+            try {
+                const data = await api.get('/licitaciones/pasos');
+                allPasos = data;
+                const table = document.getElementById('pasosMaestroTable');
+
+                table.innerHTML = data.map(p => `
+                    <tr class="row-hover transition-colors">
+                        <td class="px-6 py-4 font-mono text-blue-600 font-bold">${p.orden}</td>
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-gray-800">${p.nombre}</p>
+                            <p class="text-xs text-gray-500">${p.descripcion || 'Sin descripción'}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-gray-600 italic">${p.documento_requerido || 'No especificado'}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="openEditModal(${p.id_paso})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        function openCreateModal() {
+            isEdit = false;
+            document.getElementById('formPaso').reset();
+            document.getElementById('editPasoId').value = '';
+            document.querySelector('#modalPaso h3').textContent = 'Añadir Nuevo Paso';
+            document.getElementById('editActivo').checked = true;
+            document.getElementById('modalPaso').classList.remove('hidden');
+        }
+
+        function openEditModal(id) {
+            isEdit = true;
+            const paso = allPasos.find(p => p.id_paso === id);
+            if (!paso) return;
+
+            document.getElementById('editPasoId').value = paso.id_paso;
+            document.getElementById('editNombre').value = paso.nombre;
+            document.getElementById('editDoc').value = paso.documento_requerido || '';
+            document.getElementById('editDesc').value = paso.descripcion || '';
+            document.getElementById('editActivo').checked = paso.activo;
+            document.querySelector('#modalPaso h3').textContent = 'Editar Paso Maestro';
+
+            document.getElementById('modalPaso').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modalPaso').classList.add('hidden');
+        }
+
+        document.getElementById('formPaso').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editPasoId').value;
+            const payload = {
+                nombre: document.getElementById('editNombre').value,
+                documento_requerido: document.getElementById('editDoc').value,
+                descripcion: document.getElementById('editDesc').value,
+                activo: document.getElementById('editActivo').checked
+            };
+
+            try {
+                if (isEdit) {
+                    await api.put(`/licitaciones/pasos/${id}`, payload);
+                } else {
+                    await api.post('/licitaciones/pasos', payload);
+                }
+                closeModal();
+                loadPasos();
+            } catch (err) { alert('Error al guardar paso'); }
+        });
+    </script>
+</body>
+
+</html>

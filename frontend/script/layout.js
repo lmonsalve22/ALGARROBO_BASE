@@ -19,8 +19,12 @@ function renderHeader(containerId = "headerRender") {
     const userDivision = user?.division?.nombre?.toLowerCase() || 'secplan';
     const userRoles = user?.roles || [];
     const userRole = userRoles.length > 0 ? userRoles[0].nombre.toLowerCase() : 'admin_general';
-    let dashLink = `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html`;
-    if (user?.nivel_acceso == 10) dashLink = '/ALGARROBO_BASE/frontend/administracion/index.html';
+    const isLicitacion = window.location.pathname.includes('/licitaciones/');
+    let dashLink = isLicitacion
+        ? '/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html'
+        : `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html`;
+
+    if (user?.nivel_acceso == 10 && !isLicitacion) dashLink = '/ALGARROBO_BASE/frontend/administracion/index.html';
 
     container.innerHTML = `
     <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300 font-['Outfit']">
@@ -111,25 +115,80 @@ function renderSidebar(containerId = "sidebarContainer") {
 
     const nivelAcceso = user?.nivel_acceso;
     const currentPath = window.location.pathname.split("/").pop();
+    const userDivision = user?.division?.nombre?.toLowerCase() || 'secplan';
+    const userRoles = user?.roles || [];
+    const userRole = userRoles.length > 0 ? userRoles[0].nombre.toLowerCase() : 'admin_general';
+    const baseDir = `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/`;
 
     const pages = {
-        dashboard: "dashboard.html",
-        proyecto: "proyecto.html",
-        mapa: "mapa.html",
-        informe: "informe.html",
-        calendario: "calendario.html",
-        documento: "documento.html",
-        chat: "chat.html",
-        geomapas: "geomapas.html",
-        hitos: "hitos.html",
-        observacion: "observacion.html",
-        vecinos: "vecinos.html"
+        dashboard: baseDir + "dashboard.html",
+        proyecto: baseDir + "proyecto.html",
+        mapa: baseDir + "mapa.html",
+        informe: baseDir + "informe.html",
+        calendario: baseDir + "calendario.html",
+        documento: baseDir + "documento.html",
+        chat: baseDir + "chat.html",
+        geomapas: baseDir + "geomapas.html",
+        hitos: baseDir + "hitos.html",
+        observacion: baseDir + "observacion.html",
+        vecinos: baseDir + "vecinos.html",
+        licitaciones: "/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html"
     };
 
-    const linkClasses = (file) =>
-        currentPath === file
+    const linkClasses = (file) => {
+        const path = window.location.pathname;
+        const isMatch = path.includes(file);
+        return isMatch
             ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 shadow-none";
+    };
+
+    const isLicitacionModule = window.location.pathname.includes('/licitaciones/');
+
+    if (isLicitacionModule) {
+        const licBase = "/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/";
+        container.innerHTML = `
+        <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 h-screen sticky top-0 hidden lg:block overflow-y-auto font-['Outfit']">
+            <nav class="p-4">
+                <div class="mb-8 px-3">
+                    <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Módulo Especializado</p>
+                    <h2 class="text-xl font-bold text-gray-800">Licitaciones</h2>
+                </div>
+
+                <ul class="space-y-1">
+                    <li>
+                        <a href="${licBase}dashboard.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('dashboard.html')}">
+                            <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
+                            <span class="font-medium">Procesos Activos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${licBase}documentos.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('documentos.html')}">
+                            <i class="fas fa-folder-open w-5 text-center"></i>
+                            <span class="font-medium">Biblioteca de Bases</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${licBase}pasos.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('pasos.html')}">
+                            <i class="fas fa-list-check w-5 text-center"></i>
+                            <span class="font-medium">Mantenedor de Pasos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${licBase}calendario.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('calendario.html')}">
+                            <i class="fas fa-calendar-alt w-5 text-center"></i>
+                            <span class="font-medium">Hitos de Apertura</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="mt-10 pt-6 border-t border-gray-100">
+                    <p class="px-3 text-[10px] font-medium text-gray-400 uppercase">Sistema de Licitaciones v1.0</p>
+                </div>
+            </nav>
+        </aside>`;
+        return;
+    }
 
     const modulosHTML = nivelAcceso === 10 ? `
         <li class="pt-6 mt-4 border-t border-gray-100">
@@ -163,7 +222,7 @@ function renderSidebar(containerId = "sidebarContainer") {
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-3 pt-2">Menu Principal</p>
             <ul class="space-y-1">
                 <li>
-                    <a href="${pages.dashboard}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.dashboard)}">
+                    <a href="/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('dashboard.html')}">
                         <i class="fas fa-gauge-high w-5 text-center"></i>
                         <span class="font-medium">Dashboard</span>
                     </a>
@@ -216,7 +275,6 @@ function renderSidebar(containerId = "sidebarContainer") {
                         <span class="font-medium">Calendario</span>
                     </a>
                 </li>
-                
                 <li>
                      <a href="/ALGARROBO_BASE/frontend/geoportal/index.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                          <i class="fas fa-globe-americas w-5 text-center"></i>

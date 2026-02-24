@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="../../../script/router.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de Licitación - Algarrobo</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .timeline-line {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+
+        .step-node {
+            position: relative;
+            z-index: 10;
+        }
+
+        .step-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .step-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-card:hover {
+            transform: translateX(8px);
+        }
+
+        .modal-blur {
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div id="headerRender"></div>
+    <div class="flex">
+        <div id="asideRender"></div>
+
+        <main class="flex-1 p-8">
+            <div class="max-w-5xl mx-auto">
+                <!-- Header Info -->
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center space-x-4">
+                        <button onclick="window.location.href='dashboard.html'"
+                            class="p-2 hover:bg-white rounded-full transition-colors">
+                            <i class="fas fa-arrow-left text-gray-500"></i>
+                        </button>
+                        <div>
+                            <h1 id="licitacionNombre" class="text-3xl font-bold text-gray-800">Cargando...</h1>
+                            <div class="flex items-center space-x-3 mt-1">
+                                <span id="proyectoVinculado" class="text-blue-600 font-medium text-sm">Cargando
+                                    proyecto...</span>
+                                <span class="text-gray-300">|</span>
+                                <span id="mercadoPublicoID" class="text-gray-500 text-sm font-mono">ID: ---</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-400 uppercase font-bold tracking-wider">Progreso General</p>
+                        <p id="progresoTexto" class="text-4xl font-black text-blue-600">0%</p>
+                    </div>
+                </div>
+
+                <!-- Workflow Steps -->
+                <div class="relative pl-12 space-y-8" id="workflowContainer">
+                    <div class="timeline-line"></div>
+
+                    <!-- Steps will be injected here -->
+                    <div class="flex justify-center py-20 text-gray-400">
+                        <i class="fas fa-circle-notch fa-spin text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Gestionar Paso -->
+    <div id="modalPaso"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200 z-[9999] flex items-center justify-center">
+        <div
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-0 overflow-hidden transform scale-95 opacity-0 transition-all duration-200 relative">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white relative">
+                <button onclick="window.closePasoModal()"
+                    class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                <p id="modalPasoOrden" class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">Paso 01
+                </p>
+                <h3 id="modalPasoNombre" class="text-2xl font-bold">Nombre del Paso</h3>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Estado del Paso</label>
+                        <select id="inputEstado"
+                            class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-blue-500 py-3">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="En Proceso">En Proceso</option>
+                            <option value="Completado">Completado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Fecha Realizción /
+                            Hito</label>
+                        <input type="date" id="inputFecha"
+                            class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-blue-500 py-3">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Observaciones de Gestión</label>
+                    <textarea id="inputObs" rows="3"
+                        class="w-full bg-gray-50 border-gray-200 rounded-xl focus:ring-blue-500"
+                        placeholder="Añada notas sobre este trámite..."></textarea>
+                </div>
+
+                <!-- Documentos del Paso -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-xs font-bold text-gray-400 uppercase">Documentos Respaldatorios</label>
+                        <button id="btnSubirArchivo" onclick="document.getElementById('fileInput').click()"
+                            class="text-blue-600 text-sm font-bold hover:underline">
+                            <i class="fas fa-upload mr-1"></i> Subir Archivo
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" class="hidden" onchange="uploadDoc(this)">
+                    <div id="documentosList" class="space-y-2">
+                        <!-- Listado de documentos -->
+                    </div>
+                </div>
+
+                <div class="pt-4 flex border-t border-gray-100">
+                    <button id="btnGuardar" onclick="window.savePasoChanges()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all transform flex justify-center items-center focus:ring-4 ring-blue-200">
+                        Guardar Cambios y Actualizar Workflow
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../script/layout.js"></script>
+    <script src="../../../script/api.js"></script>
+    <script>
+        // 1. Centralización de Estado Global
+        const state = {
+            licitacionId: new URLSearchParams(window.location.search).get('id'),
+            licitacion: null,
+            selectedStepId: null,
+            isUploading: false
+        };
+
+        // 2. Utilidad de Sanitización XSS
+        const escapeHTML = (str) => {
+            if (!str) return '';
+            return str.toString()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!state.licitacionId) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // 3. Delegación de Eventos para el contenedor de Workflow (Rendimiento O(1))
+            document.getElementById('workflowContainer').addEventListener('click', (e) => {
+                const stepCard = e.target.closest('[data-step-id]');
+                if (stepCard) {
+                    window.openStepDetails(parseInt(stepCard.dataset.stepId));
+                }
+            });
+
+            // Cerrar modal al hacer clic por fuera (Blur back)
+            document.getElementById('modalPaso').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('modalPaso')) {
+                    window.closePasoModal();
+                }
+            });
+
+            window.fetchLicitacion();
+        });
+
+        window.fetchLicitacion = async function () {
+            try {
+                const data = await api.get(`/licitaciones/${state.licitacionId}`);
+                state.licitacion = data;
+                renderLicitacionHeader(data);
+                renderSteps(data.workflow);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        function renderLicitacionHeader(l) {
+            document.getElementById('licitacionNombre').textContent = l.nombre_licitacion;
+            document.getElementById('proyectoVinculado').textContent = l.proyecto_nombre;
+            document.getElementById('mercadoPublicoID').textContent = `ID: ${l.id_mercado_publico || 'PENDIENTE'}`;
+
+            const completados = l.workflow.filter(w => w.estado === 'Completado').length;
+            const porcentaje = Math.round((completados / 32) * 100);
+
+            const numEl = document.getElementById('progresoTexto');
+            numEl.textContent = `${porcentaje}%`;
+            numEl.className = `text-4xl font-black transition-colors duration-500 ${porcentaje === 100 ? 'text-emerald-500' : 'text-blue-600'}`;
+        }
+
+        // 4. Mapeo puro y aislado de colores Tailwind Integrados
+        function getStatusTailwindClasses(estado) {
+            const raw = estado.toLowerCase();
+            if (raw === 'completado') return { bg: 'bg-emerald-500 text-white', icon: 'fa-check', badge: 'bg-emerald-100 text-emerald-700' };
+            if (raw === 'en proceso') return { bg: 'bg-blue-500 text-white', icon: 'fa-circle text-[8px]', badge: 'bg-blue-100 text-blue-700' };
+            return { bg: 'bg-slate-300 text-white', icon: 'fa-circle text-[8px]', badge: 'bg-slate-100 text-slate-500' }; // Pendiente y otros
+        }
+
+        // 5. Modulación Masiva de Plantilla sin tocar DOM iterativamente (Inner HTML Building)
+        function renderSteps(steps) {
+            const container = document.getElementById('workflowContainer');
+
+            let htmlChunks = '<div class="timeline-line"></div>';
+
+            htmlChunks += steps.map((step, index) => {
+                const tokens = getStatusTailwindClasses(step.estado);
+
+                let docsHtml = '';
+                if (step.documentos && step.documentos.length > 0) {
+                    docsHtml = `
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            ${step.documentos.map(d => `
+                                <div class="flex items-center space-x-1 bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>${escapeHTML(d.nombre)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                return `
+                <div class="step-node flex items-start space-x-6">
+                    <div class="step-circle ${tokens.bg} flex-shrink-0 relative z-10 transition-colors duration-300">
+                        <i class="fas ${tokens.icon}"></i>
+                    </div>
+                    <div class="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 step-card cursor-pointer focus:ring-4 focus:ring-blue-50" data-step-id="${step.id}">
+                        <div class="flex justify-between items-start">
+                            <div class="pr-4">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-tighter mb-1">Paso ${String(index + 1).padStart(2, '0')}</p>
+                                <h4 class="font-bold text-gray-800 leading-tight">${escapeHTML(step.paso_nombre)}</h4>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded uppercase flex-shrink-0 ${tokens.badge}">${escapeHTML(step.estado)}</span>
+                        </div>
+                        ${step.observaciones ? `<p class="mt-3 text-sm text-gray-500 italic block border-l-2 border-slate-200 pl-3">"${escapeHTML(step.observaciones)}"</p>` : ''}
+                        ${docsHtml}
+                    </div>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = htmlChunks;
+        }
+
+        // 6. Parseo universal aplanando UTC e ISO
+        function parseToLocalDateStr(raw) {
+            if (!raw) return '';
+            if (typeof raw === 'string' && raw.match(/^(\d{4}-\d{2}-\d{2})/)) return raw.match(/^(\d{4}-\d{2}-\d{2})/)[0];
+            const d = new Date(raw);
+            if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            return '';
+        }
+
+        window.openStepDetails = function (workflowId) {
+            state.selectedStepId = workflowId;
+            const step = state.licitacion.workflow.find(w => w.id === workflowId);
+
+            document.getElementById('modalPasoOrden').textContent = `Paso ${String(step.paso_orden).padStart(2, '0')}`;
+            document.getElementById('modalPasoNombre').textContent = step.paso_nombre;
+            document.getElementById('inputEstado').value = step.estado;
+            document.getElementById('inputFecha').value = parseToLocalDateStr(step.fecha_real || step.fecha_planificada);
+            document.getElementById('inputObs').value = step.observaciones || '';
+
+            renderModalDocs(step.documentos);
+
+            // 7. Transición Asíncrona Clean Modal
+            const modal = document.getElementById('modalPaso');
+            const panel = modal.querySelector('.max-w-2xl');
+
+            modal.classList.remove('hidden');
+            // Timeout micro para forzar repaint antes de mutar opacidad final CSS
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                if (panel) {
+                    panel.classList.remove('scale-95', 'opacity-0');
+                    panel.classList.add('scale-100', 'opacity-100');
+                }
+            }, 10);
+        };
+
+        window.closePasoModal = function () {
+            const modal = document.getElementById('modalPaso');
+            const panel = modal.querySelector('.max-w-2xl');
+
+            modal.classList.add('opacity-0');
+            if (panel) {
+                panel.classList.remove('scale-100', 'opacity-100');
+                panel.classList.add('scale-95', 'opacity-0');
+            }
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200); // 200ms coincide duration-200 Tailwind
+        };
+
+        function renderModalDocs(docs) {
+            const list = document.getElementById('documentosList');
+            if (!docs || docs.length === 0) {
+                list.innerHTML = '<p class="text-sm text-gray-400 italic">No hay documentos subidos para este paso.</p>';
+                return;
+            }
+
+            list.innerHTML = docs.map(d => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:shadow-sm transition-shadow">
+                    <div class="flex items-center space-x-3 truncate">
+                        <div class="w-8 h-8 bg-white flex shrink-0 items-center justify-center rounded-lg shadow-sm">
+                            <i class="fas fa-file-pdf text-red-500"></i>
+                        </div>
+                        <div class="truncate">
+                            <p class="text-sm font-bold text-gray-700 truncate">${escapeHTML(d.nombre)}</p>
+                            <p class="text-[10px] text-gray-400 capitalize">${escapeHTML(d.archivo_extension)} • ${(d.archivo_size / 1024).toFixed(1)} KB</p>
+                        </div>
+                    </div>
+                    <a href="${API_CONFIG.BASE_URL}${d.url}" target="_blank" class="text-blue-600 hover:text-blue-800 p-2 shrink-0 bg-white rounded-lg border border-blue-100 shadow-sm ml-2 transition-transform hover:scale-105">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        // 8. Handlers Optimizados y UI interactiva de botones de carga
+        const setButtonLoadingState = (btnId, isLoading, originalHtml) => {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            if (isLoading) {
+                btn.disabled = true;
+                btn.classList.add('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Procesando...';
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
+                btn.innerHTML = originalHtml;
+            }
+        };
+
+        window.savePasoChanges = async function () {
+            const data = {
+                estado: document.getElementById('inputEstado').value,
+                fecha_real: document.getElementById('inputFecha').value,
+                observaciones: document.getElementById('inputObs').value
+            };
+
+            const origHTML = document.getElementById('btnGuardar').innerHTML;
+            setButtonLoadingState('btnGuardar', true, origHTML);
+
+            try {
+                // Mutación base de datos
+                await api.put(`/licitaciones/workflow/${state.selectedStepId}`, data);
+
+                // 9. Actualización Optimista del Estado en Memoria (Evita Refetch de server!)
+                const stepIdx = state.licitacion.workflow.findIndex(w => w.id === state.selectedStepId);
+                if (stepIdx > -1) {
+                    state.licitacion.workflow[stepIdx].estado = data.estado;
+                    state.licitacion.workflow[stepIdx].fecha_real = data.fecha_real || null;
+                    state.licitacion.workflow[stepIdx].observaciones = data.observaciones;
+                }
+
+                // Re-computar interfaz
+                renderLicitacionHeader(state.licitacion);
+                renderSteps(state.licitacion.workflow);
+
+                window.closePasoModal();
+            } catch (err) {
+                alert('Error al guardar cambios. Verifique su conexión y sesión.');
+            } finally {
+                setButtonLoadingState('btnGuardar', false, origHTML);
+            }
+        };
+
+        window.uploadDoc = async function (input) {
+            if (!input.files || input.files.length === 0) return;
+
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('workflow_id', state.selectedStepId);
+            formData.append('nombre', file.name);
+            formData.append('archivo', file);
+
+            const origHTML = document.getElementById('btnSubirArchivo').innerHTML;
+            setButtonLoadingState('btnSubirArchivo', true, origHTML);
+
+            try {
+                // Sube Archivo y procesa binario UUID
+                await api.post('/licitaciones/documentos', formData);
+
+                // Como los archivos devuelven nueva data (URL, archivo_size, extension), repescamos
+                const updatedLic = await api.get(`/licitaciones/${state.licitacionId}`);
+                state.licitacion = updatedLic;
+
+                const updatedStep = state.licitacion.workflow.find(w => w.id === state.selectedStepId);
+                renderModalDocs(updatedStep.documentos);
+                renderSteps(state.licitacion.workflow);
+
+            } catch (err) {
+                alert('Error al procesar subida de archivo: ' + (err.detail || err.message));
+            } finally {
+                setButtonLoadingState('btnSubirArchivo', false, origHTML);
+                input.value = '';
+            }
+        };
+    </script>
+</body>
+
+</html>

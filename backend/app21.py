@@ -9,7 +9,7 @@ import psycopg2.pool
 import bcrypt
 import logging
 import threading
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from datetime import datetime, timedelta
@@ -477,12 +477,55 @@ def ensure_tables():
             );
             """,
             """
-            CREATE TABLE IF NOT EXISTS auditoria (
-                audit_id SERIAL PRIMARY KEY,
-                user_id INTEGER,
-                accion TEXT,
+            CREATE TABLE IF NOT EXISTS licitacion_pasos_maestro (
+                id_paso SERIAL PRIMARY KEY,
+                orden INT UNIQUE NOT NULL,
+                nombre VARCHAR(255) NOT NULL,
+                documento_requerido VARCHAR(255),
                 descripcion TEXT,
-                fecha TIMESTAMP DEFAULT NOW()
+                activo BOOLEAN DEFAULT TRUE
+            );
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS licitaciones (
+                id SERIAL PRIMARY KEY,
+                proyecto_id INT NOT NULL REFERENCES proyectos(id) ON DELETE CASCADE,
+                nombre_licitacion VARCHAR(255),
+                id_mercado_publico VARCHAR(50),
+                estado_actual_paso INT,
+                monto_estimado NUMERIC,
+                usuario_creador INT REFERENCES users(user_id),
+                fecha_creacion TIMESTAMP DEFAULT NOW(),
+                fecha_actualizacion TIMESTAMP DEFAULT NOW()
+            );
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS licitacion_workflow (
+                id SERIAL PRIMARY KEY,
+                licitacion_id INT NOT NULL REFERENCES licitaciones(id) ON DELETE CASCADE,
+                paso_id INT NOT NULL REFERENCES licitacion_pasos_maestro(id_paso),
+                estado VARCHAR(50) DEFAULT 'Pendiente',
+                fecha_planificada DATE,
+                fecha_real TIMESTAMP,
+                observaciones TEXT,
+                usuario_id INT REFERENCES users(user_id),
+                actualizado_en TIMESTAMP DEFAULT NOW(),
+                UNIQUE (licitacion_id, paso_id)
+            );
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS licitaciones_documentos (
+                documento_id SERIAL PRIMARY KEY,
+                workflow_id INT NOT NULL REFERENCES licitacion_workflow(id) ON DELETE CASCADE,
+                tipo_documento VARCHAR(100),
+                nombre VARCHAR(255),
+                descripcion TEXT,
+                url TEXT,
+                archivo_nombre VARCHAR(255),
+                archivo_extension VARCHAR(20),
+                archivo_size BIGINT,
+                usuario_subida INT REFERENCES users(user_id),
+                fecha_subida TIMESTAMP DEFAULT NOW()
             );
             """
         ]
@@ -490,8 +533,47 @@ def ensure_tables():
         with conn.cursor() as cur:
             for s in ddl:
                 cur.execute(s)
+            
+            # Seeding pasos maestro
+            pasos = [
+                (1, 'Acuerdo de Concejo'),
+                (2, 'Decreto de Aprobación de convenio'),
+                (3, 'Elaboración de bases administrativas'),
+                (4, 'Elaboración de Decretos Alcaldicios'),
+                (5, '- Aprueba Bases'),
+                (6, '– Designa comisión de evaluación'),
+                (7, '- Designa unidad técnica'),
+                (8, 'Aprobación de Decretos Alcaldicios'),
+                (9, 'Publicación Licitación Mercado Publico'),
+                (10, 'Preguntas por Mercado Publico'),
+                (11, 'Elaborar decreto aprueba respuestas a preguntas de mercado publico'),
+                (12, 'Publicación de Decreto aprueba respuestas a preguntas de Mercado Publico'),
+                (13, 'Presentación de ofertas'),
+                (14, 'Recepción de Garantía Seriedad de la oferta (si procede)'),
+                (15, 'Apertura de ofertas'),
+                (16, 'Evaluación de oferta'),
+                (17, 'Elaboración de informe de evaluación'),
+                (18, 'Acuerdo de concejo que aprueba adjudicación'),
+                (19, 'Elaboración de Decreto de Adjudicación'),
+                (20, 'Publicación de Decreto de Adjudicación'),
+                (21, 'Adjudicación de Licitación'),
+                (22, 'Elaboración de Contrato'),
+                (23, 'Firma de Contrato'),
+                (24, 'Recepción de Garantía de fiel cumplimiento de contrato'),
+                (25, 'Acta de entrega de terreno'),
+                (26, 'Elaboración de decreto uso de bien nacional de uso publico'),
+                (27, 'Decreto que aprueba anexo de contrato'),
+                (28, 'Decreto de comisión de recepción provisoria'),
+                (29, 'Decreto que aprueba el acta de recepción provisoria'),
+                (30, 'Recepción de Garantía Correcta ejecución de las obras'),
+                (31, 'Decreto de comisión de recepción definitiva'),
+                (32, 'Decreto que aprueba el acta de recepción definitiva')
+            ]
+            for orden, nombre in pasos:
+                cur.execute("INSERT INTO licitacion_pasos_maestro (orden, nombre) VALUES (%s, %s) ON CONFLICT (orden) DO NOTHING", (orden, nombre))
+            
         conn.commit()
-        logger.info("Tablas verificadas/creadas correctamente")
+        logger.info("Tablas verificadas y pasos de licitación sembrados correctamente")
     except Exception as e:
         logger.error(f"Error creando tablas: {e}")
         traceback.print_exc()
@@ -1504,24 +1586,368 @@ def create_proyecto(current_user_id):
         placeholders = ", ".join(["%s"] * len(clean_data))
         
         sql = f"INSERT INTO proyectos ({cols}) VALUES ({placeholders}) RETURNING id"
-
         conn = get_db_connection()
         with conn.cursor() as cur:
             cur.execute(sql, tuple(clean_data.values()))
-            pid = cur.fetchone()[0]
+            new_id = cur.fetchone()[0]
+            
+            # Log audit
+            log_auditoria(current_user_id, "create_proyecto", f"Creó proyecto {new_id}: {clean_data.get('nombre')}")
+            
         conn.commit()
-
-        return jsonify({
-            "message": "Proyecto creado",
-            "proyecto_id": pid
-        }), 201
+        return jsonify({"message": "Proyecto creado", "id": new_id}), 201
     except Exception as e:
-        logger.error(f"Error creating project: {e}")
-        return jsonify({"message": "Error creating project", "error": str(e)}), 500
+        if conn: conn.rollback()
+        logger.error(f"Error create_proyecto: {e}")
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
     finally:
-        if conn:
-            release_db_connection(conn)
+        if conn: release_db_connection(conn)
 
+# ============================================
+# MODULO: LICITACIONES API
+# ============================================
+
+@app.route("/licitaciones/pasos", methods=["POST"])
+@session_required
+def create_licitacion_paso_maestro(current_user_id):
+    conn = None
+    try:
+        data = request.get_json()
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT COALESCE(MAX(orden), 0) FROM licitacion_pasos_maestro")
+            next_orden = cur.fetchone()[0] + 1
+            cur.execute("""
+                INSERT INTO licitacion_pasos_maestro (orden, nombre, descripcion, documento_requerido)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id_paso
+            """, (next_orden, data.get("nombre"), data.get("descripcion"), data.get("documento_requerido")))
+            new_id = cur.fetchone()[0]
+        conn.commit()
+        return jsonify({"message": "Paso maestro creado", "id": new_id}), 201
+    except Exception as e:
+        if conn: conn.rollback()
+        return jsonify({"message": "Error", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/pasos", methods=["GET"])
+@session_required
+def get_licitacion_pasos_maestro(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM licitacion_pasos_maestro ORDER BY orden")
+            rows = cur.fetchall()
+        return jsonify(rows)
+    except Exception as e:
+        logger.error(f"Error get_licitacion_pasos_maestro: {e}")
+        return jsonify({"message": "Error", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones", methods=["GET"])
+@session_required
+def get_licitaciones(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT l.*, p.nombre as proyecto_nombre,
+                       (SELECT count(*) FROM licitacion_workflow WHERE licitacion_id = l.id AND estado = 'Completado') as pasos_completados
+                FROM licitaciones l
+                JOIN proyectos p ON p.id = l.proyecto_id
+                ORDER BY l.fecha_actualizacion DESC
+            """)
+            rows = cur.fetchall()
+        return jsonify(rows)
+    except Exception as e:
+        logger.error(f"Error get_licitaciones: {e}")
+        return jsonify({"message": "Error", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/pasos/<int:paso_id>", methods=["PUT"])
+@session_required
+def update_licitacion_paso_maestro(current_user_id, paso_id):
+    conn = None
+    try:
+        data = request.get_json()
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE licitacion_pasos_maestro 
+                SET nombre = %s, descripcion = %s, documento_requerido = %s, activo = %s
+                WHERE id_paso = %s
+            """, (data.get("nombre"), data.get("descripcion"), data.get("documento_requerido"), data.get("activo", True), paso_id))
+            
+            log_auditoria(current_user_id, "update_paso_maestro", f"Actualizó paso maestro {paso_id}")
+            
+        conn.commit()
+        return jsonify({"message": "Paso maestro actualizado"}), 200
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error update_paso_maestro: {e}")
+        return jsonify({"message": "Error", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones", methods=["POST"])
+@session_required
+def create_licitacion(current_user_id):
+    conn = None
+    try:
+        data = request.get_json()
+        required = ["proyecto_id", "nombre_licitacion"]
+        if not data or not all(k in data for k in required):
+            return jsonify({"message": "Faltan datos requeridos"}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            # 1. Crear licitación
+            # Limpiar datos opcionales numéricos
+            monto = data.get("monto_estimado")
+            if monto == "" or monto is None:
+                monto = None
+
+            cur.execute("""
+                INSERT INTO licitaciones (proyecto_id, nombre_licitacion, id_mercado_publico, monto_estimado, usuario_creador, estado_actual_paso)
+                VALUES (%s, %s, %s, %s, %s, 1) RETURNING id
+            """, (data["proyecto_id"], data["nombre_licitacion"], data.get("id_mercado_publico"), monto, current_user_id))
+            lic_id = cur.fetchone()[0]
+            
+            # 2. Inicializar workflow (32 pasos)
+            cur.execute("""
+                INSERT INTO licitacion_workflow (licitacion_id, paso_id, estado)
+                SELECT %s, id_paso, 'Pendiente'
+                FROM licitacion_pasos_maestro
+                ORDER BY orden
+            """, (lic_id,))
+            
+            log_auditoria(current_user_id, "crear_licitacion", f"Inició licitación {lic_id} para proyecto {data['proyecto_id']}")
+            
+        conn.commit()
+        return jsonify({"message": "Licitación iniciada", "id": lic_id}), 201
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error create_licitacion: {e}")
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/<int:lid>", methods=["GET"])
+@session_required
+def get_licitacion_detalle(current_user_id, lid):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT l.*, p.nombre as proyecto_nombre 
+                FROM licitaciones l
+                JOIN proyectos p ON p.id = l.proyecto_id
+                WHERE l.id = %s
+            """, (lid,))
+            lic = cur.fetchone()
+            if not lic: return jsonify({"message": "No encontrada"}), 404
+            
+            cur.execute("""
+                SELECT w.*, m.nombre as paso_nombre, m.orden as paso_orden
+                FROM licitacion_workflow w
+                JOIN licitacion_pasos_maestro m ON m.id_paso = w.paso_id
+                WHERE w.licitacion_id = %s
+                ORDER BY m.orden
+            """, (lid,))
+            lic["workflow"] = cur.fetchall()
+            
+            cur.execute("""
+                SELECT d.*, u.nombre as usuario_nombre
+                FROM licitaciones_documentos d
+                LEFT JOIN users u ON u.user_id = d.usuario_subida
+                WHERE d.workflow_id IN (SELECT id FROM licitacion_workflow WHERE licitacion_id = %s)
+            """, (lid,))
+            docs = cur.fetchall()
+            
+            for step in lic["workflow"]:
+                step["documentos"] = [d for d in docs if d["workflow_id"] == step["id"]]
+                
+        return jsonify(lic)
+    except Exception as e:
+        logger.error(f"Error get_licitacion_detalle: {e}")
+        return jsonify({"message": "Error interno"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/workflow/<int:wid>", methods=["PUT"])
+@session_required
+def update_licitacion_workflow(current_user_id, wid):
+    conn = None
+    try:
+        data = request.get_json()
+        fields = []
+        vals = []
+        allowed = ["estado", "fecha_planificada", "fecha_real", "observaciones"]
+        for k in allowed:
+            if k in data:
+                val = data[k]
+                if val == "": val = None
+                fields.append(f"{k} = %s")
+                vals.append(val)
+        
+        if not fields: return jsonify({"message": "Sin datos"}), 400
+        
+        vals.append(current_user_id)
+        vals.append(wid)
+        sql = f"UPDATE licitacion_workflow SET {', '.join(fields)}, usuario_id = %s, actualizado_en = NOW() WHERE id = %s"
+        
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute(sql, tuple(vals))
+            cur.execute("UPDATE licitaciones SET fecha_actualizacion = NOW() WHERE id = (SELECT licitacion_id FROM licitacion_workflow WHERE id = %s)", (wid,))
+        conn.commit()
+        return jsonify({"message": "Paso actualizado"})
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error update_licitacion_workflow: {e}")
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/documentos", methods=["POST"])
+@session_required
+def upload_licitacion_doc(current_user_id):
+    conn = None
+    try:
+        workflow_id = request.form.get("workflow_id")
+        nombre = request.form.get("nombre")
+        descripcion = request.form.get("descripcion", "")
+        if 'archivo' not in request.files: return jsonify({"message": "Sin archivo"}), 400
+        f = request.files['archivo']
+        if f.filename == '': return jsonify({"message": "Nombre vacío"}), 400
+        if f and allowed_file(f.filename):
+            ts = int(time.time())
+            ext = f.filename.rsplit('.', 1)[1].lower()
+            fname = secure_filename(f"lic_{workflow_id}_{ts}.{ext}")
+            target_dir = os.path.join(DOCS_FOLDER, "licitaciones")
+            os.makedirs(target_dir, exist_ok=True)
+            fpath = os.path.join(target_dir, fname)
+            f.save(fpath)
+            url = f"/api/licitaciones/docs/{fname}"
+            conn = get_db_connection()
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO licitaciones_documentos 
+                    (workflow_id, nombre, descripcion, url, archivo_nombre, archivo_extension, archivo_size, usuario_subida)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (workflow_id, nombre, descripcion, url, f.filename, ext, os.path.getsize(fpath), current_user_id))
+            conn.commit()
+            return jsonify({"message": "Documento subido", "url": url})
+        return jsonify({"message": "Tipo de archivo no permitido"}), 400
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error upload_licitacion_doc: {e}")
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/licitaciones/docs/<filename>")
+def serve_licitacion_doc(filename):
+    target_dir = os.path.join(DOCS_FOLDER, "licitaciones")
+    return send_from_directory(target_dir, filename)
+
+@app.route("/licitaciones/biblioteca", methods=["POST"])
+@session_required
+def upload_biblioteca_doc(current_user_id):
+    conn = None
+    try:
+        nombre = request.form.get("nombre")
+        tipo = request.form.get("tipo", "General")
+        descripcion = request.form.get("descripcion", "")
+        if 'archivo' not in request.files: return jsonify({"message": "Sin archivo"}), 400
+        f = request.files['archivo']
+        if f.filename == '': return jsonify({"message": "Nombre vacío"}), 400
+        if f and allowed_file(f.filename):
+            ts = int(time.time())
+            ext = f.filename.rsplit('.', 1)[1].lower()
+            fname = secure_filename(f"lib_{ts}_{f.filename}")
+            target_dir = os.path.join(DOCS_FOLDER, "licitaciones", "biblioteca")
+            os.makedirs(target_dir, exist_ok=True)
+            fpath = os.path.join(target_dir, fname)
+            f.save(fpath)
+            url = f"/api/licitaciones/lib/{fname}"
+            conn = get_db_connection()
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO licitaciones_biblioteca 
+                    (nombre, tipo, descripcion, url, archivo_nombre, archivo_extension, archivo_size, usuario_subida)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (nombre, tipo, descripcion, url, f.filename, ext, os.path.getsize(fpath), current_user_id))
+            conn.commit()
+            return jsonify({"message": "Documento añadido a biblioteca", "url": url})
+        return jsonify({"message": "Tipo de archivo no permitido"}), 400
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error upload_biblioteca_doc: {e}")
+        return jsonify({"message": "Error", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/biblioteca", methods=["GET"])
+@session_required
+def get_biblioteca_docs(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM licitaciones_biblioteca ORDER BY fecha_subida DESC")
+            return jsonify(cur.fetchall())
+    except Exception as e:
+        logger.error(f"Error get_biblioteca_docs: {e}")
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/calendario", methods=["GET"])
+@session_required
+def get_licitaciones_calendario(current_user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            # Seleccionamos pasos que tengan fecha (planificada o real)
+            # Pasos críticos: 10 (Preguntas), 15 (Apertura), 9 (Publicación), 23 (Firma)
+            cur.execute("""
+                SELECT 
+                    w.id as workflow_id,
+                    w.fecha_planificada,
+                    w.fecha_real,
+                    w.estado,
+                    l.id as licitacion_id,
+                    l.nombre_licitacion,
+                    l.id_mercado_publico,
+                    p.nombre as proyecto_nombre,
+                    m.nombre as paso_nombre,
+                    m.orden as paso_orden
+                FROM licitacion_workflow w
+                JOIN licitaciones l ON l.id = w.licitacion_id
+                JOIN proyectos p ON p.id = l.proyecto_id
+                JOIN licitacion_pasos_maestro m ON m.id_paso = w.paso_id
+                WHERE (w.fecha_planificada IS NOT NULL OR w.fecha_real IS NOT NULL)
+                ORDER BY COALESCE(w.fecha_real, w.fecha_planificada)
+            """)
+            return jsonify(cur.fetchall())
+    except Exception as e:
+        logger.error(f"Error get_licitaciones_calendario: {e}")
+        return jsonify({"message": "Error interno"}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/api/licitaciones/lib/<filename>")
+def serve_biblioteca_doc(filename):
+    target_dir = os.path.join(DOCS_FOLDER, "licitaciones", "biblioteca")
+    return send_from_directory(target_dir, filename)
 
 @app.route("/proyectos/<int:pid>", methods=["PUT"])
 @session_required
