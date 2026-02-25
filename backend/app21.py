@@ -493,6 +493,7 @@ def ensure_tables():
                 nombre_licitacion VARCHAR(255),
                 id_mercado_publico VARCHAR(50),
                 estado_actual_paso INT,
+                estado_licitacion VARCHAR(20) DEFAULT 'Abierta',
                 monto_estimado NUMERIC,
                 usuario_creador INT REFERENCES users(user_id),
                 fecha_creacion TIMESTAMP DEFAULT NOW(),
@@ -1706,6 +1707,17 @@ def create_licitacion(current_user_id):
         
         conn = get_db_connection()
         with conn.cursor() as cur:
+            # Validar que no exista una licitación abierta para el mismo proyecto
+            cur.execute("""
+                SELECT id, nombre_licitacion FROM licitaciones 
+                WHERE proyecto_id = %s AND COALESCE(estado_licitacion, 'Abierta') = 'Abierta'
+            """, (data["proyecto_id"],))
+            existing = cur.fetchone()
+            if existing:
+                return jsonify({
+                    "message": f"El proyecto ya tiene una licitación abierta (ID: {existing[0]} - {existing[1]}). Debe cerrarla antes de iniciar una nueva."
+                }), 409
+
             # 1. Crear licitación
             # Limpiar datos opcionales numéricos
             monto = data.get("monto_estimado")
@@ -1713,8 +1725,8 @@ def create_licitacion(current_user_id):
                 monto = None
 
             cur.execute("""
-                INSERT INTO licitaciones (proyecto_id, nombre_licitacion, id_mercado_publico, monto_estimado, usuario_creador, estado_actual_paso)
-                VALUES (%s, %s, %s, %s, %s, 1) RETURNING id
+                INSERT INTO licitaciones (proyecto_id, nombre_licitacion, id_mercado_publico, monto_estimado, usuario_creador, estado_actual_paso, estado_licitacion)
+                VALUES (%s, %s, %s, %s, %s, 1, 'Abierta') RETURNING id
             """, (data["proyecto_id"], data["nombre_licitacion"], data.get("id_mercado_publico"), monto, current_user_id))
             lic_id = cur.fetchone()[0]
             
@@ -1754,7 +1766,11 @@ def get_licitacion_detalle(current_user_id, lid):
             if not lic: return jsonify({"message": "No encontrada"}), 404
             
             cur.execute("""
-                SELECT w.*, m.nombre as paso_nombre, m.orden as paso_orden
+                SELECT w.id, w.licitacion_id, w.paso_id, w.estado,
+                       w.fecha_planificada::text as fecha_planificada,
+                       w.fecha_real::date::text as fecha_real,
+                       w.observaciones, w.usuario_id, w.actualizado_en,
+                       m.nombre as paso_nombre, m.orden as paso_orden
                 FROM licitacion_workflow w
                 JOIN licitacion_pasos_maestro m ON m.id_paso = w.paso_id
                 WHERE w.licitacion_id = %s
@@ -1793,7 +1809,11 @@ def update_licitacion_workflow(current_user_id, wid):
             if k in data:
                 val = data[k]
                 if val == "": val = None
-                fields.append(f"{k} = %s")
+                # FIX: Cast fecha_real a DATE al guardar para evitar offset de timezone
+                if k == "fecha_real" and val is not None:
+                    fields.append(f"{k} = %s::date")
+                else:
+                    fields.append(f"{k} = %s")
                 vals.append(val)
         
         if not fields: return jsonify({"message": "Sin datos"}), 400
@@ -1909,6 +1929,73 @@ def get_biblioteca_docs(current_user_id):
     finally:
         if conn: release_db_connection(conn)
 
+@app.route("/licitaciones/<int:lid>/cerrar", methods=["PUT"])
+@session_required
+def cerrar_licitacion(current_user_id, lid):
+    """Cierra una licitación. Impide modificaciones posteriores."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE licitaciones 
+                SET estado_licitacion = 'Cerrada', fecha_actualizacion = NOW()
+                WHERE id = %s AND COALESCE(estado_licitacion, 'Abierta') = 'Abierta'
+            """, (lid,))
+            if cur.rowcount == 0:
+                return jsonify({"message": "Licitación no encontrada o ya se encuentra cerrada"}), 404
+            
+            log_auditoria(current_user_id, "cerrar_licitacion", f"Cerró licitación {lid}")
+        conn.commit()
+        return jsonify({"message": "Licitación cerrada exitosamente"})
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error cerrar_licitacion: {e}")
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
+@app.route("/licitaciones/<int:lid>/reabrir", methods=["PUT"])
+@session_required
+def reabrir_licitacion(current_user_id, lid):
+    """Reabre una licitación cerrada, validando que no haya otra abierta para el mismo proyecto."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            # Obtener proyecto_id de la licitación
+            cur.execute("SELECT proyecto_id FROM licitaciones WHERE id = %s", (lid,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"message": "Licitación no encontrada"}), 404
+            
+            proyecto_id = row[0]
+            # Validar que no exista otra abierta
+            cur.execute("""
+                SELECT id FROM licitaciones 
+                WHERE proyecto_id = %s AND COALESCE(estado_licitacion, 'Abierta') = 'Abierta' AND id != %s
+            """, (proyecto_id, lid))
+            if cur.fetchone():
+                return jsonify({"message": "Ya existe otra licitación abierta para este proyecto. Ciérrela primero."}), 409
+            
+            cur.execute("""
+                UPDATE licitaciones 
+                SET estado_licitacion = 'Abierta', fecha_actualizacion = NOW()
+                WHERE id = %s AND estado_licitacion = 'Cerrada'
+            """, (lid,))
+            if cur.rowcount == 0:
+                return jsonify({"message": "La licitación no está cerrada o no existe"}), 400
+            
+            log_auditoria(current_user_id, "reabrir_licitacion", f"Reabrió licitación {lid}")
+        conn.commit()
+        return jsonify({"message": "Licitación reabierta exitosamente"})
+    except Exception as e:
+        if conn: conn.rollback()
+        logger.error(f"Error reabrir_licitacion: {e}")
+        return jsonify({"message": "Error interno", "detail": str(e)}), 500
+    finally:
+        if conn: release_db_connection(conn)
+
 @app.route("/licitaciones/calendario", methods=["GET"])
 @session_required
 def get_licitaciones_calendario(current_user_id):
@@ -1916,17 +2003,16 @@ def get_licitaciones_calendario(current_user_id):
     try:
         conn = get_db_connection()
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            # Seleccionamos pasos que tengan fecha (planificada o real)
-            # Pasos críticos: 10 (Preguntas), 15 (Apertura), 9 (Publicación), 23 (Firma)
             cur.execute("""
                 SELECT 
                     w.id as workflow_id,
-                    w.fecha_planificada,
-                    w.fecha_real,
+                    w.fecha_planificada::text as fecha_planificada,
+                    w.fecha_real::date::text as fecha_real,
                     w.estado,
                     l.id as licitacion_id,
                     l.nombre_licitacion,
                     l.id_mercado_publico,
+                    COALESCE(l.estado_licitacion, 'Abierta') as estado_licitacion,
                     p.nombre as proyecto_nombre,
                     m.nombre as paso_nombre,
                     m.orden as paso_orden

@@ -9,7 +9,8 @@ CREATE TABLE licitacion_pasos_maestro (
     nombre VARCHAR(255) NOT NULL,
     documento_requerido VARCHAR(255),
     descripcion TEXT,
-    activo BOOLEAN DEFAULT TRUE
+    activo BOOLEAN DEFAULT TRUE,
+    UNIQUE (orden)
 );
 
 -- 2. Tabla principal de Licitaciones
@@ -18,14 +19,20 @@ CREATE TABLE licitaciones (
     id SERIAL PRIMARY KEY,
     proyecto_id INT NOT NULL REFERENCES proyectos(id) ON DELETE CASCADE,
     nombre_licitacion VARCHAR(255),
-    id_mercado_publico VARCHAR(50), -- ID único de Mercado Público (ej: 1234-56-LP24)
+    id_mercado_publico VARCHAR(100), -- ID único de Mercado Público (ej: 1234-56-LP24)
     estado_actual_paso INT DEFAULT 1, -- Indica en qué paso va (FK a licitacion_pasos_maestro)
+    estado_licitacion VARCHAR(20) DEFAULT 'Abierta', -- Abierta, Cerrada
     monto_estimado NUMERIC,
     
     usuario_creador INT REFERENCES users(user_id),
     fecha_creacion TIMESTAMP DEFAULT NOW(),
     fecha_actualizacion TIMESTAMP DEFAULT NOW()
 );
+
+-- Garantiza que solo exista UNA licitación abierta por proyecto
+CREATE UNIQUE INDEX idx_licitacion_abierta_proyecto 
+ON licitaciones (proyecto_id) 
+WHERE (estado_licitacion = 'Abierta');
 
 -- 3. Seguimiento Detallado (Workflow)
 -- Aquí se registra el avance real de cada uno de los 32 pasos para cada licitación.

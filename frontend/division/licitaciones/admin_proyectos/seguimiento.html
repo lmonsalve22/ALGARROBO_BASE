@@ -76,9 +76,24 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-sm text-gray-400 uppercase font-bold tracking-wider">Progreso General</p>
-                        <p id="progresoTexto" class="text-4xl font-black text-blue-600">0%</p>
+                    <div class="flex items-center gap-6">
+                        <!-- Estado de la licitación -->
+                        <div id="estadoLicitacionContainer" class="flex items-center gap-3">
+                            <span id="estadoLicitacionBadge"
+                                class="text-xs font-black tracking-widest uppercase px-3 py-1.5 rounded-lg"></span>
+                            <button id="btnCerrarLicitacion" onclick="window.cerrarLicitacion()"
+                                class="hidden px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold text-sm hover:bg-red-100 transition-colors">
+                                <i class="fas fa-lock mr-1"></i> Cerrar Licitación
+                            </button>
+                            <button id="btnReabrirLicitacion" onclick="window.reabrirLicitacion()"
+                                class="hidden px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors">
+                                <i class="fas fa-lock-open mr-1"></i> Reabrir
+                            </button>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-400 uppercase font-bold tracking-wider">Progreso General</p>
+                            <p id="progresoTexto" class="text-4xl font-black text-blue-600">0%</p>
+                        </div>
                     </div>
                 </div>
 
@@ -183,6 +198,20 @@
                 .replace(/'/g, '&#039;');
         };
 
+        // ============================================
+        // FIX: Parseo seguro de fechas (patrón secplac)
+        // ============================================
+        function safeDateString(dateStr) {
+            if (!dateStr) return '';
+            if (typeof dateStr === 'string') {
+                var match = dateStr.match(/^(\d{4}-\d{2}-\d{2})/);
+                if (match) return match[1];
+            }
+            var d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (!state.licitacionId) {
                 window.location.href = 'dashboard.html';
@@ -212,6 +241,7 @@
                 const data = await api.get(`/licitaciones/${state.licitacionId}`);
                 state.licitacion = data;
                 renderLicitacionHeader(data);
+                renderEstadoLicitacion(data);
                 renderSteps(data.workflow);
             } catch (err) {
                 console.error(err);
@@ -231,6 +261,54 @@
             numEl.className = `text-4xl font-black transition-colors duration-500 ${porcentaje === 100 ? 'text-emerald-500' : 'text-blue-600'}`;
         }
 
+        // Renderizar estado de la licitación (Abierta/Cerrada)
+        function renderEstadoLicitacion(l) {
+            const estado = l.estado_licitacion || 'Abierta';
+            const badge = document.getElementById('estadoLicitacionBadge');
+            const btnCerrar = document.getElementById('btnCerrarLicitacion');
+            const btnReabrir = document.getElementById('btnReabrirLicitacion');
+
+            if (estado === 'Abierta') {
+                badge.textContent = 'Abierta';
+                badge.className = 'text-xs font-black tracking-widest uppercase px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700';
+                btnCerrar.classList.remove('hidden');
+                btnReabrir.classList.add('hidden');
+            } else {
+                badge.textContent = 'Cerrada';
+                badge.className = 'text-xs font-black tracking-widest uppercase px-3 py-1.5 rounded-lg bg-red-100 text-red-700';
+                btnCerrar.classList.add('hidden');
+                btnReabrir.classList.remove('hidden');
+            }
+        }
+
+        // Cerrar licitación
+        window.cerrarLicitacion = async function () {
+            if (!confirm('¿Está seguro de cerrar esta licitación? Una vez cerrada, deberá reabrirla para hacer modificaciones.')) return;
+
+            try {
+                await api.put(`/licitaciones/${state.licitacionId}/cerrar`, {});
+                state.licitacion.estado_licitacion = 'Cerrada';
+                renderEstadoLicitacion(state.licitacion);
+                alert('Licitación cerrada exitosamente');
+            } catch (err) {
+                alert(err.message || 'Error al cerrar la licitación');
+            }
+        };
+
+        // Reabrir licitación
+        window.reabrirLicitacion = async function () {
+            if (!confirm('¿Desea reabrir esta licitación?')) return;
+
+            try {
+                await api.put(`/licitaciones/${state.licitacionId}/reabrir`, {});
+                state.licitacion.estado_licitacion = 'Abierta';
+                renderEstadoLicitacion(state.licitacion);
+                alert('Licitación reabierta exitosamente');
+            } catch (err) {
+                alert(err.message || 'Error al reabrir. Es posible que exista otra licitación abierta para el mismo proyecto.');
+            }
+        };
+
         // 4. Mapeo puro y aislado de colores Tailwind Integrados
         function getStatusTailwindClasses(estado) {
             const raw = estado.toLowerCase();
@@ -242,6 +320,7 @@
         // 5. Modulación Masiva de Plantilla sin tocar DOM iterativamente (Inner HTML Building)
         function renderSteps(steps) {
             const container = document.getElementById('workflowContainer');
+            const isCerrada = (state.licitacion.estado_licitacion || 'Abierta') === 'Cerrada';
 
             let htmlChunks = '<div class="timeline-line"></div>';
 
@@ -262,16 +341,21 @@
                     `;
                 }
 
+                // FIX: Mostrar fecha con safeDateString
+                const fechaDisplay = safeDateString(step.fecha_real || step.fecha_planificada);
+                const fechaHtml = fechaDisplay ? `<p class="text-[10px] text-gray-400 mt-1.5"><i class="fas fa-calendar-day mr-1"></i>${fechaDisplay}</p>` : '';
+
                 return `
                 <div class="step-node flex items-start space-x-6">
                     <div class="step-circle ${tokens.bg} flex-shrink-0 relative z-10 transition-colors duration-300">
                         <i class="fas ${tokens.icon}"></i>
                     </div>
-                    <div class="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 step-card cursor-pointer focus:ring-4 focus:ring-blue-50" data-step-id="${step.id}">
+                    <div class="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 step-card ${isCerrada ? 'opacity-70 cursor-default' : 'cursor-pointer'} focus:ring-4 focus:ring-blue-50" ${!isCerrada ? `data-step-id="${step.id}"` : ''}>
                         <div class="flex justify-between items-start">
                             <div class="pr-4">
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-tighter mb-1">Paso ${String(index + 1).padStart(2, '0')}</p>
                                 <h4 class="font-bold text-gray-800 leading-tight">${escapeHTML(step.paso_nombre)}</h4>
+                                ${fechaHtml}
                             </div>
                             <span class="text-[10px] font-bold px-2 py-1 rounded uppercase flex-shrink-0 ${tokens.badge}">${escapeHTML(step.estado)}</span>
                         </div>
@@ -281,26 +365,32 @@
                 </div>`;
             }).join('');
 
+            if (isCerrada) {
+                htmlChunks += `
+                <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-700 text-sm font-medium flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i>
+                    Esta licitación está <strong>cerrada</strong>. Reábrala para realizar modificaciones.
+                </div>`;
+            }
+
             container.innerHTML = htmlChunks;
         }
 
-        // 6. Parseo universal aplanando UTC e ISO
-        function parseToLocalDateStr(raw) {
-            if (!raw) return '';
-            if (typeof raw === 'string' && raw.match(/^(\d{4}-\d{2}-\d{2})/)) return raw.match(/^(\d{4}-\d{2}-\d{2})/)[0];
-            const d = new Date(raw);
-            if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            return '';
-        }
-
         window.openStepDetails = function (workflowId) {
+            // Bloquear edición si está cerrada
+            if ((state.licitacion.estado_licitacion || 'Abierta') === 'Cerrada') {
+                alert('Esta licitación está cerrada. Reábrala para editar pasos.');
+                return;
+            }
+
             state.selectedStepId = workflowId;
             const step = state.licitacion.workflow.find(w => w.id === workflowId);
 
             document.getElementById('modalPasoOrden').textContent = `Paso ${String(step.paso_orden).padStart(2, '0')}`;
             document.getElementById('modalPasoNombre').textContent = step.paso_nombre;
             document.getElementById('inputEstado').value = step.estado;
-            document.getElementById('inputFecha').value = parseToLocalDateStr(step.fecha_real || step.fecha_planificada);
+            // FIX: Usar safeDateString para poblar el input date
+            document.getElementById('inputFecha').value = safeDateString(step.fecha_real || step.fecha_planificada);
             document.getElementById('inputObs').value = step.observaciones || '';
 
             renderModalDocs(step.documentos);
@@ -310,7 +400,6 @@
             const panel = modal.querySelector('.max-w-2xl');
 
             modal.classList.remove('hidden');
-            // Timeout micro para forzar repaint antes de mutar opacidad final CSS
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 if (panel) {
@@ -332,7 +421,7 @@
 
             setTimeout(() => {
                 modal.classList.add('hidden');
-            }, 200); // 200ms coincide duration-200 Tailwind
+            }, 200);
         };
 
         function renderModalDocs(docs) {
@@ -386,10 +475,9 @@
             setButtonLoadingState('btnGuardar', true, origHTML);
 
             try {
-                // Mutación base de datos
                 await api.put(`/licitaciones/workflow/${state.selectedStepId}`, data);
 
-                // 9. Actualización Optimista del Estado en Memoria (Evita Refetch de server!)
+                // 9. Actualización Optimista del Estado en Memoria
                 const stepIdx = state.licitacion.workflow.findIndex(w => w.id === state.selectedStepId);
                 if (stepIdx > -1) {
                     state.licitacion.workflow[stepIdx].estado = data.estado;
@@ -397,7 +485,6 @@
                     state.licitacion.workflow[stepIdx].observaciones = data.observaciones;
                 }
 
-                // Re-computar interfaz
                 renderLicitacionHeader(state.licitacion);
                 renderSteps(state.licitacion.workflow);
 
@@ -422,10 +509,8 @@
             setButtonLoadingState('btnSubirArchivo', true, origHTML);
 
             try {
-                // Sube Archivo y procesa binario UUID
                 await api.post('/licitaciones/documentos', formData);
 
-                // Como los archivos devuelven nueva data (URL, archivo_size, extension), repescamos
                 const updatedLic = await api.get(`/licitaciones/${state.licitacionId}`);
                 state.licitacion = updatedLic;
 

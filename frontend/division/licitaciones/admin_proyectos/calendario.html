@@ -237,6 +237,26 @@
                 .replace(/'/g, '&#039;');
         };
 
+        // ============================================
+        // FIX: Parseo seguro de fechas (patrón secplac)
+        // Extrae YYYY-MM-DD como string puro, sin timezone
+        // ============================================
+        function safeDateString(dateStr) {
+            if (!dateStr) return null;
+            // Si ya es string YYYY-MM-DD, retornar directo
+            if (typeof dateStr === 'string') {
+                const match = dateStr.match(/^(\d{4}-\d{2}-\d{2})/);
+                if (match) return match[1];
+            }
+            // Fallback: parsear y usar componentes UTC
+            var d = new Date(dateStr);
+            if (isNaN(d.getTime())) return null;
+            var year = d.getUTCFullYear();
+            var month = String(d.getUTCMonth() + 1).padStart(2, '0');
+            var day = String(d.getUTCDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         // Cache Handler usando SessionStorage (5 minutos)
         const CACHE_KEY = 'eventsCache';
         const getCachedEvents = () => {
@@ -305,7 +325,7 @@
             else renderGantt();
         };
 
-        // Modulación de Vista Calendario usando String Literals en gran magnitud
+        // Renderizado del calendario con fechas seguras
         function renderCalendar() {
             const grid = document.getElementById('calendarGrid');
             const header = document.getElementById('currentMonthYear');
@@ -332,11 +352,14 @@
                 gridHTML += generateDayHTML(prevLastDay - i + 1, true, false, null);
             }
 
-            const todayStr = new Date().toDateString();
+            // FIX: Generar fecha de hoy como YYYY-MM-DD local (sin timezone)
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
             for (let i = 1; i <= lastDay.getDate(); i++) {
-                const dayDate = new Date(year, month, i);
-                const isToday = todayStr === dayDate.toDateString();
-                gridHTML += generateDayHTML(i, false, isToday, dayDate);
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const isToday = todayStr === dayStr;
+                gridHTML += generateDayHTML(i, false, isToday, dayStr);
             }
 
             for (let i = 1; i <= nextPadding; i++) {
@@ -346,15 +369,15 @@
             grid.innerHTML = gridHTML;
         }
 
-        function generateDayHTML(day, isOtherMonth, isToday, date) {
+        function generateDayHTML(day, isOtherMonth, isToday, dateStr) {
             let html = `<div class="calendar-day p-4 ${isOtherMonth ? 'other-month' : ''}">`;
 
             html += `<div class="flex justify-between items-start mb-2">
                         <span class="text-sm ${isToday ? 'bg-blue-600 text-white w-7 h-7 flex items-center justify-center rounded-full font-bold shadow-md' : 'text-slate-400 font-bold'}">${day}</span>
                      </div>`;
 
-            if (!isOtherMonth && date) {
-                const evs = getFormattedEventsForDate(date);
+            if (!isOtherMonth && dateStr) {
+                const evs = getEventsForDateStr(dateStr);
                 html += evs.map(ev => {
                     const colorClass = getEventCSSClasses(ev.paso_orden);
                     return `
@@ -371,21 +394,17 @@
             return html;
         }
 
-        function getFormattedEventsForDate(date) {
-            const y = date.getFullYear(), m = String(date.getMonth() + 1).padStart(2, '0'), d = String(date.getDate()).padStart(2, '0');
-            const targetStr = `${y}-${m}-${d}`;
-
+        // FIX: Comparación de fechas como strings YYYY-MM-DD puro (sin Date objects)
+        function getEventsForDateStr(targetStr) {
             return state.filteredEvents.filter(ev => {
                 const rawDate = ev.fecha_real || ev.fecha_planificada;
                 if (!rawDate) return false;
-                if (typeof rawDate === 'string' && rawDate.match(/^(\d{4}-\d{2}-\d{2})/)) return rawDate.match(/^(\d{4}-\d{2}-\d{2})/)[0] === targetStr;
-                const parseD = new Date(rawDate);
-                if (!isNaN(parseD.getTime())) return `${parseD.getFullYear()}-${String(parseD.getMonth() + 1).padStart(2, '0')}-${String(parseD.getDate()).padStart(2, '0')}` === targetStr;
-                return false;
+                const evDateStr = safeDateString(rawDate);
+                return evDateStr === targetStr;
             });
         }
 
-        // Aislación CSS Avanzada de Tailwind Utilities (reemplaza hardcoded styles)
+        // Aislación CSS Avanzada de Tailwind Utilities
         function getEventCSSClasses(orden) {
             if (orden === 15) return 'bg-blue-100 text-blue-800 border-l-blue-600'; // Apertura
             if ([3, 5, 10, 12].includes(orden)) return 'bg-emerald-100 text-emerald-800 border-l-emerald-500'; // Preguntas
@@ -414,15 +433,10 @@
             document.getElementById('modalEventoEstado').textContent = ev.estado;
             document.getElementById('modalEventoProyecto').textContent = ev.proyecto_nombre || 'N/A';
 
+            // FIX: Usar safeDateString para mostrar la fecha correcta
             const rawDate = ev.fecha_real || ev.fecha_planificada;
-            let finalDateStr = rawDate;
-            if (typeof rawDate === 'string' && rawDate.match(/^(\d{4}-\d{2}-\d{2})/)) {
-                finalDateStr = rawDate.match(/^(\d{4}-\d{2}-\d{2})/)[0];
-            } else if (rawDate) {
-                const d = new Date(rawDate);
-                if (!isNaN(d.getTime())) finalDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            }
-            document.getElementById('modalEventoFecha').textContent = finalDateStr;
+            document.getElementById('modalEventoFecha').textContent = safeDateString(rawDate) || 'Sin fecha';
+
             document.getElementById('modalEventoLink').href = `seguimiento.html?id=${ev.licitacion_id}`;
             document.getElementById('modalEvento').classList.remove('hidden');
         };
@@ -438,7 +452,6 @@
             const btnCal = document.getElementById('btnViewCalendar');
             const btnGantt = document.getElementById('btnViewGantt');
 
-            // Animaciones UI States
             if (viewStr === 'calendar') {
                 calContainer.classList.remove('hidden');
                 setTimeout(() => calContainer.classList.remove('opacity-0'), 10);
@@ -460,13 +473,18 @@
             }
         };
 
+        // FIX: Parseo de timestamp para ordenamiento en Gantt, usando UTC
         function parseStandardDate(str) {
             if (!str) return 0;
-            if (typeof str === 'string' && str.match(/^(\d{4}-\d{2}-\d{2})/)) return new Date(str.match(/^(\d{4}-\d{2}-\d{2})/)[0]).getTime();
+            // Si es string YYYY-MM-DD, parsear manualmente en UTC
+            if (typeof str === 'string') {
+                const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                if (match) return Date.UTC(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+            }
             return new Date(str).getTime() || 0;
         }
 
-        // Agrupación Temporal en Gantt - Calculado con espaciado matemático
+        // Agrupación Temporal en Gantt
         function renderGantt() {
             const list = document.getElementById('ganttList');
             if (state.filteredEvents.length === 0) {
@@ -487,7 +505,6 @@
                 grouped[ev.licitacion_id].eventos.push(ev);
             });
 
-            // Usando fragmentación con String Literals limpios
             list.innerHTML = Object.values(grouped).map(g => {
                 g.eventos.sort((a, b) => parseStandardDate(a.fecha_real || a.fecha_planificada) - parseStandardDate(b.fecha_real || b.fecha_planificada));
 
@@ -495,7 +512,6 @@
                 const gEventsHtml = g.eventos.map(ev => {
                     const time = parseStandardDate(ev.fecha_real || ev.fecha_planificada);
 
-                    // Cálculo de agrupación temporal espaciada (min 20px de margen, max 100px basado en diferencia de días)
                     let marginPx = 24;
                     if (prevTime && time) {
                         const diffDays = Math.abs((time - prevTime) / (1000 * 3600 * 24));
@@ -503,12 +519,8 @@
                     }
                     if (time) prevTime = time;
 
-                    let dateStr = "Sin definir";
-                    if (time) {
-                        const d = new Date(time);
-                        // Convertir a fecha para mostrar de nuevo localmente aseguradamente
-                        dateStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-                    }
+                    // FIX: Usar safeDateString en vez de reconstruir con Date local
+                    const dateStr = safeDateString(ev.fecha_real || ev.fecha_planificada) || "Sin definir";
 
                     const isOk = ev.estado === 'Completado';
                     const dotColor = isOk ? 'bg-emerald-500 ring-emerald-100' : 'bg-blue-500 ring-blue-100';
