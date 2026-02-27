@@ -132,6 +132,8 @@ function renderSidebar(containerId = "sidebarContainer") {
         hitos: baseDir + "hitos.html",
         observacion: baseDir + "observacion.html",
         vecinos: baseDir + "vecinos.html",
+        informe_dinamico: baseDir + "informe_dinamico.html",
+        mapa2: baseDir + "mapa2.html",
         licitaciones: "/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html"
     };
 
@@ -264,9 +266,21 @@ function renderSidebar(containerId = "sidebarContainer") {
                     </a>
                 </li>
                 <li>
+                    <a href="${pages.mapa2}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.mapa2)}">
+                        <i class="fas fa-map w-5 text-center"></i>
+                        <span class="font-medium">Mapa 2</span>
+                    </a>
+                </li>
+                <li>
                     <a href="${pages.informe}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.informe)}">
                         <i class="fas fa-chart-line w-5 text-center"></i>
                         <span class="font-medium">Informes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="${pages.informe_dinamico}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.informe_dinamico)}">
+                        <i class="fas fa-chart-pie w-5 text-center"></i>
+                        <span class="font-medium">Informe Dinámico</span>
                     </a>
                 </li>
                 <li>

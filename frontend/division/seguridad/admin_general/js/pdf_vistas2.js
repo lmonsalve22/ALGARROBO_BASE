@@ -1,40 +1,29 @@
 /**
- * PDF Module V2 - Specialized for Strategic Views (1-25)
- * Extends capabilities of standard PDFModule with specific structure for Vistas 2.
+ * PDF Module V2 - Seguridad Municipal
+ * Restricted to 5 strategic views: vista1, vista5, vista13, vista18, vista22
+ * Extends capabilities of standard PDFModule with specific structure.
  */
 
 const capitalize = (str) =>
     str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
 
 window.PDFModuleV2 = {
-    // Config inherited from standard module structure but specialized
+    // Config
     config: {
         pageWidth: 210,
         pageHeight: 297,
         margins: { top: 15, bottom: 20, left: 15, right: 15 },
-        views: Array.from({ length: 25 }, (_, i) => `vista${i + 1}`)
+        views: ['vista1', 'vista5', 'vista13', 'vista18', 'vista22']
     },
 
-    // View Meta
-    viewTitles: [
-        "Resumen Ejecutivo", "Tendencia Reciente", "Comparativo Temporal", // Nivel 1
-        "Estacionalidad Mensual", "Delitos Críticos", "Evolución por Delito", // Nivel 2
-        "Evolución Delitos (20 años)", "Correlaciones", "Puntos Débiles", // Nivel 3
-        "Vs. Región", "Ranking Histórico", "Vs. País", "Vs. Comunas Similares", "Aporte Regional", // Nivel 4
-        "Efectividad Policial", // Nivel 5
-        "Efectividad Comparada", "Proporcionalidad Delictual", "Gravedad por Delito", "IDI Comparativo", // Nivel 6
-        "Tendencia 20 Años", "Alertas Rachas", "Priorización Estratégica", "Categoría", "Reporte Ejecutivo", "Auditoría Técnica" // Nivel 7
-    ],
-
-    levels: [
-        { name: 'Nivel 1: Resumen Ejecutivo', range: [1, 3], icon: '📋' },
-        { name: 'Nivel 2: Estacionalidad y Patrones', range: [4, 6], icon: '📅' },
-        { name: 'Nivel 3: Perspectiva Histórica', range: [7, 9], icon: '⏳' },
-        { name: 'Nivel 4: Benchmarking Geográfico', range: [10, 14], icon: '🌍' },
-        { name: 'Nivel 5: Efectividad Institucional', range: [15, 15], icon: '👮' },
-        { name: 'Nivel 6: Gravedad e Impacto Social', range: [16, 19], icon: '⚖️' },
-        { name: 'Nivel 7: Perspectiva Estructural', range: [20, 25], icon: '🏗️' }
-    ],
+    // View Meta — indexed by view name
+    viewMeta: {
+        'vista1': { title: 'Resumen Ejecutivo', level: 'Nivel 1: Resumen Ejecutivo', icon: '📋' },
+        'vista5': { title: 'Delitos Críticos', level: 'Nivel 2: Delitos Críticos', icon: '📅' },
+        'vista13': { title: 'Vs. Comunas Similares', level: 'Nivel 4: Benchmarking Geográfico', icon: '🌍' },
+        'vista18': { title: 'Gravedad por Delito', level: 'Nivel 6: Gravedad e Impacto Social', icon: '⚖️' },
+        'vista22': { title: 'Priorización Estratégica', level: 'Nivel 7: Priorización Estratégica', icon: '🏗️' }
+    },
 
     /**
      * Entry Point: Generate Complete Report
@@ -45,10 +34,11 @@ window.PDFModuleV2 = {
             return;
         }
 
-        const base = window.PDFModule; // Reuse base helpers (overlay, progress, slice)
-        const totalViews = this.config.views.length;
+        const base = window.PDFModule;
+        const views = this.config.views;
+        const totalViews = views.length;
 
-        // Show Base Overlay with V2 context
+        // Show Base Overlay
         base.showEnhancedOverlay(totalViews);
         const originalView = App.state.currentView;
 
@@ -60,7 +50,7 @@ window.PDFModuleV2 = {
             generateCoverV2(pdf);
             pdf.addPage();
 
-            // 2. Executive Summary (Custom V2)
+            // 2. Executive Summary
             this.generateExecutiveSummaryV2(pdf);
             pdf.addPage();
 
@@ -68,58 +58,57 @@ window.PDFModuleV2 = {
             this.generateTOC(pdf);
             pdf.addPage();
 
-            let pageCount = 4; // Starting content page (Cover=1, Exec=2, TOC=3)
+            let pageCount = 4; // Cover=1, Exec=2, TOC=3
 
             // 4. Capture Views
             for (let i = 0; i < totalViews; i++) {
-                const viewName = this.config.views[i];
-                const viewTitle = this.viewTitles[i]; // Use original Title Case
-                const viewNum = i + 1;
+                const viewName = views[i];
+                const meta = this.viewMeta[viewName];
+                const viewTitle = meta.title;
 
                 // Update Progress
-                base.updateProgress(viewNum, `Capturando: ${viewTitle}`);
+                base.updateProgress(i + 1, `Capturando: ${viewTitle}`);
 
-                // Determine Section/Level for Header
-                const level = this.levels.find(l => viewNum >= l.range[0] && viewNum <= l.range[1]);
-
-                // Format: "NIVEL X (UPPER) - View Name (Title Case)"
-                const sectionTitle = level
-                    ? `${level.name.toUpperCase()} - ${viewTitle}`
-                    : viewTitle;
+                // Format section title
+                const sectionTitle = `${meta.level.toUpperCase()} - ${viewTitle}`;
 
                 // Load View
                 await App.loadView(viewName);
 
-                // 4. Capture Views
+                // Wait for render
+                await new Promise(r => setTimeout(r, 2000));
+
+                // Capture
                 const container = document.getElementById('viewContainer');
                 if (!container) continue;
 
-                // Wait for render (charts + animations + maps)
-                await new Promise(r => setTimeout(r, 2000));
-
-                // Capture with fixed window width to avoid layout shifting
                 const canvas = await html2canvas(container, {
                     scale: 2,
                     useCORS: true,
                     logging: false,
-                    backgroundColor: '#f8fafc',
-                    windowWidth: 1280
+                    backgroundColor: '#f1f5f9',
+                    scrollX: 0,
+                    scrollY: 0,
+                    width: container.scrollWidth,
+                    height: container.scrollHeight
                 });
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const mmPerPx = 210 / canvas.width;
-                const imgHeightMm = canvas.height * mmPerPx;
+                const mmPerCanvasPx = 210 / canvas.width;
+                const imgHeightMm = canvas.height * mmPerCanvasPx;
 
-                // Smart Boundaries Check
                 const containerRect = container.getBoundingClientRect();
-                const cards = Array.from(container.querySelectorAll('.card, .chart-card, .alert, .row, .location-source-row'));
-                const cardBoundaries = cards.map(card => {
-                    const rect = card.getBoundingClientRect();
+                // DOM is measured in CSS pixels, Canvas is scaled (usually 2x). We need a ratio for CSS px.
+                const mmPerCssPx = 210 / container.scrollWidth;
+
+                const cards = Array.from(container.querySelectorAll('.card, .chart-card, .alert, .row, h1, h2, h3, h4, .location-source-row, p, ul, .question-section'));
+                const cardBoundaries = cards.map(c => {
+                    const r = c.getBoundingClientRect();
                     return {
-                        top: (rect.top - containerRect.top) * mmPerPx,
-                        bottom: (rect.bottom - containerRect.top) * mmPerPx
+                        top: (r.top - containerRect.top) * mmPerCssPx,
+                        bottom: (r.bottom - containerRect.top) * mmPerCssPx
                     };
-                });
+                }).filter(b => (b.bottom - b.top) > 2); // Ignore tiny elements
 
                 if (i > 0) pdf.addPage();
 
@@ -128,7 +117,7 @@ window.PDFModuleV2 = {
                 const availableHeight = 297 - yOffset - footerHeight;
 
                 if (imgHeightMm > availableHeight) {
-                    console.log(`View ${viewNum} overflow. Smart slicing...`);
+                    console.log(`View ${viewName} overflow. Smart slicing...`);
 
                     let heightLeft = imgHeightMm;
                     let currentYMm = 0;
@@ -142,25 +131,45 @@ window.PDFModuleV2 = {
 
                         let sliceHeightMm = Math.min(heightLeft, availableHeight);
 
-                        // Smart Break: Avoid cutting cards
+                        // Smart Break: Avoid cutting cards or titles
                         if (heightLeft > availableHeight) {
                             const targetCutLine = currentYMm + availableHeight;
-                            const overlappingCard = cardBoundaries.find(b =>
-                                b.top < targetCutLine - 5 && b.bottom > targetCutLine + 5
+
+                            // 1. First, check for atomic blocks (these MUST NOT be cut)
+                            const atomicBlocks = Array.from(container.querySelectorAll('.atomic-block, .chart-card, .matrix-container'));
+                            const atomicBoundaries = atomicBlocks.map(c => {
+                                const r = c.getBoundingClientRect();
+                                return {
+                                    top: (r.top - containerRect.top) * mmPerCssPx,
+                                    bottom: (r.bottom - containerRect.top) * mmPerCssPx
+                                };
+                            });
+
+                            const overlappingAtomic = atomicBoundaries.find(b =>
+                                b.top < targetCutLine - 2 && b.bottom > targetCutLine + 2
                             );
 
-                            if (overlappingCard && overlappingCard.top > currentYMm + 10) {
-                                // Cut before the card
-                                sliceHeightMm = overlappingCard.top - currentYMm;
+                            if (overlappingAtomic && overlappingAtomic.top > currentYMm + 10) {
+                                // Subtract padding to cut just before the target element
+                                sliceHeightMm = Math.max(10, overlappingAtomic.top - currentYMm - 2);
+                            } else {
+                                // 2. Fallback to standard intelligent breaking
+                                const overlappingCard = cardBoundaries.find(b =>
+                                    b.top < targetCutLine - 2 && b.bottom > targetCutLine + 2
+                                );
+
+                                if (overlappingCard && overlappingCard.top > currentYMm + 25) {
+                                    sliceHeightMm = Math.max(10, overlappingCard.top - currentYMm - 2);
+                                }
                             }
                         }
 
-                        this.addHeaderV2(pdf, viewNum, sliceIndex === 0 ? sectionTitle : `${sectionTitle} (Cont.)`);
+                        this.addHeaderV2(pdf, i + 1, sliceIndex === 0 ? sectionTitle : `${sectionTitle} (Cont.)`);
                         this.addFooterV2(pdf, pageCount);
 
                         // Capture slice
-                        const sliceHeightPx = sliceHeightMm / mmPerPx;
-                        const currentYPx = currentYMm / mmPerPx;
+                        const sliceHeightPx = sliceHeightMm / mmPerCanvasPx;
+                        const currentYPx = currentYMm / mmPerCanvasPx;
 
                         const sliceCanvas = document.createElement('canvas');
                         sliceCanvas.width = canvas.width;
@@ -180,7 +189,7 @@ window.PDFModuleV2 = {
                     }
                 } else {
                     // Normal One-Page View
-                    this.addHeaderV2(pdf, viewNum, sectionTitle);
+                    this.addHeaderV2(pdf, i + 1, sectionTitle);
                     this.addFooterV2(pdf, pageCount);
                     pdf.addImage(imgData, 'JPEG', 0, yOffset, 210, imgHeightMm);
                 }
@@ -194,7 +203,7 @@ window.PDFModuleV2 = {
             // Save
             const date = new Date().toISOString().split('T')[0];
             const name = window.STATE_DATA?.comunaName || 'Comuna';
-            pdf.save(`Informe_Estrategico_${name}_${date}.pdf`);
+            pdf.save(`Informe_Seguridad_${name}_${date}.pdf`);
 
         } catch (error) {
             console.error("PDF Export Error:", error);
@@ -206,7 +215,7 @@ window.PDFModuleV2 = {
     },
 
     /**
-     * Custom Executive Summary for V2
+     * Custom Executive Summary
      */
     generateExecutiveSummaryV2(pdf) {
         const { pageWidth, pageHeight } = this.config;
@@ -223,7 +232,7 @@ window.PDFModuleV2 = {
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(16);
         pdf.setTextColor(255, 255, 255);
-        pdf.text("RESUMEN EJECUTIVO ESTRATÉGICO", pageWidth / 2, 13, { align: "center" });
+        pdf.text("RESUMEN EJECUTIVO - SEGURIDAD MUNICIPAL", pageWidth / 2, 13, { align: "center" });
 
         // Content
         let y = 40;
@@ -234,10 +243,12 @@ window.PDFModuleV2 = {
         pdf.text("Estructura del Informe", 20, y);
         y += 10;
 
-        this.levels.forEach(l => {
+        const views = this.config.views;
+        views.forEach(viewName => {
+            const meta = this.viewMeta[viewName];
             pdf.setFontSize(10);
             pdf.setTextColor(71, 85, 105);
-            pdf.text(`• ${l.name} (${l.range[1] - l.range[0] + 1} vistas)`, 25, y);
+            pdf.text(`• ${meta.level} — ${meta.title}`, 25, y);
             y += 7;
         });
 
@@ -264,7 +275,6 @@ window.PDFModuleV2 = {
      * Table of Contents
      */
     generateTOC(pdf) {
-        // Reuse similar logic but with levels
         const { pageWidth } = this.config;
 
         pdf.setFontSize(20);
@@ -272,38 +282,34 @@ window.PDFModuleV2 = {
         pdf.text("Índice de Contenidos", pageWidth / 2, 30, { align: "center" });
 
         let y = 50;
+        const views = this.config.views;
 
-        this.levels.forEach(level => {
+        views.forEach((viewName, index) => {
+            const meta = this.viewMeta[viewName];
+
             // Level Header
-            if (y > 270) { pdf.addPage(); y = 30; }
-
             pdf.setFontSize(11);
             pdf.setFont("helvetica", "bold");
-            pdf.setTextColor(37, 99, 235); // Blue
-            pdf.text(level.name, 20, y);
-            y += 6; // Reduced from 8
+            pdf.setTextColor(37, 99, 235);
+            pdf.text(meta.level, 20, y);
+            y += 6;
 
-            // Level Items
-            for (let i = level.range[0]; i <= level.range[1]; i++) {
-                const title = this.viewTitles[i - 1];
+            // Item
+            pdf.setFontSize(10);
+            pdf.setFont("helvetica", "normal");
+            pdf.setTextColor(51, 65, 85);
+            pdf.text(meta.title, 30, y);
 
-                pdf.setFontSize(10);
-                pdf.setFont("helvetica", "normal");
-                pdf.setTextColor(51, 65, 85);
-                pdf.text(title, 30, y);
+            // Page num
+            const pageNum = index + 4; // Cover=1, Exec=2, TOC=3
+            pdf.text(String(pageNum), 190, y, { align: "right" });
 
-                // Page num (approximate logic, assuming 1 page per view + offset)
-                const pageNum = i + 3;
-                pdf.text(String(pageNum), 190, y, { align: "right" });
+            // Dotted line
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setLineDash([0.5, 3], 0);
+            pdf.line(30 + pdf.getTextWidth(meta.title) + 2, y - 1, 182, y - 1);
 
-                // Dotted line - End earlier and use lighter pattern to avoid clutter
-                pdf.setDrawColor(200, 200, 200);
-                pdf.setLineDash([0.5, 3], 0);
-                pdf.line(30 + pdf.getTextWidth(title) + 2, y - 1, 182, y - 1);
-
-                y += 5; // Reduced from 6
-            }
-            y += 3; // Reduced from 4
+            y += 8;
         });
     },
 
@@ -313,16 +319,10 @@ window.PDFModuleV2 = {
 
         pdf.setFontSize(10);
         pdf.setTextColor(100, 116, 139);
-        // Changed to use original provided title format without forced uppercase
         pdf.text(title, 105, 10, { align: 'center' });
-
-        pdf.setFontSize(8);
-        pdf.setTextColor(148, 163, 184);
-        //pdf.text("MONITOR ESTRATÉGICO V2", 15, 10);
     },
 
     addFooterV2(pdf, pageNum) {
-        // Simple footer
         const y = 290;
         pdf.setFontSize(8);
         pdf.setTextColor(148, 163, 184);
@@ -338,7 +338,7 @@ function generateCoverV2(pdf) {
     const state = window.STATE_DATA || {};
     const w = 210, h = 297;
 
-    // Background Image or Color
+    // Background
     pdf.setFillColor(15, 23, 42); // Slate 900
     pdf.rect(0, 0, w, h, 'F');
 
@@ -347,11 +347,11 @@ function generateCoverV2(pdf) {
     pdf.setFontSize(32);
     pdf.setTextColor(255, 255, 255);
     pdf.text("INFORME ESTRATÉGICO", w / 2, 120, { align: "center" });
-    pdf.text("DE SEGURIDAD", w / 2, 135, { align: "center" });
+    pdf.text("DE SEGURIDAD MUNICIPAL", w / 2, 135, { align: "center" });
 
     // Subtitle
     pdf.setFontSize(18);
-    pdf.setTextColor(148, 163, 184); // Slate 400
+    pdf.setTextColor(148, 163, 184);
     pdf.text(state.comunaName ? state.comunaName.toUpperCase() : "COMUNA", w / 2, 160, { align: "center" });
 
     // Date
@@ -363,7 +363,9 @@ function generateCoverV2(pdf) {
     pdf.setLineWidth(1);
     pdf.line(60, 190, 150, 190);
 
-    // Bottom logo or text
+    // Bottom logo
     pdf.setFontSize(10);
-    pdf.text("RID SIMULATOR V2", w / 2, 270, { align: "center" });
+    pdf.text("ILUSTRE MUNICIPALIDAD DE ALGARROBO", w / 2, 270, { align: "center" });
+    pdf.setFontSize(8);
+    pdf.text("SEGURIDAD MUNICIPAL", w / 2, 275, { align: "center" });
 }

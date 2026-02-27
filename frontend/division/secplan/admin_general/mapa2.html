@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="../../../script/router.js"></script>
+    <script src="../../../script/api.js"></script>
+    <script src="../../../script/utils.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Sectores - Geoportal Municipal</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles/admin-styles.css">
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        #map {
+            height: calc(100vh - 350px);
+            border-radius: 1rem;
+            z-index: 10;
+        }
+
+        .table-container {
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: white;
+            font-size: 0.875rem;
+            outline: none;
+        }
+
+        .filter-select:focus {
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+            border-color: #6366f1;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-table th {
+            padding: 0.75rem 1rem;
+            background-color: #f9fafb;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .summary-table td {
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            color: #374151;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .summary-table tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .summary-table td.monto-col {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div id="headerRender"></div>
+
+    <div class="flex">
+        <div id="asideRender"></div>
+
+        <main class="flex-1 p-6">
+            <div class="mb-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Mapa 2: Análisis Territorial</h2>
+                    <p class="text-gray-600 text-sm">Distribución de proyectos y montos por sector</p>
+                </div>
+                <div class="bg-indigo-100 px-4 py-2 rounded-lg">
+                    <span class="text-indigo-700 font-bold" id="totalFilteredMonto">$0</span>
+                    <span class="text-indigo-500 text-xs ml-2" id="totalFilteredCount">(0 proy.)</span>
+                </div>
+            </div>
+
+            <!-- Filtros en Cascada -->
+            <div class="glass-panel rounded-xl p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">ÁREA</label>
+                    <select id="filter-area" class="filter-select" onchange="handleFilterChange('area')">
+                        <option value="all">Todas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">LINEAMIENTO</label>
+                    <select id="filter-lineamiento" class="filter-select" onchange="handleFilterChange('lineamiento')">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">FINANCIAMIENTO</label>
+                    <select id="filter-financiamiento" class="filter-select"
+                        onchange="handleFilterChange('financiamiento')">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">AÑO ELAB.</label>
+                    <select id="filter-anno_elaboracion" class="filter-select"
+                        onchange="handleFilterChange('anno_elaboracion')">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">AÑO EJEC.</label>
+                    <select id="filter-anno_ejecucion" class="filter-select"
+                        onchange="handleFilterChange('anno_ejecucion')">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">ESTADO</label>
+                    <select id="filter-estado" class="filter-select" onchange="handleFilterChange('estado')">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">ETAPA</label>
+                    <select id="filter-etapa" class="filter-select" onchange="handleFilterChange('etapa')">
+                        <option value="all">Todas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">ESTADO POSTUL.</label>
+                    <select id="filter-estado_postulacion" class="filter-select"
+                        onchange="handleFilterChange('estado_postulacion')">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">PROFESIONAL</label>
+                    <select id="filter-profesional" class="filter-select" onchange="handleFilterChange('profesional')">
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Mapa -->
+                <div class="lg:w-2/3">
+                    <div id="map" class="shadow-lg border border-gray-200"></div>
+                </div>
+
+                <!-- Tabla de Resumen -->
+                <div class="lg:w-1/3">
+                    <div class="glass-panel rounded-xl flex flex-col h-full overflow-hidden border border-gray-200">
+                        <div class="p-4 border-b border-gray-100 bg-white">
+                            <h3 class="font-bold text-gray-800">Resumen por Sector</h3>
+                        </div>
+                        <div class="table-container flex-1 bg-white">
+                            <table class="summary-table w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Sector</th>
+                                        <th class="text-center">Cant.</th>
+                                        <th class="text-right">Monto Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sectorTableBody">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../../../script/layout.js"></script>
+
+    <script>
+        const BASE_URL = 'https://186.67.61.251:8000';
+        let allProjects = [];
+        let filteredProjects = [];
+        let map;
+        let markers = [];
+
+        const currentFilters = {
+            area: 'all',
+            lineamiento: 'all',
+            financiamiento: 'all',
+            anno_elaboracion: 'all',
+            anno_ejecucion: 'all',
+            estado: 'all',
+            etapa: 'all',
+            estado_postulacion: 'all',
+            profesional: 'all'
+        };
+
+        const filterFieldMap = {
+            'area': 'area_nombre',
+            'lineamiento': 'lineamiento_estrategico_nombre',
+            'financiamiento': 'financiamiento_nombre',
+            'anno_elaboracion': 'anno_elaboracion',
+            'anno_ejecucion': 'anno_ejecucion',
+            'estado': 'estado_nombre',
+            'etapa': 'etapa_nombre',
+            'estado_postulacion': 'estado_postulacion_nombre',
+            'profesional': 'profesional_1'
+        };
+
+        async function init() {
+            checkLoginStatus();
+            await fetchProjects();
+            initMap();
+            populateFilters();
+            applyFilters();
+        }
+
+        async function fetchProjects() {
+            try {
+                // api.js ya gestiona la baseURL y el token de autenticación
+                allProjects = await api.get('/proyectos');
+                filteredProjects = [...allProjects];
+            } catch (error) {
+                console.error('Error al cargar proyectos:', error);
+            }
+        }
+
+        function initMap() {
+            map = L.map('map').setView([-33.366677, -71.673103], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        function populateFilters() {
+            for (const [filterKey, dataKey] of Object.entries(filterFieldMap)) {
+                const select = document.getElementById(`filter-${filterKey}`);
+                const currentValue = select.value;
+
+                // Filtramos los proyectos usando TODOS LOS DEMÁS filtros para ver qué opciones quedan disponibles para ESTE filtro
+                const otherFiltersActive = { ...currentFilters };
+                delete otherFiltersActive[filterKey];
+
+                const availableProjects = allProjects.filter(p => {
+                    return Object.entries(otherFiltersActive).every(([fK, fV]) => {
+                        return fV === 'all' || p[filterFieldMap[fK]] === fV;
+                    });
+                });
+
+                const options = [...new Set(availableProjects.map(p => p[dataKey]).filter(v => v))].sort();
+
+                // Preservar la opción "Todos"
+                select.innerHTML = '<option value="all">Todos / Todas</option>';
+                options.forEach(opt => {
+                    const el = document.createElement('option');
+                    el.value = opt;
+                    el.textContent = opt;
+                    select.appendChild(el);
+                });
+
+                // Mantener selección si sigue siendo válida, si no, resetear a 'all'
+                if (options.includes(currentValue)) {
+                    select.value = currentValue;
+                } else {
+                    select.value = 'all';
+                    currentFilters[filterKey] = 'all';
+                }
+            }
+        }
+
+        function handleFilterChange(filterType) {
+            currentFilters[filterType] = document.getElementById(`filter-${filterType}`).value;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            filteredProjects = allProjects.filter(p => {
+                return Object.entries(currentFilters).every(([fK, fV]) => {
+                    return fV === 'all' || p[filterFieldMap[fK]] === fV;
+                });
+            });
+
+            updateMap();
+            updateTable();
+            updateTotals();
+            populateFilters(); // Recalcular opciones disponibles en los otros filtros
+        }
+
+        function updateMap() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            filteredProjects.filter(p => p.latitud && p.longitud).forEach(p => {
+                const m = L.circleMarker([p.latitud, p.longitud], {
+                    radius: 7,
+                    fillColor: '#6366f1',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                m.bindPopup(`
+                    <div class="text-sm">
+                        <strong class="text-indigo-600">${p.nombre}</strong><br>
+                        <b>Sector:</b> ${p.sector_nombre || 'No asig.'}<br>
+                        <b>Monto:</b> ${formatCurrency(p.monto)}<br>
+                        <hr class="my-1">
+                        <b>Estado:</b> ${p.estado_nombre || '-'}<br>
+                        <b>Financ:</b> ${p.financiamiento_nombre || '-'}
+                    </div>
+                `);
+                markers.push(m);
+            });
+
+            // Ajustar vista si hay marcadores
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        function updateTable() {
+            const sectors = {};
+            filteredProjects.forEach(p => {
+                // Normalizar sector para evitar duplicados por mayúsculas/minúsculas
+                let rawSector = p.sector_nombre || 'Sin Sector';
+                const sector = rawSector.charAt(0).toUpperCase() + rawSector.slice(1).toLowerCase();
+
+                const monto = parseFloat(p.monto) || 0;
+
+                if (!sectors[sector]) {
+                    sectors[sector] = { count: 0, monto: 0 };
+                }
+                sectors[sector].count++;
+                sectors[sector].monto += monto;
+            });
+
+            const tbody = document.getElementById('sectorTableBody');
+            tbody.innerHTML = '';
+
+            // Ordenar sectores por nombre
+            Object.keys(sectors).sort().forEach(sec => {
+                const row = document.createElement('tr');
+                row.className = 'transition-colors cursor-pointer';
+                row.onclick = () => focusSector(sec);
+                row.innerHTML = `
+                    <td class="font-medium text-gray-900">${sec}</td>
+                    <td class="text-center bg-gray-50/30">${sectors[sec].count}</td>
+                    <td class="text-right monto-col">${formatCurrency(sectors[sec].monto)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function focusSector(sectorName) {
+            const sectorMarkers = markers.filter((m, i) => {
+                const p = filteredProjects.filter(proj => proj.latitud && proj.longitud)[i];
+                return (p.sector_nombre || 'Sin Sector') === sectorName;
+            });
+
+            if (sectorMarkers.length > 0) {
+                const group = new L.featureGroup(sectorMarkers);
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+        }
+
+        function updateTotals() {
+            const totalMonto = filteredProjects.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+            document.getElementById('totalFilteredMonto').textContent = formatCurrency(totalMonto);
+            document.getElementById('totalFilteredCount').textContent = `(${filteredProjects.length} proy.)`;
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

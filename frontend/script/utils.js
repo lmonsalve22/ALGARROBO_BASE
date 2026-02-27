@@ -69,3 +69,7 @@ const utils = {
         });
     }
 };
+
+// Exponer funciones comunes al ámbito global si se desea mantener compatibilidad
+const formatCurrency = utils.formatCurrency;
+

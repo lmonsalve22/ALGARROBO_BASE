@@ -8,7 +8,8 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
     <!-- Tailwind Config for Base Layout -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,7 +31,6 @@
     <style>
         .nav-link.active {
             background-color: #2563eb !important;
-            /* bg-blue-600 */
             color: white !important;
             box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3) !important;
         }
@@ -44,6 +44,18 @@
             position: relative;
             min-height: calc(100vh - 120px);
             background: #f8fafc;
+        }
+
+        .btn-nav-arrow:hover {
+            background-color: #f1f5f9 !important;
+            color: #3b82f6 !important;
+            transform: scale(1.1);
+        }
+
+        .btn-nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -61,7 +73,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main id="mainContent" class="flex-1 overflow-y-auto relative bg-slate-50">
+        <main id="mainContent" class="flex-1 flex flex-col min-h-screen overflow-y-auto bg-slate-50 relative">
             <!-- Header Security Controls (Export, Arrows, etc.) -->
             <header
                 class="header bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 shadow-sm flex items-center justify-between">
@@ -122,171 +134,169 @@
                 </div>
             </header>
 
-            <section id="viewContainer" class="view-container p-6">
-                <!-- Data loaded dynamically -->
-                <div class="flex items-center justify-center p-20 text-gray-400">
-                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mr-3 text-blue-500"></i>
-                    <span class="font-medium text-lg">Cargando visualización...</span>
-                </div>
+            <section id="viewContainer" class="view-container max-w-7xl mx-auto w-full">
+                <div class="loading"></div>
             </section>
         </main>
     </div>
 
-    <!-- Scritps from layout.js (Global header logic) -->
+    <!-- Script de layout global -->
     <script src="../../../script/layout.js"></script>
 
-    <!-- Base Libraries -->
+    <!-- Libraries (defer is OK for CDN libs) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
-    <!-- WebJS Scripts -->
-    <!-- Global Configuration -->
-    <script src="js/config/columns.js?v=2" defer></script>
-    <script src="js/utils/logger.js?v=1" defer></script>
+    <!-- Global Configuration (NO defer — must execute synchronously and in order) -->
+    <script src="js/config/columns.js?v=2"></script>
 
-    <!-- Core Architecture -->
-    <script src="js/rid-core.js?v=1" defer></script>
-    <script src="js/utils/ui-helper.js?v=1" defer></script>
-    <script src="js/utils/view-controller.js?v=1" defer></script>
+    <!-- SEC-009: Conditional Logger (must load first) -->
+    <script src="js/utils/logger.js?v=1"></script>
+
+    <!-- RID Core Architecture -->
+    <script src="js/rid-core.js?v=1"></script>
+    <script src="js/utils/ui-helper.js?v=1"></script>
+    <script src="js/utils/view-controller.js?v=1"></script>
 
     <!-- Data Layer -->
-    <script src="js/data.js?v=4" defer></script>
-    <script src="js/data_cead.js?v=4" defer></script>
-    <script src="js/data_manager.js?v=5" defer></script>
+    <script src="js/data.js?v=4"></script>
+    <script src="js/data_cead.js?v=4"></script>
+    <script src="js/data_manager.js?v=5"></script>
 
     <!-- App Scripts -->
-    <script src="js/utils/waiter.js?v=1" defer></script>
-    <script src="js/utils/chart-helper.js?v=4" defer></script>
-    <script src="js/utils/chart-enhancer.js?v=3" defer></script>
-    <script src="js/ia2.js?v=2" defer></script>
-    <script src="js/app.js?v=3" defer></script>
-    <script src="js/pdf.js?v=3" defer></script>
-    <script src="js/pdf_vistas2.js?v=1" defer></script>
+    <script src="js/utils/waiter.js?v=1"></script>
+    <script src="js/utils/chart-helper.js?v=4"></script>
+    <script src="js/utils/chart-enhancer.js?v=3"></script>
+    <script src="js/utils/calidadPrompt.js?v=1"></script>
+    <script src="js/ia2.js?v=2"></script>
+    <script src="js/app.js?v=3"></script>
+    <script src="js/pdf.js?v=3"></script>
+    <script src="js/pdf_vistas2.js?v=1"></script>
 
     <script>
+        // Títulos de las 5 vistas activas
         const VIEW_TITLES = {
             'vista1': 'Resumen Ejecutivo',
-            'vista2': 'Tendencia Reciente',
-            'vista3': 'Comparativo Temporal',
-            'vista4': 'Estacionalidad Mensual',
             'vista5': 'Delitos Críticos',
-            'vista6': 'Evolución por Delito',
-            'vista7': 'Evolución Delitos',
-            'vista8': 'Correlaciones',
-            'vista9': 'Puntos Débiles',
-            'vista10': 'Vs. Región',
-            'vista11': 'Ranking Histórico',
-            'vista12': 'Vs. País',
             'vista13': 'Vs. Comunas Similares',
-            'vista14': 'Aporte Regional',
-            'vista15': 'Efectividad Policial',
-            'vista16': 'Efectividad Comparada',
-            'vista17': 'Proporcionalidad',
             'vista18': 'Gravedad por Delito',
-            'vista19': 'IDI Comparativo',
-            'vista20': 'Tendencia 20 Años',
-            'vista21': 'Momentum y Rachas',
-            'vista22': 'Priorización',
-            'vista23': 'Categoría',
-            'vista24': 'Reporte Ejecutivo',
-            'vista25': 'Auditoría Técnica'
+            'vista22': 'Priorización Estratégica'
         };
 
-        window.addEventListener('DOMContentLoaded', () => {
+        // Override configuration for Seguridad module
+        if (window.App) {
+            // Solo las 5 vistas requeridas
+            const vistasSeguridad = ['vista1', 'vista5', 'vista13', 'vista18', 'vista22'];
+
+            App.config.viewsPath = 'vistas2';
+            App.config.defaultView = 'vista1';
+            App.config.views = vistasSeguridad;
+
+            // Monkey Patch: Ensure PDF button is always visible
+            const originalLoadView = App.loadView;
+
+            function updateNavigationUI(currentViewName) {
+                const views = App.config.views;
+                const currentIndex = views.indexOf(currentViewName);
+
+                const prevBtn = document.getElementById('btnNavPrev');
+                const nextBtn = document.getElementById('btnNavNext');
+                const prevText = document.getElementById('navPrevText');
+                const nextText = document.getElementById('navNextText');
+
+                if (prevBtn && nextBtn && currentIndex !== -1) {
+                    // Previous Button
+                    if (currentIndex > 0) {
+                        const prevView = views[currentIndex - 1];
+                        if (prevText) prevText.textContent = VIEW_TITLES[prevView] || prevView;
+                        prevBtn.disabled = false;
+                        prevBtn.onclick = () => App.loadView(prevView);
+                        prevBtn.style.display = 'flex';
+                    } else {
+                        prevBtn.style.display = 'none';
+                    }
+
+                    // Next Button
+                    if (currentIndex < views.length - 1) {
+                        const nextView = views[currentIndex + 1];
+                        if (nextText) nextText.textContent = VIEW_TITLES[nextView] || nextView;
+                        nextBtn.disabled = false;
+                        nextBtn.onclick = () => App.loadView(nextView);
+                        nextBtn.style.display = 'flex';
+                    } else {
+                        nextBtn.style.display = 'none';
+                    }
+                }
+            }
+
+            App.loadView = async function (viewName) {
+                await originalLoadView.call(this, viewName);
+                if (this.elements.coverBtn) {
+                    this.elements.coverBtn.style.display = 'inline-flex';
+                    this.elements.coverBtn.onclick = function () { window.PDFModuleV2.exportReport(); };
+                }
+
+                // Update Nav Arrows
+                updateNavigationUI(viewName);
+
+                // Update Sidebar Active Link
+                const sidebarLinks = document.querySelectorAll('.nav-link');
+                if (sidebarLinks.length > 0) {
+                    sidebarLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.dataset.view === viewName) {
+                            link.classList.add('active');
+                            link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    });
+                }
+            };
+
+            // Override sidebar to use v2
+            App.loadSidebar = async function () {
+                try {
+                    const response = await fetch('sidebar2.html');
+                    const html = await response.text();
+                    this.elements.sidebar.innerHTML = html;
+                    this.initNavigation();
+
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
+                        const comLabel = document.getElementById('sidebarComuna');
+                        if (comLabel) comLabel.textContent = window.STATE_DATA.comunaName;
+                    }
+                } catch (error) {
+                    console.error('Error loading sidebar2:', error);
+                }
+            };
+
+            // Helper para actualizar UI global
+            function updateGlobalUI(comunaName) {
+                const btnText = document.getElementById('btnComunaText');
+                if (btnText) btnText.textContent = comunaName;
+
+                const sbText = document.getElementById('sidebarComuna');
+                if (sbText) sbText.textContent = comunaName;
+            }
+
+            // Listener Global para actualizar headers cuando lleguen los datos
+            window.addEventListener('dataManagerLoaded', (e) => {
+                updateGlobalUI(e.detail.meta.comuna);
+            });
+
+            // Comprobar si YA están cargados
+            if (window.DataManager && window.DataManager.state && window.DataManager.state.isLoaded) {
+                updateGlobalUI(window.DataManager.state.meta.comuna);
+            }
+
             // Block standard asideRender from layout.js
             const originalAside = document.getElementById("asideRender");
             if (originalAside) originalAside.style.display = 'none';
 
-            if (window.App) {
-                const vistasEstrategicas = Array.from({ length: 25 }, (_, i) => `vista${i + 1}`);
-
-                App.config.viewsPath = 'vistas2';
-                App.config.defaultView = 'vista1';
-                App.config.views = vistasEstrategicas;
-
-                const originalLoadView = App.loadView;
-
-                function updateNavigationUI(currentViewName) {
-                    const views = App.config.views;
-                    const currentIndex = views.indexOf(currentViewName);
-
-                    const prevBtn = document.getElementById('btnNavPrev');
-                    const nextBtn = document.getElementById('btnNavNext');
-                    const prevText = document.getElementById('navPrevText');
-                    const nextText = document.getElementById('navNextText');
-
-                    if (prevBtn && nextBtn && currentIndex !== -1) {
-                        if (currentIndex > 0) {
-                            const prevView = views[currentIndex - 1];
-                            if (prevText) prevText.textContent = VIEW_TITLES[prevView] || prevView;
-                            prevBtn.disabled = false;
-                            prevBtn.onclick = () => App.loadView(prevView);
-                            prevBtn.style.display = 'flex';
-                        } else prevBtn.style.display = 'none';
-
-                        if (currentIndex < views.length - 1) {
-                            const nextView = views[currentIndex + 1];
-                            if (nextText) nextText.textContent = VIEW_TITLES[nextView] || nextView;
-                            nextBtn.disabled = false;
-                            nextBtn.onclick = () => App.loadView(nextView);
-                            nextBtn.style.display = 'flex';
-                        } else nextBtn.style.display = 'none';
-                    }
-                }
-
-                App.loadView = async function (viewName) {
-                    await originalLoadView.call(this, viewName);
-                    if (this.elements.coverBtn) {
-                        this.elements.coverBtn.style.display = 'inline-flex';
-                        this.elements.coverBtn.onclick = function () { window.PDFModuleV2.exportReport(); };
-                    }
-
-                    updateNavigationUI(viewName);
-
-                    const sidebarLinks = document.querySelectorAll('.nav-link');
-                    if (sidebarLinks.length > 0) {
-                        sidebarLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.dataset.view === viewName) {
-                                link.classList.add('active');
-                                link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                            }
-                        });
-                    }
-                };
-
-                App.loadSidebar = async function () {
-                    try {
-                        const response = await fetch('sidebar2.html');
-                        const html = await response.text();
-                        this.elements.sidebar.innerHTML = html;
-                        this.initNavigation();
-
-                        if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
-                            const comLabel = document.getElementById('sidebarComuna');
-                            if (comLabel) comLabel.textContent = window.STATE_DATA.comunaName;
-                        }
-                    } catch (error) {
-                        console.error('Error loading sidebar2:', error);
-                    }
-                };
-
-                function updateGlobalUI(comunaName) {
-                    const btnText = document.getElementById('btnComunaText');
-                    if (btnText) btnText.textContent = comunaName;
-
-                    const sbText = document.getElementById('sidebarComuna');
-                    if (sbText) sbText.textContent = comunaName;
-                }
-
-                window.addEventListener('dataManagerLoaded', (e) => {
-                    updateGlobalUI(e.detail.meta.comuna);
-                });
-            }
-        });
+            console.log("🛡️ App Overridden: Mode Seguridad (5 Vistas Estratégicas) Active");
+        }
     </script>
 </body>
 

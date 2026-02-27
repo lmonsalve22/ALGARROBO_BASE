@@ -7,8 +7,8 @@
 window.switchSidebarTab = function (tabId) {
     // Hide all contents
     document.querySelectorAll('.sidebar-tab-content').forEach(el => el.style.display = 'none');
-    const target = document.getElementById(tabId);
-    if (target) target.style.display = 'block';
+    // Show target
+    document.getElementById(tabId).style.display = 'block';
 
     // Update buttons
     document.querySelectorAll('.btn-tab').forEach(btn => {

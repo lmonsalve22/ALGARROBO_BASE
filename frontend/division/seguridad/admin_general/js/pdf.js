@@ -143,11 +143,11 @@ const PDFModule = {
         pdf.setLineWidth(0.3);
         pdf.line(0, footerY, pageWidth, footerY);
 
-        // Left: Instituto Libertad
+        // Left: Municipalidad
         pdf.setFontSize(7);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(107, 114, 128);
-        pdf.text('© Instituto Libertad - Todos los derechos reservados', margins.left, footerY + 8);
+        pdf.text('© Ilustre Municipalidad de Algarrobo - Todos los derechos reservados', margins.left, footerY + 8);
 
         // Center: Confidentiality notice
         pdf.setFont('helvetica', 'italic');
@@ -264,12 +264,12 @@ const PDFModule = {
         pdf.setLineWidth(2);
         pdf.circle(pageWidth / 2, logoY + 15, 25, 'S');
 
-        // Instituto Libertad text
-        pdf.setFontSize(18);
+        // Municipalidad text
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(255, 255, 255);
-        pdf.text('INSTITUTO', pageWidth / 2, logoY + 12, { align: 'center' });
-        pdf.text('LIBERTAD', pageWidth / 2, logoY + 22, { align: 'center' });
+        pdf.text('ILUSTRE MUNICIPALIDAD', pageWidth / 2, logoY + 12, { align: 'center' });
+        pdf.text('DE ALGARROBO', pageWidth / 2, logoY + 22, { align: 'center' });
 
         // Tagline
         pdf.setFontSize(8);
@@ -310,7 +310,7 @@ const PDFModule = {
         pdf.text('WEB', iconX, contactY, { align: 'center' });
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(209, 213, 219);
-        pdf.text('www.institutolibertad.cl', textX, contactY);
+        pdf.text('https://munialgarrobo.cl/', textX, contactY);
 
         // Email
         pdf.setFont('helvetica', 'bold');
@@ -318,7 +318,7 @@ const PDFModule = {
         pdf.text('EMAIL', iconX, contactY + 10, { align: 'center' });
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(209, 213, 219);
-        pdf.text('contacto@institutolibertad.cl', textX, contactY + 10);
+        pdf.text('seguridadpublica@munialgarrobo.cl', textX, contactY + 10);
 
         // Location
         pdf.setFont('helvetica', 'bold');
@@ -326,7 +326,7 @@ const PDFModule = {
         pdf.text('SEDE', iconX, contactY + 20, { align: 'center' });
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(209, 213, 219);
-        pdf.text('Santiago, Chile', textX, contactY + 20);
+        pdf.text('Algarrobo, Chile', textX, contactY + 20);
 
         // Legal Disclaimer Box
         const disclaimerY = contactY + 50;
@@ -350,7 +350,7 @@ const PDFModule = {
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(156, 163, 175);
         pdf.setFontSize(6.5);
-        const disclaimer = 'Este documento contiene informacion elaborada con base en fuentes publicas oficiales (STOP y CEAD). Los datos presentados corresponden a estadisticas oficiales del Sistema STOP y CEAD. La reproduccion total o parcial de este documento requiere autorizacion expresa del Instituto Libertad.';
+        const disclaimer = 'Este documento contiene informacion elaborada con base en fuentes publicas oficiales (STOP y CEAD). Los datos presentados corresponden a estadisticas oficiales del Sistema STOP y CEAD. La reproduccion total o parcial de este documento requiere autorizacion expresa de la Ilustre Municipalidad de Algarrobo.';
         const lines = pdf.splitTextToSize(disclaimer, pageWidth - 60);
         pdf.text(lines, pageWidth / 2, disclaimerY + 8, { align: 'center' });
 
@@ -389,7 +389,7 @@ const PDFModule = {
         pdf.setFontSize(7);
         pdf.setTextColor(156, 163, 175);
         const year = new Date().getFullYear();
-        pdf.text(`${year} Instituto Libertad. Todos los derechos reservados.`, pageWidth / 2, pageHeight - 12, { align: 'center' });
+        pdf.text(`${year} Ilustre Municipalidad de Algarrobo. Todos los derechos reservados.`, pageWidth / 2, pageHeight - 12, { align: 'center' });
 
         // Bottom gradient bar
         pdf.setFillColor(79, 70, 229);
@@ -910,9 +910,9 @@ const PDFModule = {
         pdf.setTextColor(200, 200, 200);
         pdf.setFontSize(8);
         pdf.setFont('helvetica', 'italic');
-        pdf.text('Un producto elaborado por el Instituto', 15, 18);
-        pdf.text('Libertad con base en fuentes públicas', 15, 22);
-        pdf.text('de información.', 15, 26);
+        pdf.text('Un producto elaborado por la Ilustre', 15, 18);
+        pdf.text('Municipalidad de Algarrobo con base en', 15, 22);
+        pdf.text('fuentes públicas de información.', 15, 26);
 
         // Header Center (Logo Image)
         try {
@@ -923,8 +923,8 @@ const PDFModule = {
         } catch (e) {
             pdf.setTextColor(255, 255, 255);
             pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(16);
-            pdf.text('INSTITUTO LIBERTAD', 105, 25, { align: 'center' });
+            pdf.setFontSize(14);
+            pdf.text('ILUSTRE MUNICIPALIDAD DE ALGARROBO', 105, 25, { align: 'center' });
         }
 
         // Header Right (Last update)
