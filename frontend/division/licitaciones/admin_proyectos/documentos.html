@@ -6,13 +6,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca de Bases - Licitaciones - Algarrobo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        .glass-card {
+        :root {
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        body {
+            background-color: #f8fafc;
+        }
+
+        .glass-panel {
             background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .file-card {
@@ -56,8 +100,8 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <!-- Categorías -->
-                    <div class="lg:col-span-1 space-y-4">
-                        <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <div class="lg:col-span-1 space-y-4 animate-fade-in">
+                        <div class="glass-panel p-6 rounded-2xl">
                             <h3 class="font-bold text-gray-800 mb-4 uppercase text-xs tracking-widest">Tipo de Documento
                             </h3>
                             <div class="space-y-2" id="categoryFilters">
@@ -79,10 +123,10 @@
                     </div>
 
                     <!-- Listado de Archivos -->
-                    <div class="lg:col-span-3 space-y-6">
+                    <div class="lg:col-span-3 space-y-6 animate-fade-in" style="animation-delay: 0.1s">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="docsGrid">
                             <div onclick="openUploadModal()"
-                                class="glass-card p-5 rounded-2xl shadow-sm file-card border-dashed border-2 border-slate-300 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-all">
+                                class="glass-panel p-5 rounded-2xl file-card border-dashed border-2 border-slate-300 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-500 hover:text-blue-500 transition-all">
                                 <div class="text-center py-4">
                                     <i class="fas fa-plus-circle text-3xl mb-2 opacity-50"></i>
                                     <p class="text-sm font-bold uppercase tracking-wider">Subir Documento Base</p>
@@ -93,10 +137,12 @@
                         </div>
 
                         <!-- Historial reciente -->
-                        <div class="glass-card rounded-2xl overflow-hidden shadow-sm mt-10">
-                            <div class="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                                <h3 class="font-bold text-gray-700 text-sm">Últimos Documentos añadidos</h3>
-                                <span class="text-[10px] font-black text-blue-600 uppercase">Historial Maestro</span>
+                        <div class="glass-panel rounded-2xl overflow-hidden mt-10">
+                            <div class="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center"
+                                style="background: var(--gradient-primary); color: white;">
+                                <h3 class="font-bold text-sm">Últimos Documentos añadidos</h3>
+                                <span class="text-[10px] font-black uppercase"
+                                    style="color: rgba(255,255,255,0.7)">Historial Maestro</span>
                             </div>
                             <div id="recentDocs" class="divide-y divide-gray-50 bg-white">
                                 <!-- Filas dinámicas -->

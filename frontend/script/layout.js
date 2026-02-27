@@ -20,11 +20,11 @@ function renderHeader(containerId = "headerRender") {
     const userRoles = user?.roles || [];
     const userRole = userRoles.length > 0 ? userRoles[0].nombre.toLowerCase() : 'admin_general';
     const isLicitacion = window.location.pathname.includes('/licitaciones/');
-    let dashLink = isLicitacion
-        ? '/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html'
-        : `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html`;
+    let dashLink = `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html`;
 
-    if (user?.nivel_acceso == 10 && !isLicitacion) dashLink = '/ALGARROBO_BASE/frontend/administracion/index.html';
+    if (isLicitacion) dashLink = '/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html';
+
+    if (user?.nivel_acceso == 10) dashLink = '/ALGARROBO_BASE/frontend/administracion/index.html';
 
     container.innerHTML = `
     <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300 font-['Outfit']">
@@ -133,6 +133,7 @@ function renderSidebar(containerId = "sidebarContainer") {
         observacion: baseDir + "observacion.html",
         vecinos: baseDir + "vecinos.html",
         informe_dinamico: baseDir + "informe_dinamico.html",
+        informe_dinamico2: baseDir + "informe_dinamico2.html",
         mapa2: baseDir + "mapa2.html",
         licitaciones: "/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html"
     };
@@ -281,6 +282,12 @@ function renderSidebar(containerId = "sidebarContainer") {
                     <a href="${pages.informe_dinamico}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.informe_dinamico)}">
                         <i class="fas fa-chart-pie w-5 text-center"></i>
                         <span class="font-medium">Informe Dinámico</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="${pages.informe_dinamico2}" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses(pages.informe_dinamico2)}">
+                        <i class="fas fa-layer-group w-5 text-center"></i>
+                        <span class="font-medium">Informe Dimensional</span>
                     </a>
                 </li>
                 <li>

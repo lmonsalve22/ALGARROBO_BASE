@@ -6,13 +6,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cronograma de Licitaciones - Algarrobo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        .glass-card {
+        :root {
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        body {
+            background-color: #f8fafc;
+        }
+
+        .glass-panel {
             background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .calendar-day {
@@ -68,7 +112,7 @@
 
                 <!-- Barra de Filtros Integrada -->
                 <div
-                    class="glass-card flex gap-4 p-4 rounded-2xl shadow-sm mb-6 w-full items-center bg-white justify-between">
+                    class="glass-panel flex gap-4 p-4 rounded-2xl shadow-sm mb-6 w-full items-center bg-white justify-between animate-fade-in">
                     <div class="flex gap-4 flex-1">
                         <select id="filterProyecto" onchange="window.updateFilters()"
                             class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-bold">
@@ -90,9 +134,11 @@
                 </div>
 
                 <div id="calendarViewContainer"
-                    class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden bg-white border border-slate-200 transition-opacity duration-300">
+                    class="glass-panel rounded-[2.5rem] shadow-2xl overflow-hidden bg-white border border-slate-200 transition-opacity duration-300 animate-fade-in"
+                    style="animation-delay: 0.1s">
                     <!-- Calendar Header -->
-                    <div class="p-8 bg-slate-900 text-white flex justify-between items-center">
+                    <div class="p-8 bg-slate-900 text-white flex justify-between items-center"
+                        style="background: var(--gradient-primary)">
                         <div class="flex items-center space-x-6">
                             <button onclick="window.changeMonth(-1)"
                                 class="w-10 h-10 flex items-center justify-center hover:bg-slate-800 rounded-full transition-all">

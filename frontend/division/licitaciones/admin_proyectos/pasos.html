@@ -6,13 +6,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mantenedor de Pasos - Licitaciones - Algarrobo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        .glass-card {
+        :root {
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        body {
+            background-color: #f8fafc;
+        }
+
+        .glass-panel {
             background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .row-hover:hover {
@@ -39,9 +83,9 @@
                     </button>
                 </div>
 
-                <div class="glass-card rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div class="glass-panel rounded-2xl overflow-hidden animate-fade-in">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-800 text-white text-sm">
+                        <thead class="bg-slate-800 text-white text-sm" style="background: var(--gradient-primary)">
                             <tr>
                                 <th class="px-6 py-4 font-semibold w-20">Orden</th>
                                 <th class="px-6 py-4 font-semibold">Nombre del Hito / Paso</th>

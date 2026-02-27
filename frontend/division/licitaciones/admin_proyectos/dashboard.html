@@ -10,11 +10,41 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        .glass-card {
+        :root {
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+
+        body {
+            background-color: #f8fafc;
+        }
+
+        .glass-panel {
             background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
         }
 
         .step-progress {
@@ -26,8 +56,24 @@
 
         .step-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            background: var(--gradient-primary);
             transition: width 0.5s ease-in-out;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -52,29 +98,30 @@
                 </div>
 
                 <!-- Stats Summary -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-fade-in">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-blue-500">
                         <p class="text-sm font-medium text-gray-500 uppercase">Total Procesos</p>
                         <p class="text-3xl font-bold text-gray-800" id="statTotal">0</p>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-emerald-500">
                         <p class="text-sm font-medium text-gray-500 uppercase">Abiertas</p>
                         <p class="text-3xl font-bold text-gray-800" id="statAbiertas">0</p>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-red-400">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-red-400">
                         <p class="text-sm font-medium text-gray-500 uppercase">Cerradas</p>
                         <p class="text-3xl font-bold text-gray-800" id="statCerradas">0</p>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-green-500">
                         <p class="text-sm font-medium text-gray-500 uppercase">Adjudicadas</p>
                         <p class="text-3xl font-bold text-gray-800" id="statAdjudicadas">0</p>
                     </div>
                 </div>
 
                 <!-- Bidding List -->
-                <div class="glass-card rounded-2xl shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                        <h2 class="text-xl font-semibold text-gray-800">Licitaciones</h2>
+                <div class="glass-panel rounded-2xl overflow-hidden animate-fade-in" style="animation-delay: 0.1s">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center"
+                        style="background: var(--gradient-primary); color: white;">
+                        <h2 class="text-xl font-semibold">Licitaciones</h2>
                         <div class="flex items-center space-x-2">
                             <span class="text-sm text-gray-500">Filtrar por:</span>
                             <select id="filterEstadoLic" onchange="applyFilter()"

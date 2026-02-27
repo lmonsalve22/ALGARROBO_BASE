@@ -7,7 +7,7 @@
     <script src="../../../script/utils.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informe Dinámico - Geoportal Municipal</title>
+    <title>Informe Dimensional - Geoportal Municipal</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,14 +18,8 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: '#6366f1',
-                        secondary: '#ec4899',
-                        accent: '#8b5cf6',
-                    }
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#6366f1', secondary: '#ec4899', accent: '#8b5cf6' }
                 }
             }
         }
@@ -33,14 +27,13 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Highcharts core and modules -->
+    <!-- Highcharts core and advanced modules -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/highcharts.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/highcharts-3d.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/highcharts-more.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/modules/funnel.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/modules/heatmap.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/modules/treemap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/modules/sunburst.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/modules/exporting.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/modules/export-data.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.1/modules/accessibility.js"></script>
 
     <!-- Export Libraries -->
@@ -98,7 +91,7 @@
         }
 
         #chartContainer {
-            height: 600px;
+            height: 650px;
             width: 100%;
         }
 
@@ -118,6 +111,24 @@
             }
         }
 
+        .dimension-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background-color: white;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            outline: none;
+        }
+
+        .dimension-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Estilos para Checkboxes (igual a informe_dinamico.html) */
         .category-checkbox {
             display: none;
         }
@@ -301,12 +312,11 @@
                 <div class="relative z-10 flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur">
-                            <i class="fas fa-chart-pie text-2xl"></i>
+                            <i class="fas fa-layer-group text-2xl"></i>
                         </div>
                         <div>
-                            <h1 class="text-3xl font-bold">Informe Dinámico</h1>
-                            <p class="text-white/80">Analiza la inversión por diferentes categorías mediante gráficos 3D
-                            </p>
+                            <h1 class="text-3xl font-bold">Informe Dimensional</h1>
+                            <p class="text-white/80">Análisis avanzado cruzando dos variables de gestión</p>
                         </div>
                     </div>
                 </div>
@@ -389,63 +399,74 @@
             </div>
 
             <div class="glass-panel rounded-2xl p-6 mb-8 animate-fade-in">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Agrupar proyectos por:</label>
-                        <select id="groupByField" onchange="handleGroupByChange()"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white transition-all">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Dimensión 1
+                            (Principal):</label>
+                        <select id="groupBy1" onchange="handleGroupByChange()" class="dimension-select">
                             <option value="area_nombre">Área</option>
                             <option value="lineamiento_estrategico_nombre">Lineamiento Estratégico</option>
-                            <option value="financiamiento_nombre">Fuente de Financiamiento</option>
-                            <option value="anno_elaboracion">Año de Elaboración</option>
-                            <option value="anno_ejecucion">Año de Ejecución</option>
-                            <option value="estado_nombre">Estado del Proyecto</option>
-                            <option value="etapa_nombre">Etapa del Proyecto</option>
-                            <option value="estado_postulacion_nombre">Estado de Postulación</option>
+                            <option value="financiamiento_nombre" selected>Financiamiento</option>
+                            <option value="estado_nombre">Estado</option>
+                            <option value="etapa_nombre">Etapa</option>
                             <option value="sector_nombre">Sector</option>
+                            <option value="anno_ejecucion">Año Ejecución</option>
                             <option value="profesional_1">Profesional Responsable</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Métrica de Análisis:</label>
-                        <select id="metricType" onchange="updateChart()"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white transition-all">
-                            <option value="sum_monto">Inversión Total ($)</option>
-                            <option value="count">Cantidad de Proyectos (#)</option>
-                            <option value="avg_monto">Inversión Promedio ($)</option>
-                            <option value="avg_avance">Avance Físico Promedio (%)</option>
-                            <option value="sum_ejecutado">Monto Ejecutado Estimado ($)</option>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Dimensión 2
+                            (Sub-variable):</label>
+                        <select id="groupBy2" onchange="handleGroupByChange()" class="dimension-select">
+                            <option value="area_nombre">Área</option>
+                            <option value="lineamiento_estrategico_nombre">Lineamiento Estratégico</option>
+                            <option value="financiamiento_nombre">Financiamiento</option>
+                            <option value="estado_nombre" selected>Estado</option>
+                            <option value="etapa_nombre">Etapa</option>
+                            <option value="sector_nombre">Sector</option>
+                            <option value="anno_ejecucion">Año Ejecución</option>
+                            <option value="profesional_1">Profesional Responsable</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Gráfico:</label>
-                        <select id="chartType" onchange="updateChart()"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white transition-all">
-                            <option value="pie_3d">Pie Circular 3D</option>
-                            <option value="donut_3d">Donut 3D</option>
-                            <option value="column_3d">Columnas 3D</option>
-                            <option value="bar_3d">Barras 3D</option>
-                            <option value="line">Líneas de Tendencia</option>
-                            <option value="area">Áreas de Inversión</option>
-                            <option value="funnel">Embudo de Etapas/Inversión</option>
-                            <option value="pyramid">Pirámide</option>
-                            <option value="treemap">Mapa de Árbol (Inversión Relativa)</option>
-                            <option value="radial">Gráfico Polar (Radar)</option>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Métrica de Análisis:</label>
+                        <select id="metricType" onchange="updateChart()" class="dimension-select">
+                            <option value="sum_monto">Inversión Total ($)</option>
+                            <option value="count">Cantidad de Proyectos (#)</option>
+                            <option value="avg_avance">Avance Físico Promedio (%)</option>
+                            <option value="sum_ejecutado">Inversión Ejecutada ($)</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de
+                            Visualización:</label>
+                        <select id="chartType" onchange="updateChart()" class="dimension-select">
+                            <option value="heatmap">Mapa de Calor (Intersección)</option>
+                            <option value="stacked_bar">Barras Apiladas</option>
+                            <option value="stacked_column">Columnas Apiladas</option>
+                            <option value="sunburst">Gráfico Solar (Jerárquico)</option>
+                            <option value="treemap_hierarchical">Treemap Jerárquico</option>
+                            <option value="bubble">Burbujas Comparativas</option>
+                        </select>
+                    </div>
+
                     <div
-                        class="lg:col-span-3 flex flex-wrap gap-4 items-center justify-between border-t border-gray-100 pt-6 mt-2">
+                        class="lg:col-span-4 flex flex-wrap gap-4 items-center justify-between border-t border-gray-100 pt-6 mt-2">
                         <div class="flex-1 min-w-[300px]">
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                                <i class="fas fa-filter mr-2"></i>Filtrar categorías específicas:
+                                <i class="fas fa-filter mr-2"></i>Filtrar por Dimensión 1:
                             </label>
-                            <div id="categoryFilters" class="flex flex-wrap gap-3 max-h-32 overflow-y-auto p-1">
+                            <div id="categoryFilters1" class="flex flex-wrap gap-3 max-h-32 overflow-y-auto p-1 mb-4">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                                <i class="fas fa-filter mr-2"></i>Filtrar por Dimensión 2:
+                            </label>
+                            <div id="categoryFilters2" class="flex flex-wrap gap-3 max-h-32 overflow-y-auto p-1">
                                 <!-- Se llena dinámicamente -->
                             </div>
                         </div>
-                        <button onclick="generarInforme()" class="btn-primary flex-shrink-0">
-                            <i class="fas fa-file-invoice"></i> Generar Informe Detallado
-                        </button>
                     </div>
                 </div>
             </div>
@@ -457,9 +478,8 @@
                 <div id="dataTable" class="mt-8 border-t border-gray-100 pt-8 hidden">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                            <i class="fas fa-table text-indigo-500"></i>
-                            Detalle Estadístico
-                            <span class="text-sm font-normal text-gray-500 ml-2" id="tableSummaryText"></span>
+                            <i class="fas fa-table-list text-indigo-500"></i>
+                            Análisis Cruzado de Datos
                         </h3>
                         <div class="flex items-center gap-3">
                             <button onclick="exportTable('csv')"
@@ -476,18 +496,21 @@
                             </button>
                         </div>
                     </div>
-                    <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                    <div class="overflow-x-auto rounded-xl border border-gray-200">
                         <table class="w-full text-sm text-left">
                             <thead class="bg-gray-50 border-b border-gray-200">
                                 <tr>
                                     <th class="px-6 py-4 font-bold text-gray-600 uppercase tracking-wider sortable sort-active"
-                                        id="th-category" onclick="sortTable(0)">
-                                        Categoría <i class="fas fa-sort sort-icon"></i></th>
+                                        id="th-dim1" onclick="sortTable(0)">
+                                        Dimensión 1 <i class="fas fa-sort sort-icon"></i></th>
+                                    <th class="px-6 py-4 font-bold text-gray-600 uppercase tracking-wider sortable"
+                                        id="th-dim2" onclick="sortTable(1)">
+                                        Dimensión 2 <i class="fas fa-sort sort-icon"></i></th>
                                     <th class="px-6 py-4 font-bold text-gray-600 uppercase tracking-wider text-right sortable"
-                                        id="th-value" onclick="sortTable(1)">
-                                        Valor <i class="fas fa-sort sort-icon"></i></th>
+                                        id="th-value" onclick="sortTable(2)">Valor <i class="fas fa-sort sort-icon"></i>
+                                    </th>
                                     <th class="px-6 py-4 font-bold text-gray-600 uppercase tracking-wider text-right sortable"
-                                        onclick="sortTable(2)">
+                                        onclick="sortTable(3)">
                                         % Part. <i class="fas fa-sort sort-icon"></i></th>
                                 </tr>
                             </thead>
@@ -526,8 +549,7 @@
                 populateFilters();
                 applyFilters();
             } catch (error) {
-                console.error('Error al cargar proyectos:', error);
-                alert('Error al cargar datos: ' + (error.message || 'No se pudo conectar al servidor'));
+                console.error('Error:', error);
             }
         }
 
@@ -552,6 +574,7 @@
         document.addEventListener('click', () => {
             document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('open'));
         });
+
         function populateFilters() {
             for (const [filterKey, dataKey] of Object.entries(filterFieldMap)) {
                 const container = document.getElementById(`filter-${filterKey}`);
@@ -569,8 +592,17 @@
                     pill.classList.add('active');
                 }
 
-                // Para las OPCIONES del dropdown, mostramos todo lo disponible en la DB
-                // para evitar que el usuario se quede "bloqueado" sin poder desmarcar.
+                const otherFiltersActive = { ...currentFilters };
+                delete otherFiltersActive[filterKey];
+
+                const availableProjects = allProjects.filter(p => {
+                    return Object.entries(otherFiltersActive).every(([fK, fV]) => {
+                        if (fV.length === 0) return true;
+                        return fV.includes(p[filterFieldMap[fK]]);
+                    });
+                });
+
+                // Opciones basadas en el dataset completo para evitar bloqueos
                 const options = [...new Set(allProjects.map(p => p[dataKey]).filter(v => v))].sort();
 
                 const isAllSelected = currentVals.length === 0;
@@ -586,9 +618,11 @@
                     const optStr = String(opt);
                     const isSelected = currentVals.map(String).includes(optStr);
 
-                    // Conteo cruzado: ¿Hay datos con este valor considerando el ribbon Y los chips de abajo?
-                    const groupBy = document.getElementById('groupByField').value;
-                    const selectedCats = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+                    // Conteo cruzado: Ribbon + Chips Dimensión 1 + Chips Dimensión 2
+                    const dim1 = document.getElementById('groupBy1').value;
+                    const dim2 = document.getElementById('groupBy2').value;
+                    const selectedCats1 = Array.from(document.querySelectorAll('#categoryFilters1 .category-checkbox:checked')).map(cb => cb.value);
+                    const selectedCats2 = Array.from(document.querySelectorAll('#categoryFilters2 .category-checkbox:checked')).map(cb => cb.value);
 
                     const hasData = allProjects.some(p => {
                         const val = String(p[dataKey] || '').trim();
@@ -600,8 +634,11 @@
                             return fV.includes(projectVal);
                         });
 
-                        const catPass = selectedCats.length === 0 || selectedCats.includes(String(p[groupBy] || 'Sin especificar'));
-                        return ribbonPass && catPass;
+                        // Validar contra ambas dimensiones de abajo
+                        const cat1Pass = selectedCats1.length === 0 || selectedCats1.includes(String(p[dim1] || 'Sin especificar'));
+                        const cat2Pass = selectedCats2.length === 0 || selectedCats2.includes(String(p[dim2] || 'Sin especificar'));
+
+                        return ribbonPass && cat1Pass && cat2Pass;
                     });
 
                     html += `
@@ -624,7 +661,7 @@
                 if (element.checked) currentFilters[filterType] = [];
             } else if (element) {
                 const val = String(element.value);
-                const resultSet = new Set(currentFilters[filterType]);
+                const resultSet = new Set(currentFilters[filterType].map(String));
 
                 if (element.checked) {
                     resultSet.add(val);
@@ -645,43 +682,50 @@
                 });
             });
 
-            // IMPORTANTE: Primero actualizamos los chips inferiores para que el Ribbon
-            // pueda leer el estado correcto de categorías seleccionadas.
+            // Ciclo robusto: Actualizamos interfaz inferior primero, luego ribbon superior
             handleGroupByChange();
             populateFilters();
         }
 
         function handleGroupByChange() {
-            if (!allProjects || allProjects.length === 0) return;
-            const groupBy = document.getElementById('groupByField').value;
+            if (!filteredProjects || filteredProjects.length === 0) {
+                document.getElementById('categoryFilters1').innerHTML = '<p class="text-sm text-gray-500">No hay datos</p>';
+                document.getElementById('categoryFilters2').innerHTML = '<p class="text-sm text-gray-500">No hay datos</p>';
+                updateChart();
+                return;
+            }
 
-            // Obtenemos categorías basadas en el dataset COMPLETO para permitir navegación estable
-            const categories = [...new Set(allProjects.map(p => p[groupBy] || 'Sin especificar'))].sort();
+            const renderCheckboxes = (dimId, containerId) => {
+                const groupBy = document.getElementById(dimId).value;
+                const categories = [...new Set(allProjects.map(p => String(p[groupBy] || 'Sin especificar')))].sort();
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
 
-            const container = document.getElementById('categoryFilters');
-            container.innerHTML = '';
+                categories.forEach((cat, index) => {
+                    // Solo mostramos chips con datos bajo filtros ribbon
+                    const hasData = filteredProjects.some(p => (p[groupBy] || 'Sin especificar') === cat);
+                    if (!hasData) return;
 
-            categories.forEach((cat, index) => {
-                // Solo mostramos chips que tengan datos bajo el filtrado del RIBBON actual
-                // pero si ya estaban seleccionados, los mantenemos para poder "limpiar"
-                const hasData = filteredProjects.some(p => (p[groupBy] || 'Sin especificar') === cat);
-                if (!hasData) return;
+                    const id = `chk-${containerId}-${index}`;
+                    const html = `
+                        <div>
+                            <input type="checkbox" id="${id}" value="${cat}" class="category-checkbox" checked onchange="updateChartAndPills()">
+                            <label for="${id}" class="category-label">${cat}</label>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            };
 
-                const id = `cat-${index}`;
-                container.innerHTML += `
-                    <div class="relative">
-                        <input type="checkbox" id="${id}" value="${cat}" class="category-checkbox" checked onchange="updateChartAndPills()">
-                        <label for="${id}" class="category-label">${cat}</label>
-                    </div>
-                `;
-            });
+            renderCheckboxes('groupBy1', 'categoryFilters1');
+            renderCheckboxes('groupBy2', 'categoryFilters2');
 
             updateChart();
         }
 
         function updateChartAndPills() {
             updateChart();
-            populateFilters(); // Sincronización inversa: chips -> ribbon
+            populateFilters(); // Cascada inversa: Filtros locales actualizan ribbon global
         }
 
         function updateChart() {
@@ -691,126 +735,135 @@
                 return;
             }
 
-            const groupBy = document.getElementById('groupByField').value;
-            const metric = document.getElementById('metricType').value;
-            const chartType = document.getElementById('chartType').value;
+            const getSelectedCheckboxes = (containerId) => {
+                const checkboxes = document.querySelectorAll(`#${containerId} .category-checkbox:checked`);
+                return Array.from(checkboxes).map(checkbox => checkbox.value);
+            };
 
-            // Obtener categorías seleccionadas
-            const selectedCategories = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+            const selectedCategories1 = getSelectedCheckboxes('categoryFilters1');
+            const selectedCategories2 = getSelectedCheckboxes('categoryFilters2');
 
-            if (selectedCategories.length === 0) {
-                Highcharts.chart('chartContainer', { title: { text: 'Seleccione al menos una categoría' } });
+            if (selectedCategories1.length === 0 || selectedCategories2.length === 0) {
+                if (window.Highcharts) Highcharts.chart('chartContainer', { title: { text: 'Seleccione al menos una categoría en ambas dimensiones para visualizar' } });
+                document.getElementById('dataTable').classList.add('hidden');
                 return;
             }
 
-            const fieldLabel = document.getElementById('groupByField').options[document.getElementById('groupByField').selectedIndex].text;
+            const dim1 = document.getElementById('groupBy1').value;
+            const dim2 = document.getElementById('groupBy2').value;
+            const metric = document.getElementById('metricType').value;
+            const type = document.getElementById('chartType').value;
+
+            const label1 = document.getElementById('groupBy1').options[document.getElementById('groupBy1').selectedIndex].text;
+            const label2 = document.getElementById('groupBy2').options[document.getElementById('groupBy2').selectedIndex].text;
             const metricLabel = document.getElementById('metricType').options[document.getElementById('metricType').selectedIndex].text;
 
-            const currentYear = new Date().getFullYear();
-            const groupedRaw = {};
+            // Procesamiento de datos bidimensionales
+            const dataMap = new Map();
+            const categories1 = new Set();
+            const categories2 = new Set();
 
-            // Filtrar proyectos por categorías seleccionadas
-            const baseData = filteredProjects.filter(p => selectedCategories.includes(p[groupBy] || 'Sin especificar'));
+            // Filtrado base según las selecciones de checkbox
+            const baseData = filteredProjects.filter(p => {
+                const val1 = p[dim1] || 'Sin especificar';
+                const val2 = p[dim2] || 'Sin especificar';
+                return selectedCategories1.includes(val1) && selectedCategories2.includes(val2);
+            });
 
             baseData.forEach(p => {
-                let key = p[groupBy] || 'Sin especificar';
-                if (!groupedRaw[key]) {
-                    groupedRaw[key] = {
-                        count: 0,
-                        sum_monto: 0,
-                        sum_avance: 0,
-                        sum_ejecutado: 0,
-                        sum_antiguedad: 0,
-                        sum_profesionales: 0
-                    };
-                }
+                const val1 = p[dim1] || 'Sin especificar';
+                const val2 = p[dim2] || 'Sin especificar';
+                categories1.add(val1);
+                categories2.add(val2);
+
+                const key = `${val1}||${val2}`;
+                if (!dataMap.has(key)) dataMap.set(key, { count: 0, sum_monto: 0, sum_avance: 0 });
 
                 const monto = parseFloat(p.monto) || 0;
                 const avance = parseFloat(p.avance_total_porcentaje) || 0;
-                const elabYear = parseInt(p.anno_elaboracion) || currentYear;
 
-                // Contar profesionales no vacíos
-                const profCount = [p.profesional_1, p.profesional_2, p.profesional_3].filter(pf => pf && pf.trim()).length;
-
-                groupedRaw[key].count++;
-                groupedRaw[key].sum_monto += monto;
-                groupedRaw[key].sum_avance += avance;
-                groupedRaw[key].sum_ejecutado += (monto * (avance / 100));
-                groupedRaw[key].sum_antiguedad += (currentYear - elabYear);
-                groupedRaw[key].sum_profesionales += profCount;
+                const d = dataMap.get(key);
+                d.count++;
+                d.sum_monto += monto;
+                d.sum_avance += avance;
+                d.sum_ejecutado = (d.sum_ejecutado || 0) + (monto * (avance / 100));
             });
 
-            const processedData = Object.keys(groupedRaw).map(key => {
-                const item = groupedRaw[key];
-                let value = 0;
-
-                switch (metric) {
-                    case 'sum_monto': value = item.sum_monto; break;
-                    case 'count': value = item.count; break;
-                    case 'avg_monto': value = item.sum_monto / item.count; break;
-                    case 'avg_avance': value = item.sum_avance / item.count; break;
-                    case 'sum_ejecutado': value = item.sum_ejecutado; break;
-                    case 'avg_antiguedad': value = item.sum_antiguedad / item.count; break;
-                    case 'avg_profesionales': value = item.sum_profesionales / item.count; break;
-                }
-
-                return { name: key, y: value };
-            }).sort((a, b) => b.y - a.y);
-
-            const totalGlobal = processedData.reduce((acc, curr) => acc + curr.y, 0);
-
-            // Inyectar el porcentaje relativo para el tooltip
-            processedData.forEach(d => {
-                d.percentage = (d.y / (totalGlobal || 1)) * 100;
+            renderMultiChart({
+                dataMap,
+                cat1: Array.from(categories1).sort(),
+                cat2: Array.from(categories2).sort(),
+                metric, type, label1, label2, metricLabel
             });
 
-            renderChart(processedData, `${metricLabel} por ${fieldLabel}`, totalGlobal, chartType, metric);
-            renderTable(processedData, fieldLabel, metricLabel, totalGlobal, metric);
+            renderMultiTable({
+                dataMap,
+                cat1: Array.from(categories1).sort(),
+                cat2: Array.from(categories2).sort(),
+                metric, label1, label2, metricLabel
+            });
         }
 
-        function renderTable(data, categoryLabel, metricLabel, total, metric) {
+        function renderMultiTable(cfg) {
+            const { dataMap, cat1, cat2, metric, label1, label2, metricLabel } = cfg;
             const tableDiv = document.getElementById('dataTable');
             const tbody = document.getElementById('tableBody');
-            const thCategory = document.getElementById('th-category');
-            const thValue = document.getElementById('th-value');
-            const summaryText = document.getElementById('tableSummaryText');
 
             tableDiv.classList.remove('hidden');
-            thCategory.innerHTML = `${categoryLabel.toUpperCase()} <i class="fas fa-sort sort-icon"></i>`;
-            thValue.innerHTML = `${metricLabel.toUpperCase()} <i class="fas fa-sort sort-icon"></i>`;
-            if (summaryText) {
-                summaryText.textContent = `Total de ${data.length} categorías analizadas`;
-            }
+            document.getElementById('th-dim1').innerHTML = `${label1.toUpperCase()} <i class="fas fa-sort sort-icon"></i>`;
+            document.getElementById('th-dim2').innerHTML = `${label2.toUpperCase()} <i class="fas fa-sort sort-icon"></i>`;
+            document.getElementById('th-value').innerHTML = `${metricLabel.toUpperCase()} <i class="fas fa-sort sort-icon"></i>`;
 
             const isCurrency = metric.includes('monto') || metric.includes('ejecutado');
             const isPercent = metric.includes('avance');
-            const isAntiguedad = metric.includes('antiguedad');
-            const isCount = metric === 'count' || metric.includes('profesionales');
-
-            const valueSuffix = isPercent ? '%' : (isAntiguedad ? ' años' : (isCount ? ' proy.' : ''));
-            const valuePrefix = isCurrency ? '$' : '';
 
             tbody.innerHTML = '';
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-indigo-50/30 transition-colors';
 
-                const formattedValue = isCurrency ? formatCurrency(item.y) : `${item.y.toLocaleString('es-CL', { maximumFractionDigits: 1 })}${valueSuffix}`;
-                const progressBarColor = item.percentage > 50 ? 'bg-indigo-500' : (item.percentage > 20 ? 'bg-indigo-400' : 'bg-indigo-300');
+            // Calcular Gran Total para participación
+            let grandTotal = 0;
+            cat1.forEach(v1 => {
+                cat2.forEach(v2 => {
+                    const d = dataMap.get(`${v1}||${v2}`);
+                    if (d && (d.sum_monto > 0 || d.count > 0)) {
+                        if (metric === 'sum_monto') grandTotal += d.sum_monto;
+                        else if (metric === 'count') grandTotal += d.count;
+                        else if (metric === 'avg_avance') grandTotal += (d.sum_avance / d.count);
+                        else if (metric === 'sum_ejecutado') grandTotal += d.sum_ejecutado;
+                    }
+                });
+            });
 
-                row.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-gray-900">${item.name}</td>
-                    <td class="px-6 py-4 text-right font-mono font-bold text-indigo-700">${formattedValue}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="${progressBarColor} h-full rounded-full" style="width: ${item.percentage}%"></div>
-                            </div>
-                            <span class="text-xs font-bold text-gray-600 min-w-[40px] text-right">${item.percentage.toFixed(1)}%</span>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
+            cat1.forEach(v1 => {
+                cat2.forEach(v2 => {
+                    const key = `${v1}||${v2}`;
+                    const d = dataMap.get(key);
+
+                    if (d && (d.sum_monto > 0 || d.count > 0)) {
+                        let value = 0;
+                        if (metric === 'sum_monto') value = d.sum_monto;
+                        else if (metric === 'count') value = d.count;
+                        else if (metric === 'avg_avance') value = d.sum_avance / d.count;
+                        else if (metric === 'sum_ejecutado') value = d.sum_ejecutado;
+
+                        const participation = grandTotal > 0 ? (value / grandTotal) * 100 : 0;
+                        const row = document.createElement('tr');
+                        row.className = 'hover:bg-indigo-50/30 transition-colors';
+
+                        const formattedValue = isCurrency ? formatCurrency(value) : `${value.toLocaleString('es-CL', { maximumFractionDigits: 1 })}${isPercent ? '%' : ''}`;
+
+                        row.innerHTML = `
+                            <td class="px-6 py-4 font-medium text-gray-700">${v1}</td>
+                            <td class="px-6 py-4 text-gray-600">${v2}</td>
+                            <td class="px-6 py-4 text-right font-mono font-bold text-indigo-700">${formattedValue}</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-md font-bold text-xs">
+                                    ${participation.toFixed(1)}%
+                                </span>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                });
             });
 
             // Aplicar orden inicial o persistente
@@ -832,6 +885,7 @@
                 }
             }
 
+            // Actualizar UI de encabezados
             ths.forEach((th, idx) => {
                 th.classList.remove('sort-active');
                 const icon = th.querySelector('.sort-icon');
@@ -849,8 +903,9 @@
                 let cellA = a.cells[columnIndex].textContent.trim();
                 let cellB = b.cells[columnIndex].textContent.trim();
 
+                // Limpiar valores para ordenamiento numérico
                 const cleanValue = (val) => {
-                    if (val.includes('%')) return parseFloat(val.split('%')[0].replace(/\$|\./g, '').replace(',', '.'));
+                    if (val.includes('%')) return parseFloat(val.replace('%', ''));
                     if (val.includes('$')) return parseFloat(val.replace(/\$|\./g, '').replace(',', '.'));
                     const num = parseFloat(val.replace(/\./g, '').replace(',', '.'));
                     return isNaN(num) ? val.toLowerCase() : num;
@@ -873,19 +928,16 @@
         }
 
         function exportTable(format) {
-            const groupBy = document.getElementById('groupByField').options[document.getElementById('groupByField').selectedIndex].text;
+            const label1 = document.getElementById('groupBy1').options[document.getElementById('groupBy1').selectedIndex].text;
+            const label2 = document.getElementById('groupBy2').options[document.getElementById('groupBy2').selectedIndex].text;
             const metric = document.getElementById('metricType').options[document.getElementById('metricType').selectedIndex].text;
-            const fileName = `Informe_Dinamico_${groupBy.replace(/ /g, '_')}`;
+            const fileName = `Analisis_Dimensional_${label1}_v_${label2}`;
 
             const rows = [];
-            const headers = [groupBy, metric, 'Participación (%)'];
+            const headers = [label1, label2, metric, '% Part.'];
 
             document.querySelectorAll('#tableBody tr').forEach(tr => {
-                const cells = Array.from(tr.querySelectorAll('td')).map((td, i) => {
-                    if (i === 2) return td.querySelector('span').textContent.replace('%', '');
-                    return td.textContent.trim();
-                });
-                rows.push(cells);
+                rows.push(Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim()));
             });
 
             if (format === 'csv') {
@@ -898,160 +950,121 @@
             } else if (format === 'excel') {
                 const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
                 const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Dimensiones");
                 XLSX.writeFile(workbook, `${fileName}.xlsx`);
             } else if (format === 'pdf') {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 doc.setFontSize(18);
-                doc.text('Informe Dinámico - Geoportal Municipal', 14, 22);
+                doc.text('Análisis Dimensional - Geoportal Municipal', 14, 22);
                 doc.setFontSize(11);
                 doc.setTextColor(100);
-                doc.text(`Análisis de ${metric} por ${groupBy}`, 14, 30);
+                doc.text(`${metric} por ${label1} y ${label2}`, 14, 30);
                 doc.autoTable({
                     head: [headers],
                     body: rows,
                     startY: 35,
-                    theme: 'striped',
                     headStyles: { fillColor: [99, 102, 241] }
                 });
                 doc.save(`${fileName}.pdf`);
             }
         }
 
-        function renderChart(data, title, total, type, metric) {
-            const isCurrency = metric.includes('monto') || metric.includes('ejecutado');
-            const isPercent = metric.includes('avance');
-            const isAntiguedad = metric.includes('antiguedad');
-            const isCount = metric === 'count' || metric.includes('profesionales');
+        function renderMultiChart(cfg) {
+            const { dataMap, cat1, cat2, metric, type, label1, label2, metricLabel } = cfg;
 
-            const valueSuffix = isPercent ? '%' : (isAntiguedad ? ' años' : (isCount ? ' proy.' : ''));
-            const valuePrefix = isCurrency ? '$' : '';
-
-            const commonConfig = {
-                chart: {
-                    backgroundColor: 'transparent',
-                    style: { fontFamily: 'Outfit' }
-                },
-                title: {
-                    text: title,
-                    style: { fontSize: '20px', fontWeight: 'bold' }
-                },
-                subtitle: {
-                    text: isCurrency ? `Valor Acumulado: ${formatCurrency(total)}` : `Métrica Global: ${total.toFixed(1)}${valueSuffix}`,
-                    style: { fontSize: '16px' }
-                },
-                tooltip: {
-                    pointFormat: `{series.name}: <b>{point.percentage:.1f}%</b><br>Valor: <b>${valuePrefix}{point.y:,.1f}${valueSuffix}</b>`
-                }
+            let series = [];
+            let options = {
+                chart: { backgroundColor: 'transparent', style: { fontFamily: 'Outfit' } },
+                title: { text: `${metricLabel} por ${label1} y ${label2}`, style: { fontWeight: 'bold' } },
+                tooltip: { shared: true }
             };
 
-            let specificConfig = {};
+            const getValue = (v1, v2) => {
+                const d = dataMap.get(`${v1}||${v2}`);
+                if (!d) return 0;
+                if (metric === 'sum_monto') return d.sum_monto;
+                if (metric === 'count') return d.count;
+                if (metric === 'avg_avance') return d.sum_avance / d.count;
+                if (metric === 'sum_ejecutado') return d.sum_ejecutado;
+                return 0;
+            };
 
             switch (type) {
-                case 'pie_3d':
-                    specificConfig = {
-                        chart: { type: 'pie', options3d: { enabled: true, alpha: 45, beta: 0 } },
-                        plotOptions: { pie: { depth: 35, dataLabels: { enabled: true, format: '{point.name}: {point.percentage:.1f}%' } } },
-                        series: [{ name: 'Inversión', data: data }]
-                    };
+                case 'heatmap':
+                    const heatData = [];
+                    cat1.forEach((v1, i) => {
+                        cat2.forEach((v2, j) => {
+                            heatData.push([i, j, getValue(v1, v2)]);
+                        });
+                    });
+                    options.chart.type = 'heatmap';
+                    options.xAxis = { categories: cat1, title: { text: label1 } };
+                    options.yAxis = { categories: cat2, title: { text: label2 }, reversed: true };
+                    options.colorAxis = { min: 0, minColor: '#f8fafc', maxColor: '#6366f1' };
+                    options.series = [{ name: metricLabel, data: heatData, dataLabels: { enabled: true, color: '#000000', style: { textOutline: 'none', fontSize: '10px' } } }];
                     break;
-                case 'donut_3d':
-                    specificConfig = {
-                        chart: { type: 'pie', options3d: { enabled: true, alpha: 45, beta: 0 } },
-                        plotOptions: { pie: { innerSize: '60%', depth: 35, dataLabels: { enabled: true, format: '{point.name}: {point.percentage:.1f}%' } } },
-                        series: [{ name: 'Inversión', data: data }]
-                    };
+
+                case 'stacked_column':
+                case 'stacked_bar':
+                    options.chart.type = type === 'stacked_column' ? 'column' : 'bar';
+                    options.plotOptions = { [options.chart.type]: { stacking: 'normal' } };
+                    options.xAxis = { categories: cat1 };
+                    series = cat2.map(v2 => ({
+                        name: v2,
+                        data: cat1.map(v1 => getValue(v1, v2))
+                    }));
+                    options.series = series;
                     break;
-                case 'column_3d':
-                    specificConfig = {
-                        chart: { type: 'column', options3d: { enabled: true, alpha: 15, beta: 15, depth: 50, viewDistance: 25 } },
-                        xAxis: { categories: data.map(d => d.name) },
-                        series: [{ name: 'Inversión', data: data.map(d => d.y), colorByPoint: true }]
-                    };
+
+                case 'sunburst':
+                    const sunData = [{ id: '0.0', parent: '', name: 'Total' }];
+                    cat1.forEach(v1 => {
+                        sunData.push({ id: v1, parent: '0.0', name: v1 });
+                        cat2.forEach(v2 => {
+                            const val = getValue(v1, v2);
+                            if (val > 0) {
+                                sunData.push({ id: `${v1}-${v2}`, parent: v1, name: v2, value: val });
+                            }
+                        });
+                    });
+                    options.series = [{ type: 'sunburst', data: sunData, allowDrillToNode: true, cursor: 'pointer', dataLabels: { format: '{point.name}' } }];
                     break;
-                case 'bar_3d':
-                    specificConfig = {
-                        chart: { type: 'bar', options3d: { enabled: true, alpha: 10, beta: 10, depth: 50 } },
-                        xAxis: { categories: data.map(d => d.name) },
-                        series: [{ name: 'Inversión', data: data.map(d => d.y), colorByPoint: true }]
-                    };
+
+                case 'treemap_hierarchical':
+                    const treeData = [];
+                    cat1.forEach(v1 => {
+                        treeData.push({ id: v1, name: v1, color: Highcharts.getOptions().colors[treeData.length % 10] });
+                        cat2.forEach(v2 => {
+                            const val = getValue(v1, v2);
+                            if (val > 0) {
+                                treeData.push({ name: v2, parent: v1, value: val });
+                            }
+                        });
+                    });
+                    options.series = [{ type: 'treemap', layoutAlgorithm: 'squarified', allowTraversingTree: true, data: treeData }];
                     break;
-                case 'line':
-                    specificConfig = {
-                        chart: { type: 'line' },
-                        xAxis: { categories: data.map(d => d.name) },
-                        series: [{ name: 'Inversión', data: data.map(d => d.y) }]
-                    };
-                    break;
-                case 'area':
-                    specificConfig = {
-                        chart: { type: 'area' },
-                        xAxis: { categories: data.map(d => d.name) },
-                        series: [{ name: 'Inversión', data: data.map(d => d.y) }]
-                    };
-                    break;
-                case 'funnel':
-                    specificConfig = {
-                        chart: { type: 'funnel' },
-                        plotOptions: { funnel: { neckWidth: '30%', neckHeight: '25%', width: '70%', dataLabels: { enabled: true, format: '<b>{point.name}</b>: {point.percentage:.1f}%' } } },
-                        series: [{ name: 'Inversión', data: data.map(d => [d.name, d.y]) }]
-                    };
-                    break;
-                case 'pyramid':
-                    specificConfig = {
-                        chart: { type: 'pyramid' },
-                        plotOptions: { pyramid: { dataLabels: { enabled: true, format: '{point.name}' } } },
-                        series: [{ name: 'Inversión', data: data.map(d => [d.name, d.y]) }]
-                    };
-                    break;
-                case 'treemap':
-                    specificConfig = {
-                        chart: { type: 'treemap' },
-                        series: [{ layoutAlgorithm: 'squarified', data: data.map(d => ({ name: d.name, value: d.y, colorValue: d.y })) }]
-                    };
-                    break;
-                case 'radial':
-                    specificConfig = {
-                        chart: { polar: true, type: 'line' },
-                        xAxis: { categories: data.map(d => d.name), tickmarkPlacement: 'on', lineWidth: 0 },
-                        yAxis: { gridLineInterpolation: 'polygon', lineWidth: 0, min: 0 },
-                        series: [{ name: 'Inversión', data: data.map(d => d.y), pointPlacement: 'on' }]
-                    };
+
+                case 'bubble':
+                    const bubbleData = [];
+                    cat1.forEach((v1, i) => {
+                        cat2.forEach((v2, j) => {
+                            const val = getValue(v1, v2);
+                            if (val > 0) bubbleData.push({ x: i, y: j, z: val, name: `${v1} / ${v2}` });
+                        });
+                    });
+                    options.chart.type = 'bubble';
+                    options.xAxis = { categories: cat1 };
+                    options.yAxis = { categories: cat2 };
+                    options.series = [{ data: bubbleData, name: metricLabel }];
                     break;
             }
 
-            const finalConfig = Highcharts.merge(commonConfig, specificConfig);
-            Highcharts.chart('chartContainer', finalConfig);
-        }
-
-        function generarInforme() {
-            if (!allProjects || allProjects.length === 0) {
-                alert('No hay datos cargados para generar el informe.');
-                return;
-            }
-
-            const groupBy = document.getElementById('groupByField').value;
-            const fieldLabel = document.getElementById('groupByField').options[document.getElementById('groupByField').selectedIndex].text;
-            const groupedData = {};
-
-            allProjects.forEach(p => {
-                let value = p[groupBy] || 'Sin especificar';
-                let monto = parseFloat(p.monto) || 0;
-                if (!groupedData[value]) groupedData[value] = { count: 0, total: 0 };
-                groupedData[value].count++;
-                groupedData[value].total += monto;
-            });
-
-            console.table(groupedData);
-            alert(`Informe generado para "${fieldLabel}" con ${Object.keys(groupedData).length} categorías analizadas. Los detalles se han exportado a la consola de desarrollador.`);
+            Highcharts.chart('chartContainer', options);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // checkLoginStatus viene de router.js o utils.js
-            if (typeof checkLoginStatus === 'function') {
-                checkLoginStatus();
-            }
+            if (typeof checkLoginStatus === 'function') checkLoginStatus();
             fetchProjects();
         });
     </script>
