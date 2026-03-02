@@ -464,12 +464,34 @@ const helpContent = {
         ]
     },
     // SEGURIDAD VISTAS
+    vista0: {
+        title: 'Reporte de Inteligencia Delictual',
+        icon: 'fa-shield-halved',
+        description: 'Vista maestra diseñada para la inyección dinámica de múltiples gráficos de inteligencia avanzada. Permite visualizar varios indicadores de seguridad en un solo panel optimizado para reportes ejecutivos.',
+        features: [
+            'Visualización en cuadrícula de gráficos de inteligencia',
+            'Soporte para múltiples tipos de gráficos (Barras, Líneas, Radar, etc.)',
+            'Diseño optimizado para exportación a PDF y reportes impresos',
+            'Actualización automática basada en la configuración de datos del estado'
+        ],
+        tips: [
+            'Use esta vista para tener una panorámica de varios indicadores a la vez',
+            'Note que en modo impresión, los gráficos se organizan para evitar saltos de página incómodos'
+        ]
+    },
     vista1: {
-        title: 'Resumen Ejecutivo',
-        icon: 'fa-file-lines',
-        description: '¿Cómo fue la semana en términos de seguridad? Resumen inmediato de casos y riesgo país.',
-        features: ['Resumen ejecutivo semanal', 'KPIs principales de criminalidad', 'Identificación de riesgos'],
-        tips: ['Analice variaciones respecto al promedio histórico', 'Los colores indican desviaciones críticas']
+        title: 'Resumen Semanal',
+        icon: 'fa-calendar-week',
+        description: 'Panel de control principal con los indicadores clave de la semana actual.',
+        features: [
+            'Resumen ejecutivo semanal',
+            'KPIs principales de criminalidad',
+            'Identificación de riesgos'
+        ],
+        tips: [
+            'Compare el total con la semana anterior para ver la tendencia',
+            'Los indicadores en rojo requieren atención prioritaria'
+        ]
     },
     vista2: {
         title: 'Evolución Reciente',
@@ -558,44 +580,182 @@ const helpContent = {
     vista14: {
         title: 'Priorización Estratégica',
         icon: 'fa-bullseye',
-        description: '¿Dónde debemos enfocar los recursos? Matriz de decisión basada en volumen y aceleración.',
-        features: ['Cuadrante de decisión táctica', 'Foco presupuestario', 'Detección de brotes'],
-        tips: ['Delitos en el cuadrante superior derecho son MANDATORIOS', 'Ignore delitos en el cuadrante de baja prioridad']
+        description: 'Matriz de decisión táctica que cruza el volumen absoluto de casos con su aceleración porcentual para definir dónde concentrar los recursos.',
+        features: [
+            'Clasificación en 4 cuadrantes: Alarma, Alerta, Monitoreo y Control',
+            'Identificación de "Focos" (Alto volumen + Alza crítica)',
+            'Seguimiento de variación semanal vs. semana anterior',
+            'Cálculo automático de prioridad basado en riesgo'
+        ],
+        tips: [
+            'Concéntrese primero en los delitos de la columna ALARMA/FOCO',
+            'Los delitos en CONTROL tienen bajo volumen y tendencia estable, requiriendo solo supervisión pasiva'
+        ]
     },
     vista15: {
-        title: 'Categoría',
+        title: 'Análisis por Categoría (Taxonomía Multidimensional)',
         icon: 'fa-layer-group',
-        description: '¿Cuál es el perfil delictual dominante? Agrupación por naturaleza jurídica y operativa.',
-        features: ['Perfiles delictuales operativos', 'Agrupamiento jurídico', 'Familias de casos'],
-        tips: ['Agrupar por categorías facilita la respuesta coordinada', 'Determine si el foco es prevención social o disuasión']
+        description: 'Desglose del fenómeno criminal según su naturaleza jurídica, modus operandi y nivel de severidad del impacto social.',
+        features: [
+            'Tendencia histórica de 12 semanas por Severidad (Vida, Integridad, Patrimonio)',
+            'Análisis de evolución por Modus Operandi (Violencia, Fuerza, Oportunidad)',
+            'Seguimiento por Naturaleza Jurídica (Personas, Propiedad, Orden Público)',
+            'Distribución porcentual actual por cada eje analizado'
+        ],
+        tips: [
+            'Observe si un alza en el total se debe a delitos de "Oportunidad" o a delitos "Contra la Vida"',
+            'El cambio en el "Modus Operandi" puede indicar la entrada de nuevas bandas o cambios en el comportamiento delictual'
+        ]
     },
     vista16: {
-        title: 'Auditoría de Datos y Calidad',
+        title: 'Auditoría de Integridad y Salud de Datos',
         icon: 'fa-database',
-        description: '¿Qué tan confiables son nuestros datos? Análisis de discrepancias (STOP vs CEAD).',
-        features: ['Índice de completitud de datos', 'Validación de fuentes oficiales', 'Análisis de subdenuncia'],
-        tips: ['Certifique la calidad de la información antes de actuar', 'Altas discrepancias sugieren problemas de registro']
+        description: 'Herramienta de control de calidad que certifica la confiabilidad, completitud y consistencia de las fuentes de datos (STOP y CEAD).',
+        features: [
+            'Cálculo de Score de Salud de Datos global',
+            'Detección de Gaps (periodos sin datos) y Outliers (anomalías estadísticas)',
+            'Monitoreo de latencia de actualización de fuentes oficiales',
+            'Comparativa de completitud entre registros semanales y mensuales'
+        ],
+        tips: [
+            'Una puntuación menor al 70% sugiere precaución al interpretar tendencias de largo plazo',
+            'Los Gaps e Outliers pueden indicar problemas en el proceso de carga o reporte de datos oficiales'
+        ]
     },
     vista17: {
         title: 'Momentum y Rachas',
         icon: 'fa-bolt',
-        description: '¿Estamos ante un brote delictual? Detección de aceleración estadística y rachas.',
-        features: ['Cálculo de momentum (CAGR)', 'Identificación de rachas negativas', 'Alertas de brotes'],
-        tips: ['Corte las rachas negativas antes de la 3ª semana', 'El momentum indica la velocidad de la crisis']
+        description: 'Análisis profundo de la velocidad de crecimiento delictual (Momentum) y la persistencia temporal de las tendencias (Rachas).',
+        features: [
+            'Cálculo de CAGR (Tasa de Crecimiento Compuesto) a 4 semanas',
+            'Detección de rachas de alza/baja por 2 o 3+ semanas consecutivas',
+            'Gráfico de aceleración para identificar delitos que crecen exponencialmente',
+            'Alertas tempranas de brotes delictuales antes de que se consoliden'
+        ],
+        tips: [
+            'Un delito con Racha 3+ y CAGR positivo es la prioridad operativa máxima',
+            'Las rachas de baja permiten identificar sectores donde la presión delictual está cediendo'
+        ]
     },
     vista18: {
-        title: 'Diagnóstico de Delitos en Disipación',
-        icon: 'fa-chart-line',
-        description: '¿Qué delitos estamos logrando reducir? Identificación de éxitos operativos.',
-        features: ['Identificación de disipación', 'Tasa anual de reducción', 'Casos bajo la media'],
-        tips: ['Analice las tácticas aplicadas a estos delitos exitosos', 'Útil para rendición de cuentas positiva']
+        title: 'Gestión de Éxito (Éxitos Operativos)',
+        icon: 'fa-medal',
+        description: 'Identificación de tipologías delictuales que presentan una disminución sostenida, validando la efectividad de las políticas de seguridad implementadas.',
+        features: [
+            'Comparativa de éxitos a corto plazo (fuente STOP)',
+            'Detección de reducción estructural a largo plazo (fuente CEAD)',
+            'Cálculo de Z-Score para identificar desviaciones positivas significativas',
+            'Análisis de IA sobre la consolidación de resultados'
+        ],
+        tips: [
+            'Los delitos con Z < -0.5 en largo plazo indican una reducción estructural, no coyuntural',
+            'Utilice estos datos para rendición de cuentas sobre la efectividad de patrullajes y operativos'
+        ]
     },
     vista19: {
-        title: 'Resumen Ejecutivo para Autoridades',
+        title: 'Reporte Directivo (Executive Dashboard)',
         icon: 'fa-file-invoice',
-        description: '¿Qué debe saber el Alcalde hoy? Hallazgos principales y alertas críticas.',
-        features: ['Resumen directivo semanal', 'Prioridades de inversión', 'Mensajes clave'],
-        tips: ['Ideal para presentaciones breves y toma de decisiones', 'Foco exclusivo en el alto mando municipal']
+        description: 'Panel sintético diseñado específicamente para el alto mando y autoridades, resumiendo los hallazgos críticos de la semana en formato de una sola página.',
+        features: [
+            'KPIs maestros: Carga Delictual, Nivel de Riesgo y Rank Regional',
+            'Hallazgos principales generados por analítica avanzada',
+            'Resumen de alertas críticas y tendencia de corto plazo',
+            'Formato de reporte oficial con marca temporal y validación de estado'
+        ],
+        tips: [
+            'Este reporte es ideal para minutas de consejo o reuniones de coordinación de seguridad',
+            'El Nivel de Riesgo (Bajo, Moderado, Crítico) se basa en la desviación respecto a la semana anterior'
+        ]
+    },
+    vista20: {
+        title: 'Gestión de Éxito (Éxitos Operativos)',
+        icon: 'fa-medal',
+        description: 'Identificación de tipologías delictuales que presentan una disminución sostenida, validando la efectividad de las políticas de seguridad implementadas.',
+        features: [
+            'Comparativa de éxitos a corto plazo (fuente STOP)',
+            'Detección de reducción estructural a largo plazo (fuente CEAD)',
+            'Cálculo de Z-Score para identificar desviaciones positivas significativas',
+            'Análisis de IA sobre la consolidación de resultados'
+        ],
+        tips: [
+            'Los delitos con Z < -0.5 en largo plazo indican una reducción estructural, no coyuntural',
+            'Utilice estos datos para rendición de cuentas sobre la efectividad de patrullajes y operativos'
+        ]
+    },
+    vista21: {
+        title: 'Momentum y Rachas',
+        icon: 'fa-bolt',
+        description: 'Análisis profundo de la velocidad de crecimiento delictual (Momentum) y la persistencia temporal de las tendencias (Rachas).',
+        features: [
+            'Cálculo de CAGR (Tasa de Crecimiento Compuesto) a 4 semanas',
+            'Detección de rachas de alza/baja por 2 o 3+ semanas consecutivas',
+            'Gráfico de aceleración para identificar delitos que crecen exponencialmente',
+            'Alertas tempranas de brotes delictuales antes de que se consoliden'
+        ],
+        tips: [
+            'Un delito con Racha 3+ y CAGR positivo es la prioridad operativa máxima',
+            'Las rachas de baja permiten identificar sectores donde la presión delictual está cediendo'
+        ]
+    },
+    vista22: {
+        title: 'Priorización Estratégica',
+        icon: 'fa-bullseye',
+        description: 'Matriz de decisión táctica que cruza el volumen absoluto de casos con su aceleración porcentual para definir dónde concentrar los recursos.',
+        features: [
+            'Clasificación en 4 cuadrantes: Alarma, Alerta, Monitoreo y Control',
+            'Identificación de "Focos" (Alto volumen + Alza crítica)',
+            'Seguimiento de variación semanal vs. semana anterior',
+            'Cálculo automático de prioridad basado en riesgo'
+        ],
+        tips: [
+            'Concéntrese primero en los delitos de la columna ALARMA/FOCO',
+            'Los delitos en CONTROL tienen bajo volumen y tendencia estable, requiriendo solo supervisión pasiva'
+        ]
+    },
+    vista23: {
+        title: 'Análisis por Categoría (Taxonomía Multidimensional)',
+        icon: 'fa-layer-group',
+        description: 'Desglose del fenómeno criminal según su naturaleza jurídica, modus operandi y nivel de severidad del impacto social.',
+        features: [
+            'Tendencia histórica de 12 semanas por Severidad (Vida, Integridad, Patrimonio)',
+            'Análisis de evolución por Modus Operandi (Violencia, Fuerza, Oportunidad)',
+            'Seguimiento por Naturaleza Jurídica (Personas, Propiedad, Orden Público)',
+            'Distribución porcentual actual por cada eje analizado'
+        ],
+        tips: [
+            'Observe si un alza en el total se debe a delitos de "Oportunidad" o a delitos "Contra la Vida"',
+            'El cambio en el "Modus Operandi" puede indicar la entrada de nuevas bandas o cambios en el comportamiento delictual'
+        ]
+    },
+    vista24: {
+        title: 'Reporte Directivo (Executive Dashboard)',
+        icon: 'fa-file-invoice',
+        description: 'Panel sintético diseñado específicamente para el alto mando y autoridades, resumiendo los hallazgos críticos de la semana en formato de una sola página.',
+        features: [
+            'KPIs maestros: Carga Delictual, Nivel de Riesgo y Rank Regional',
+            'Hallazgos principales generados por analítica avanzada',
+            'Resumen de alertas críticas y tendencia de corto plazo',
+            'Formato de reporte oficial con marca temporal y validación de estado'
+        ],
+        tips: [
+            'Este reporte es ideal para minutas de consejo o reuniones de coordinación de seguridad',
+            'El Nivel de Riesgo (Bajo, Moderado, Crítico) se basa en la desviación respecto a la semana anterior'
+        ]
+    },
+    vista25: {
+        title: 'Auditoría de Integridad y Salud de Datos',
+        icon: 'fa-database',
+        description: 'Herramienta de control de calidad que certifica la confiabilidad, completitud y consistencia de las fuentes de datos (STOP y CEAD).',
+        features: [
+            'Cálculo de Score de Salud de Datos global',
+            'Detección de Gaps (periodos sin datos) y Outliers (anomalías estadísticas)',
+            'Monitoreo de latencia de actualización de fuentes oficiales',
+            'Comparativa de completitud entre registros semanales y mensuales'
+        ],
+        tips: [
+            'Una puntuación menor al 70% sugiere precaución al interpretar tendencias de largo plazo',
+            'Los Gaps e Outliers pueden indicar problemas en el proceso de carga o reporte de datos oficiales'
+        ]
     },
     // SEGURIDAD VISTAS
     seguridad_dashboard: {
@@ -614,6 +774,24 @@ const helpContent = {
         ]
     },
     // SECPLAN VISTAS
+    secplan_dashboard: {
+        title: 'Dashboard Estratégico SECPLAN',
+        icon: 'fa-chart-line',
+        description: 'Panel central de inteligencia para la Secretaría Comunal de Planificación, permitiendo el monitoreo integral de la cartera de proyectos municipales desde múltiples dimensiones.',
+        features: [
+            'Visualiza KPIs críticos: Inversión total, cantidad de proyectos y avance promedio porcentual',
+            'Análisis multinivel: Cartera por Estado, Área de Acción, y Fuente de Financiamiento (Gobierno Regional, Sectorial, Municipal)',
+            'Gestión de Capital Humano: Visualización de la carga laboral por profesional y duplas de trabajo',
+            'Distribución Territorial: Identificación de la inversión por Sectores y Unidades Vecinales',
+            'Cronograma Histórico: Línea de tiempo de elaboración vs ejecución de proyectos (2020-2026)',
+            'Alineación Estratégica: Seguimiento del cumplimiento de los Lineamientos del PLADECO'
+        ],
+        tips: [
+            'Los proyectos marcados como "Prioritarios" o "Urgentes" aparecen destacados en las métricas superiores',
+            'Use el Comparativo Anual para evaluar la eficiencia de la gestión entre diferentes períodos',
+            'La sección de "Últimos Proyectos Modificados" permite un seguimiento rápido de la actividad reciente del equipo'
+        ]
+    },
     mapa2: {
         title: 'Mapa 2: Análisis Territorial',
         icon: 'fa-map-location-dot',
