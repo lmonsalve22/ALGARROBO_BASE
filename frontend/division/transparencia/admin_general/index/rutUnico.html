@@ -13,6 +13,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- FontAwesome for specific icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
       /* Colors */
@@ -548,7 +550,7 @@
         grid-template-columns: 1fr 1fr;
       }
     }
-  
+
     /* Sidebar Layout Updates */
     .layout-wrapper {
       display: flex;
@@ -556,6 +558,7 @@
       background-color: var(--bg-main);
       width: 100%;
     }
+
     .sidebar {
       width: 260px;
       background-color: var(--card-bg);
@@ -568,10 +571,12 @@
       flex-shrink: 0;
       z-index: 100;
     }
+
     .sidebar-brand {
       margin-bottom: 2.5rem;
       padding: 0 0.5rem;
     }
+
     .sidebar-brand p {
       font-size: 0.65rem;
       font-weight: 800;
@@ -580,17 +585,20 @@
       letter-spacing: 0.1em;
       margin-bottom: 0.25rem;
     }
+
     .sidebar-brand h2 {
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--text-main);
     }
+
     .main-content {
       flex: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
     }
+
     .nav-tabs.vertical {
       flex-direction: column;
       width: 100%;
@@ -600,6 +608,7 @@
       margin: 0;
       gap: 0.25rem;
     }
+
     .nav-tabs.vertical .nav-tab {
       padding: 0.85rem 1rem;
       border-radius: var(--radius-md);
@@ -610,15 +619,16 @@
       box-sizing: border-box;
       justify-content: flex-start;
     }
+
     .nav-tabs.vertical .nav-tab:hover {
       background-color: var(--bg-main);
       color: var(--text-main);
     }
+
     .nav-tabs.vertical .nav-tab.active {
       background-color: var(--primary-light);
       color: var(--primary);
     }
-
   </style>
 </head>
 
@@ -630,463 +640,467 @@
         <h2>Transparencia</h2>
       </div>
       <nav class="nav-tabs vertical">
-        
-        <a href="landing_transparencia.html" class="nav-tab">
+
+        <a href="inicio.html" class="nav-tab">
           <i data-lucide="home" style="width: 14px;"></i> Inicio
         </a>
         <a href="remuneracion_bruta.html" class="nav-tab">
-          <i data-lucide="wallet" style="width: 14px;"></i> Remuneraciones
+          <i data-lucide="wallet" style="width: 14px;"></i> Remuneración Bruta
         </a>
         <a href="rutUnico.html" class="nav-tab active">
-          <i data-lucide="users" style="width: 14px;"></i> Personas
+          <i data-lucide="users" style="width: 14px;"></i> Rut Único
         </a>
-      
+
       </nav>
     </aside>
     <div class="main-content">
-  <header class="header">
-    <div class="container">
-      <div class="header-inner">
-        <div class="header-brand">
-          <div class="header-logo">
-            <i data-lucide="bar-chart-3"></i>
+      <header class="header">
+        <div class="container">
+          <div class="header-inner">
+            <div class="header-brand">
+              <div class="header-logo">
+                <i data-lucide="bar-chart-3"></i>
+              </div>
+              <div class="header-titles">
+                <h1>Personas registradas</h1>
+                <p>Seguimiento mensual de registros por organismo público</p>
+              </div>
+            </div>
           </div>
-          <div class="header-titles">
-            <h1>Personas registradas</h1>
-            <p>Seguimiento mensual de registros por organismo público</p>
+        </div>
+      </header>
+
+      <main class="container">
+        <!-- KPIs -->
+        <section class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon blue">
+              <i data-lucide="building-2"></i>
+            </div>
+            <div class="metric-value" id="total-organismos">-</div>
+            <div class="metric-label">Organismos Registrados</div>
           </div>
-        </div>
-      </div>
-    </div>
-  </header>
+          <div class="metric-card">
+            <div class="metric-icon green">
+              <i data-lucide="calculator"></i>
+            </div>
+            <div class="metric-value" id="promedio-general">-</div>
+            <div class="metric-label">Promedio General</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon purple">
+              <i data-lucide="calendar"></i>
+            </div>
+            <div class="metric-value" id="periodo-analisis">-</div>
+            <div class="metric-label">Meses de Análisis</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon orange">
+              <i data-lucide="clock"></i>
+            </div>
+            <div class="metric-value" id="ultimo-mes" style="font-size: 1.25rem; padding-top: 0.25rem;">-</div>
+            <div class="metric-label">Último Período</div>
+          </div>
+        </section>
 
-  <main class="container">
-    <!-- KPIs -->
-    <section class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-icon blue">
-          <i data-lucide="building-2"></i>
-        </div>
-        <div class="metric-value" id="total-organismos">-</div>
-        <div class="metric-label">Organismos Registrados</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon green">
-          <i data-lucide="calculator"></i>
-        </div>
-        <div class="metric-value" id="promedio-general">-</div>
-        <div class="metric-label">Promedio General</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon purple">
-          <i data-lucide="calendar"></i>
-        </div>
-        <div class="metric-value" id="periodo-analisis">-</div>
-        <div class="metric-label">Meses de Análisis</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon orange">
-          <i data-lucide="clock"></i>
-        </div>
-        <div class="metric-value" id="ultimo-mes" style="font-size: 1.25rem; padding-top: 0.25rem;">-</div>
-        <div class="metric-label">Último Período</div>
-      </div>
-    </section>
-
-    <!-- Filters -->
-    <section class="filter-bar">
+        <!-- Filters -->
+        <section class="filter-bar">
 
 
-      <div id="municipal-filter-group" class="filter-group" style="display: none;">
-        <i data-lucide="building" class="filter-icon" style="width: 16px;"></i>
-        <select id="tipo-filter" class="filter-input">
-          <option value="">Todos los tipos</option>
-          <option value="1">Sólo Municipales</option>
-          <option value="0">Otros Organismos</option>
-        </select>
-      </div>
+          <div id="municipal-filter-group" class="filter-group" style="display: none;">
+            <i data-lucide="building" class="filter-icon" style="width: 16px;"></i>
+            <select id="tipo-filter" class="filter-input">
+              <option value="">Todos los tipos</option>
+              <option value="1">Sólo Municipales</option>
+              <option value="0">Otros Organismos</option>
+            </select>
+          </div>
 
-      <div class="filter-group">
-        <i data-lucide="calendar" class="filter-icon" style="width: 16px;"></i>
-        <select id="year-filter" class="filter-input">
-          <option value="">Todos los años</option>
-        </select>
-      </div>
+          <div class="filter-group">
+            <i data-lucide="calendar" class="filter-icon" style="width: 16px;"></i>
+            <select id="year-filter" class="filter-input">
+              <option value="">Todos los años</option>
+            </select>
+          </div>
 
-      <div class="filter-group">
-        <i data-lucide="layers" class="filter-icon" style="width: 16px;"></i>
-        <select id="padre-filter" class="filter-input">
-          <option value="">Todos los organismos padre</option>
-        </select>
-      </div>
+          <div class="filter-group">
+            <i data-lucide="layers" class="filter-icon" style="width: 16px;"></i>
+            <select id="padre-filter" class="filter-input">
+              <option value="">Todos los organismos padre</option>
+            </select>
+          </div>
 
-      <div class="filter-group" style="flex: 2;">
-        <i data-lucide="search" class="filter-icon" style="width: 16px;"></i>
-        <input type="text" id="search-input" class="filter-input" placeholder="Buscar por nombre de organismo..." />
-      </div>
+          <div class="filter-group" style="flex: 2;">
+            <i data-lucide="search" class="filter-icon" style="width: 16px;"></i>
+            <input type="text" id="search-input" class="filter-input" placeholder="Buscar por nombre de organismo..." />
+          </div>
 
-      <button id="clear-filters" class="btn-clear">
-        <i data-lucide="rotate-ccw" style="width: 14px;"></i> Limpiar
-      </button>
-    </section>
+          <button id="clear-filters" class="btn-clear">
+            <i data-lucide="rotate-ccw" style="width: 14px;"></i> Limpiar
+          </button>
+        </section>
 
-    <!-- Table Section -->
-    <section class="table-section">
-      <div class="table-inner">
-        <div id="loading" class="loading-container">
-          <div class="spinner"></div>
-          <p>Sincronizando registros únicos...</p>
-        </div>
-        <table id="data-table" style="display: none;"></table>
-      </div>
-    </section>
+        <!-- Table Section -->
+        <section class="table-section">
+          <div class="table-inner">
+            <div id="loading" class="loading-container">
+              <div class="spinner"></div>
+              <p>Sincronizando registros únicos...</p>
+            </div>
+            <table id="data-table" style="display: none;"></table>
+          </div>
+        </section>
 
-    <!-- Legend -->
-    <section class="legend-card">
-      <h3 class="legend-title">Jerarquía de Actividad por Persona</h3>
-      <div class="legend-grid">
-        <div class="legend-item">
-          <div class="legend-color valor-muy-bajo"></div><span>Actividad Mínima</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color valor-bajo"></div><span>Frecuencia Baja</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color valor-medio"></div><span>Promedio Estándar</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color valor-alto"></div><span>Frecuencia Alta</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color valor-muy-alto"></div><span>Frecuencia Máxima</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color sin-registro"></div><span>Sin registros</span>
-        </div>
-      </div>
-    </section>
-  </main>
+        <!-- Legend -->
+        <section class="legend-card">
+          <h3 class="legend-title">Jerarquía de Actividad por Persona</h3>
+          <div class="legend-grid">
+            <div class="legend-item">
+              <div class="legend-color valor-muy-bajo"></div><span>Actividad Mínima</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color valor-bajo"></div><span>Frecuencia Baja</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color valor-medio"></div><span>Promedio Estándar</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color valor-alto"></div><span>Frecuencia Alta</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color valor-muy-alto"></div><span>Frecuencia Máxima</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color sin-registro"></div><span>Sin registros</span>
+            </div>
+          </div>
+        </section>
+      </main>
 
-  <script src="config/municipal.js"></script>
-  <script src="organismos.js"></script>
-  <script src="organismoMunicipal.js"></script>
-  <script src="organismosCodigo.js"></script>
-  <script>
-    lucide.createIcons();
+      <script src="config/municipal.js"></script>
+      <script src="organismos.js"></script>
+      <script src="organismoMunicipal.js"></script>
+      <script src="organismosCodigo.js"></script>
+      <script>
+        lucide.createIcons();
 
-    const formatter = new Intl.NumberFormat('es-CL');
-    const LOADING_EL = document.getElementById("loading");
-    const TABLE_EL = document.getElementById("data-table");
-    const YEAR_FILTER = document.getElementById("year-filter");
-    const PADRE_FILTER = document.getElementById("padre-filter");
+        const formatter = new Intl.NumberFormat('es-CL');
+        const LOADING_EL = document.getElementById("loading");
+        const TABLE_EL = document.getElementById("data-table");
+        const YEAR_FILTER = document.getElementById("year-filter");
+        const PADRE_FILTER = document.getElementById("padre-filter");
 
-    const SEARCH_INPUT = document.getElementById("search-input");
+        const SEARCH_INPUT = document.getElementById("search-input");
 
-    let rawData = [];
-    let data = [];
-    let filteredData = [];
-    let allMonths = [];
-    let allYears = [];
-    let maxYear = null;
-    let filteredMonths = [];
+        let rawData = [];
+        let data = [];
+        let filteredData = [];
+        let allMonths = [];
+        let allYears = [];
+        let maxYear = null;
+        let filteredMonths = [];
 
-    const monthOrder = {
-      "ENERO": 1, "FEBRERO": 2, "MARZO": 3, "ABRIL": 4,
-      "MAYO": 5, "JUNIO": 6, "JULIO": 7, "AGOSTO": 8,
-      "SEPTIEMBRE": 9, "SETIEMBRE": 9, "OCTUBRE": 10,
-      "NOVIEMBRE": 11, "DICIEMBRE": 12
-    };
+        const monthOrder = {
+          "ENERO": 1, "FEBRERO": 2, "MARZO": 3, "ABRIL": 4,
+          "MAYO": 5, "JUNIO": 6, "JULIO": 7, "AGOSTO": 8,
+          "SEPTIEMBRE": 9, "SETIEMBRE": 9, "OCTUBRE": 10,
+          "NOVIEMBRE": 11, "DICIEMBRE": 12
+        };
 
-    const DATA_URL = "../archivo_rutUnico.json";
+        const DATA_URL = "../archivo_rutUnico.json";
 
-    async function initializeApp() {
-      try {
-        const response = await fetch(DATA_URL);
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        rawData = await response.json();
-        rawData = rawData.filter(r => r.organismo_nombre == "Municipalidad de Algarrobo");
-        // Aplicar filtrado basado en filtroMuni (de config/municipal.js)
-        if (typeof filtroMuni !== 'undefined' && filtroMuni === false) {
-          // Solo municipales
-          data = rawData.filter(r => organismoMunicipal[r.organismo_nombre] === 1);
-        } else {
-          // Todos
-          data = rawData;
+        async function initializeApp() {
+          try {
+            const response = await fetch(DATA_URL);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            rawData = await response.json();
+            rawData = rawData.filter(r => r.organismo_nombre == "Municipalidad de Algarrobo");
+            // Aplicar filtrado basado en filtroMuni (de config/municipal.js)
+            if (typeof filtroMuni !== 'undefined' && filtroMuni === false) {
+              // Solo municipales
+              data = rawData.filter(r => organismoMunicipal[r.organismo_nombre] === 1);
+            } else {
+              // Todos
+              data = rawData;
+            }
+
+            filteredData = [...data];
+
+            // Extraer todos los meses y años disponibles inicialmente
+            const allKeys = new Set();
+            data.forEach(row => {
+              Object.keys(row).forEach(k => { if (k !== "organismo_nombre") allKeys.add(k); });
+            });
+            allMonths = Array.from(allKeys);
+            allMonths.sort((a, b) => {
+              const [mA, yA] = a.split('_');
+              const [mB, yB] = b.split('_');
+              const yearDiff = parseInt(yB, 10) - parseInt(yA, 10);
+              if (yearDiff !== 0) return yearDiff;
+              return (monthOrder[mA.toUpperCase()] || 0) - (monthOrder[mB.toUpperCase()] || 0);
+            });
+
+            const yearsSet = new Set();
+            allMonths.forEach(m => {
+              const y = parseInt(m.split('_')[1], 10);
+              if (!isNaN(y)) yearsSet.add(y);
+            });
+            allYears = Array.from(yearsSet).sort((a, b) => b - a);
+            maxYear = allYears[0];
+
+            // Poblar filtros inicialmente
+            updateFilterOptions(true);
+
+            if (maxYear) YEAR_FILTER.value = maxYear;
+
+            filterMonthsByYear(maxYear);
+            updateStats();
+            renderTable();
+            setupEventListeners();
+
+            // Mostrar u ocultar el filtro municipal según la configuración
+            const MUNI_FILTER_GROUP = document.getElementById("municipal-filter-group");
+            if (typeof filtroMuni !== 'undefined' && filtroMuni === true) {
+              MUNI_FILTER_GROUP.style.display = "flex";
+            }
+
+            LOADING_EL.style.display = "none";
+            TABLE_EL.style.display = "table";
+          } catch (err) {
+            console.error(err);
+            LOADING_EL.innerHTML = `<p style="color:var(--danger-text)">Error: ${err.message}</p>`;
+          }
         }
 
-        filteredData = [...data];
+        function updateFilterOptions(isInitial = false) {
+          const currentYear = YEAR_FILTER.value;
+          const currentPadre = PADRE_FILTER.value;
+          const search = SEARCH_INPUT.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-        // Extraer todos los meses y años disponibles inicialmente
-        const allKeys = new Set();
-        data.forEach(row => {
-          Object.keys(row).forEach(k => { if (k !== "organismo_nombre") allKeys.add(k); });
-        });
-        allMonths = Array.from(allKeys);
-        allMonths.sort((a, b) => {
-          const [mA, yA] = a.split('_');
-          const [mB, yB] = b.split('_');
-          const yearDiff = parseInt(yB, 10) - parseInt(yA, 10);
-          if (yearDiff !== 0) return yearDiff;
-          return (monthOrder[mA.toUpperCase()] || 0) - (monthOrder[mB.toUpperCase()] || 0);
-        });
+          // 1. Población de PERIODOS (basado en Padre y Búsqueda)
+          const availableYears = new Set();
+          data.forEach(r => {
+            const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const p = organismoPadres[r.organismo_nombre] || "";
+            if (name.includes(search) && (currentPadre === "" || p === currentPadre)) {
+              allMonths.forEach(m => {
+                if (r[m] > 0) availableYears.add(m.split('_')[1]);
+              });
+            }
+          });
 
-        const yearsSet = new Set();
-        allMonths.forEach(m => {
-          const y = parseInt(m.split('_')[1], 10);
-          if (!isNaN(y)) yearsSet.add(y);
-        });
-        allYears = Array.from(yearsSet).sort((a, b) => b - a);
-        maxYear = allYears[0];
+          const sortedYears = Array.from(availableYears).sort((a, b) => b - a);
+          const prevYear = YEAR_FILTER.value;
+          YEAR_FILTER.innerHTML = '<option value="">Todos los años</option>';
+          sortedYears.forEach(y => {
+            const opt = document.createElement("option");
+            opt.value = y; opt.textContent = y;
+            YEAR_FILTER.appendChild(opt);
+          });
+          if (prevYear && availableYears.has(prevYear)) YEAR_FILTER.value = prevYear;
+          else if (isInitial && maxYear) YEAR_FILTER.value = maxYear;
 
-        // Poblar filtros inicialmente
-        updateFilterOptions(true);
+          // 2. Población de PADRES (basado en Año y Búsqueda)
+          const availablePadres = new Set();
+          const activeMonths = YEAR_FILTER.value ? allMonths.filter(m => m.endsWith('_' + YEAR_FILTER.value)) : allMonths;
 
-        if (maxYear) YEAR_FILTER.value = maxYear;
+          data.forEach(r => {
+            const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const hasData = activeMonths.some(m => r[m] > 0);
+            if (name.includes(search) && hasData) {
+              const p = organismoPadres[r.organismo_nombre];
+              if (p) availablePadres.add(p);
+            }
+          });
 
-        filterMonthsByYear(maxYear);
-        updateStats();
-        renderTable();
-        setupEventListeners();
-
-        // Mostrar u ocultar el filtro municipal según la configuración
-        const MUNI_FILTER_GROUP = document.getElementById("municipal-filter-group");
-        if (typeof filtroMuni !== 'undefined' && filtroMuni === true) {
-          MUNI_FILTER_GROUP.style.display = "flex";
+          const sortedPadres = Array.from(availablePadres).sort();
+          const prevPadre = PADRE_FILTER.value;
+          PADRE_FILTER.innerHTML = '<option value="">Todos los organismos padre</option>';
+          sortedPadres.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p; opt.textContent = p;
+            PADRE_FILTER.appendChild(opt);
+          });
+          if (prevPadre && availablePadres.has(prevPadre)) PADRE_FILTER.value = prevPadre;
         }
 
-        LOADING_EL.style.display = "none";
-        TABLE_EL.style.display = "table";
-      } catch (err) {
-        console.error(err);
-        LOADING_EL.innerHTML = `<p style="color:var(--danger-text)">Error: ${err.message}</p>`;
-      }
-    }
+        function filterMonthsByYear(year) {
+          if (!year) {
+            filteredMonths = [...allMonths];
+          } else {
+            filteredMonths = allMonths.filter(m => parseInt(m.split('_')[1], 10) === parseInt(year, 10));
+          }
+        }
 
-    function updateFilterOptions(isInitial = false) {
-      const currentYear = YEAR_FILTER.value;
-      const currentPadre = PADRE_FILTER.value;
-      const search = SEARCH_INPUT.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        function updateStats() {
+          document.getElementById("total-organismos").textContent = data.length;
+          document.getElementById("periodo-analisis").textContent = filteredMonths.length;
+          document.getElementById("ultimo-mes").textContent =
+            filteredMonths.length > 0 ? filteredMonths[filteredMonths.length - 1].replace("_", " ") : "-";
 
-      // 1. Población de PERIODOS (basado en Padre y Búsqueda)
-      const availableYears = new Set();
-      data.forEach(r => {
-        const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        const p = organismoPadres[r.organismo_nombre] || "";
-        if (name.includes(search) && (currentPadre === "" || p === currentPadre)) {
-          allMonths.forEach(m => {
-            if (r[m] > 0) availableYears.add(m.split('_')[1]);
+          let totalSum = 0, totalCount = 0;
+          data.forEach(row => {
+            filteredMonths.forEach(m => {
+              const v = row[m];
+              if (v && v > 0) { totalSum += v; totalCount++; }
+            });
+          });
+          const avgValue = totalCount > 0 ? (totalSum / totalCount).toFixed(0) : 0;
+          document.getElementById("promedio-general").textContent = formatter.format(avgValue);
+        }
+
+        function renderTable() {
+          TABLE_EL.innerHTML = "";
+          const header = document.createElement("thead");
+          const headerRow = document.createElement("tr");
+
+          ['Organismo', 'Análisis'].forEach(txt => {
+            const th = document.createElement("th"); th.textContent = txt; headerRow.appendChild(th);
+          });
+
+          filteredMonths.forEach(m => {
+            const th = document.createElement("th");
+            const parts = m.split('_');
+            th.textContent = `${parts[0]} ${parts[1]}`;
+            headerRow.appendChild(th);
+          });
+
+          const thAvg = document.createElement("th");
+          thAvg.innerHTML = '<i data-lucide="calculator" style="width:14px; display:inline; vertical-align:middle;"></i> Prom';
+          headerRow.appendChild(thAvg);
+
+          header.appendChild(headerRow);
+          TABLE_EL.appendChild(header);
+
+          const body = document.createElement("tbody");
+          filteredData.forEach(row => {
+            const tr = document.createElement("tr");
+            const codeName = organismoCodigo[row.organismo_nombre] || "";
+
+            const tdName = document.createElement("td");
+            const link = document.createElement("a");
+            link.href = `persona/persona1.html?organismo=${codeName}`;
+            link.textContent = row.organismo_nombre;
+            link.style.color = "var(--primary)";
+            link.style.textDecoration = "none";
+            tdName.appendChild(link);
+            tdName.title = row.organismo_nombre;
+            tr.appendChild(tdName);
+
+            // Análisis
+            const tdAn = document.createElement("td");
+            tdAn.className = "link-cell";
+            [
+              { icon: 'fa-file-contract', url: `persona/persona1.html?organismo=${codeName}`, t: 'Contratos' },
+              { icon: 'fa-venus-mars', url: `persona/sexo1.html?organismo=${codeName}`, t: 'Sexo' },
+              { icon: 'fa-briefcase', url: `persona/profesion1.html?organismo=${codeName}`, t: 'Profesión' },
+              { icon: 'fa-birthday-cake', url: `persona/edad1.html?organismo=${codeName}`, t: 'Edad' }
+            ].forEach(i => {
+              const a = document.createElement("a"); a.href = i.url; a.className = "icon-link"; a.title = i.t;
+              a.innerHTML = `<i class="fas ${i.icon}" style="font-size:12px;"></i>`;
+              tdAn.appendChild(a);
+            });
+            tr.appendChild(tdAn);
+
+            let rowSum = 0, rowCount = 0;
+            const rowValues = [];
+            filteredMonths.forEach(m => {
+              const v = row[m];
+              if (v && v > 0) { rowSum += v; rowCount++; rowValues.push(v); }
+            });
+
+            const rowAvg = rowCount > 0 ? rowSum / rowCount : 0;
+            const variance = rowValues.length > 1 ? rowValues.reduce((acc, v) => acc + Math.pow(v - rowAvg, 2), 0) / rowValues.length : 0;
+            const stdDev = Math.sqrt(variance);
+
+            filteredMonths.forEach(m => {
+              const val = row[m];
+              const td = document.createElement("td");
+              if (val === 0) {
+                td.className = "sin-registro";
+                td.innerHTML = '<i data-lucide="x" style="width:10px;"></i> 0';
+              } else if (val) {
+                td.textContent = formatter.format(val);
+                const percent = ((val - rowAvg) / rowAvg) * 100;
+                const tooltip = document.createElement("div");
+                tooltip.className = "tooltip";
+                tooltip.textContent = `${percent > 0 ? "+" : ""}${percent.toFixed(1)}% del promedio`;
+                td.appendChild(tooltip);
+
+                if (Math.abs(val - rowAvg) > stdDev * 0.9) {
+                  if (val > rowAvg) {
+                    td.classList.add(val > rowAvg * 1.5 ? "valor-muy-alto" : "valor-alto");
+                  } else {
+                    td.classList.add(val < rowAvg * 0.5 ? "valor-muy-bajo" : "valor-bajo");
+                  }
+                } else {
+                  td.classList.add("valor-medio");
+                }
+              } else {
+                td.textContent = "-";
+              }
+              tr.appendChild(td);
+            });
+
+            const tdAvg = document.createElement("td");
+            tdAvg.className = "promedio-cell";
+            tdAvg.textContent = rowCount > 0 ? formatter.format(rowAvg.toFixed(0)) : "-";
+            tr.appendChild(tdAvg);
+
+            body.appendChild(tr);
+          });
+          TABLE_EL.appendChild(body);
+          lucide.createIcons();
+        }
+
+        function setupEventListeners() {
+          const applyFilters = () => {
+            const search = SEARCH_INPUT.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const padre = PADRE_FILTER.value;
+            const year = YEAR_FILTER.value;
+            const tipo = document.getElementById("tipo-filter").value;
+
+            updateFilterOptions();
+
+            filterMonthsByYear(year);
+            filteredData = data.filter(r => {
+              const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+              const p = organismoPadres[r.organismo_nombre] || "";
+
+              // Filtro Tipo Organismo
+              const isMuni = organismoMunicipal[r.organismo_nombre] === 1 ? "1" : "0";
+              if (tipo !== "" && isMuni !== tipo) return false;
+
+              return name.includes(search) && (padre === "" || p === padre);
+            });
+
+            updateStats();
+            renderTable();
+          };
+
+          SEARCH_INPUT.addEventListener("input", applyFilters);
+          PADRE_FILTER.addEventListener("change", applyFilters);
+          document.getElementById("tipo-filter").addEventListener("change", applyFilters);
+
+          YEAR_FILTER.addEventListener("change", applyFilters);
+          document.getElementById("clear-filters").addEventListener("click", () => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('reload', Date.now());
+            window.location.href = url.toString();
           });
         }
-      });
 
-      const sortedYears = Array.from(availableYears).sort((a, b) => b - a);
-      const prevYear = YEAR_FILTER.value;
-      YEAR_FILTER.innerHTML = '<option value="">Todos los años</option>';
-      sortedYears.forEach(y => {
-        const opt = document.createElement("option");
-        opt.value = y; opt.textContent = y;
-        YEAR_FILTER.appendChild(opt);
-      });
-      if (prevYear && availableYears.has(prevYear)) YEAR_FILTER.value = prevYear;
-      else if (isInitial && maxYear) YEAR_FILTER.value = maxYear;
-
-      // 2. Población de PADRES (basado en Año y Búsqueda)
-      const availablePadres = new Set();
-      const activeMonths = YEAR_FILTER.value ? allMonths.filter(m => m.endsWith('_' + YEAR_FILTER.value)) : allMonths;
-
-      data.forEach(r => {
-        const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        const hasData = activeMonths.some(m => r[m] > 0);
-        if (name.includes(search) && hasData) {
-          const p = organismoPadres[r.organismo_nombre];
-          if (p) availablePadres.add(p);
-        }
-      });
-
-      const sortedPadres = Array.from(availablePadres).sort();
-      const prevPadre = PADRE_FILTER.value;
-      PADRE_FILTER.innerHTML = '<option value="">Todos los organismos padre</option>';
-      sortedPadres.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p; opt.textContent = p;
-        PADRE_FILTER.appendChild(opt);
-      });
-      if (prevPadre && availablePadres.has(prevPadre)) PADRE_FILTER.value = prevPadre;
-    }
-
-    function filterMonthsByYear(year) {
-      if (!year) {
-        filteredMonths = [...allMonths];
-      } else {
-        filteredMonths = allMonths.filter(m => parseInt(m.split('_')[1], 10) === parseInt(year, 10));
-      }
-    }
-
-    function updateStats() {
-      document.getElementById("total-organismos").textContent = data.length;
-      document.getElementById("periodo-analisis").textContent = filteredMonths.length;
-      document.getElementById("ultimo-mes").textContent =
-        filteredMonths.length > 0 ? filteredMonths[filteredMonths.length - 1].replace("_", " ") : "-";
-
-      let totalSum = 0, totalCount = 0;
-      data.forEach(row => {
-        filteredMonths.forEach(m => {
-          const v = row[m];
-          if (v && v > 0) { totalSum += v; totalCount++; }
-        });
-      });
-      const avgValue = totalCount > 0 ? (totalSum / totalCount).toFixed(0) : 0;
-      document.getElementById("promedio-general").textContent = formatter.format(avgValue);
-    }
-
-    function renderTable() {
-      TABLE_EL.innerHTML = "";
-      const header = document.createElement("thead");
-      const headerRow = document.createElement("tr");
-
-      ['Organismo', 'Análisis'].forEach(txt => {
-        const th = document.createElement("th"); th.textContent = txt; headerRow.appendChild(th);
-      });
-
-      filteredMonths.forEach(m => {
-        const th = document.createElement("th");
-        const parts = m.split('_');
-        th.textContent = `${parts[0]} ${parts[1]}`;
-        headerRow.appendChild(th);
-      });
-
-      const thAvg = document.createElement("th");
-      thAvg.innerHTML = '<i data-lucide="calculator" style="width:14px; display:inline; vertical-align:middle;"></i> Prom';
-      headerRow.appendChild(thAvg);
-
-      header.appendChild(headerRow);
-      TABLE_EL.appendChild(header);
-
-      const body = document.createElement("tbody");
-      filteredData.forEach(row => {
-        const tr = document.createElement("tr");
-        const codeName = organismoCodigo[row.organismo_nombre] || "";
-
-        const tdName = document.createElement("td");
-        const link = document.createElement("a");
-        link.href = `persona/persona1.html?organismo=${codeName}`;
-        link.textContent = row.organismo_nombre;
-        link.style.color = "var(--primary)";
-        link.style.textDecoration = "none";
-        tdName.appendChild(link);
-        tdName.title = row.organismo_nombre;
-        tr.appendChild(tdName);
-
-        // Análisis
-        const tdAn = document.createElement("td");
-        tdAn.className = "link-cell";
-        [
-          { icon: 'fa-file-contract', url: `persona/persona1.html?organismo=${codeName}`, t: 'Contratos' },
-          { icon: 'fa-venus-mars', url: `persona/sexo1.html?organismo=${codeName}`, t: 'Sexo' },
-          { icon: 'fa-briefcase', url: `persona/profesion1.html?organismo=${codeName}`, t: 'Profesión' },
-          { icon: 'fa-birthday-cake', url: `persona/edad1.html?organismo=${codeName}`, t: 'Edad' }
-        ].forEach(i => {
-          const a = document.createElement("a"); a.href = i.url; a.className = "icon-link"; a.title = i.t;
-          a.innerHTML = `<i class="fas ${i.icon}" style="font-size:12px;"></i>`;
-          tdAn.appendChild(a);
-        });
-        tr.appendChild(tdAn);
-
-        let rowSum = 0, rowCount = 0;
-        const rowValues = [];
-        filteredMonths.forEach(m => {
-          const v = row[m];
-          if (v && v > 0) { rowSum += v; rowCount++; rowValues.push(v); }
-        });
-
-        const rowAvg = rowCount > 0 ? rowSum / rowCount : 0;
-        const variance = rowValues.length > 1 ? rowValues.reduce((acc, v) => acc + Math.pow(v - rowAvg, 2), 0) / rowValues.length : 0;
-        const stdDev = Math.sqrt(variance);
-
-        filteredMonths.forEach(m => {
-          const val = row[m];
-          const td = document.createElement("td");
-          if (val === 0) {
-            td.className = "sin-registro";
-            td.innerHTML = '<i data-lucide="x" style="width:10px;"></i> 0';
-          } else if (val) {
-            td.textContent = formatter.format(val);
-            const percent = ((val - rowAvg) / rowAvg) * 100;
-            const tooltip = document.createElement("div");
-            tooltip.className = "tooltip";
-            tooltip.textContent = `${percent > 0 ? "+" : ""}${percent.toFixed(1)}% del promedio`;
-            td.appendChild(tooltip);
-
-            if (Math.abs(val - rowAvg) > stdDev * 0.9) {
-              if (val > rowAvg) {
-                td.classList.add(val > rowAvg * 1.5 ? "valor-muy-alto" : "valor-alto");
-              } else {
-                td.classList.add(val < rowAvg * 0.5 ? "valor-muy-bajo" : "valor-bajo");
-              }
-            } else {
-              td.classList.add("valor-medio");
-            }
-          } else {
-            td.textContent = "-";
-          }
-          tr.appendChild(td);
-        });
-
-        const tdAvg = document.createElement("td");
-        tdAvg.className = "promedio-cell";
-        tdAvg.textContent = rowCount > 0 ? formatter.format(rowAvg.toFixed(0)) : "-";
-        tr.appendChild(tdAvg);
-
-        body.appendChild(tr);
-      });
-      TABLE_EL.appendChild(body);
-      lucide.createIcons();
-    }
-
-    function setupEventListeners() {
-      const applyFilters = () => {
-        const search = SEARCH_INPUT.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        const padre = PADRE_FILTER.value;
-        const year = YEAR_FILTER.value;
-        const tipo = document.getElementById("tipo-filter").value;
-
-        updateFilterOptions();
-
-        filterMonthsByYear(year);
-        filteredData = data.filter(r => {
-          const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-          const p = organismoPadres[r.organismo_nombre] || "";
-
-          // Filtro Tipo Organismo
-          const isMuni = organismoMunicipal[r.organismo_nombre] === 1 ? "1" : "0";
-          if (tipo !== "" && isMuni !== tipo) return false;
-
-          return name.includes(search) && (padre === "" || p === padre);
-        });
-
-        updateStats();
-        renderTable();
-      };
-
-      SEARCH_INPUT.addEventListener("input", applyFilters);
-      PADRE_FILTER.addEventListener("change", applyFilters);
-      document.getElementById("tipo-filter").addEventListener("change", applyFilters);
-
-      YEAR_FILTER.addEventListener("change", applyFilters);
-      document.getElementById("clear-filters").addEventListener("click", () => {
-        const url = new URL(window.location.href);
-        url.searchParams.set('reload', Date.now());
-        window.location.href = url.toString();
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", initializeApp);
-  </script>
+        document.addEventListener("DOMContentLoaded", initializeApp);
+      </script>
     </div>
   </div>
 
-    <script src="../../../../script/help.js"></script>
-    <script>if(typeof createHelpButton === 'function') createHelpButton('trans_persona');</script>
+  <script src="../../../../script/help.js"></script>
+  <script>
+    setTimeout(() => {
+      if (typeof createHelpButton === 'function') createHelpButton('trans_persona');
+    }, 1000);
+  </script>
 </body>
 
 </html>

@@ -13,6 +13,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- FontAwesome for specific icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
       /* Colors */
@@ -859,14 +861,14 @@
       </div>
       <nav class="nav-tabs vertical">
 
-        <a href="landing_transparencia.html" class="nav-tab">
+        <a href="inicio.html" class="nav-tab active">
           <i data-lucide="home" style="width: 14px;"></i> Inicio
         </a>
         <a href="remuneracion_bruta.html" class="nav-tab">
-          <i data-lucide="wallet" style="width: 14px;"></i> Remuneraciones
+          <i data-lucide="wallet" style="width: 14px;"></i> Remuneración Bruta
         </a>
         <a href="rutUnico.html" class="nav-tab">
-          <i data-lucide="users" style="width: 14px;"></i> Personas
+          <i data-lucide="users" style="width: 14px;"></i> Rut Único
         </a>
 
       </nav>
@@ -1501,7 +1503,11 @@
   </div>
 
   <script src="../../../../script/help.js"></script>
-  <script>setTimeout(() => { if (typeof createHelpButton === 'function') createHelpButton('trans_inicio'); }, 500);</script>
+  <script>
+    setTimeout(() => {
+      if (typeof createHelpButton === 'function') createHelpButton('trans_inicio');
+    }, 1000);
+  </script>
 </body>
 
 </html>

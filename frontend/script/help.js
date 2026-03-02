@@ -675,6 +675,27 @@ const helpContent = {
         features: ['Seguimiento exhaustivo de remuneraciones y pagos', 'Comparativas y segmentación por clase de planta, funciones, y grupos de edad', 'Dashboard que expone desviaciones y percentiles estadísticos (alto, medio, bajo)'],
         tips: ['Revise las alertas y colores de desviación estadística en la parte inferior para detectar variaciones anómalas', 'Exporte los datos segmentados en la tabla de vista detallada']
     },
+    trans_remuneracion_edad: {
+        title: 'Remuneraciones por Edad',
+        icon: 'fa-chart-line',
+        description: 'Análisis del comportamiento salarial segmentado por rangos etarios de los funcionarios.',
+        features: ['Impacto de la edad en los niveles de remuneración bruta', 'Identificación de promedios salariales por generación', 'Cruce de edad con tipos de estamentos y organismos'],
+        tips: ['Observe si existen saltos significativos en las remuneraciones asociados a ciertos rangos de edad']
+    },
+    trans_remuneracion_profesion: {
+        title: 'Remuneraciones por Profesión',
+        icon: 'fa-graduation-cap',
+        description: 'Escalas salariales y promedios de pago según la categoría profesional o técnica declarada.',
+        features: ['Comparativa de sueldos entre distintos títulos y profesiones', 'Visualización de la jerarquía salarial técnica/profesional', 'Análisis de dispersión de pagos para una misma profesión'],
+        tips: ['Utilice esta vista para auditar la equidad salarial entre perfiles profesionales similares']
+    },
+    trans_remuneracion_sexo: {
+        title: 'Remuneraciones por Sexo',
+        icon: 'fa-venus-mars',
+        description: 'Análisis de equidad y brecha salarial comparando remuneraciones entre hombres y mujeres.',
+        features: ['Comparativa directa de promedios de remuneración por género', 'Distribución de la masa salarial por sexo', 'Identificación de brechas en niveles directivos o técnicos'],
+        tips: ['Los porcentajes muestran la participación de cada género en el total del presupuesto de remuneraciones seleccionado']
+    },
     trans_persona: {
         title: 'Directorio de Personas (RUT Único)',
         icon: 'fa-users',
@@ -682,12 +703,54 @@ const helpContent = {
         features: ['Búsqueda rápida y detallada por RUT y Nombre de individuo', 'Detalle paramétrico de roles, empleadores y antigüedad de las personas', 'Navegación subyacente para el perfil integral por sexo, profesión, etc.'],
         tips: ['Navegue al detalle de RUT unificado usando el motor de búsqueda en tiempo real', 'Verifique el cruce interanual de los meses que la persona ejerció']
     },
+    trans_persona_edad: {
+        title: 'Personas por Edad',
+        icon: 'fa-user-clock',
+        description: 'Distribución demográfica de los funcionarios según sus rangos etarios.',
+        features: ['Pirámide de edad de la fuerza laboral pública', 'Conteo de funcionarios activos por tramos de edad', 'Análisis de renovación generacional por organismo'],
+        tips: ['Identifique organismos con mayor concentración de personal senior o junior para planificación de recursos']
+    },
+    trans_persona_profesion: {
+        title: 'Personas por Profesión',
+        icon: 'fa-briefcase',
+        description: 'Concentración de perfiles profesionales y técnicos registrados en las instituciones.',
+        features: ['Conteo de funcionarios por título o especialidad', 'Identificación de las profesiones más requeridas por organismo', 'Distribución de personal calificado vs técnico'],
+        tips: ['Filtre por organismo para ver la especialización de cada institución gubernamental']
+    },
+    trans_persona_sexo: {
+        title: 'Personas por Sexo',
+        icon: 'fa-restroom',
+        description: 'Distribución de la dotación de personal segmentada por género.',
+        features: ['Indicadores de paridad en la fuerza laboral', 'Conteo de hombres y mujeres por organismo y mes', 'Seguimiento de cuotas de participación de género'],
+        tips: ['Compare la participación femenina vs masculina a través del tiempo con los filtros mensuales']
+    },
     trans_registro: {
         title: 'Monitoreo de Registros',
         icon: 'fa-clipboard-list',
         description: 'Monitoreo matricial y base de lectura plana de pagos emitidos según la ley de transparencia.',
         features: ['Matriz de todos los eventos notificados', 'Desglose y segmentación detallada (planta temporal, honorarios, comisiones)', 'Total control en paginación y filtrado analítico con opciones de vista porcentual o número completo'],
         tips: ['Aproveche los botones para mostrar porcentajes consolidados sobre agrupamientos (Ej: edad y sexo)']
+    },
+    trans_registro_edad: {
+        title: 'Registros por Edad',
+        icon: 'fa-id-badge',
+        description: 'Cuantificación de eventos administrativos y pagos segmentados por edad del beneficiario.',
+        features: ['Conteo de transacciones mensuales por rango de edad', 'Frecuencia de pagos según tramos etarios', 'Auditoría de registros administrativos demográficos'],
+        tips: ['Revise si hay una concentración inusual de registros en tramos de edad específicos que requiera atención']
+    },
+    trans_registro_profesion: {
+        title: 'Registros por Profesión',
+        icon: 'fa-user-tie',
+        description: 'Análisis de registros de pago y actividad administrativa según categoría profesional.',
+        features: ['Conteo de liquidaciones y registros por título profesional', 'Frecuencia de contratación por especialidad', 'Volumen de registros técnicos vs profesionales'],
+        tips: ['Esta vista permite ver qué perfiles profesionales generan mayor volumen de registros administrativos mensualmente']
+    },
+    trans_registro_sexo: {
+        title: 'Registros por Sexo',
+        icon: 'fa-user-friends',
+        description: 'Segmentación de registros administrativos y eventos de transparencia por género.',
+        features: ['Proporción de registros generados por hombres vs mujeres', 'Análisis de actividad administrativa por sexo', 'Auditoría de cumplimiento de registros segmentados'],
+        tips: ['Utilice la vista porcentual para comparar rápidamente la carga administrativa entre géneros']
     },
     trans_landing: {
         title: 'Portal de Transparencia Activa',
