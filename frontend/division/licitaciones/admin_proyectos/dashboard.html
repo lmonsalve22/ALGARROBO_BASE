@@ -1,216 +1,167 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <script src="../../../script/router.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Licitaciones - Algarrobo</title>
-
+    <title>Módulo de Licitaciones - DataOps</title>
+    <!-- Mantenemos Tailwind SOLO para inyecciones de layout.js externo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: '#6366f1',
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <style>
+        /* Arquitectura CSS V2 (Vanilla Reference View) aislada del tailwind global */
         :root {
-            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            --primary: #2563eb; --primary-hover: #1d4ed8;
+            --surface: #ffffff; --background: #f8fafc;
+            --text-main: #0f172a; --text-muted: #64748b;
+            --border: #e2e8f0; --radius: 8px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
-        body {
-            background-color: #f8fafc;
+        .dataops-view {
+            font-family: system-ui, -apple-system, sans-serif;
+            color: var(--text-main); line-height: 1.5;
+            padding: 2rem; max-width: 1440px; margin: 0 auto;
+            display: flex; flex-direction: column; gap: 2rem;
+            background-color: var(--background);
         }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
-        }
+        /* KPIs */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+        .kpi-card { background: var(--surface); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+        .kpi-card h3 { font-size: 0.875rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600; }
+        .kpi-card .value { font-size: 2rem; font-weight: 800; color: var(--text-main); }
 
-        .step-progress {
-            height: 8px;
-            border-radius: 4px;
-            background: #e2e8f0;
-            overflow: hidden;
-        }
+        /* Filtros y Controles */
+        .filter-ribbon { background: var(--surface); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; min-width: 200px; }
+        .form-group label { font-size: 0.875rem; font-weight: 600; color: var(--text-main); }
+        .form-control { padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; background: var(--background); }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        
+        .btn-action { padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 150ms; border: none; }
+        .btn-primary { background: var(--primary); color: white; display: flex; gap: 8px; align-items: center;}
+        .btn-primary:hover { background: var(--primary-hover); }
 
-        .step-progress-fill {
-            height: 100%;
-            background: var(--gradient-primary);
-            transition: width 0.5s ease-in-out;
-        }
+        /* DataGrid y Tracking Visual */
+        .data-grid-container { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: auto; max-height: 70vh; position: relative; }
+        .dg-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+        .dg-table th, .dg-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-size: 0.875rem; white-space: nowrap;}
+        .dg-table th { background: var(--surface); font-weight: 600; color: var(--text-muted); position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 0 var(--border); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.75rem;}
+        .dg-table tbody tr:hover td { background-color: var(--background); }
 
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
+        /* Progress Bar (Vanilla CSS) */
+        .progress-track { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+        .progress-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
+        /* Badge States */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge.open { background: #dcfce7; color: #166534; }
+        .badge.closed { background: #fee2e2; color: #991b1b; }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        /* Overlays (Vanilla Modal) */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; }
+        .modal-overlay.active { display: flex; }
+        .modal-card { background: var(--surface); padding: 2rem; border-radius: var(--radius); width: 100%; max-width: 500px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
     </style>
 </head>
-
 <body class="bg-gray-100 min-h-screen">
     <div id="headerRender"></div>
     <div class="flex">
         <div id="asideRender"></div>
-
-        <main class="flex-1 p-8">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">Módulo de Licitaciones</h1>
-                        <p class="text-gray-600">Seguimiento cronológico de 32 pasos (Mercado Público)</p>
-                    </div>
-                    <button onclick="openNewLicitacionModal()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-lg flex items-center space-x-2 transition-all transform hover:scale-105">
-                        <i class="fas fa-plus"></i>
-                        <span>Iniciar Licitación</span>
-                    </button>
+        
+        <main class="flex-1 w-full relative">
+            <div class="dataops-view">
+                
+                <!-- Titulo Base -->
+                <div>
+                    <h1 style="font-size: 1.5rem; font-weight: 700;">Panel Operativo Licitaciones</h1>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Seguimiento cronológico (32 Pasos MVP)</p>
                 </div>
 
-                <!-- Stats Summary -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-fade-in">
-                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-blue-500">
-                        <p class="text-sm font-medium text-gray-500 uppercase">Total Procesos</p>
-                        <p class="text-3xl font-bold text-gray-800" id="statTotal">0</p>
-                    </div>
-                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-emerald-500">
-                        <p class="text-sm font-medium text-gray-500 uppercase">Abiertas</p>
-                        <p class="text-3xl font-bold text-gray-800" id="statAbiertas">0</p>
-                    </div>
-                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-red-400">
-                        <p class="text-sm font-medium text-gray-500 uppercase">Cerradas</p>
-                        <p class="text-3xl font-bold text-gray-800" id="statCerradas">0</p>
-                    </div>
-                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-green-500">
-                        <p class="text-sm font-medium text-gray-500 uppercase">Adjudicadas</p>
-                        <p class="text-3xl font-bold text-gray-800" id="statAdjudicadas">0</p>
-                    </div>
-                </div>
+                <!-- KPI Metrics O(1) -->
+                <section class="kpi-grid">
+                    <div class="kpi-card"><h3>Total Procesos</h3><div class="value" id="kpi-total">0</div></div>
+                    <div class="kpi-card"><h3>Licitaciones Abiertas</h3><div class="value" style="color: #166534;" id="kpi-open">0</div></div>
+                    <div class="kpi-card"><h3>Licitaciones Cerradas</h3><div class="value" style="color: #991b1b;" id="kpi-closed">0</div></div>
+                    <div class="kpi-card"><h3>Monto Total Transado</h3><div class="value" id="kpi-amount">$0</div></div>
+                </section>
 
-                <!-- Bidding List -->
-                <div class="glass-panel rounded-2xl overflow-hidden animate-fade-in" style="animation-delay: 0.1s">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center"
-                        style="background: var(--gradient-primary); color: white;">
-                        <h2 class="text-xl font-semibold">Licitaciones</h2>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-500">Filtrar por:</span>
-                            <select id="filterEstadoLic" onchange="applyFilter()"
-                                class="bg-gray-50 border border-gray-200 text-sm rounded-lg p-1">
-                                <option value="">Todas</option>
-                                <option value="Abierta">Abiertas</option>
-                                <option value="Cerrada">Cerradas</option>
+                <!-- Filtros & Acciones -->
+                <section class="filter-ribbon">
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Estado de Workflow</label>
+                            <select id="stateFilter" class="form-control" onchange="DOM_CORE.applyFilters()">
+                                <option value="">Todos los Estados</option>
+                                <option value="Abierta">Operación Abierta</option>
+                                <option value="Cerrada">Operación Cerrada</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Búsqueda Rápida</label>
+                            <input type="text" id="searchInput" class="form-control" placeholder="ID o Nombre..." onkeyup="DOM_CORE.applyFilters()">
+                        </div>
                     </div>
+                    <div>
+                        <button class="btn-action btn-primary" onclick="MODAL_CORE.open()">
+                            <i class="fas fa-plus"></i> Aperturar Licitación
+                        </button>
+                    </div>
+                </section>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-50 text-gray-500 text-sm uppercase">
-                                <tr>
-                                    <th class="px-6 py-4 font-semibold">Proyecto</th>
-                                    <th class="px-6 py-4 font-semibold">ID Mercado Público</th>
-                                    <th class="px-6 py-4 font-semibold">Estado</th>
-                                    <th class="px-6 py-4 font-semibold">Progreso (Paso actual)</th>
-                                    <th class="px-6 py-4 font-semibold">Monto Estimado</th>
-                                    <th class="px-6 py-4 font-semibold">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="licitacionesTable" class="divide-y divide-gray-100">
-                                <!-- Carga dinámica -->
-                                <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                                        <p>Cargando procesos de licitación...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <!-- DataGrid -->
+                <section class="data-grid-container">
+                    <table class="dg-table">
+                        <thead>
+                            <tr>
+                                <th>Cod. Merc. Público</th>
+                                <th>Descripción / Proyecto Base</th>
+                                <th>Estado</th>
+                                <th>Análisis Avance (Workflow)</th>
+                                <th style="text-align: right;">Ppto. Estimado</th>
+                                <th style="text-align: right;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl-body">
+                            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Inicializando Pipeline Activo...</td></tr>
+                        </tbody>
+                    </table>
+                </section>
             </div>
         </main>
     </div>
 
-    <!-- Modal: Nueva Licitación -->
-    <div id="modalNueva"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95"
-            id="modalContainer">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-800">Nueva Licitación</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times"></i></button>
-            </div>
+    <!-- Modal Workflow V2 -->
+    <div class="modal-overlay" id="opModal">
+        <div class="modal-card">
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Instanciar Workflow</h3>
+            
+            <div id="alertExist" style="display:none; background:#fef08a; padding:1rem; border-radius:8px; color:#854d0e; font-size:0.875rem; margin-bottom:1rem; font-weight:600;"></div>
 
-            <!-- Alerta de licitación existente -->
-            <div id="alertaLicExistente"
-                class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm">
-                <i class="fas fa-exclamation-triangle mr-1"></i>
-                <span id="alertaLicTexto"></span>
-            </div>
-
-            <form id="formNueva" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Proyecto</label>
-                    <select id="selectProyecto" name="proyecto_id"
-                        class="w-full border-gray-200 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        required>
-                        <option value="">Cargando proyectos...</option>
-                    </select>
+            <form id="creationForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                 <div class="form-group">
+                    <label>Dependencia de Proyecto</label>
+                    <select name="proyecto_id" id="selProject" class="form-control" required></select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Licitación</label>
-                    <input type="text" name="nombre_licitacion" placeholder="Ej: Construcción Plaza Algarrobo"
-                        class="w-full border-gray-200 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        required>
+                <div class="form-group">
+                    <label>Nombre de Licitación</label>
+                    <input type="text" name="nombre_licitacion" class="form-control" required>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">ID Mercado Público (Opcional)</label>
-                    <input type="text" name="id_mercado_publico" placeholder="Ej: 1234-56-LP24"
-                        class="w-full border-gray-200 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex:1;">
+                        <label>ID Merc. Público</label>
+                        <input type="text" name="id_mercado_publico" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Ppto. Asignado ($)</label>
+                        <input type="number" name="monto_estimado" class="form-control">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Presupuesto Estimado</label>
-                    <input type="number" name="monto_estimado"
-                        class="w-full border-gray-200 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-
-                <div class="pt-4 flex space-x-3">
-                    <button type="button" onclick="closeModal()"
-                        class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-semibold transition-colors">Cancelar</button>
-                    <button type="submit" id="btnIniciarWorkflow"
-                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold shadow-md transition-colors">Iniciar
-                        Workflow</button>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn-action" style="flex:1; background: var(--background); border: 1px solid var(--border);" onclick="MODAL_CORE.close()">Cancelar</button>
+                    <button type="submit" id="btnSubmit" class="btn-action btn-primary" style="flex:1; justify-content: center;">Iniciar Pipeline</button>
                 </div>
             </form>
         </div>
@@ -218,167 +169,119 @@
 
     <script src="../../../script/layout.js"></script>
     <script src="../../../script/api.js"></script>
+    
     <script>
-        let allLicitaciones = [];
+        /**
+         * @architecture State Management Pattern V2
+         * @author Antigravity Professional
+         */
+        const STATE = { rawData: [], filtered: [], proys: [] };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLicitaciones();
-            loadProyectosForSelect();
-        });
+        const UTIL = {
+            fmt: (n) => new Intl.NumberFormat('es-CL').format(n || 0),
+            norm: (s) => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        };
 
-        async function loadLicitaciones() {
-            try {
-                const data = await api.get('/licitaciones');
-                allLicitaciones = data;
-                renderLicitaciones(data);
-                updateStats(data);
-            } catch (err) {
-                console.error(err);
+        const DATA_CORE = {
+            init: async () => {
+                try {
+                    const [lics, proys] = await Promise.all([api.get('/licitaciones'), api.get('/proyectos')]);
+                    STATE.rawData = lics; STATE.proys = proys;
+                    DOM_CORE.applyFilters();
+                    MODAL_CORE.populateObj(proys);
+                } catch(e) { console.error("API XHR Error", e); }
             }
-        }
+        };
 
-        function updateStats(data) {
-            document.getElementById('statTotal').textContent = data.length;
-            const abiertas = data.filter(l => (l.estado_licitacion || 'Abierta') === 'Abierta').length;
-            const cerradas = data.filter(l => l.estado_licitacion === 'Cerrada').length;
-            document.getElementById('statAbiertas').textContent = abiertas;
-            document.getElementById('statCerradas').textContent = cerradas;
-        }
+        const DOM_CORE = {
+            applyFilters: () => {
+                const q = UTIL.norm(document.getElementById('searchInput').value);
+                const s = document.getElementById('stateFilter').value;
+                
+                STATE.filtered = STATE.rawData.filter(r => {
+                    const st = r.estado_licitacion || 'Abierta';
+                    if(s && st !== s) return false;
+                    if(q && !UTIL.norm(r.nombre_licitacion).includes(q) && !UTIL.norm(r.id_mercado_publico).includes(q)) return false;
+                    return true;
+                });
+                DOM_CORE.render();
+            },
+            
+            render: () => {
+                let mO = 0, mC = 0, sum = 0;
+                
+                const html = STATE.filtered.map(r => {
+                    const isOpen = (r.estado_licitacion || 'Abierta') === 'Abierta';
+                    if(isOpen) mO++; else mC++;
+                    sum += Number(r.monto_estimado || 0);
 
-        function applyFilter() {
-            const filter = document.getElementById('filterEstadoLic').value;
-            if (!filter) {
-                renderLicitaciones(allLicitaciones);
-            } else {
-                const filtered = allLicitaciones.filter(l => (l.estado_licitacion || 'Abierta') === filter);
-                renderLicitaciones(filtered);
-            }
-        }
+                    const prog = (r.pasos_completados / 32) * 100;
 
-        function renderLicitaciones(data) {
-            const table = document.getElementById('licitacionesTable');
-
-            if (data.length === 0) {
-                table.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400">No hay licitaciones que coincidan.</td></tr>`;
-                return;
-            }
-
-            table.innerHTML = data.map(l => {
-                const progress = (l.pasos_completados / 32) * 100;
-                const estado = l.estado_licitacion || 'Abierta';
-                const estadoBadge = estado === 'Abierta'
-                    ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold uppercase"><i class="fas fa-circle text-[6px] mr-1"></i>Abierta</span>'
-                    : '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold uppercase"><i class="fas fa-lock text-[8px] mr-1"></i>Cerrada</span>';
-
-                return `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <p class="font-bold text-gray-800">${l.nombre_licitacion}</p>
-                            <p class="text-xs text-gray-500 italic">${l.proyecto_nombre}</p>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-mono">${l.id_mercado_publico || 'PENDIENTE'}</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            ${estadoBadge}
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-1 step-progress">
-                                    <div class="step-progress-fill" style="width: ${progress}%"></div>
-                                </div>
-                                <span class="text-xs font-semibold text-blue-600">${Math.round(progress)}%</span>
+                    return `<tr>
+                        <td style="font-family: monospace; font-weight: 600;">${r.id_mercado_publico || 'N/A'}</td>
+                        <td><div style="font-weight:700;">${r.nombre_licitacion}</div><div style="font-size:0.75rem; color:var(--text-muted);">${r.proyecto_nombre}</div></td>
+                        <td><span class="badge ${isOpen ? 'open' : 'closed'}">${isOpen ? 'Abierta' : 'Cerrada'}</span></td>
+                        <td>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; color:var(--primary);">
+                                <span>Paso ${r.estado_actual_paso||1}/32</span> <span>${prog.toFixed(0)}%</span>
                             </div>
-                            <p class="text-[10px] text-gray-400 mt-1 uppercase">Paso ${l.estado_actual_paso || 1} de 32 completado</p>
+                            <div class="progress-track"><div class="progress-fill" style="width: ${prog}%"></div></div>
                         </td>
-                        <td class="px-6 py-4 font-semibold text-gray-700">
-                            $${Number(l.monto_estimado || 0).toLocaleString()}
+                        <td style="text-align: right; font-weight: 600;">$${UTIL.fmt(r.monto_estimado)}</td>
+                        <td style="text-align: right;">
+                            <a href="seguimiento.html?id=${r.id}" style="color:var(--primary); font-weight:700; font-size:0.75rem; text-decoration:none;">GESTIONAR <i class="fas fa-arrow-right"></i></a>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="window.location.href='seguimiento.html?id=${l.id}'" class="text-blue-600 hover:text-blue-800 font-medium flex items-center space-x-1">
-                                <span>Gestionar</span>
-                                <i class="fas fa-chevron-right text-xs"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
+                    </tr>`;
+                }).join('');
 
-        async function loadProyectosForSelect() {
-            try {
-                const data = await api.get('/proyectos');
-                const select = document.getElementById('selectProyecto');
-                select.innerHTML = '<option value="">-- Seleccione un Proyecto --</option>' +
-                    data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+                document.getElementById('tbl-body').innerHTML = STATE.filtered.length ? html : `<tr><td colspan="6" style="text-align:center; padding: 2rem;">No existen intersecciones válidas.</td></tr>`;
 
-                // Validar en cambio de selección si el proyecto ya tiene licitación abierta
-                select.addEventListener('change', () => {
-                    const proyectoId = select.value;
-                    const alerta = document.getElementById('alertaLicExistente');
-                    const btnSubmit = document.getElementById('btnIniciarWorkflow');
+                // Update KPIs
+                document.getElementById('kpi-total').textContent = STATE.filtered.length;
+                document.getElementById('kpi-open').textContent = mO;
+                document.getElementById('kpi-closed').textContent = mC;
+                document.getElementById('kpi-amount').textContent = `$${UTIL.fmt(sum)}`;
+            }
+        };
 
-                    if (!proyectoId) {
-                        alerta.classList.add('hidden');
-                        btnSubmit.disabled = false;
-                        btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
-                        return;
-                    }
-
-                    // Buscar si hay licitación abierta para ese proyecto
-                    const existente = allLicitaciones.find(l =>
-                        l.proyecto_id == proyectoId && (l.estado_licitacion || 'Abierta') === 'Abierta'
-                    );
-
-                    if (existente) {
-                        document.getElementById('alertaLicTexto').textContent =
-                            `Este proyecto ya tiene una licitación abierta: "${existente.nombre_licitacion}". Debe cerrarla primero.`;
-                        alerta.classList.remove('hidden');
-                        btnSubmit.disabled = true;
-                        btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        const MODAL_CORE = {
+            dom: document.getElementById('opModal'),
+            sel: document.getElementById('selProject'),
+            btn: document.getElementById('btnSubmit'),
+            txt: document.getElementById('alertExist'),
+            
+            open: () => MODAL_CORE.dom.classList.add('active'),
+            close: () => MODAL_CORE.dom.classList.remove('active'),
+            
+            populateObj: (arr) => {
+                MODAL_CORE.sel.innerHTML = `<option value="">[ Seleccionar Instancia ]</option>` + arr.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+                
+                MODAL_CORE.sel.addEventListener('change', () => {
+                    const pid = MODAL_CORE.sel.value;
+                    const exists = STATE.rawData.find(l => l.proyecto_id == pid && (l.estado_licitacion||'Abierta') === 'Abierta');
+                    
+                    if(exists) {
+                        MODAL_CORE.txt.style.display = 'block';
+                        MODAL_CORE.txt.textContent = `CRÍTICO: El proyecto sostiene la operación abierta "${exists.nombre_licitacion}". Debe clausurarse previo a re-instanciar.`;
+                        MODAL_CORE.btn.disabled = true; MODAL_CORE.btn.style.opacity = '0.5';
                     } else {
-                        alerta.classList.add('hidden');
-                        btnSubmit.disabled = false;
-                        btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+                        MODAL_CORE.txt.style.display = 'none';
+                        MODAL_CORE.btn.disabled = false; MODAL_CORE.btn.style.opacity = '1';
                     }
                 });
-            } catch (err) {
-                console.error(err);
             }
-        }
+        };
 
-        function openNewLicitacionModal() {
-            document.getElementById('alertaLicExistente').classList.add('hidden');
-            document.getElementById('modalNueva').classList.remove('hidden');
-            setTimeout(() => document.getElementById('modalContainer').classList.remove('scale-95'), 10);
-        }
-
-        function closeModal() {
-            document.getElementById('modalContainer').classList.add('scale-95');
-            setTimeout(() => document.getElementById('modalNueva').classList.add('hidden'), 200);
-        }
-
-        document.getElementById('formNueva').addEventListener('submit', async (e) => {
+        document.getElementById('creationForm').addEventListener('submit', async(e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-
+            const data = Object.fromEntries(new FormData(e.target).entries());
             try {
                 const res = await api.post('/licitaciones', data);
-                if (res.id) {
-                    closeModal();
-                    window.location.href = `seguimiento.html?id=${res.id}`;
-                }
-            } catch (err) {
-                // El backend devuelve 409 si ya existe licitación abierta
-                const msg = err.message || 'Error al crear licitación';
-                alert(msg);
-            }
+                if(res.id) window.location.href = `seguimiento.html?id=${res.id}`;
+            } catch(err) { alert(err.message || 'Error Inesperado'); }
         });
+
+        document.addEventListener('DOMContentLoaded', DATA_CORE.init);
     </script>
-
-    <script src="../../../script/help.js"></script>
-    <script>setTimeout(() => { if(typeof createHelpButton === 'function') createHelpButton('dashboard'); }, 500);</script>
 </body>
-
 </html>

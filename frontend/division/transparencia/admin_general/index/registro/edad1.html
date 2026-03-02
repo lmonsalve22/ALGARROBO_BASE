@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registros por Organismo y Edad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --success-bg: #f0fdf4;
+      --success-text: #166534;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --danger-hover: #b91c1c;
+      --danger-bg: #fef2f2;
+      --danger-text: #991b1b;
+      --warning-bg: #fffbeb;
+      --warning-text: #92400e;
+      --info-bg: #f0f9ff;
+      --info-text: #075985;
+      --v-muy-bajo: #e0f2fe;
+      --v-bajo: #fef3c7;
+      --v-medio: #ffffff;
+      --v-alto: #dcfce7;
+      --v-muy-alto: #fee2e2;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-logo {
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary-light);
+      color: var(--primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-titles h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .header-titles p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background-color: var(--bg-main);
+      padding: 0.25rem;
+      border-radius: var(--radius-md);
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      width: fit-content;
+    }
+
+    .nav-tab {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-tab:hover {
+      color: var(--text-main);
+      background-color: var(--border);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .metric-card {
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .metric-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .metric-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .metric-icon.blue {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .metric-icon.green {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+
+    .metric-icon.purple {
+      background-color: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .metric-icon.orange {
+      background-color: #ffedd5;
+      color: #9a3412;
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .filter-bar {
+      background-color: var(--card-bg);
+      padding: 1rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      position: relative;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .filter-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .filter-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 1rem 0 2.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      color: var(--text-main);
+      transition: var(--transition);
+      background-color: var(--bg-main);
+      appearance: none;
+    }
+
+    .filter-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+      background-color: var(--card-bg);
+    }
+
+    .btn-clear {
+      background-color: var(--bg-main);
+      color: var(--text-secondary);
+      height: 44px;
+      padding: 0 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-clear:hover {
+      background-color: var(--danger-light);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .btn-toggle {
+      height: 44px;
+      padding: 0 1.25rem;
+      background-color: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-toggle:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-toggle.percentage-mode {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-toggle.percentage-mode:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .table-section {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-top: 2rem;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .table-inner {
+      overflow-x: auto;
+      max-height: 70vh;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+
+    thead th {
+      background-color: var(--bg-main);
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    thead th:first-child {
+      text-align: left;
+      left: 0;
+      z-index: 30;
+      background-color: var(--bg-main);
+      min-width: 280px;
+    }
+
+    tbody tr {
+      transition: var(--transition);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      color: var(--text-main);
+      position: relative;
+    }
+
+    tbody td:first-child {
+      text-align: left;
+      font-weight: 600;
+      position: sticky;
+      left: 0;
+      background-color: var(--card-bg);
+      z-index: 10;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-right: 1px solid var(--border);
+    }
+
+    tbody tr:hover td:first-child {
+      background-color: var(--primary-light);
+    }
+
+    tbody tr:hover td {
+      background-color: rgba(37, 99, 235, 0.04);
+    }
+
+    .valor-muy-bajo {
+      background-color: var(--v-muy-bajo) !important;
+      color: #0369a1 !important;
+    }
+
+    .valor-bajo {
+      background-color: var(--v-bajo) !important;
+      color: #92400e !important;
+    }
+
+    .valor-medio {
+      background-color: var(--v-medio) !important;
+    }
+
+    .valor-alto {
+      background-color: var(--v-alto) !important;
+      color: #166534 !important;
+    }
+
+    .valor-muy-alto {
+      background-color: var(--v-muy-alto) !important;
+      color: #991b1b !important;
+    }
+
+    .sin-registro {
+      background-color: var(--danger-bg) !important;
+      color: var(--danger-text) !important;
+      font-weight: 500;
+      font-size: 0.75rem;
+    }
+
+    .edad_class {
+      background-color: #f1f5f9 !important;
+      color: var(--text-main);
+      font-weight: 600;
+      border-left: 2px solid var(--border);
+    }
+
+    .porcentaje-muy-bajo {
+      background-color: #fef2f2 !important;
+      color: #c62828 !important;
+      font-weight: 700;
+    }
+
+    .porcentaje-bajo {
+      background-color: #fffbeb !important;
+      color: #ff8f00 !important;
+      font-weight: 700;
+    }
+
+    .porcentaje-medio {
+      background-color: #eff6ff !important;
+      color: #1565c0 !important;
+      font-weight: 700;
+    }
+
+    .porcentaje-alto {
+      background-color: #f0fdf4 !important;
+      color: #2e7d32 !important;
+      font-weight: 700;
+    }
+
+    .promedio-cell {
+      background-color: #f1f5f9 !important;
+      color: var(--primary) !important;
+      font-weight: 800;
+      border-left: 2px solid var(--primary);
+    }
+
+    .tooltip {
+      position: absolute;
+      background: #1e293b;
+      color: white;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+      z-index: 100;
+      white-space: nowrap;
+      bottom: 100%;
+      left: 50%;
+      transform: translate(-50%, -8px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: #1e293b;
+    }
+
+    td:hover .tooltip {
+      opacity: 1;
+      transform: translate(-50%, -4px);
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .legend-card {
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .legend-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-main);
+    }
+
+    .legend-grid {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 1rem;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .modal-content {
+        width: 98%;
+        margin: 2% auto;
+      }
+
+      .table-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input {
+        max-width: 100%;
+      }
+    }
+
+    /* === Modal Detalles de Registros === */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      overflow: auto;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background-color: var(--card-bg);
+      margin: 3% auto;
+      padding: 0;
+      border-radius: var(--radius-lg);
+      width: 95%;
+      max-width: 1200px;
+      max-height: 90vh;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      animation: slideIn 0.4s;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .close {
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: var(--transition);
+      background: rgba(255, 255, 255, 0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      max-height: calc(90vh - 80px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .applied-filters {
+      background: var(--bg-main);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+    }
+
+    .applied-filters-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .filter-tag {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8125rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-tag i {
+      color: var(--primary);
+    }
+
+    .table-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .search-input {
+      flex-grow: 1;
+      max-width: 300px;
+      position: relative;
+    }
+
+    .search-input input {
+      width: 100%;
+      padding: 0.6rem 1rem 0.6rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+    }
+
+    .search-input i {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .export-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .export-btn {
+      padding: 0.5rem 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+    }
+
+    .export-btn:hover {
+      background: var(--bg-main);
+      transform: translateY(-2px);
+    }
+
+    .modal-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .modal-table th {
+      background-color: var(--primary);
+      color: white;
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8125rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .modal-table th:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .modal-table th i {
+      margin-left: 0.5rem;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    .modal-table td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+
+    .modal-table tr:hover {
+      background-color: rgba(37, 99, 235, 0.04);
+    }
+
+    .modal-table tr:nth-child(even) {
+      background-color: var(--bg-main);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .page-btn {
+      padding: 0.5rem 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .page-btn:hover {
+      background: var(--bg-main);
+    }
+
+    .page-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+
+    .no-data i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--border);
+    }
+
+    .modal-loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="header-brand">
+          <div class="header-logo"><i data-lucide="bar-chart-3"></i></div>
+          <div class="header-titles">
+            <h1 id="titulo_principal">Registros por Organismo y Edad</h1>
+            <p>Seguimiento mensual de registros por organismo público y grupo de edad</p>
+          </div>
+        </div>
+      </div>
+      <nav class="nav-tabs">
+        <a href="../landing_transparencia.html" class="nav-tab"><i data-lucide="home" style="width: 14px;"></i>
+          Inicio</a>
+        <a href="../inicio.html" class="nav-tab"><i data-lucide="credit-card" style="width: 14px;"></i> Pagos</a>
+        <a href="../remuneracion_bruta.html" class="nav-tab"><i data-lucide="wallet" style="width: 14px;"></i>
+          Remuneraciones</a>
+        <a href="../rutUnico.html" class="nav-tab"><i data-lucide="users" style="width: 14px;"></i> Personas</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon blue"><i data-lucide="building-2"></i></div>
+        <div class="metric-value" id="total-organismos">-</div>
+        <div class="metric-label">Registros Agrupados</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon green"><i data-lucide="calculator"></i></div>
+        <div class="metric-value" id="promedio-general">-</div>
+        <div class="metric-label">Promedio General</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon purple"><i data-lucide="calendar"></i></div>
+        <div class="metric-value" id="periodo-analisis">-</div>
+        <div class="metric-label">Meses de Análisis</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon orange"><i data-lucide="clock"></i></div>
+        <div class="metric-value" id="ultimo-mes" style="font-size: 1.25rem; padding-top: 0.25rem;">-</div>
+        <div class="metric-label">Último Período</div>
+      </div>
+    </section>
+
+    <section class="filter-bar">
+      <div class="filter-group"><i data-lucide="layers" class="filter-icon" style="width: 16px;"></i><select
+          id="base-filter" class="filter-input">
+          <option value="">Todas las bases</option>
+        </select></div>
+      <div class="filter-group"><i data-lucide="graduation-cap" class="filter-icon" style="width: 16px;"></i><select
+          id="homologado-filter" class="filter-input">
+          <option value="">Todos los homologados</option>
+        </select></div>
+      <div class="filter-group"><i data-lucide="venus" class="filter-icon" style="width: 16px;"></i><select
+          id="sexo-filter" class="filter-input">
+          <option value="">Todos los sexos</option>
+        </select></div>
+      <div class="filter-group"><i data-lucide="calendar" class="filter-icon" style="width: 16px;"></i><select
+          id="year-filter" class="filter-input">
+          <option value="">Todos los años</option>
+        </select></div>
+      <button id="toggle-percentage" class="btn-toggle"><i data-lucide="percent" style="width: 14px;"></i> Ver
+        Porcentajes</button>
+      <button id="clear-filters" class="btn-clear"><i data-lucide="rotate-ccw" style="width: 14px;"></i>
+        Limpiar</button>
+    </section>
+
+    <section class="table-section">
+      <div class="table-inner">
+        <div id="loading" class="loading-container">
+          <div class="spinner"></div>
+          <p>Procesando datos estadísticos...</p>
+        </div>
+        <table id="data-table" style="display: none;"></table>
+      </div>
+    </section>
+
+    <section class="legend-card">
+      <h3 class="legend-title">Leyenda de Desviación Estadística</h3>
+      <div class="legend-grid">
+        <div class="legend-item">
+          <div class="legend-color valor-muy-bajo"></div><span>Muy por debajo</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-bajo"></div><span>Levemente por debajo</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-medio"></div><span>Cercano al promedio</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-alto"></div><span>Levemente por sobre</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-muy-alto"></div><span>Muy por sobre</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color sin-registro"></div><span>Sin registros</span>
+        </div>
+      </div>
+      <h3 class="legend-title" style="margin-top: 1rem;">Leyenda de Porcentajes</h3>
+      <div class="legend-grid">
+        <div class="legend-item">
+          <div class="legend-color porcentaje-muy-bajo"></div><span>Muy bajo (&lt; 5%)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color porcentaje-bajo"></div><span>Bajo (5% - 15%)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color porcentaje-medio"></div><span>Medio (15% - 25%)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color porcentaje-alto"></div><span>Alto (&gt; 25%)</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal para mostrar detalles -->
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="fas fa-chart-bar"></i>
+          Detalles de Registros
+        </h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="applied-filters">
+          <div class="applied-filters-title">
+            <i class="fas fa-filter"></i> Filtros Aplicados
+          </div>
+          <div class="filter-tags" id="modal-filters"></div>
+        </div>
+
+        <div class="table-controls">
+          <div class="search-input">
+            <i class="fas fa-search"></i>
+            <input type="text" id="table-search" placeholder="Buscar en la tabla...">
+          </div>
+          <div class="export-buttons">
+            <button class="export-btn" id="export-csv">
+              <i class="fas fa-file-csv"></i> CSV
+            </button>
+            <button class="export-btn" id="export-excel">
+              <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <button class="export-btn" id="export-pdf">
+              <i class="fas fa-file-pdf"></i> PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="modal-loading" id="modal-loading" style="display: none;">
+            <div class="spinner"></div>
+            Cargando detalles...
+          </div>
+          <div id="modal-table-container"></div>
+        </div>
+
+        <div class="pagination" id="table-pagination">
+          <button class="page-btn" id="prev-page">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="page-info">
+            Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+          </div>
+          <button class="page-btn" id="next-page">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+  <script>
+    const formatter = new Intl.NumberFormat('es-CL');
+    const params = new URLSearchParams(window.location.search);
+    const organismoParam = params.get("organismo");
+
+    let data = [], filteredData = [], allMonths = [], allYears = [], maxYear = null, filteredMonths = [], isPercentageMode = false;
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let tableData = [];
+    let filteredTableData = [];
+
+    const monthOrder = { "ENERO": 1, "FEBRERO": 2, "MARZO": 3, "ABRIL": 4, "MAYO": 5, "JUNIO": 6, "JULIO": 7, "AGOSTO": 8, "SEPTIEMBRE": 9, "SETIEMBRE": 9, "OCTUBRE": 10, "NOVIEMBRE": 11, "DICIEMBRE": 12 };
+
+    function cargarTitulosBoton(rawData) {
+      const titulo = document.getElementById("titulo_principal");
+      if (titulo && rawData.length > 0) titulo.innerHTML = `<i class="fas fa-chart-line"></i>Registros por ${rawData[0].organismo_nombre} y Edad`;
+    }
+
+    let rawData = [];
+    const DATA_URL = `../../registro_organismo2_all/${organismoParam}.json`;
+
+    async function initializeApp() {
+      const loadingEl = document.getElementById("loading"), tableEl = document.getElementById("data-table");
+      try {
+        const response = await fetch(DATA_URL);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        rawData = await response.json(); cargarTitulosBoton(rawData); data = rawData;
+
+        const allKeys = new Set();
+        data.forEach(row => { Object.keys(row).forEach(key => { if (!["organismo_nombre", "base", "sexo", "homologado", "age_label"].includes(key)) allKeys.add(key); }); });
+        allMonths = Array.from(allKeys);
+        allMonths.sort((a, b) => { const [mA, yA] = a.split('_'), [mB, yB] = b.split('_'); if (parseInt(yA) !== parseInt(yB)) return parseInt(yB) - parseInt(yA); return (monthOrder[mA.toUpperCase()] || 0) - (monthOrder[mB.toUpperCase()] || 0); });
+        filteredMonths = [...allMonths];
+
+        const yearsSet = new Set();
+        allMonths.forEach(m => { const p = m.split('_'); if (p.length > 1) { const y = parseInt(p[p.length - 1]); if (!isNaN(y)) yearsSet.add(y); } });
+        allYears = Array.from(yearsSet).sort((a, b) => b - a); maxYear = allYears[0] || null;
+
+        populateFilters(); processAndDisplayData(data); setupEventListeners();
+        loadingEl.style.display = "none"; tableEl.style.display = "table";
+      } catch (error) {
+        console.error("Error:", error);
+        loadingEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error al cargar: ${error.message}`;
+      }
+    }
+
+    function populateFilters() {
+      const bf = document.getElementById("base-filter"), hf = document.getElementById("homologado-filter"), sf = document.getElementById("sexo-filter"), yf = document.getElementById("year-filter");
+      if (!bf || !hf || !sf || !yf || !data.length) return;
+      bf.innerHTML = '<option value="">Todas las bases</option>';
+      hf.innerHTML = '<option value="">Todos los homologados</option>';
+      sf.innerHTML = '<option value="">Todos los sexos</option>';
+      yf.innerHTML = '<option value="">Todos los años</option>';
+      [...new Set(data.map(i => i.base))].filter(Boolean).sort().forEach(v => bf.appendChild(new Option(v, v)));
+      [...new Set(data.map(i => i.homologado).filter(v => v != null && v !== "" && v !== "null"))].sort().forEach(v => hf.appendChild(new Option(v, v)));
+      [...new Set(data.map(i => i.sexo).filter(v => v != null && v !== "" && v !== "null"))].sort().forEach(v => sf.appendChild(new Option(v, v)));
+      allYears.forEach(y => yf.appendChild(new Option(y, y)));
+      if (maxYear) { yf.value = maxYear; filterMonthsByYear(maxYear); }
+    }
+
+    function filterMonthsByYear(year) {
+      if (!year) { filteredMonths = [...allMonths]; return; }
+      filteredMonths = allMonths.filter(m => { const p = m.split('_'); return p.length > 1 && parseInt(p[p.length - 1]) === year; });
+    }
+
+    function groupAndSumData(d) {
+      const g = new Map();
+      d.forEach(row => {
+        const key = `${row.organismo_nombre}_${row.age_label}`;
+        if (!g.has(key)) g.set(key, { organismo_nombre: row.organismo_nombre, age_label: row.age_label });
+        const group = g.get(key);
+        allMonths.forEach(m => { group[m] = (group[m] || 0) + (row[m] || 0); });
+      });
+      return Array.from(g.values());
+    }
+
+    function processAndDisplayData(d) { filteredData = groupAndSumData(d); updateStats(); renderTable(); }
+
+    function updateStats() {
+      document.getElementById("total-organismos").textContent = filteredData.length;
+      document.getElementById("periodo-analisis").textContent = filteredMonths.length;
+      document.getElementById("ultimo-mes").textContent = filteredMonths.length > 0 ? filteredMonths[filteredMonths.length - 1].replace("_", " ") : "-";
+      let s = 0, c = 0;
+      filteredData.forEach(row => { filteredMonths.forEach(m => { const v = row[m]; if (v && v > 0) { s += v; c++; } }); });
+      document.getElementById("promedio-general").textContent = c > 0 ? (s / c).toFixed(0) : "-";
+    }
+
+    function renderTable() {
+      const table = document.getElementById("data-table"); table.innerHTML = "";
+      const header = document.createElement("thead"), headerRow = document.createElement("tr");
+      const thOrg = document.createElement("th"); thOrg.innerHTML = '<i class="fas fa-building"></i> Organismo'; headerRow.appendChild(thOrg);
+      const thEdad = document.createElement("th"); thEdad.innerHTML = '<i class="fas fa-user-clock"></i> Grupo de Edad'; headerRow.appendChild(thEdad);
+      filteredMonths.forEach(m => { const th = document.createElement("th"); th.textContent = m.replace("_", " "); headerRow.appendChild(th); });
+      const thAvg = document.createElement("th"); thAvg.innerHTML = '<i class="fas fa-calculator"></i> Promedio'; headerRow.appendChild(thAvg);
+      header.appendChild(headerRow); table.appendChild(header);
+
+      const body = document.createElement("tbody");
+      const columnTotals = {}; filteredMonths.forEach(m => { columnTotals[m] = 0; });
+      filteredData.forEach(row => { filteredMonths.forEach(m => { const v = row[m]; if (v && v > 0) columnTotals[m] += v; }); });
+
+      filteredData.forEach(row => {
+        const tr = document.createElement("tr");
+        const tdName = document.createElement("td"); tdName.textContent = row.organismo_nombre; tdName.title = row.organismo_nombre; tr.appendChild(tdName);
+        const tdEdad = document.createElement("td"); tdEdad.classList.add("edad_class");
+        tdEdad.textContent = row.age_label || "-"; tdEdad.title = row.age_label || "-"; tr.appendChild(tdEdad);
+
+        let sum = 0, count = 0; const values = [];
+        filteredMonths.forEach(m => {
+          const val = row[m], td = document.createElement("td");
+          if (val === 0) { td.classList.add("sin-registro"); td.innerHTML = '<i class="fas fa-times"></i> Sin datos'; }
+          else if (val) {
+            td.style.cursor = "pointer";
+            if (isPercentageMode && columnTotals[m] > 0) {
+              const pct = (val / columnTotals[m] * 100); td.textContent = `${pct.toFixed(1)}%`;
+              if (pct < 5) td.classList.add("porcentaje-muy-bajo"); else if (pct < 15) td.classList.add("porcentaje-bajo"); else if (pct < 25) td.classList.add("porcentaje-medio"); else td.classList.add("porcentaje-alto");
+              const tt = document.createElement("div"); tt.className = "tooltip"; tt.textContent = `Valor absoluto: ${formatter.format(val)}`; td.appendChild(tt);
+            } else { td.textContent = formatter.format(val); sum += val; count++; values.push(val); }
+
+            td.addEventListener('click', () => handleCellClick(row, m, ""));
+          } else { td.textContent = "-"; }
+          tr.appendChild(td);
+        });
+
+        const avg = count > 0 ? sum / count : 0;
+        const variance = values.length > 1 ? values.reduce((a, v) => a + Math.pow(v - avg, 2), 0) / values.length : 0;
+        const stdDev = Math.sqrt(variance);
+        const tdAvg = document.createElement("td"); tdAvg.classList.add("promedio-cell");
+        if (isPercentageMode) {
+          let tp = 0, pc = 0; filteredMonths.forEach(m => { const v = row[m]; if (v && v > 0 && columnTotals[m] > 0) { tp += (v / columnTotals[m] * 100); pc++; } });
+          tdAvg.textContent = pc > 0 ? `${(tp / pc).toFixed(1)}%` : "-";
+        } else { tdAvg.textContent = count > 0 ? formatter.format(avg.toFixed(0)) : "-"; }
+        tr.appendChild(tdAvg);
+
+        if (!isPercentageMode) {
+          const cells = tr.children;
+          for (let i = 2; i < cells.length - 1; i++) {
+            const td = cells[i], val = row[filteredMonths[i - 2]];
+            if (val && val > 0 && avg > 0) {
+              const pct = ((val - avg) / avg) * 100;
+              const tt = document.createElement("div"); tt.className = "tooltip"; tt.textContent = `${pct > 0 ? "+" : ""}${pct.toFixed(1)}% del promedio`; td.appendChild(tt);
+              if (Math.abs(val - avg) > stdDev * 0.9) { if (val > avg) td.classList.add(val > avg * 1.5 ? "valor-muy-alto" : "valor-alto"); else td.classList.add(val < avg * 0.5 ? "valor-muy-bajo" : "valor-bajo"); }
+              else td.classList.add("valor-medio");
+            }
+          }
+        }
+        body.appendChild(tr);
+      });
+      table.appendChild(body);
+    }
+
+    function handleCellClick(row, month, base) {
+      const bf = document.getElementById("base-filter").value;
+      const hf = document.getElementById("homologado-filter").value;
+      const sf = document.getElementById("sexo-filter").value;
+      const yf = document.getElementById("year-filter").value;
+      const modal = document.getElementById("detailsModal");
+      modal.style.display = "block";
+      const modalFilters = document.getElementById("modal-filters");
+      const edadFilter = row.age_label || "";
+
+      modalFilters.innerHTML = `
+        <div class="filter-tag"><i class="fas fa-building"></i><span>Organismo: ${row.organismo_nombre}</span></div>
+        <div class="filter-tag"><i class="fas fa-user-clock"></i><span>Edad: ${edadFilter}</span></div>
+        <div class="filter-tag"><i class="fas fa-calendar-alt"></i><span>Período: ${month.replace("_", " ")}</span></div>
+        ${bf ? `<div class="filter-tag"><i class="fas fa-layer-group"></i><span>Base: ${bf}</span></div>` : ''}
+        ${hf ? `<div class="filter-tag"><i class="fas fa-graduation-cap"></i><span>Homologado: ${hf}</span></div>` : ''}
+        ${sf ? `<div class="filter-tag"><i class="fas fa-venus-mars"></i><span>Sexo: ${sf}</span></div>` : ''}
+        ${yf ? `<div class="filter-tag"><i class="fas fa-calendar"></i><span>Año: ${yf}</span></div>` : ''}
+      `;
+      document.getElementById("modal-loading").style.display = "flex";
+      document.getElementById("modal-table-container").innerHTML = "";
+      loadDetailedData(row.organismo_nombre, month, bf, sf, hf, edadFilter);
+    }
+
+    async function loadDetailedData(organismo, month, base, sexoFilter, homologadoFilter, edadFilter) {
+      try {
+        const url = `../../registro_organismo2_detalle2/${organismoParam}.json.gz`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        let detailedData;
+        if (typeof DecompressionStream !== "undefined") {
+          const ds = new DecompressionStream("gzip");
+          const decompressedStream = response.body.pipeThrough(ds);
+          const responseDecompressed = new Response(decompressedStream);
+          detailedData = await responseDecompressed.json();
+        } else {
+          const buffer = await response.arrayBuffer();
+          const text = pako.ungzip(buffer, { to: "string" });
+          detailedData = JSON.parse(text);
+        }
+        const normalizeBase = (str) => {
+          if (!str) return "";
+          const s = str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          if (s.includes("honorario")) return "honorarios";
+          if (s.includes("trabajo") && (s.includes("codigo") || s.includes("cod"))) return "codigotrabajo";
+          if (s.includes("contrata")) return "contrata";
+          if (s.includes("planta")) return "planta";
+          return s.replace(/[^a-z0-9]/g, "");
+        };
+        let filteredDetails = detailedData.filter(item => {
+          if (base && item.base && normalizeBase(item.base) !== normalizeBase(base)) return false;
+          if (month && item.fecha && item.fecha !== month) return false;
+          if (sexoFilter && item.sexo && item.sexo.toLowerCase() !== sexoFilter.toLowerCase()) return false;
+          if (homologadoFilter && item.homologado && item.homologado !== homologadoFilter) return false;
+          if (edadFilter && item.age_label && item.age_label.trim().toLowerCase() !== edadFilter.trim().toLowerCase()) return false;
+          return true;
+        });
+        document.getElementById("modal-loading").style.display = "none";
+        tableData = filteredDetails;
+        filteredTableData = [...tableData];
+        currentPage = 1;
+        displayDetailedData(filteredDetails);
+      } catch (error) {
+        console.error("Error al cargar datos detallados:", error);
+        document.getElementById("modal-loading").style.display = "none";
+        document.getElementById("modal-table-container").innerHTML = '<div class="no-data"><i class="fas fa-exclamation-triangle"></i> Error al cargar los datos detallados</div>';
+      }
+    }
+
+    function displayDetailedData(data) {
+      const container = document.getElementById("modal-table-container");
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="no-data"><i class="fas fa-info-circle"></i> No se encontraron registros con los filtros seleccionados</div>';
+        return;
+      }
+      const startIndex = (currentPage - 1) * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      const paginatedData = filteredTableData.slice(startIndex, endIndex);
+      const table = document.createElement("table"); table.className = "modal-table";
+      const header = document.createElement("thead"), headerRow = document.createElement("tr");
+      const columns = [
+        { key: "nombreencontrado", label: "Nombre", sortable: true },
+        { key: "remuneracionbruta_mensual", label: "Remuneración Bruta", sortable: true },
+        { key: "base", label: "Base", sortable: true },
+        { key: "sexo", label: "Sexo", sortable: true },
+        { key: "age_label", label: "Rango de Edad", sortable: true },
+        { key: "homologado", label: "Homologado", sortable: true }
+      ];
+      columns.forEach(col => {
+        const th = document.createElement("th"); th.textContent = col.label;
+        if (col.sortable) { th.dataset.sort = col.key; th.innerHTML = `${col.label} <i class="fas fa-sort"></i>`; }
+        headerRow.appendChild(th);
+      });
+      header.appendChild(headerRow); table.appendChild(header);
+      const body = document.createElement("tbody");
+      paginatedData.forEach(row => {
+        const tr = document.createElement("tr");
+        columns.forEach(col => {
+          const td = document.createElement("td");
+          if (col.key === "remuneracionbruta_mensual") td.textContent = formatter.format(row[col.key] || 0);
+          else td.textContent = row[col.key] || "-";
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+      table.appendChild(body); container.innerHTML = ""; container.appendChild(table); updatePagination();
+    }
+
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredTableData.length / rowsPerPage);
+      document.getElementById("current-page").textContent = currentPage;
+      document.getElementById("total-pages").textContent = totalPages;
+      document.getElementById("prev-page").disabled = currentPage === 1;
+      document.getElementById("next-page").disabled = currentPage === totalPages || totalPages === 0;
+    }
+
+    function exportData(format) {
+      const headers = ['Nombre', 'Remuneración Bruta', 'Base', 'Sexo', 'Rango de Edad', 'Homologado'];
+      const keys = ['nombreencontrado', 'remuneracionbruta_mensual', 'base', 'sexo', 'age_label', 'homologado'];
+      const rows = filteredTableData.map(row => keys.map(k => row[k] || ''));
+      if (format === 'csv') {
+        let csv = headers.join(',') + '\n';
+        rows.forEach(r => { csv += r.map(v => `"${v}"`).join(',') + '\n'; });
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'datos_exportados.csv'; a.click(); window.URL.revokeObjectURL(url);
+      } else if (format === 'excel') {
+        const wsData = [headers, ...rows];
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        ws['!cols'] = headers.map((h, i) => ({ wch: Math.max(h.length, ...rows.map(r => String(r[i]).length)) + 2 }));
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Datos'); XLSX.writeFile(wb, 'datos_exportados.xlsx');
+      } else if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.setFontSize(16); doc.text('Detalles de Registros', 14, 15);
+        doc.setFontSize(9); doc.setTextColor(100); doc.text(`Total de registros: ${filteredTableData.length}`, 14, 22);
+        doc.autoTable({
+          head: [headers], body: rows, startY: 28, styles: { fontSize: 8, cellPadding: 3 },
+          headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [248, 250, 252] }, margin: { left: 14, right: 14 }
+        });
+        doc.save('datos_exportados.pdf');
+      }
+    }
+
+    function setupEventListeners() {
+      const bf = document.getElementById("base-filter"), hf = document.getElementById("homologado-filter"), sf = document.getElementById("sexo-filter"), yf = document.getElementById("year-filter"), tp = document.getElementById("toggle-percentage");
+      const aplicar = () => {
+        filterMonthsByYear(parseInt(yf.value, 10));
+        processAndDisplayData(data.filter(row => (bf.value === "" || row.base === bf.value) && (hf.value === "" || row.homologado === hf.value) && (sf.value === "" || row.sexo === sf.value)));
+      };
+      bf.addEventListener("change", aplicar); hf.addEventListener("change", aplicar); sf.addEventListener("change", aplicar); yf.addEventListener("change", aplicar);
+      tp.addEventListener("click", () => { isPercentageMode = !isPercentageMode; tp.innerHTML = isPercentageMode ? 'Ver Valores Absolutos' : 'Ver Porcentajes'; tp.classList.toggle("percentage-mode", isPercentageMode); renderTable(); });
+
+      const modal = document.getElementById("detailsModal");
+      const closeBtn = document.getElementsByClassName("close")[0];
+      closeBtn.onclick = () => modal.style.display = "none";
+      window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
+
+      const searchInput = document.getElementById('table-search');
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        filteredTableData = term === '' ? [...tableData] : tableData.filter(row => Object.values(row).some(v => String(v).toLowerCase().includes(term)));
+        currentPage = 1; displayDetailedData(filteredTableData);
+      });
+
+      document.addEventListener('click', (e) => {
+        const th = e.target.closest('th[data-sort]');
+        if (th) {
+          const key = th.dataset.sort;
+          const icon = th.querySelector('i');
+          let dir = icon.classList.contains('fa-sort-up') ? 'desc' : 'asc';
+          document.querySelectorAll('th[data-sort] i').forEach(i => i.className = 'fas fa-sort');
+          icon.className = dir === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+          filteredTableData.sort((a, b) => {
+            const vA = a[key] || '', vB = b[key] || '';
+            return dir === 'asc' ? (vA > vB ? 1 : -1) : (vA < vB ? 1 : -1);
+          });
+          displayDetailedData(filteredTableData);
+        }
+      });
+
+      document.getElementById('export-csv').addEventListener('click', () => exportData('csv'));
+      document.getElementById('export-excel').addEventListener('click', () => exportData('excel'));
+      document.getElementById('export-pdf').addEventListener('click', () => exportData('pdf'));
+      document.getElementById('prev-page').addEventListener('click', () => { if (currentPage > 1) { currentPage--; displayDetailedData(filteredTableData); } });
+      document.getElementById('next-page').addEventListener('click', () => { if (currentPage < Math.ceil(filteredTableData.length / rowsPerPage)) { currentPage++; displayDetailedData(filteredTableData); } });
+    }
+
+    document.addEventListener("DOMContentLoaded", initializeApp);
+    document.getElementById("clear-filters").addEventListener("click", () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('reload', Date.now());
+      window.location.href = url.toString();
+    });
+  </script>
+  <script src="dashboard-enhancements.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Entradas de Organismos</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.0.4/dist/pako.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #1e3a5f;
+      --secondary-color: #2c5282;
+      --accent-color: #3182ce;
+      --success-color: #38a169;
+      --warning-color: #ed8936;
+      --danger-color: #e53e3e;
+      --light-bg: #f7fafc;
+      --white: #ffffff;
+      --gray-100: #f7fafc;
+      --gray-200: #edf2f7;
+      --gray-300: #e2e8f0;
+      --gray-600: #718096;
+      --gray-800: #2d3748;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+        0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg,
+          var(--light-bg) 0%,
+          var(--gray-200) 100%);
+      min-height: 100vh;
+      color: var(--gray-800);
+    }
+
+    .header {
+      background: linear-gradient(135deg,
+          var(--primary-color) 0%,
+          var(--secondary-color) 100%);
+      color: var(--white);
+      padding: 2rem 0;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,100 0,80"/></svg>') no-repeat bottom;
+      background-size: cover;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-content {
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    .stats-bar {
+      background: var(--white);
+      margin: -1rem 1rem 2rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 8px;
+      transition: transform 0.2s ease;
+    }
+
+    .stat-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      display: block;
+    }
+
+    .stat-label {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    .main-content {
+      padding: 0 1rem 2rem;
+    }
+
+    .table-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .table-header {
+      background: linear-gradient(135deg,
+          var(--primary-color) 0%,
+          var(--accent-color) 100%);
+      color: var(--white);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .table-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input,
+    .search-box select {
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+      font-size: 0.9rem;
+      min-width: 250px;
+    }
+
+    .search-box input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      max-height: 70vh;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: linear-gradient(135deg,
+          var(--primary-color) 0%,
+          var(--secondary-color) 100%);
+      color: var(--white);
+      padding: 1rem 0.8rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 2px solid var(--accent-color);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th:hover {
+      background: linear-gradient(135deg,
+          var(--secondary-color) 0%,
+          var(--accent-color) 100%);
+    }
+
+    th:first-child {
+      text-align: left;
+      min-width: 150px;
+    }
+
+    .sort-icon {
+      margin-left: 0.5rem;
+      opacity: 0.7;
+    }
+
+    .sort-icon.active {
+      opacity: 1;
+    }
+
+    td {
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid var(--gray-200);
+      text-align: center;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    td:first-child {
+      text-align: left;
+      font-weight: 600;
+      color: var(--gray-800);
+      background: var(--gray-100);
+      position: sticky;
+      left: 0;
+      z-index: 5;
+    }
+
+    tr:hover td {
+      background-color: rgba(49, 130, 206, 0.05);
+    }
+
+    tr:hover td:first-child {
+      background-color: rgba(49, 130, 206, 0.1);
+    }
+
+    .sin-dato {
+      background: linear-gradient(135deg,
+          #fed7d7 0%,
+          #feb2b2 100%) !important;
+      color: var(--danger-color) !important;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+
+    .fecha-cell {
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .organismo-cell {
+      font-weight: 600;
+      max-width: 250px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pagos-cell {
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      color: var(--gray-600);
+    }
+
+    .spinner {
+      border: 3px solid var(--gray-300);
+      border-top: 3px solid var(--accent-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-right: 1rem;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+        margin: -1rem 0.5rem 1rem;
+      }
+
+      .table-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filters {
+        justify-content: center;
+      }
+
+      .search-box input,
+      .search-box select {
+        min-width: 200px;
+      }
+
+      th,
+      td {
+        padding: 0.8rem 0.4rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    .search-box select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='5'%3E%3Cpath fill='white' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.8rem center;
+      background-size: 10px 5px;
+      cursor: pointer;
+    }
+
+    .search-box select option {
+      color: black;
+    }
+
+    .clear-button {
+      padding: 0.5rem 1rem;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .clear-button:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0;
+      gap: 0.5rem;
+    }
+
+    .pagination button {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .pagination button:hover {
+      background-color: var(--accent-color);
+    }
+
+    .pagination button:disabled {
+      background-color: var(--gray-300);
+      cursor: not-allowed;
+    }
+
+    .pagination .page-info {
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <h1>
+          <i class="fas fa-sign-out-alt"></i> Entradas de Organismos
+        </h1>
+        <p>Registro de personas en organismos públicos</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-value" id="total-personas">-</span>
+      <div class="stat-label">Total de Personas</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="total-organismos">-</span>
+      <div class="stat-label">Organismos Registrados</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="total-pagos">-</span>
+      <div class="stat-label">Total de Pagos</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="personas-con-salida">-</span>
+      <div class="stat-label">Personas con Salida</div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="fas fa-table"></i>
+          Registro de Entradas y Salidas
+        </div>
+
+        <div class="filters">
+          <div class="search-box">
+            <i class="fas fa-building"></i>
+            <select id="organismo-entrada-filter">
+              <option value="">Todos los organismos de entrada</option>
+            </select>
+          </div>
+
+          <div class="search-box">
+            <i class="fas fa-building"></i>
+            <select id="organismo-salida-filter">
+              <option value="">Todos los organismos de salida</option>
+            </select>
+          </div>
+
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar por RUT..." />
+          </div>
+
+          <div class="search-box">
+            <button id="clear-filters" class="clear-button">
+              Limpiar Filtro
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="table-container">
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          Cargando datos...
+        </div>
+        <table id="data-table" style="display: none"></table>
+      </div>
+      <div class="pagination" id="pagination" style="display: none">
+        <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+        <div class="page-info">Página <span id="current-page">1</span> de <span id="total-pages">1</span></div>
+        <button id="next-page">Siguiente <i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const formatter = new Intl.NumberFormat('es-CL');
+    const organismoEntradaFilter = document.getElementById("organismo-entrada-filter");
+    const organismoSalidaFilter = document.getElementById("organismo-salida-filter");
+    const searchInput = document.getElementById("search-input");
+    const prevPageBtn = document.getElementById("prev-page");
+    const nextPageBtn = document.getElementById("next-page");
+    const currentPageSpan = document.getElementById("current-page");
+    const totalPagesSpan = document.getElementById("total-pages");
+
+    let rawData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    const itemsPerPage = 50;
+    let sortColumn = null;
+    let sortDirection = 'asc';
+
+    // Maps for cascading filters
+    let entradaToSalidaMap = {};
+    let salidaToEntradaMap = {};
+
+    const url = "https://raw.githubusercontent.com/Sud-Austral/TRANSPARENCIA_FACIL/refs/heads/main/data/personas.json.gz";
+
+    async function cargarJSON() {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+        // Soporte nativo para gzip, evita rebasar memoria con strings gigantes
+        if (typeof DecompressionStream !== "undefined") {
+          const ds = new DecompressionStream("gzip");
+          const decompressedStream = response.body.pipeThrough(ds);
+          const responseDecompressed = new Response(decompressedStream);
+          rawData = await responseDecompressed.json();
+        } else {
+          const buffer = await response.arrayBuffer();
+          const text = pako.ungzip(buffer, { to: "string" });
+          rawData = JSON.parse(text);
+        }
+        console.log("Datos cargados:", rawData.length, "registros");
+      } catch (error) {
+        console.error("Error al leer el JSON:", error);
+        document.getElementById("loading").innerHTML =
+          '<i class="fas fa-exclamation-triangle"></i> Error al cargar los datos';
+      }
+    }
+
+    function populateDropdown(dropdownElement, options) {
+      dropdownElement.innerHTML = ''; // Clear existing options
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = dropdownElement.id.includes('entrada') ? "Todos los organismos de entrada" : "Todos los organismos de salida";
+      dropdownElement.appendChild(defaultOption);
+
+      const sortedOptions = [...options].sort();
+      sortedOptions.forEach((optionValue) => {
+        const option = document.createElement("option");
+        option.value = optionValue;
+        option.textContent = optionValue;
+        dropdownElement.appendChild(option);
+      });
+    }
+
+    function initializeApp() {
+      try {
+        // Build maps for cascading filters
+        rawData.forEach(item => {
+          const entrada = item.organismo_entrada;
+          const salida = item.organismo_salida;
+
+          if (entrada) {
+            if (!entradaToSalidaMap[entrada]) {
+              entradaToSalidaMap[entrada] = new Set();
+            }
+            if (salida) {
+              entradaToSalidaMap[entrada].add(salida);
+            }
+          }
+
+          if (salida) {
+            if (!salidaToEntradaMap[salida]) {
+              salidaToEntradaMap[salida] = new Set();
+            }
+            if (entrada) {
+              salidaToEntradaMap[salida].add(entrada);
+            }
+          }
+        });
+
+        // Get all unique values for initial population
+        const allEntradas = Object.keys(entradaToSalidaMap);
+        const allSalidas = Object.keys(salidaToEntradaMap);
+
+        populateDropdown(organismoEntradaFilter, allEntradas);
+        populateDropdown(organismoSalidaFilter, allSalidas);
+
+        // Inicializar datos filtrados
+        filteredData = [...rawData];
+
+        // Actualizar estadísticas
+        updateStats();
+
+        // Renderizar tabla
+        renderTable();
+
+        // Configurar event listeners
+        setupEventListeners();
+
+        // Ocultar loading y mostrar tabla
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("data-table").style.display = "table";
+        document.getElementById("pagination").style.display = "flex";
+      } catch (error) {
+        console.error("Error al procesar los datos:", error);
+        document.getElementById("loading").innerHTML =
+          '<i class="fas fa-exclamation-triangle"></i> Error al cargar los datos';
+      }
+    }
+
+    function updateStats() {
+      document.getElementById("total-personas").textContent = formatter.format(rawData.length);
+      document.getElementById("total-organismos").textContent = Object.keys(entradaToSalidaMap).length;
+
+      // Calcular total de pagos
+      const totalPagos = rawData.reduce((sum, item) => sum + (item.pagos_entrada || 0), 0);
+      document.getElementById("total-pagos").textContent = formatter.format(totalPagos);
+
+      // Calcular personas con salida
+      const personasConSalida = rawData.filter(item => item.organismo_salida !== null).length;
+      document.getElementById("personas-con-salida").textContent = formatter.format(personasConSalida);
+    }
+
+    function sortData(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'asc';
+      }
+
+      const compareFunction = (a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+
+        if (valueA === null || valueA === undefined) valueA = '';
+        if (valueB === null || valueB === undefined) valueB = '';
+
+        if (column === 'pagos_entrada' || column === 'pago_salida') {
+          valueA = Number(valueA) || 0;
+          valueB = Number(valueB) || 0;
+        }
+
+        if (typeof valueA === 'number' && typeof valueB === 'number') {
+          return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+        } else {
+          const stringA = String(valueA).toLowerCase();
+          const stringB = String(valueB).toLowerCase();
+
+          if (sortDirection === 'asc') {
+            return stringA.localeCompare(stringB);
+          } else {
+            return stringB.localeCompare(stringA);
+          }
+        }
+      };
+
+      filteredData.sort(compareFunction);
+      currentPage = 1;
+      renderTable();
+    }
+
+    function renderTable() {
+      const table = document.getElementById("data-table");
+      table.innerHTML = "";
+
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, filteredData.length);
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      currentPageSpan.textContent = currentPage;
+      totalPagesSpan.textContent = totalPages;
+      prevPageBtn.disabled = currentPage === 1;
+      nextPageBtn.disabled = currentPage === totalPages;
+
+      const header = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+
+      const headers = [
+        { text: 'RUT', icon: 'fa-id-card', column: 'rut' },
+        { text: 'Primer Pago Entrada', icon: 'fa-calendar-check', column: 'primer_pago_entrada' },
+        { text: 'Último Pago Entrada', icon: 'fa-calendar-times', column: 'ultimo_pago_entrada' },
+        { text: 'Organismo Entrada', icon: 'fa-building', column: 'organismo_entrada' },
+        { text: 'Pagos Entrada', icon: 'fa-money-bill-wave', column: 'pagos_entrada' },
+        { text: 'Último Pago Salida', icon: 'fa-calendar-times', column: 'ultimo_pago_salida' },
+        { text: 'Primer Pago Salida', icon: 'fa-calendar-check', column: 'primer_pago_salida' },
+        { text: 'Organismo Salida', icon: 'fa-building', column: 'organismo_salida' },
+        { text: 'Pago Salida', icon: 'fa-money-bill-wave', column: 'pago_salida' }
+      ];
+
+      headers.forEach(header => {
+        const th = document.createElement("th");
+        th.dataset.column = header.column;
+
+        let sortIcon = '<i class="fas fa-sort sort-icon"></i>';
+        if (sortColumn === header.column) {
+          sortIcon = sortDirection === 'asc'
+            ? '<i class="fas fa-sort-up sort-icon active"></i>'
+            : '<i class="fas fa-sort-down sort-icon active"></i>';
+        }
+
+        th.innerHTML = `<i class="fas ${header.icon}"></i> ${header.text} ${sortIcon}`;
+        th.addEventListener('click', () => sortData(header.column));
+        headerRow.appendChild(th);
+      });
+
+      header.appendChild(headerRow);
+      table.appendChild(header);
+
+      const body = document.createElement("tbody");
+
+      paginatedData.forEach((row) => {
+        const tr = document.createElement("tr");
+
+        const tdRut = document.createElement("td");
+        tdRut.textContent = row.rut || '-';
+        tr.appendChild(tdRut);
+
+        const tdPrimerPagoEntrada = document.createElement("td");
+        tdPrimerPagoEntrada.className = "fecha-cell";
+        tdPrimerPagoEntrada.textContent = row.primer_pago_entrada || '-';
+        tr.appendChild(tdPrimerPagoEntrada);
+
+        const tdUltimoPagoEntrada = document.createElement("td");
+        tdUltimoPagoEntrada.className = "fecha-cell";
+        tdUltimoPagoEntrada.textContent = row.ultimo_pago_entrada || '-';
+        tr.appendChild(tdUltimoPagoEntrada);
+
+        const tdOrganismoEntrada = document.createElement("td");
+        tdOrganismoEntrada.className = "organismo-cell";
+        tdOrganismoEntrada.textContent = row.organismo_entrada || '-';
+        tdOrganismoEntrada.title = row.organismo_entrada || '-';
+        tr.appendChild(tdOrganismoEntrada);
+
+        const tdPagosEntrada = document.createElement("td");
+        tdPagosEntrada.className = "pagos-cell";
+        tdPagosEntrada.textContent = row.pagos_entrada ? formatter.format(row.pagos_entrada) : '-';
+        tr.appendChild(tdPagosEntrada);
+
+        const tdUltimoPagoSalida = document.createElement("td");
+        tdUltimoPagoSalida.className = "fecha-cell";
+        if (row.ultimo_pago_salida === "NaT" || !row.ultimo_pago_salida) {
+          tdUltimoPagoSalida.classList.add("sin-dato");
+          tdUltimoPagoSalida.textContent = "Sin datos";
+        } else {
+          tdUltimoPagoSalida.textContent = row.ultimo_pago_salida;
+        }
+        tr.appendChild(tdUltimoPagoSalida);
+
+        const tdPrimerPagoSalida = document.createElement("td");
+        tdPrimerPagoSalida.className = "fecha-cell";
+        if (row.primer_pago_salida === "NaT" || !row.primer_pago_salida) {
+          tdPrimerPagoSalida.classList.add("sin-dato");
+          tdPrimerPagoSalida.textContent = "Sin datos";
+        } else {
+          tdPrimerPagoSalida.textContent = row.primer_pago_salida;
+        }
+        tr.appendChild(tdPrimerPagoSalida);
+
+        const tdOrganismoSalida = document.createElement("td");
+        tdOrganismoSalida.className = "organismo-cell";
+        if (!row.organismo_salida) {
+          tdOrganismoSalida.classList.add("sin-dato");
+          tdOrganismoSalida.textContent = "Sin datos";
+        } else {
+          tdOrganismoSalida.textContent = row.organismo_salida;
+          tdOrganismoSalida.title = row.organismo_salida;
+        }
+        tr.appendChild(tdOrganismoSalida);
+
+        const tdPagoSalida = document.createElement("td");
+        tdPagoSalida.className = "pagos-cell";
+        if (!row.pago_salida) {
+          tdPagoSalida.classList.add("sin-dato");
+          tdPagoSalida.textContent = "Sin datos";
+        } else {
+          tdPagoSalida.textContent = formatter.format(row.pago_salida);
+        }
+        tr.appendChild(tdPagoSalida);
+
+        body.appendChild(tr);
+      });
+
+      table.appendChild(body);
+    }
+
+    function setupEventListeners() {
+      organismoEntradaFilter.addEventListener("change", () => {
+        const selectedEntrada = organismoEntradaFilter.value;
+
+        const availableSalidas = selectedEntrada ? entradaToSalidaMap[selectedEntrada] : Object.keys(salidaToEntradaMap);
+
+        const currentSalida = organismoSalidaFilter.value;
+        if (currentSalida && availableSalidas && !availableSalidas.has(currentSalida)) {
+          organismoSalidaFilter.value = "";
+        }
+
+        populateDropdown(organismoSalidaFilter, availableSalidas || []);
+        organismoSalidaFilter.value = currentSalida;
+
+        applyFilters();
+      });
+
+      organismoSalidaFilter.addEventListener("change", () => {
+        const selectedSalida = organismoSalidaFilter.value;
+
+        const availableEntradas = selectedSalida ? salidaToEntradaMap[selectedSalida] : Object.keys(entradaToSalidaMap);
+
+        const currentEntrada = organismoEntradaFilter.value;
+        if (currentEntrada && availableEntradas && !availableEntradas.has(currentEntrada)) {
+          organismoEntradaFilter.value = "";
+        }
+
+        populateDropdown(organismoEntradaFilter, availableEntradas || []);
+        organismoEntradaFilter.value = currentEntrada;
+
+        applyFilters();
+      });
+
+      searchInput.addEventListener("input", applyFilters);
+
+      document.getElementById("clear-filters").addEventListener("click", () => {
+        sortColumn = null;
+        sortDirection = 'asc';
+        currentPage = 1;
+
+        organismoEntradaFilter.value = "";
+        organismoSalidaFilter.value = "";
+        searchInput.value = "";
+
+        const allEntradas = Object.keys(entradaToSalidaMap);
+        const allSalidas = Object.keys(salidaToEntradaMap);
+        populateDropdown(organismoEntradaFilter, allEntradas);
+        populateDropdown(organismoSalidaFilter, allSalidas);
+
+        filteredData = [...rawData];
+        updateStats();
+        renderTable();
+      });
+
+      prevPageBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      });
+
+      nextPageBtn.addEventListener("click", () => {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+      });
+    }
+
+    function applyFilters() {
+      const organismoEntradaSeleccionado = organismoEntradaFilter.value;
+      const organismoSalidaSeleccionado = organismoSalidaFilter.value;
+      const searchTerm = searchInput.value.toLowerCase();
+
+      filteredData = rawData.filter((row) => {
+        const coincideOrganismoEntrada = !organismoEntradaSeleccionado || row.organismo_entrada === organismoEntradaSeleccionado;
+        const coincideOrganismoSalida = !organismoSalidaSeleccionado || row.organismo_salida === organismoSalidaSeleccionado;
+        const coincideBusqueda = !searchTerm ||
+          (row.rut && row.rut.toLowerCase().includes(searchTerm));
+
+        return coincideOrganismoEntrada && coincideOrganismoSalida && coincideBusqueda;
+      });
+
+      currentPage = 1;
+      updateStats();
+      renderTable();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await cargarJSON();
+      if (rawData.length > 0) {
+        initializeApp();
+      }
+    });
+  </script>
+</body>
+
+</html>

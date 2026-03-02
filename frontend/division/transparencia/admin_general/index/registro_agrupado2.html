@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Entradas de Organismos</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary-color: #1e3a5f;
+        --secondary-color: #2c5282;
+        --accent-color: #3182ce;
+        --success-color: #38a169;
+        --warning-color: #ed8936;
+        --danger-color: #e53e3e;
+        --light-bg: #f7fafc;
+        --white: #ffffff;
+        --gray-100: #f7fafc;
+        --gray-200: #edf2f7;
+        --gray-300: #e2e8f0;
+        --gray-600: #718096;
+        --gray-800: #2d3748;
+        --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+          0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--light-bg) 0%,
+          var(--gray-200) 100%
+        );
+        min-height: 100vh;
+        color: var(--gray-800);
+      }
+
+      .header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          var(--secondary-color) 100%
+        );
+        color: var(--white);
+        padding: 2rem 0;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,100 0,80"/></svg>')
+          no-repeat bottom;
+        background-size: cover;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .header-content {
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        font-weight: 300;
+      }
+
+      .stats-bar {
+        background: var(--white);
+        margin: -1rem 1rem 2rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        position: relative;
+        z-index: 2;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+      }
+
+      .stat-item:hover {
+        transform: translateY(-2px);
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        display: block;
+      }
+
+      .stat-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+      }
+
+      .main-content {
+        padding: 0 1rem 2rem;
+      }
+
+      .table-card {
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        margin-bottom: 2rem;
+      }
+
+      .table-header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          var(--accent-color) 100%
+        );
+        color: var(--white);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .table-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .filters {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .search-box {
+        position: relative;
+      }
+
+      .search-box input {
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--white);
+        placeholder-color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        min-width: 250px;
+      }
+
+      .search-box input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .search-box i {
+        position: absolute;
+        left: 0.8rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .table-container {
+        overflow-x: auto;
+        max-height: 70vh;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          var(--secondary-color) 100%
+        );
+        color: var(--white);
+        padding: 1rem 0.8rem;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 2px solid var(--accent-color);
+      }
+
+      th:first-child {
+        text-align: left;
+        min-width: 300px;
+        max-width: 300px;
+      }
+
+      td {
+        padding: 0.5rem 0.01rem;
+        border-bottom: 1px solid var(--gray-200);
+        text-align: center;
+        font-size: 0.7rem;
+        transition: all 0.2s ease;
+        position: relative;
+      }
+
+      td:first-child {
+        text-align: left;
+        font-weight: 600;
+        color: var(--gray-800);
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        background: var(--gray-100);
+        position: sticky;
+        left: 0;
+        z-index: 5;
+      }
+
+      tr:hover td {
+        background-color: rgba(49, 130, 206, 0.05);
+      }
+
+      tr:hover td:first-child {
+        background-color: rgba(49, 130, 206, 0.1);
+      }
+
+      .sin-registro {
+        background: linear-gradient(
+          135deg,
+          #fed7d7 0%,
+          #feb2b2 100%
+        ) !important;
+        color: var(--danger-color) !important;
+        font-weight: 600;
+        font-size: 0.8rem;
+        border-radius: 4px;
+      }
+
+      .valor-muy-bajo {
+        background: linear-gradient(135deg, #b2f5ea 0%, #00bcd4 100%);
+        color: #006064;
+        font-weight: 700;
+      }
+
+      .valor-bajo {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffbb33 100%);
+        color: #cc7000;
+        font-weight: 700;
+      }
+
+      .valor-medio {
+        background: linear-gradient(135deg, #e6f0ff 0%, #cce0ff 100%);
+        color: #004085;
+        font-weight: 700;
+      }
+
+      .valor-alto {
+        background: linear-gradient(135deg, #c6f6d5 0%, #48bb78 100%);
+        color: #276749;
+        font-weight: 700;
+      }
+
+      .valor-muy-alto {
+        background: linear-gradient(135deg, #ffcccc 0%, #e60000 100%);
+        color: #800000;
+        font-weight: 700;
+      }
+
+      .total-cell {
+        background: linear-gradient(
+          135deg,
+          var(--success-color) 0%,
+          #2f855a 100%
+        ) !important;
+        color: var(--white) !important;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 0.8rem 0.5rem !important;
+      }
+
+     .total-row {
+        background: linear-gradient(
+            135deg,
+            #0f172a 0%,
+            #1e293b 100%
+        ) !important;
+        color: #ffffff !important;
+        font-weight: 800;
+        font-size: 1.4rem;
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        box-shadow: 0 -6px 12px rgba(0, 0, 0, 0.3);
+        border-top: 4px solid var(--accent-color);
+        }
+
+        .total-row td {
+        border-top: 4px solid var(--accent-color);
+        padding: 1.2rem 0.6rem !important;
+        background: transparent !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        font-size: 1.1rem !important;
+        }
+
+        .total-row td:first-child {
+        background: linear-gradient(
+            135deg,
+            #0f172a 0%,
+            #1e293b 100%
+        ) !important;
+        font-size: 1.5rem;
+        text-shadow: 0 3px 6px rgba(0, 0, 0, 0.7);
+        letter-spacing: 1px;
+        color: #ffffff !important;
+        }
+
+      .tooltip {
+        position: absolute;
+        background: var(--gray-800);
+        border-radius: 6px;
+        box-shadow: var(--shadow-md);
+        color: var(--white);
+        font-size: 0.8rem;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-50px);
+        transition: all 0.5s ease;
+        white-space: nowrap;
+        white-space: pre-line;
+        z-index: 1000;
+      }
+
+      .tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: var(--gray-800);
+      }
+
+      td:hover .tooltip {
+        opacity: 1;
+        transform: translateY(-5px);
+      }
+
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        color: var(--gray-600);
+      }
+
+      .spinner {
+        border: 3px solid var(--gray-300);
+        border-top: 3px solid var(--accent-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-right: 1rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .stats-bar {
+          grid-template-columns: repeat(2, 1fr);
+          margin: -1rem 0.5rem 1rem;
+        }
+
+        .table-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .filters {
+          justify-content: center;
+        }
+
+        .search-box input {
+          min-width: 200px;
+        }
+
+        th,
+        td {
+          padding: 1.5rem;
+          font-size: 0.3rem;
+        }
+
+        td:first-child {
+          max-width: 200px;
+        }
+      }
+      .search-box select {
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--white);
+        font-size: 0.9rem;
+        min-width: 250px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='5'%3E%3Cpath fill='white' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.8rem center;
+        background-size: 10px 5px;
+        cursor: pointer;
+      }
+
+      .search-box select option {
+        color: black;
+      }
+
+      .clear-button {
+        padding: 0.5rem 1rem;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .clear-button:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+      
+      .link-cell {
+        padding: 0.5rem !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+      }
+      
+      .link-cell a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: var(--white);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        margin: 0 2px;
+      }
+      
+      .link-cell a:hover {
+        background-color: var(--accent-color);
+        transform: scale(1.1);
+      }
+      
+      .link-cell a i {
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <h1>
+            <i class="fas fa-sign-in-alt"></i> Entradas de Organismos
+          </h1>
+          <p>Seguimiento mensual de personas que han ingresado a organismos públicos</p>
+        </div>
+      </div>
+    </header>
+    
+    <nav class="main-nav">
+      <div class="nav-container">
+        <a href="inicio.html" class="nav-item secondary">Ver Pagos</a>
+        <a href="remuneracion_bruta.html" class="nav-item secondary">Remuneración Bruta</a>
+        <a href="rutUnico.html" class="nav-item secondary">Personas</a>
+        <a href="landing_transparencia.html" class="nav-item secondary">Inicio</a>
+        <a href="inicio_in1.html" class="nav-item accent">Entrada</a>
+      </div>
+    </nav>
+
+    <style>
+      .main-nav {
+        background: var(--white);
+        box-shadow: var(--shadow-lg);
+        padding: 0.8rem 0;
+        overflow-x: auto;
+      }
+
+      .nav-container {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 0 1rem;
+      }
+
+      .nav-item {
+        text-decoration: none;
+        color: var(--white);
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: background 0.3s ease, transform 0.2s ease;
+      }
+
+      .nav-item.accent { background: var(--accent-color); }
+      .nav-item.secondary { background: var(--secondary-color); }
+      .nav-item.primary { background: var(--primary-color); }
+
+      .nav-item:hover {
+        transform: translateY(-5px);
+        filter: brightness(1.55);
+      }
+    </style>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value" id="total-organismos">-</span>
+        <div class="stat-label">Organismos Registrados</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="promedio-general">-</span>
+        <div class="stat-label">Promedio General de Entradas</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="periodo-analisis">-</span>
+        <div class="stat-label">Períodos de Análisis</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="ultimo-mes">-</span>
+        <div class="stat-label">Fecha de Inicio</div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">
+            <i class="fas fa-table"></i>
+            Entradas por Período
+          </div>
+
+          <div class="filters">
+            <div class="search-box">
+              <i class="fas fa-building"></i>
+              <select id="organismo-filter">
+                <option value="">Todos los organismos</option>
+              </select>
+            </div>
+
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Buscar organismo..."
+              />
+            </div>
+
+            <div class="search-box">
+              <button id="clear-filters" class="clear-button">
+                Limpiar Filtro
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Cargando datos...
+          </div>
+          <table id="data-table" style="display: none"></table>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 1rem">
+      <h3 style="margin-bottom: 0.75rem; font-size: 1.1rem">
+        Leyenda de Valores
+      </h3>
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+        "
+      >
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+          <div
+            class="valor-muy-bajo"
+            style="width: 30px; height: 30px; border-radius: 4px"
+          ></div>
+          <span>Muy por debajo del promedio</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+          <div
+            class="valor-bajo"
+            style="width: 30px; height: 30px; border-radius: 4px"
+          ></div>
+          <span>Levemente por debajo del promedio</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+          <div
+            class="valor-medio"
+            style="width: 30px; height: 30px; border-radius: 4px"
+          ></div>
+          <span>Cercano al promedio del organismo</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+          <div
+            class="valor-alto"
+            style="width: 30px; height: 30px; border-radius: 4px"
+          ></div>
+          <span>Levemente por encima del promedio</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+          <div
+            class="valor-muy-alto"
+            style="width: 30px; height: 30px; border-radius: 4px"
+          ></div>
+          <span>Muy por encima del promedio</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="organismos.js"></script>
+    <script src="organismosCodigo.js"></script>
+    <script>
+      const formatter = new Intl.NumberFormat('es-CL');
+      const organismoFilter = document.getElementById("organismo-filter");
+      const searchInput = document.getElementById("search-input");
+      
+      let rawData = [];
+      let data = [];
+      let filteredData = [];
+      let allPeriods = [];
+      let organismosUnicos = [];
+
+      const url =
+        "https://raw.githubusercontent.com/Sud-Austral/TRANSPARENCIA_FACIL/refs/heads/main/data/personas_agrupado.json";
+
+      async function cargarJSON() {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+          rawData = await response.json();
+          console.log(rawData);
+          initializeApp();
+        } catch (error) {
+          console.error("Error al leer el JSON:", error);
+          document.getElementById("loading").innerHTML =
+            '<i class="fas fa-exclamation-triangle"></i> Error al cargar los datos';
+        }
+      }
+
+      function initializeApp() {
+        try {
+          data = rawData;
+          filteredData = [...data];
+
+          // Obtener todos los organismos únicos
+          organismosUnicos = [...new Set(data.map(item => item.organismo_entrada))];
+          
+          // Ordenar alfabéticamente los organismos
+          organismosUnicos.sort();
+          
+          // Agregar opciones al filtro de organismos
+          organismosUnicos.forEach((organismo) => {
+            const option = document.createElement("option");
+            option.value = organismo;
+            option.textContent = organismo;
+            organismoFilter.appendChild(option);
+          });
+
+          // Obtener todos los períodos (números)
+          const allKeys = new Set();
+          data.forEach((row) => {
+            Object.keys(row).forEach((key) => {
+              if (key !== "organismo_entrada" && key !== "primer_pago_entrada") {
+                allKeys.add(key);
+              }
+            });
+          });
+          allPeriods = Array.from(allKeys).sort((a, b) => parseInt(a) - parseInt(b));
+
+          updateStats();
+          renderTable();
+          setupEventListeners();
+
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("data-table").style.display = "table";
+        } catch (error) {
+          console.error("Error al procesar los datos:", error);
+          document.getElementById("loading").innerHTML =
+            '<i class="fas fa-exclamation-triangle"></i> Error al cargar los datos';
+        }
+      }
+
+      function updateStats() {
+        document.getElementById("total-organismos").textContent = filteredData.length;
+        document.getElementById("periodo-analisis").textContent =
+          allPeriods.length;
+        
+        // Obtener la fecha de inicio más temprana
+        if (filteredData.length > 0) {
+          const fechas = [...new Set(filteredData.map(item => item.primer_pago_entrada))].sort();
+          document.getElementById("ultimo-mes").textContent = fechas[0] || "-";
+        } else {
+          document.getElementById("ultimo-mes").textContent = "-";
+        }
+
+        let totalSum = 0;
+        let totalCount = 0;
+
+        filteredData.forEach((row) => {
+          allPeriods.forEach((period) => {
+            const val = row[period];
+            if (val && val > 0) {
+              totalSum += val;
+              totalCount++;
+            }
+          });
+        });
+
+        const promedioGeneral =
+          totalCount > 0 ? (totalSum / totalCount).toFixed(0) : "-";
+        document.getElementById("promedio-general").textContent =
+          promedioGeneral;
+      }
+
+      function renderTable() {
+        const table = document.getElementById("data-table");
+        table.innerHTML = "";
+
+        const header = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+
+        const thOrg = document.createElement("th");
+        thOrg.innerHTML = '<i class="fas fa-building"></i> Organismo';
+        headerRow.appendChild(thOrg);
+
+        const thAnalisis = document.createElement("th");
+        thAnalisis.innerHTML = '<i class="fas fa-chart-pie"></i> Análisis';
+        headerRow.appendChild(thAnalisis);
+
+        const thFecha = document.createElement("th");
+        thFecha.innerHTML = '<i class="fas fa-calendar"></i> Fecha de Inicio';
+        headerRow.appendChild(thFecha);
+
+        allPeriods.forEach((period) => {
+          const th = document.createElement("th");
+          th.textContent = `Período ${period}`;
+          headerRow.appendChild(th);
+        });
+
+        const thTotal = document.createElement("th");
+        thTotal.innerHTML = '<i class="fas fa-sum"></i> Total';
+        headerRow.appendChild(thTotal);
+
+        header.appendChild(headerRow);
+        table.appendChild(header);
+
+        const body = document.createElement("tbody");
+
+        const columnTotals = new Array(allPeriods.length).fill(0);
+        let grandTotal = 0;
+
+        filteredData.forEach((row) => {
+          const tr = document.createElement("tr");
+
+          const tdName = document.createElement("td");
+          const link = document.createElement("a");
+          const encodedName = encodeURIComponent(row.organismo_entrada);
+          const codeName = organismoCodigo[row.organismo_entrada] || row.organismo_entrada;
+
+          link.href = `registro/registro_in1.html?organismo=${codeName}`;
+          link.textContent = row.organismo_entrada;
+          link.style.color = "inherit";
+          link.style.textDecoration = "underline";
+          tdName.appendChild(link);
+          tdName.title = row.organismo_entrada;
+          tr.appendChild(tdName);
+
+          const tdAnalisis = document.createElement("td");
+          tdAnalisis.className = "link-cell";
+
+          const contratoLink = document.createElement("a");
+          contratoLink.href = `registro/registro_in1.html?organismo=${codeName}`;
+          contratoLink.title = "Ver información por tipo de contrato";
+          contratoLink.innerHTML = '<i class="fas fa-file-contract"></i>';
+          tdAnalisis.appendChild(contratoLink);
+
+          const sexoLink = document.createElement("a");
+          sexoLink.href = `registro/sexo_in1.html?organismo=${codeName}`;
+          sexoLink.title = "Ver información por sexo";
+          sexoLink.innerHTML = '<i class="fas fa-venus-mars"></i>';
+          tdAnalisis.appendChild(sexoLink);
+
+          const profesionLink = document.createElement("a");
+          profesionLink.href = `registro/profesion_in1.html?organismo=${codeName}`;
+          profesionLink.title = "Ver información por profesión";
+          profesionLink.innerHTML = '<i class="fas fa-briefcase"></i>';
+          tdAnalisis.appendChild(profesionLink);
+
+          const edadLink = document.createElement("a");
+          edadLink.href = `registro/edad_in1.html?organismo=${codeName}`;
+          edadLink.title = "Ver información por edad";
+          edadLink.innerHTML = '<i class="fas fa-birthday-cake"></i>';
+          tdAnalisis.appendChild(edadLink);
+          
+          tr.appendChild(tdAnalisis);
+
+          // Agregar celda para la fecha de inicio
+          const tdFecha = document.createElement("td");
+          tdFecha.textContent = row.primer_pago_entrada || "-";
+          tr.appendChild(tdFecha);
+
+          let sum = 0;
+          let count = 0;
+          const values = [];
+          let rowTotal = 0;
+
+          allPeriods.forEach((period, index) => {
+            const val = row[period];
+            const td = document.createElement("td");
+
+            if (val === 0) {
+              td.classList.add("sin-registro");
+              td.innerHTML = '<i class="fas fa-times"></i> Sin datos';
+            } else if (val) {
+              td.textContent = val.toLocaleString();
+              sum += val;
+              count++;
+              values.push(val);
+              rowTotal += val;
+              columnTotals[index] += val;
+              grandTotal += val;
+            } else {
+              td.textContent = "-";
+            }
+
+            tr.appendChild(td);
+          });
+
+          const avg = count > 0 ? sum / count : 0;
+          const variance =
+            values.length > 1
+              ? values.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) /
+                values.length
+              : 0;
+          const stdDev = Math.sqrt(variance);
+
+          const tdTotal = document.createElement("td");
+          tdTotal.classList.add("total-cell");
+          tdTotal.textContent = formatter.format(rowTotal);
+          tr.appendChild(tdTotal);
+
+          const cells = tr.children;
+          // Ajustar el índice para considerar la nueva columna de fecha
+          for (let i = 3; i < cells.length - 1; i++) {
+            const td = cells[i];
+            const val = row[allPeriods[i - 3]];
+
+            if (val && val > 0 && avg > 0) {
+              const percent = ((val - avg) / avg) * 100;
+              const tooltip = document.createElement("div");
+              tooltip.className = "tooltip";
+              tooltip.textContent = `${percent > 0 ? "+" : ""}${percent.toFixed(
+                1
+              )}% del promedio`;
+
+              td.appendChild(tooltip);
+
+              if (Math.abs(val - avg) > stdDev * 0.9) {
+                if (val > avg) {
+                  if (val > avg * 1.5) {
+                    td.classList.add("valor-muy-alto");
+                  } else {
+                    td.classList.add("valor-alto");
+                  }
+                } else {
+                  if (val < avg * 0.5) {
+                    td.classList.add("valor-muy-bajo");
+                  } else {
+                    td.classList.add("valor-bajo");
+                  }
+                }
+              } else {
+                td.classList.add("valor-medio");
+              }
+            }
+          }
+          body.appendChild(tr);
+        });
+
+        const totalRow = document.createElement("tr");
+        totalRow.className = "total-row";
+
+        const tdTotalLabel = document.createElement("td");
+        tdTotalLabel.textContent = "TOTAL";
+        tdTotalLabel.colSpan = 3; // Ajustar para incluir la nueva columna de fecha
+        totalRow.appendChild(tdTotalLabel);
+
+        allPeriods.forEach((period, index) => {
+          const td = document.createElement("td");
+          td.textContent = formatter.format(columnTotals[index]);
+          totalRow.appendChild(td);
+        });
+
+        const tdGrandTotal = document.createElement("td");
+        tdGrandTotal.textContent = formatter.format(grandTotal);
+        totalRow.appendChild(tdGrandTotal);
+
+        body.appendChild(totalRow);
+
+        table.appendChild(body);
+      }
+
+      function setupEventListeners() {
+        const normalizeText = (str) =>
+          str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+
+        const aplicarFiltros = () => {
+          const searchTerm = normalizeText(searchInput.value);
+          const organismoSeleccionado = organismoFilter.value;
+
+          filteredData = data.filter((row) => {
+            const nombreOrganismo = normalizeText(row.organismo_entrada);
+
+            const coincideBusqueda = nombreOrganismo.includes(searchTerm);
+            const coincideOrganismo =
+              organismoSeleccionado === "" || row.organismo_entrada === organismoSeleccionado;
+
+            return coincideBusqueda && coincideOrganismo;
+          });
+
+          updateStats();
+          renderTable();
+        };
+
+        searchInput.addEventListener("input", aplicarFiltros);
+        organismoFilter.addEventListener("change", aplicarFiltros);
+      }
+
+      document.getElementById("clear-filters").addEventListener("click", () => {
+        document.getElementById("search-input").value = "";
+        document.getElementById("organismo-filter").value = "";
+        filteredData = [...data];
+        updateStats();
+        renderTable();
+      });
+
+      // Iniciar la carga de datos
+      cargarJSON();
+    </script>
+  </body>
+</html>

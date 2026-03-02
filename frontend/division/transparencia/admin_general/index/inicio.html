@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pagos por Organismos</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- FontAwesome for specific icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      /* Colors */
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+
+      /* Semantic Colors - Soft Palette */
+      --success-bg: #f0fdf4;
+      --success-text: #166534;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --danger-hover: #b91c1c;
+      --danger-bg: #fef2f2;
+      --danger-text: #991b1b;
+      --warning-bg: #fffbeb;
+      --warning-text: #92400e;
+      --info-bg: #f0f9ff;
+      --info-text: #075985;
+
+      /* Statistical Gradient Palette (Soft SaaS Style) */
+      --v-muy-bajo: #e0f2fe;
+      /* light blue */
+      --v-bajo: #fef3c7;
+      /* light amber */
+      --v-medio: #ffffff;
+      /* white */
+      --v-alto: #dcfce7;
+      /* light green */
+      --v-muy-alto: #fee2e2;
+      /* light red */
+
+      /* Spacing & Radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* Header Section */
+    .header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-logo {
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary-light);
+      color: var(--primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-titles h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .header-titles p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background-color: var(--bg-main);
+      padding: 0.25rem;
+      border-radius: var(--radius-md);
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      width: fit-content;
+    }
+
+    .nav-tab {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-tab:hover {
+      color: var(--text-main);
+      background-color: var(--border);
+    }
+
+    .nav-tab.active {
+      color: var(--primary);
+      background-color: var(--primary-light);
+    }
+
+    /* Metrics Section */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .metric-card {
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .metric-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .metric-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .metric-icon.blue {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .metric-icon.green {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+
+    .metric-icon.purple {
+      background-color: #f3e8ff;
+      color: #7e22ce;
+    }
+
+    .metric-icon.orange {
+      background-color: #ffedd5;
+      color: #9a3412;
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Filters Bar */
+    .filter-bar {
+      background-color: var(--card-bg);
+      padding: 1rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .filter-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 1rem 0 2.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      color: var(--text-main);
+      transition: var(--transition);
+      background-color: var(--bg-main);
+      appearance: none;
+    }
+
+    .filter-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+      background-color: var(--card-bg);
+    }
+
+    .btn-clear {
+      height: 44px;
+      padding: 0 1.25rem;
+      background-color: var(--bg-main);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-clear:hover {
+      background-color: var(--danger-light);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    /* Table Section */
+    .table-section {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-top: 2rem;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .table-inner {
+      overflow-x: auto;
+      max-height: 70vh;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+
+    thead th {
+      background-color: var(--bg-main);
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    thead th:first-child {
+      text-align: left;
+      left: 0;
+      z-index: 30;
+      background-color: var(--bg-main);
+      min-width: 280px;
+    }
+
+    tbody tr {
+      transition: var(--transition);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      color: var(--text-main);
+      position: relative;
+    }
+
+    tbody td:first-child {
+      text-align: left;
+      font-weight: 600;
+      position: sticky;
+      left: 0;
+      background-color: var(--card-bg);
+      z-index: 10;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-right: 1px solid var(--border);
+    }
+
+    tbody tr:hover td:first-child {
+      background-color: var(--primary-light);
+    }
+
+    tbody tr:hover td {
+      background-color: rgba(37, 99, 235, 0.04);
+    }
+
+    /* Statistical Cell Backgrounds (Soft heat-map) */
+    .valor-muy-bajo {
+      background-color: var(--v-muy-bajo) !important;
+      color: #0369a1 !important;
+    }
+
+    .valor-bajo {
+      background-color: var(--v-bajo) !important;
+      color: #92400e !important;
+    }
+
+    .valor-medio {
+      background-color: var(--v-medio) !important;
+    }
+
+    .valor-alto {
+      background-color: var(--v-alto) !important;
+      color: #166534 !important;
+    }
+
+    .valor-muy-alto {
+      background-color: var(--v-muy-alto) !important;
+      color: #991b1b !important;
+    }
+
+    .sin-registro {
+      background-color: var(--danger-bg) !important;
+      color: var(--danger-text) !important;
+      font-weight: 500;
+      font-size: 0.75rem;
+    }
+
+    .promedio-cell {
+      background-color: #f1f5f9 !important;
+      /* Slate 100 suave */
+      color: var(--primary) !important;
+      font-weight: 800;
+      border-left: 2px solid var(--primary);
+    }
+
+    /* Link Cell Icons */
+    .link-cell {
+      display: flex;
+      gap: 0.25rem;
+      justify-content: center;
+      min-width: 140px;
+    }
+
+    .icon-link {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-main);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+      border: 1px solid var(--border);
+    }
+
+    .icon-link:hover {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: scale(1.1);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: #1e293b;
+      color: white;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+      z-index: 100;
+      white-space: nowrap;
+      bottom: 100%;
+      left: 50%;
+      transform: translate(-50%, -8px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: #1e293b;
+    }
+
+    td:hover .tooltip {
+      opacity: 1;
+      transform: translate(-50%, -4px);
+    }
+
+    /* Loading Overlay */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Legend */
+    .legend-card {
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .legend-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-main);
+    }
+
+    .legend-grid {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* Active Filter Chips */
+    .active-filters-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      min-height: 0;
+      transition: all 0.3s ease;
+    }
+
+    .active-filters-bar:empty {
+      display: none;
+    }
+
+    .active-filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #1e40af;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .active-filter-chip:hover {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      transform: scale(1.05);
+    }
+
+    .active-filter-chip .chip-remove {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #3b82f6;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+
+    .active-filter-chip:hover .chip-remove {
+      background: #1d4ed8;
+    }
+
+    /* Table Hint */
+    .table-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: #64748b;
+      background: #f1f5f9;
+      border-radius: 8px;
+      border-left: 3px solid #3b82f6;
+    }
+
+    .table-hint i {
+      color: #3b82f6;
+      flex-shrink: 0;
+    }
+
+    /* Skeleton Loading */
+    .skeleton-container {
+      padding: 1.5rem;
+    }
+
+    .skeleton-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .skeleton-cell {
+      height: 36px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonPulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-cell:first-child {
+      flex: 0 0 200px;
+    }
+
+    .skeleton-cell:not(:first-child) {
+      flex: 1;
+    }
+
+    .skeleton-header .skeleton-cell {
+      height: 42px;
+      background: linear-gradient(90deg, #cbd5e1 25%, #e2e8f0 50%, #cbd5e1 75%);
+      background-size: 200% 100%;
+      animation: skeletonPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes skeletonPulse {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      color: #94a3b8;
+    }
+
+    .empty-state-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+    }
+
+    .empty-state-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-desc {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    /* Metric Card Animation */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .metric-card {
+      animation: fadeSlideUp 0.5s ease-out both;
+    }
+
+    .metric-card:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .metric-card:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .metric-card:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .metric-card:nth-child(4) {
+      animation-delay: 0.3s;
+    }
+
+    /* Totals Row */
+    tfoot td {
+      font-weight: 700 !important;
+      border-top: 2px solid #cbd5e1 !important;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+      color: #0f172a !important;
+      font-size: 0.8rem !important;
+    }
+
+    tfoot td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 11;
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+    }
+
+    /* Sticky Column Shadow */
+    td:first-child,
+    tbody td:first-child {
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Column Highlight */
+    .col-highlight {
+      background-color: rgba(59, 130, 246, 0.06) !important;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 1rem;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="header-brand">
+          <div class="header-logo">
+            <i data-lucide="bar-chart-3"></i>
+          </div>
+          <div class="header-titles">
+            <h1>Pagos por Organismos</h1>
+            <p>Monitoreo de registros de transparencia gubernamental</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <a href="landing_transparencia.html" class="nav-tab">
+          <i data-lucide="home" style="width: 14px;"></i> Inicio
+        </a>
+        <a href="inicio.html" class="nav-tab active">
+          <i data-lucide="credit-card" style="width: 14px;"></i> Pagos
+        </a>
+        <a href="remuneracion_bruta.html" class="nav-tab">
+          <i data-lucide="wallet" style="width: 14px;"></i> Remuneraciones
+        </a>
+        <a href="rutUnico.html" class="nav-tab">
+          <i data-lucide="users" style="width: 14px;"></i> Personas
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- KPIs -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon blue">
+          <i data-lucide="building-2"></i>
+        </div>
+        <div class="metric-value" id="total-organismos">-</div>
+        <div class="metric-label">Organismos Registrados</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon green">
+          <i data-lucide="calculator"></i>
+        </div>
+        <div class="metric-value" id="promedio-general">-</div>
+        <div class="metric-label">Promedio General</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon purple">
+          <i data-lucide="calendar"></i>
+        </div>
+        <div class="metric-value" id="periodo-analisis">-</div>
+        <div class="metric-label">Meses de Análisis</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon orange">
+          <i data-lucide="clock"></i>
+        </div>
+        <div class="metric-value" id="ultimo-mes" style="font-size: 1.25rem; padding-top: 0.25rem;">-</div>
+        <div class="metric-label">Último Período</div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filter-bar">
+
+
+      <div id="municipal-filter-group" class="filter-group" style="display: none;">
+        <i data-lucide="building" class="filter-icon" style="width: 16px;"></i>
+        <select id="tipo-filter" class="filter-input">
+          <option value="">Todos los tipos</option>
+          <option value="1">Sólo Municipales</option>
+          <option value="0">Otros Organismos</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <i data-lucide="calendar" class="filter-icon" style="width: 16px;"></i>
+        <select id="year-filter" class="filter-input">
+          <option value="">Todos los años</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <i data-lucide="layers" class="filter-icon" style="width: 16px;"></i>
+        <select id="padre-filter" class="filter-input">
+          <option value="">Todos los organismos padre</option>
+        </select>
+      </div>
+
+      <div class="filter-group" style="flex: 2;">
+        <i data-lucide="search" class="filter-icon" style="width: 16px;"></i>
+        <input type="text" id="search-input" class="filter-input" placeholder="Buscar por nombre de organismo..." />
+      </div>
+
+      <button id="clear-filters" class="btn-clear">
+        <i data-lucide="rotate-ccw" style="width: 14px;"></i> Limpiar
+      </button>
+    </section>
+    <div class="active-filters-bar" id="active-filters-chips"></div>
+
+    <!-- Table Section -->
+    <section class="table-section">
+      <div class="table-inner">
+        <div id="loading" class="loading-container">
+          <div class="skeleton-container">
+            <div class="skeleton-row skeleton-header">
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+            </div>
+            <div class="skeleton-row">
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+            </div>
+            <div class="skeleton-row" style="animation-delay:.1s">
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+            </div>
+            <div class="skeleton-row" style="animation-delay:.2s">
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+            </div>
+            <div class="skeleton-row" style="animation-delay:.3s">
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+            </div>
+            <div class="skeleton-row" style="animation-delay:.4s">
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+              <div class="skeleton-cell"></div>
+            </div>
+          </div>
+        </div>
+        <table id="data-table" style="display: none;"></table>
+      </div>
+    </section>
+    <div class="table-hint" id="table-hint">
+      <i class="fas fa-info-circle"></i> Haga clic en el nombre de un organismo para ver el detalle de registros por
+      base, sexo, profesión y edad
+    </div>
+
+    <!-- Legend -->
+    <section class="legend-card">
+      <h3 class="legend-title">Leyenda de Desviación Estadística</h3>
+      <div class="legend-grid">
+        <div class="legend-item">
+          <div class="legend-color valor-muy-bajo"></div>
+          <span>Muy por debajo del promedio</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-bajo"></div>
+          <span>Levemente por debajo</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-medio"></div>
+          <span>Cercano al promedio</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-alto"></div>
+          <span>Levemente por sobre</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color valor-muy-alto"></div>
+          <span>Muy por sobre el promedio</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color sin-registro"></div>
+          <span>Sin registros en el período</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- External Data -->
+  <script src="config/municipal.js"></script>
+  <script src="organismos.js"></script>
+  <script src="organismoMunicipal.js"></script>
+  <script src="organismosCodigo.js"></script>
+  <script>
+    lucide.createIcons();
+
+    const formatter = new Intl.NumberFormat('es-CL');
+    const LOADING_EL = document.getElementById("loading");
+    const TABLE_EL = document.getElementById("data-table");
+    const YEAR_FILTER = document.getElementById("year-filter");
+    const PADRE_FILTER = document.getElementById("padre-filter");
+
+    const SEARCH_INPUT = document.getElementById("search-input");
+
+    // Global State
+    let rawData = [];
+    let data = [];
+    let filteredData = [];
+    let allMonths = [];
+    let allYears = [];
+    let maxYear = null;
+    let filteredMonths = [];
+
+    const monthOrder = {
+      "ENERO": 1, "FEBRERO": 2, "MARZO": 3, "ABRIL": 4,
+      "MAYO": 5, "JUNIO": 6, "JULIO": 7, "AGOSTO": 8,
+      "SEPTIEMBRE": 9, "SETIEMBRE": 9, "OCTUBRE": 10,
+      "NOVIEMBRE": 11, "DICIEMBRE": 12
+    };
+
+    const DATA_URL = "../archivo4.json";
+
+    async function initializeApp() {
+      try {
+        const response = await fetch(DATA_URL);
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        rawData = await response.json();
+
+        // Aplicar filtrado basado en filtroMuni (de config/municipal.js)
+        if (typeof filtroMuni !== 'undefined' && filtroMuni === false) {
+          // Solo municipales
+          data = rawData.filter(r => organismoMunicipal[r.organismo_nombre] === 1);
+        } else {
+          // Todos
+          data = rawData;
+        }
+
+        filteredData = [...data];
+
+        // Extraer todos los meses y años disponibles inicialmente
+        const allKeys = new Set();
+        data.forEach(row => {
+          Object.keys(row).forEach(k => { if (k !== "organismo_nombre") allKeys.add(k); });
+        });
+        allMonths = Array.from(allKeys);
+        allMonths.sort((a, b) => {
+          const [mA, yA] = a.split('_');
+          const [mB, yB] = b.split('_');
+          const yearDiff = parseInt(yB, 10) - parseInt(yA, 10);
+          if (yearDiff !== 0) return yearDiff;
+          return (monthOrder[mA.toUpperCase()] || 0) - (monthOrder[mB.toUpperCase()] || 0);
+        });
+
+        const yearsSet = new Set();
+        allMonths.forEach(m => {
+          const y = parseInt(m.split('_')[1], 10);
+          if (!isNaN(y)) yearsSet.add(y);
+        });
+        allYears = Array.from(yearsSet).sort((a, b) => b - a);
+        maxYear = allYears[0];
+
+        // Poblar filtros inicialmente
+        updateFilterOptions(true);
+
+        if (maxYear) YEAR_FILTER.value = maxYear;
+
+        filterMonthsByYear(maxYear);
+        updateStats();
+        renderTable();
+        setupEventListeners();
+
+        // Mostrar u ocultar el filtro municipal según la configuración
+        const MUNI_FILTER_GROUP = document.getElementById("municipal-filter-group");
+        if (typeof filtroMuni !== 'undefined' && filtroMuni === true) {
+          MUNI_FILTER_GROUP.style.display = "flex";
+        }
+
+        LOADING_EL.style.display = "none";
+        TABLE_EL.style.display = "table";
+      } catch (err) {
+        console.error(err);
+        LOADING_EL.innerHTML = `<p style="color:var(--danger-text)">Error al cargar datos: ${err.message}</p>`;
+      }
+    }
+
+    function updateFilterOptions(isInitial = false) {
+      const currentYear = YEAR_FILTER.value;
+      const currentPadre = PADRE_FILTER.value;
+      const search = SEARCH_INPUT.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+      // 1. Población de PERIODOS (basado en Padre y Búsqueda)
+      const availableYears = new Set();
+      data.forEach(r => {
+        const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const p = organismoPadres[r.organismo_nombre] || "";
+        if (name.includes(search) && (currentPadre === "" || p === currentPadre)) {
+          allMonths.forEach(m => {
+            if (r[m] > 0) availableYears.add(m.split('_')[1]);
+          });
+        }
+      });
+
+      const sortedYears = Array.from(availableYears).sort((a, b) => b - a);
+      const prevYear = YEAR_FILTER.value;
+      YEAR_FILTER.innerHTML = '<option value="">Todos los años</option>';
+      sortedYears.forEach(y => {
+        const opt = document.createElement("option");
+        opt.value = y; opt.textContent = y;
+        YEAR_FILTER.appendChild(opt);
+      });
+      if (prevYear && availableYears.has(prevYear)) YEAR_FILTER.value = prevYear;
+      else if (isInitial && maxYear) YEAR_FILTER.value = maxYear;
+
+      // 2. Población de PADRES (basado en Año y Búsqueda)
+      const availablePadres = new Set();
+      const activeMonths = YEAR_FILTER.value ? allMonths.filter(m => m.endsWith('_' + YEAR_FILTER.value)) : allMonths;
+
+      data.forEach(r => {
+        const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const hasData = activeMonths.some(m => r[m] > 0);
+        if (name.includes(search) && hasData) {
+          const p = organismoPadres[r.organismo_nombre];
+          if (p) availablePadres.add(p);
+        }
+      });
+
+      const sortedPadres = Array.from(availablePadres).sort();
+      const prevPadre = PADRE_FILTER.value;
+      PADRE_FILTER.innerHTML = '<option value="">Todos los organismos padre</option>';
+      sortedPadres.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p; opt.textContent = p;
+        PADRE_FILTER.appendChild(opt);
+      });
+      if (prevPadre && availablePadres.has(prevPadre)) PADRE_FILTER.value = prevPadre;
+    }
+
+    function filterMonthsByYear(year) {
+      if (!year) {
+        filteredMonths = [...allMonths];
+      } else {
+        filteredMonths = allMonths.filter(m => parseInt(m.split('_')[1], 10) === parseInt(year, 10));
+      }
+    }
+
+    function updateStats() {
+      document.getElementById("total-organismos").textContent = data.length;
+      document.getElementById("periodo-analisis").textContent = filteredMonths.length;
+      document.getElementById("ultimo-mes").textContent =
+        filteredMonths.length > 0 ? filteredMonths[filteredMonths.length - 1].replace("_", " ").replace(".0", "") : "-";
+
+      let totalSum = 0, totalCount = 0;
+      data.forEach(row => {
+        filteredMonths.forEach(m => {
+          const v = row[m];
+          if (v && v > 0) { totalSum += v; totalCount++; }
+        });
+      });
+      const avg = totalCount > 0 ? (totalSum / totalCount).toFixed(0) : 0;
+      document.getElementById("promedio-general").textContent = formatter.format(avg);
+    }
+
+    function renderTable() {
+      TABLE_EL.innerHTML = "";
+      const header = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+
+      ['Organismo', 'Análisis'].forEach(txt => {
+        const th = document.createElement("th"); th.textContent = txt; headerRow.appendChild(th);
+      });
+
+      filteredMonths.forEach(m => {
+        const th = document.createElement("th");
+        const parts = m.split('_');
+        th.textContent = `${parts[0]} ${parts[1]}`;
+        headerRow.appendChild(th);
+      });
+
+      const thAvg = document.createElement("th");
+      thAvg.innerHTML = '<i data-lucide="calculator" style="width:14px; display:inline; vertical-align:middle;"></i> Prom';
+      headerRow.appendChild(thAvg);
+
+      header.appendChild(headerRow);
+      TABLE_EL.appendChild(header);
+
+      const body = document.createElement("tbody");
+      filteredData.forEach(row => {
+        const tr = document.createElement("tr");
+        const codeName = organismoCodigo[row.organismo_nombre] || "";
+
+        // Organismo
+        const tdName = document.createElement("td");
+        const link = document.createElement("a");
+        link.href = `registro/registro1.html?organismo=${codeName}`;
+        link.textContent = row.organismo_nombre;
+        link.style.color = "var(--primary)";
+        link.style.textDecoration = "none";
+        tdName.appendChild(link);
+        tdName.title = row.organismo_nombre;
+        tr.appendChild(tdName);
+
+        // Análisis
+        const tdAn = document.createElement("td");
+        tdAn.className = "link-cell";
+        [
+          { icon: 'fa-file-contract', url: `registro/registro1.html?organismo=${codeName}`, t: 'Contratos' },
+          { icon: 'fa-venus-mars', url: `registro/sexo1.html?organismo=${codeName}`, t: 'Sexo' },
+          { icon: 'fa-briefcase', url: `registro/profesion1.html?organismo=${codeName}`, t: 'Profesión' },
+          { icon: 'fa-birthday-cake', url: `registro/edad1.html?organismo=${codeName}`, t: 'Edad' }
+        ].forEach(i => {
+          const a = document.createElement("a"); a.href = i.url; a.className = "icon-link"; a.title = i.t;
+          a.innerHTML = `<i class="fas ${i.icon}" style="font-size:12px;"></i>`;
+          tdAn.appendChild(a);
+        });
+        tr.appendChild(tdAn);
+
+        // Monthly Data & Stats
+        let rowSum = 0, rowCount = 0;
+        const rowValues = [];
+
+        filteredMonths.forEach(m => {
+          const v = row[m];
+          if (v && v > 0) { rowSum += v; rowCount++; rowValues.push(v); }
+        });
+
+        const rowAvg = rowCount > 0 ? rowSum / rowCount : 0;
+        const variance = rowValues.length > 1 ?
+          rowValues.reduce((acc, v) => acc + Math.pow(v - rowAvg, 2), 0) / rowValues.length : 0;
+        const stdDev = Math.sqrt(variance);
+
+        filteredMonths.forEach(m => {
+          const val = row[m];
+          const td = document.createElement("td");
+
+          if (val === 0) {
+            td.className = "sin-registro";
+            td.innerHTML = '<i data-lucide="x" style="width:10px;"></i> 0';
+          } else if (val) {
+            td.textContent = formatter.format(val);
+
+            // Statistical coloring & tooltips (REINSTATED)
+            const percent = ((val - rowAvg) / rowAvg) * 100;
+            const tooltip = document.createElement("div");
+            tooltip.className = "tooltip";
+            tooltip.textContent = `${percent > 0 ? "+" : ""}${percent.toFixed(1)}% del promedio`;
+            td.appendChild(tooltip);
+
+            if (Math.abs(val - rowAvg) > stdDev * 0.9) {
+              if (val > rowAvg) {
+                td.classList.add(val > rowAvg * 1.5 ? "valor-muy-alto" : "valor-alto");
+              } else {
+                td.classList.add(val < rowAvg * 0.5 ? "valor-muy-bajo" : "valor-bajo");
+              }
+            } else {
+              td.classList.add("valor-medio");
+            }
+          } else {
+            td.textContent = "-";
+          }
+          tr.appendChild(td);
+        });
+
+        const tdAvg = document.createElement("td");
+        tdAvg.className = "promedio-cell";
+        tdAvg.textContent = rowCount > 0 ? formatter.format(rowAvg.toFixed(0)) : "-";
+        tr.appendChild(tdAvg);
+
+        body.appendChild(tr);
+      });
+      TABLE_EL.appendChild(body);
+
+      // Fila de totales
+      addTotalsRow();
+
+      // Empty state
+      handleEmptyState();
+
+      // Actualizar chips
+      updateFilterChips();
+
+      lucide.createIcons();
+    }
+
+    function addTotalsRow() {
+      const existingTfoot = TABLE_EL.querySelector('tfoot');
+      if (existingTfoot) existingTfoot.remove();
+
+      const tfoot = document.createElement('tfoot');
+      const tr = document.createElement('tr');
+
+      const tdLabel = document.createElement('td');
+      tdLabel.textContent = '∑ TOTAL';
+      tdLabel.style.fontWeight = '800';
+      tr.appendChild(tdLabel);
+
+      // Celda de análisis vacía
+      const tdAn = document.createElement('td');
+      tdAn.textContent = '';
+      tr.appendChild(tdAn);
+
+      let grandTotal = 0, monthCount = 0;
+      filteredMonths.forEach(m => {
+        const td = document.createElement('td');
+        let total = 0;
+        filteredData.forEach(row => {
+          const v = row[m];
+          if (v && v > 0) total += v;
+        });
+        td.textContent = total > 0 ? formatter.format(total) : '-';
+        grandTotal += total;
+        if (total > 0) monthCount++;
+        tr.appendChild(td);
+      });
+
+      const tdAvg = document.createElement('td');
+      const avgTotal = monthCount > 0 ? Math.round(grandTotal / monthCount) : 0;
+      tdAvg.textContent = avgTotal > 0 ? formatter.format(avgTotal) : '-';
+      tdAvg.style.fontWeight = '800';
+      tr.appendChild(tdAvg);
+
+      tfoot.appendChild(tr);
+      TABLE_EL.appendChild(tfoot);
+    }
+
+    function handleEmptyState() {
+      const hint = document.getElementById('table-hint');
+      if (filteredData.length === 0) {
+        TABLE_EL.style.display = 'none';
+        let emptyEl = document.getElementById('empty-state-msg');
+        if (!emptyEl) {
+          emptyEl = document.createElement('div');
+          emptyEl.id = 'empty-state-msg';
+          emptyEl.className = 'empty-state';
+          emptyEl.innerHTML = `
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-title">Sin datos disponibles</div>
+            <div class="empty-state-desc">No se encontraron organismos con los filtros seleccionados. Intente modificar los criterios de búsqueda.</div>
+          `;
+          TABLE_EL.parentNode.appendChild(emptyEl);
+        }
+        emptyEl.style.display = 'flex';
+        if (hint) hint.style.display = 'none';
+      } else {
+        const emptyEl = document.getElementById('empty-state-msg');
+        if (emptyEl) emptyEl.style.display = 'none';
+        TABLE_EL.style.display = 'table';
+        if (hint) hint.style.display = 'flex';
+      }
+    }
+
+    function updateFilterChips() {
+      const chipsBar = document.getElementById('active-filters-chips');
+      if (!chipsBar) return;
+      chipsBar.innerHTML = '';
+
+      const filters = [
+        { id: 'tipo-filter', label: 'Tipo', icon: '🏛️', defaultVal: '' },
+        { id: 'year-filter', label: 'Año', icon: '📅', defaultVal: String(maxYear) },
+        { id: 'padre-filter', label: 'Org. Padre', icon: '📋', defaultVal: '' }
+      ];
+
+      filters.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (!el || !el.value) return;
+        if (f.id === 'year-filter' && el.value === f.defaultVal) return;
+
+        const chip = document.createElement('span');
+        chip.className = 'active-filter-chip';
+        const displayText = el.selectedOptions?.[0]?.textContent || el.value;
+        chip.innerHTML = `${f.icon} ${f.label}: ${displayText} <span class="chip-remove">✕</span>`;
+        chip.addEventListener('click', () => {
+          if (f.id === 'year-filter') el.value = maxYear;
+          else el.value = '';
+          el.dispatchEvent(new Event('change'));
+        });
+        chipsBar.appendChild(chip);
+      });
+
+      // Chip para búsqueda de texto
+      const searchEl = document.getElementById('search-input');
+      if (searchEl && searchEl.value.trim()) {
+        const chip = document.createElement('span');
+        chip.className = 'active-filter-chip';
+        chip.innerHTML = `🔍 Búsqueda: "${searchEl.value}" <span class="chip-remove">✕</span>`;
+        chip.addEventListener('click', () => {
+          searchEl.value = '';
+          searchEl.dispatchEvent(new Event('input'));
+        });
+        chipsBar.appendChild(chip);
+      }
+    }
+
+    function setupEventListeners() {
+      const applyFilters = () => {
+        const search = SEARCH_INPUT.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const padre = PADRE_FILTER.value;
+        const year = YEAR_FILTER.value;
+        const tipo = document.getElementById("tipo-filter").value;
+
+        updateFilterOptions();
+
+        filterMonthsByYear(year);
+        filteredData = data.filter(r => {
+          const name = r.organismo_nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          const p = organismoPadres[r.organismo_nombre] || "";
+
+          // Filtro Tipo Organismo
+          const isMuni = organismoMunicipal[r.organismo_nombre] === 1 ? "1" : "0";
+          if (tipo !== "" && isMuni !== tipo) return false;
+
+          return name.includes(search) && (padre === "" || p === padre);
+        });
+
+        updateStats();
+        renderTable();
+      };
+
+      SEARCH_INPUT.addEventListener("input", applyFilters);
+      PADRE_FILTER.addEventListener("change", applyFilters);
+      document.getElementById("tipo-filter").addEventListener("change", applyFilters);
+
+      YEAR_FILTER.addEventListener("change", applyFilters);
+      document.getElementById("clear-filters").addEventListener("click", () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('reload', Date.now());
+        window.location.href = url.toString();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", initializeApp);
+  </script>
+</body>
+
+</html>

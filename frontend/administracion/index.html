@@ -237,6 +237,11 @@
             color: white;
         }
 
+        .card[data-type="Transparencia"] .card-header {
+            background: linear-gradient(to right, #1d4ed8 0%, #1e3a8a 100%);
+            color: white;
+        }
+
         .card-header h3 {
             font-size: 1.1rem;
             font-weight: 700;
@@ -352,6 +357,9 @@
         <a href="../division/licitaciones/admin_proyectos/dashboard.html" class="btn-cta secondary">
             <i class="fa-solid fa-file-invoice-dollar"></i> Licitaciones
         </a>
+        <a href="../division/transparencia/admin_general/dashboard.html" class="btn-cta secondary">
+            <i class="fa-solid fa-scale-balanced"></i> Transparencia
+        </a>
     </div>
 
     <main>
@@ -433,6 +441,24 @@
                     </a>
                     <a href="../division/licitaciones/admin_proyectos/pasos.html" class="card-link">
                         <i class="fa-solid fa-gears"></i> Mantenedor de Pasos Maestro
+                    </a>
+                </div>
+            </article>
+
+            <article class="card" data-type="Transparencia">
+                <div class="card-header">
+                    <h3>Transparencia</h3>
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <div class="card-body">
+                    <a href="../division/transparencia/admin_general/dashboard.html" class="card-link">
+                        <i class="fa-solid fa-chart-pie"></i> Visualizador Consolidado
+                    </a>
+                    <a href="#" class="card-link">
+                        <i class="fa-solid fa-file-invoice"></i> Remuneraciones
+                    </a>
+                    <a href="#" class="card-link">
+                        <i class="fa-solid fa-users"></i> Índice de Personal
                     </a>
                 </div>
             </article>

@@ -571,10 +571,6 @@
             try {
                 allProjects = await api.get('/proyectos');
 
-                if (!response.ok) throw new Error('Error al cargar proyectos');
-
-                allProjects = await response.json();
-
                 updateFilterOptions();
                 applyFilters();
                 select.disabled = false;

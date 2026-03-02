@@ -1,4 +1,4 @@
-<!-- Vista 21: Momentum y Rachas -->
+﻿<!-- Vista 17: Momentum y Rachas -->
 <div class="card mb-lg">
     <div class="location-source-row"
         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
@@ -14,19 +14,19 @@
         style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
             border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            ¿Estamos ante un brote delictual?
+            Â¿Estamos ante un brote delictual?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Cálculo de aceleración
-            estadística y rachas.</p>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">CÃ¡lculo de aceleraciÃ³n
+            estadÃ­stica y rachas.</p>
     </div>
 
     <div class="alert alert--info" style="margin-top: 1.5rem;">
-        <strong>🤖 Análisis de Momentum:</strong> <span id="v21_ia_analysis">Analizando aceleración...</span>
+        <strong>ðŸ¤– AnÃ¡lisis de Momentum:</strong> <span id="v21_ia_analysis">Analizando aceleraciÃ³n...</span>
     </div>
 
     <!-- Rachas Alert Section -->
     <h3 class="section-title mb-lg" style="font-size: 1rem; margin-top: 2rem;">
-        <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary);"></i> Diagnóstico de Rachas
+        <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary);"></i> DiagnÃ³stico de Rachas
         (Persistencia Temporal)
     </h3>
     <div id="v21_rachas_container"
@@ -76,11 +76,11 @@
     <!-- Momentum Chart -->
     <div class="card chart-card">
         <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; justify-content: space-between;">
-            <span><i class="fa-solid fa-gauge-high" style="color: #3b82f6;"></i> Momentum Delictual (Aceleración)</span>
+            <span><i class="fa-solid fa-gauge-high" style="color: #3b82f6;"></i> Momentum Delictual (AceleraciÃ³n)</span>
             <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">CAGR 4 Semanas</span>
         </h3>
         <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">
-            Tasa de crecimiento compuesto de corto plazo. Valores > 0% indican aceleración.
+            Tasa de crecimiento compuesto de corto plazo. Valores > 0% indican aceleraciÃ³n.
         </p>
         <div class="chart-wrapper" style="height: 450px;">
             <canvas id="v21_chart_momentum"></canvas>
@@ -89,11 +89,11 @@
 </div>
 
 
-<!-- Nota Metodológica -->
+<!-- Nota MetodolÃ³gica -->
 <div class="row" style="margin-top: 2rem;">
     <div
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem 1.25rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.6;">
-        <strong>Nota Metodológica:</strong> Esta vista combina dos indicadores complementarios para evaluar la dinámica
+        <strong>Nota MetodolÃ³gica:</strong> Esta vista combina dos indicadores complementarios para evaluar la dinÃ¡mica
         de crecimiento delictual:
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem;">
@@ -103,26 +103,26 @@
                 </div>
                 <p style="margin: 0; font-size: 0.8rem; line-height: 1.5;">
                     Una <strong>racha</strong> es una secuencia de semanas <em>consecutivas</em> en que un delito
-                    aumenta respecto a la semana anterior. Una racha de 3+ semanas es una señal de alerta táctica: el
-                    fenómeno no es ruido estadístico, sino un patrón sostenido que requiere intervención. Cuanto más
+                    aumenta respecto a la semana anterior. Una racha de 3+ semanas es una seÃ±al de alerta tÃ¡ctica: el
+                    fenÃ³meno no es ruido estadÃ­stico, sino un patrÃ³n sostenido que requiere intervenciÃ³n. Cuanto mÃ¡s
                     larga la racha, mayor la urgencia operativa.
                 </p>
             </div>
             <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
                 <div style="font-weight: 800; color: #ef4444; font-size: 0.8rem; margin-bottom: 4px;">
-                    <i class="fa-solid fa-rocket"></i> ACELERACIÓN (MOMENTUM / CAGR)
+                    <i class="fa-solid fa-rocket"></i> ACELERACIÃ“N (MOMENTUM / CAGR)
                 </div>
                 <p style="margin: 0; font-size: 0.8rem; line-height: 1.5;">
                     El <strong>Momentum</strong> mide la <em>velocidad de cambio</em> usando el CAGR ajustado a 4
-                    semanas. Un CAGR positivo indica que el delito está creciendo de forma compuesta: no solo aumenta,
-                    sino que cada semana crece <em>más rápido</em> que la anterior. Un CAGR negativo indica
-                    desaceleración o disipación activa.
+                    semanas. Un CAGR positivo indica que el delito estÃ¡ creciendo de forma compuesta: no solo aumenta,
+                    sino que cada semana crece <em>mÃ¡s rÃ¡pido</em> que la anterior. Un CAGR negativo indica
+                    desaceleraciÃ³n o disipaciÃ³n activa.
                 </p>
             </div>
         </div>
         <div style="margin-top: 0.75rem; font-size: 0.78rem; color: #94a3b8;">
-            <strong>Regla de decisión:</strong> Un delito con <strong>racha larga + CAGR alto</strong> es la prioridad
-            táctica máxima. Un delito con racha larga pero CAGR bajo puede estar estabilizándose.
+            <strong>Regla de decisiÃ³n:</strong> Un delito con <strong>racha larga + CAGR alto</strong> es la prioridad
+            tÃ¡ctica mÃ¡xima. Un delito con racha larga pero CAGR bajo puede estar estabilizÃ¡ndose.
         </div>
     </div>
 </div>
@@ -187,10 +187,10 @@
             }
         };
 
-        renderStreak('v21_streak_alza_2', streaks.alza_2, '▲', '#ea580c');
-        renderStreak('v21_streak_alza_3', streaks.alza_3, '▲', '#dc2626');
-        renderStreak('v21_streak_baja_2', streaks.baja_2, '▼', '#2563eb');
-        renderStreak('v21_streak_baja_3', streaks.baja_3, '▼', '#059669');
+        renderStreak('v21_streak_alza_2', streaks.alza_2, 'â–²', '#ea580c');
+        renderStreak('v21_streak_alza_3', streaks.alza_3, 'â–²', '#dc2626');
+        renderStreak('v21_streak_baja_2', streaks.baja_2, 'â–¼', '#2563eb');
+        renderStreak('v21_streak_baja_3', streaks.baja_3, 'â–¼', '#059669');
 
 
         // --- 2. Momentum Chart (CAGR 4S) ---
@@ -205,7 +205,7 @@
             data: {
                 labels: momentumData.map(d => d[C.DELITO]),
                 datasets: [{
-                    label: '% Aceleración (CAGR 4S)',
+                    label: '% AceleraciÃ³n (CAGR 4S)',
                     data: momentumData.map(d => d[C.T31_CAGR_4S]),
                     backgroundColor: momentumData.map(d => d[C.T31_CAGR_4S] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
                     borderRadius: 4
@@ -229,7 +229,7 @@
                     x: {
                         ticks: { font: { family: 'Outfit' } },
                         grid: { color: '#f1f5f9' },
-                        title: { display: true, text: 'Variación CAGR 4S (%)' }
+                        title: { display: true, text: 'VariaciÃ³n CAGR 4S (%)' }
                     },
                     y: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '600', size: 10 } } }
                 }
@@ -248,4 +248,4 @@
     })();
 </script>
 <script src="../../../../script/help.js"></script>
-<script>setTimeout(() => { if (typeof createHelpButton === 'function') createHelpButton('vista21'); }, 500);</script>
+<script>setTimeout(() => { if (typeof createHelpButton === 'function') createHelpButton('vista17'); }, 500);</script>

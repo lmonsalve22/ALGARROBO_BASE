@@ -365,13 +365,102 @@ const helpContent = {
             '🔔 Seguimiento del flujo de trabajo: Reportado → Verificado → Programado → Reparado'
         ],
         tips: [
-            '💡 Los colores de los marcadores indican el estado: naranja (reportado), azul (verificado), violeta (programado), verde (reparado)',
-            '💡 Usa los filtros de fecha para analizar reportes de un período específico',
-            '💡 Haz clic en un reporte del listado para centrarlo en el mapa',
-            '💡 Desde el panel de detalles puedes editar el estado y gravedad del reporte',
             '💡 Los reportes resueltos incluyen los estados "Reparado" y "Cerrado"',
             '💡 Marca como "Revisado" cuando hayas verificado en terreno',
             '💡 La descripción del ciudadano puede contener información importante para la gestión'
+        ]
+    },
+    // LICITACIONES
+    lic_dashboard: {
+        title: 'Gestión de Licitaciones',
+        icon: 'fa-file-invoice-dollar',
+        description: 'Módulo central para el seguimiento de procesos de licitación en Mercado Público, organizado en un flujo de 32 pasos críticos.',
+        features: [
+            'Visualiza el estado global de todos los procesos activos',
+            'Inicia nuevas licitaciones asociadas a proyectos existentes',
+            'Monitorea el progreso porcentual basado en hitos completados',
+            'Accede rápidamente a la ficha de seguimiento de cada proceso',
+            'Filtra por estado (Abierta/Cerrada) y ID de Mercado Público'
+        ],
+        tips: [
+            'El sistema valida que no existan dos licitaciones abiertas para el mismo proyecto',
+            'Usa el ID de Mercado Público para sincronizar con la plataforma oficial',
+            'Haz clic en "Ver Ficha" para actualizar los pasos del workflow'
+        ]
+    },
+    lic_admin_general: {
+        title: 'Consolidado Administrativo',
+        icon: 'fa-shield-halved',
+        description: 'Panel de control global para la administración de todos los procesos de licitación del municipio.',
+        features: [
+            'Vista unificada de la carga de trabajo en licitaciones',
+            'Monitoreo de hitos críticos y presupuestos asignados',
+            'Control de estados de workflow para todas las divisiones',
+            'Reportes consolidados de procesos adjudicados y en publicación'
+        ],
+        tips: [
+            'Ideal para jefaturas que requieren supervisar múltiples procesos simultáneos',
+            'Observa la barra de progreso para identificar cuellos de botella en el flujo'
+        ]
+    },
+    lic_calendario: {
+        title: 'Cronograma y Plazos Críticos',
+        icon: 'fa-calendar-alt',
+        description: 'Visualización temporal de hitos clave como aperturas, cierres y períodos de preguntas.',
+        features: [
+            'Calendario interactivo con código de colores por tipo de hito',
+            'Vista de línea de tiempo (Gantt) para ver la secuencia de cada licitación',
+            'Filtros por proyecto y estado para una planificación focalizada',
+            'Detalle de eventos con acceso directo a la ficha de seguimiento'
+        ],
+        tips: [
+            'Los hitos en rojo indican cierres de procesos, asegúrate de cumplir los plazos',
+            'Usa la vista de Línea de Tiempo para ver el desfase entre lo planificado y lo real'
+        ]
+    },
+    lic_documentos: {
+        title: 'Biblioteca de Bases y Documentación',
+        icon: 'fa-folder-open',
+        description: 'Repositorio centralizado para la gestión de documentos tipo (Bases Administrativas, Técnicas, Anexos).',
+        features: [
+            'Sube y organiza archivos PDF/Word por categoría',
+            'Asocia documentos a licitaciones específicas',
+            'Control de versiones para actualizaciones de bases',
+            'Visor rápido de documentos integrado'
+        ],
+        tips: [
+            'Mantén las "Bases Tipo" actualizadas para agilizar nuevos procesos',
+            'Asegúrate de que los documentos finales coincidan con lo publicado en Mercado Público'
+        ]
+    },
+    lic_pasos: {
+        title: 'Configuración del Workflow',
+        icon: 'fa-list-check',
+        description: 'Mantenedor de los 32 pasos estándar que componen el flujo de licitación.',
+        features: [
+            'Define el orden correlativo de cada etapa del proceso',
+            'Configura nombres y descripciones de cada paso',
+            'Establece la lógica de dependencia entre pasos',
+            'Permite personalizar el flujo base para casos especiales'
+        ],
+        tips: [
+            'No alteres el orden de los pasos si hay procesos activos fluyendo',
+            'Los pasos marcados como críticos generan alertas automáticas'
+        ]
+    },
+    lic_seguimiento: {
+        title: 'Ficha de Seguimiento Detallado',
+        icon: 'fa-route',
+        description: 'Herramienta operativa para marcar el cumplimiento de cada uno de los 32 pasos del proceso.',
+        features: [
+            'Marca pasos como completados con fecha y responsable',
+            'Sube evidencia para cada hito del workflow',
+            'Visualiza la historia completa del proceso en una línea de tiempo',
+            'Gestiona el ID de Mercado Público y montos adjudicados'
+        ],
+        tips: [
+            'Completa los pasos en orden para mantener la coherencia del dashboard',
+            'No olvides ingresar el ID de Mercado Público apenas se genere el proceso'
         ]
     },
     // SEGURIDAD VISTAS
@@ -616,7 +705,7 @@ document.addEventListener('keydown', (e) => {
 function createHelpButton(viewName) {
     const btn = document.createElement('button');
     btn.id = 'helpButton';
-    btn.className = 'fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all z-40 flex items-center justify-center group';
+    btn.className = 'fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all z-[9998] flex items-center justify-center group';
     btn.innerHTML = `
         <i class="fas fa-question text-xl"></i>
         <span class="absolute right-full mr-3 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
