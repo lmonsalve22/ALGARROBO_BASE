@@ -14,33 +14,17 @@ window.PDFModuleV2 = {
         pageHeight: 297,
         margins: { top: 15, bottom: 20, left: 15, right: 15 },
         views: [
-            'vista1', 'vista2', 'vista3', 'vista4', 'vista5', 'vista6',
-            'vista7', 'vista8', 'vista9', 'vista10', 'vista11', 'vista12',
-            'vista13', 'vista14', 'vista15', 'vista16', 'vista17', 'vista18', 'vista19'
+            'vista1', 'vista5', 'vista13', 'vista10', 'vista22'
         ]
     },
 
     // View Meta — indexed by view name
     viewMeta: {
         'vista1': { title: 'Resumen Ejecutivo', level: 'Nivel 1: Resumen Ejecutivo', icon: '📋' },
-        'vista2': { title: 'Evolución Reciente', level: 'Nivel 1: Resumen Ejecutivo', icon: '📈' },
-        'vista3': { title: 'Comparativo Temporal Múltiple', level: 'Nivel 1: Resumen Ejecutivo', icon: '📊' },
-        'vista4': { title: 'Estacionalidad Mensual Histórica', level: 'Nivel 2: Patrones y Estacionalidad', icon: '📅' },
-        'vista5': { title: 'Distribución por Delito (Pareto)', level: 'Nivel 2: Patrones y Estacionalidad', icon: '🎯' },
-        'vista6': { title: 'Evolución por Tipología', level: 'Nivel 2: Patrones y Estacionalidad', icon: '📑' },
-        'vista7': { title: 'Evolución Estructural Mix', level: 'Nivel 3: Análisis Estructural', icon: '🧬' },
-        'vista8': { title: 'Correlaciones Delictuales', level: 'Nivel 3: Análisis Estructural', icon: '🔗' },
-        'vista9': { title: 'Tipologías Críticas', level: 'Nivel 3: Análisis Estructural', icon: '⚠️' },
-        'vista10': { title: 'Vs. Comunas Similares', level: 'Nivel 4: Benchmarking', icon: '🏘️' },
-        'vista11': { title: 'Clúster de Comunas Similares', level: 'Nivel 4: Benchmarking', icon: '🗂️' },
-        'vista12': { title: 'Evolución de Factores de Riesgo', level: 'Nivel 5: Factores de Riesgo', icon: '☣️' },
-        'vista13': { title: 'Gravedad por Delito', level: 'Nivel 5: Factores de Riesgo', icon: '⚖️' },
-        'vista14': { title: 'Priorización Estratégica', level: 'Nivel 6: Decisión Estratégica', icon: '🎯' },
-        'vista15': { title: 'Categoría', level: 'Nivel 6: Decisión Estratégica', icon: '📁' },
-        'vista16': { title: 'Auditoría de Datos y Calidad', level: 'Nivel 6: Decisión Estratégica', icon: '🔍' },
-        'vista17': { title: 'Momentum y Rachas', level: 'Nivel 7: Monitoreo y Reportes', icon: '⚡' },
-        'vista18': { title: 'Delitos en Disipación', level: 'Nivel 7: Monitoreo y Reportes', icon: '📉' },
-        'vista19': { title: 'Resumen Autoridades', level: 'Nivel 7: Monitoreo y Reportes', icon: '👨‍💼' }
+        'vista5': { title: 'Análisis de Pareto', level: 'Nivel 2: Delitos Críticos', icon: '🎯' },
+        'vista13': { title: 'Gravedad por Delito', level: 'Nivel 3: Gravedad e Impacto Social', icon: '⚖️' },
+        'vista10': { title: 'Vs. Comunas Similares', level: 'Nivel 4: Benchmarking Geográfico', icon: '🏘️' },
+        'vista22': { title: 'Priorización Estratégica', level: 'Nivel 5: Priorización Estratégica', icon: '🎯' }
     },
 
     /**
