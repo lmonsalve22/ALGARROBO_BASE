@@ -1,5 +1,5 @@
 
-# app21.py - Versión mejorada con manejo de desconexiones NeonDB
+# app21.py - Versión optimizada para Railway Postgres
 import os
 import traceback
 import time
@@ -20,7 +20,6 @@ import secrets
 from dotenv import load_dotenv
 
 load_dotenv()
-
 # -----------------------
 # CONFIGURACIÓN DE LOGGING
 # -----------------------
@@ -69,7 +68,6 @@ def handle_exception(e):
     return response
 
 logger.info("Backend Municipal iniciando...")
-
 # Pool de conexiones global
 connection_pool = None
 pool_lock = threading.RLock()
@@ -82,109 +80,61 @@ SESSION_EXPIRY_HOURS = 1
 # -----------------------
 # UTIL: inicialización y gestión del pool de conexiones
 # -----------------------
-def init_connection_pool(max_retries=5):
+def init_connection_pool(max_retries=1):
     """
-    Inicializa el pool de conexiones a la base de datos con reintentos
-    NeonDB puede desconectar conexiones inactivas.
+    Inicializa el pool de conexiones a la base de datos de manera ligera para Railway
     """
     global connection_pool
     
-    for attempt in range(max_retries):
-        try:
-            with pool_lock:
-                if connection_pool and not connection_pool.closed:
-                    try:
-                        connection_pool.closeall()
-                        logger.info("Pool anterior cerrado correctamente")
-                    except Exception as e:
-                        logger.warning(f"Error cerrando pool anterior: {e}")
-                
-                connection_pool = psycopg2.pool.ThreadedConnectionPool(
-                    minconn=2,
-                    maxconn=10,
-                    dsn=DB_CONNECTION_STRING,
-                    keepalives=1,
-                    keepalives_idle=30,
-                    keepalives_interval=10,
-                    keepalives_count=5,
-                    connect_timeout=10,
-                    application_name="municipal_api"
-                )
-                
-                # Verificar que el pool funciona
-                test_conn = connection_pool.getconn()
-                with test_conn.cursor() as cursor:
-                    cursor.execute("SELECT 1")
-                connection_pool.putconn(test_conn)
-                
-                logger.info("Pool de conexiones inicializado correctamente")
-                return True
-                
-        except Exception as e:
-            logger.error(f"Intento {attempt + 1} de inicialización del pool fallido: {e}")
-            if attempt < max_retries - 1:
-                wait_time = (2 ** attempt) + 1
-                logger.info(f"Reintentando en {wait_time} segundos...")
-                time.sleep(wait_time)
-            else:
-                logger.error("No se pudo inicializar el pool después de varios intentos")
-                connection_pool = None
-                return False
+    try:
+        with pool_lock:
+            if connection_pool and not connection_pool.closed:
+                try:
+                    connection_pool.closeall()
+                    logger.info("Pool anterior cerrado correctamente")
+                except Exception as e:
+                    logger.warning(f"Error cerrando pool anterior: {e}")
+            
+            connection_pool = psycopg2.pool.ThreadedConnectionPool(
+                minconn=1,
+                maxconn=10,
+                dsn=DB_CONNECTION_STRING,
+                keepalives=1,
+                keepalives_idle=60,
+                keepalives_interval=10,
+                keepalives_count=5,
+                connect_timeout=10,
+                application_name="municipal_api_railway"
+            )
+            
+            # Verificar que el pool funciona
+            test_conn = connection_pool.getconn()
+            with test_conn.cursor() as cursor:
+                cursor.execute("SELECT 1")
+            connection_pool.putconn(test_conn)
+            
+            logger.info("Pool de conexiones inicializado correctamente (Optimizado para Railway)")
+            return True
+            
+    except Exception as e:
+        logger.error(f"Error en la inicialización del pool: {e}")
+        connection_pool = None
+        return False
 
-def is_connection_error(exception):
-    error_messages = [
-        "connection", "timeout", "closed", "terminated", "reset", 
-        "network", "unreachable", "refused", "broken", "idle"
-    ]
-    error_str = str(exception).lower()
-    return any(msg in error_str for msg in error_messages)
-
-def get_db_connection(max_retries=3):
+def get_db_connection():
     global connection_pool
-    last_exception = None
     
-    for attempt in range(max_retries):
-        try:
-            if connection_pool is None or connection_pool.closed:
-                logger.info("Pool no disponible, inicializando...")
-                if not init_connection_pool():
-                    raise Exception("No se pudo inicializar el pool de conexiones")
-            
-            conn = connection_pool.getconn()
-            
-            try:
-                with conn.cursor() as cursor:
-                    cursor.execute("SELECT 1")
-                    return conn
-            except Exception as e:
-                logger.warning(f"Conexión no válida detectada: {e}")
-                try:
-                    connection_pool.putconn(conn, close=True)
-                except:
-                    pass
-                raise e
-                
-        except Exception as e:
-            last_exception = e
-            logger.warning(f"Intento {attempt + 1} de conexión fallido: {e}")
-            
-            if is_connection_error(e):
-                logger.info("Detectado error de conexión, reinicializando pool...")
-                try:
-                    with pool_lock:
-                        if connection_pool and not connection_pool.closed:
-                            connection_pool.closeall()
-                        connection_pool = None
-                except Exception as pool_error:
-                    logger.error(f"Error cerrando el pool: {pool_error}")
-            
-            if attempt < max_retries - 1:
-                wait_time = (2 ** attempt) + 1
-                logger.info(f"Reintentando en {wait_time} segundos...")
-                time.sleep(wait_time)
-    
-    logger.error(f"No se pudo establecer conexión después de {max_retries} intentos")
-    raise last_exception or Exception("Error desconocido al obtener conexión")
+    try:
+        if connection_pool is None or connection_pool.closed:
+            logger.info("Pool no disponible, inicializando...")
+            if not init_connection_pool():
+                raise Exception("No se pudo inicializar el pool de conexiones")
+        
+        conn = connection_pool.getconn()
+        return conn
+    except Exception as e:
+        logger.error(f"Error obteniendo conexión: {e}")
+        raise e
 
 def release_db_connection(conn):
     try:
@@ -219,77 +169,6 @@ ALLOWED_EXTENSIONS = {
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-# -----------------------
-# CONFIGURACIÓN DE LOGGING
-# -----------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("municipal_api.log"),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
-
-# -----------------------
-# CONFIG
-# -----------------------
-DB_CONNECTION_STRING = os.getenv(
-    "DATABASE_URL",
-    "postgresql://neondb_owner:npg_xHS7sA1FDPqI@ep-hidden-grass-a4sa46kc-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
-)
-APP_HOST = "0.0.0.0"
-APP_PORT = int(os.getenv("PORT", 8000))
-DEBUG = os.getenv("FLASK_DEBUG", "True").lower() in ("1", "true", "yes")
-
-app = Flask(__name__)
-# CORS(app) - Usaremos manejo manual para garantizar compatibilidad total
-
-@app.after_request
-def add_cors_headers(response):
-    # Log de tráfico para depuración
-    if request.path.startswith('/api'):
-        logger.info(f"REQUEST {request.method} {request.path} -> {response.status_code}")
-    
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Access-Control-Allow-Credentials'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    return response
-
-@app.errorhandler(Exception)
-def handle_exception(e):
-    # Inyectar headers CORS también en errores
-    response = jsonify({"error": str(e)})
-    response.status_code = 500
-    if hasattr(e, 'code'):
-        response.status_code = e.code
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Access-Control-Allow-Credentials'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    return response
-
-logger.info("Backend Municipal (versión mejorada con manejo de desconexiones NeonDB) iniciando...")
-
-# Pool de conexiones global
-connection_pool = None
-pool_lock = threading.RLock()  # MEJORA #5: RLock reentrant para evitar deadlocks
-
-# MEJORA #4: Sesiones con timestamp de expiración
-# Estructura: { token: {"user_id": int, "created_at": datetime, "last_activity": datetime} }
-active_sessions = {}
-sessions_lock = threading.Lock()
-SESSION_EXPIRY_HOURS = 1  # Sesiones expiran después de 1 hora de inactividad
-
-# Variable para controlar el health check
-health_check_thread = None
-health_check_running = False
-
-# -----------------------
-# UTIL: inicialización y gestión del pool de conexiones
-# -----------------------
 
 
 # MEJORA #4: Funciones de gestión de sesiones con expiración
@@ -340,255 +219,8 @@ def cleanup_expired_sessions():
         if expired:
             logger.info(f"Limpiadas {len(expired)} sesiones expiradas")
 
-def health_check_worker():
-    """
-    Worker que se ejecuta en segundo plano para verificar el estado del pool
-    y reinicializarlo si es necesario
-    """
-    global health_check_running, connection_pool
-    
-    while health_check_running:
-        try:
-            if connection_pool and not connection_pool.closed:
-                # Intentar obtener una conexión y hacer una consulta simple
-                conn = None
-                try:
-                    conn = connection_pool.getconn()
-                    with conn.cursor() as cursor:
-                        cursor.execute("SELECT 1")
-                    logger.debug("Health check del pool: OK")
-                except Exception as e:
-                    logger.warning(f"Health check del pool falló: {e}")
-                    # Si hay un error, reinicializar el pool
-                    try:
-                        with pool_lock:
-                            if connection_pool and not connection_pool.closed:
-                                connection_pool.closeall()
-                            connection_pool = None
-                        init_connection_pool()
-                    except Exception as pool_error:
-                        logger.error(f"Error reinicializando el pool: {pool_error}")
-                finally:
-                    if conn:
-                        try:
-                            connection_pool.putconn(conn)
-                        except:
-                            pass
-            else:
-                logger.info("Pool no disponible durante health check, intentando inicializar...")
-                init_connection_pool()
-            
-            # MEJORA #4: Limpiar sesiones expiradas en cada ciclo del health check
-            cleanup_expired_sessions()
-            
-            # Esperar antes del siguiente health check
-            time.sleep(30)  # Health check cada 30 segundos
-        except Exception as e:
-            logger.error(f"Error en health check worker: {e}")
-            time.sleep(180)  # Esperar más tiempo si hay un error
-
-
-def start_health_check():
-    """Inicia el worker de health check en segundo plano"""
-    global health_check_thread, health_check_running
-    
-    if not health_check_running:
-        health_check_running = True
-        health_check_thread = threading.Thread(target=health_check_worker, daemon=True)
-        health_check_thread.start()
-        logger.info("Health check worker iniciado")
-
-def stop_health_check():
-    """Detiene el worker de health check"""
-    global health_check_running
-    
-    if health_check_running:
-        health_check_running = False
-        if health_check_thread and health_check_thread.is_alive():
-            health_check_thread.join(timeout=5)
-        logger.info("Health check worker detenido")
-
-# -----------------------
-# UTIL: crear tablas si no existen
-# -----------------------
-def ensure_tables():
-    conn = None
-    try:
-        conn = get_db_connection()
-        if not conn:
-            logger.error("No se pudo conectar a la BD para crear tablas.")
-            return
-
-        ddl = [
-            """
-            CREATE TABLE IF NOT EXISTS divisiones (
-                division_id SERIAL PRIMARY KEY,
-                nombre TEXT UNIQUE NOT NULL
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                user_id SERIAL PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                nombre TEXT NOT NULL,
-                nivel_acceso TEXT NOT NULL,
-                division_id INTEGER REFERENCES divisiones(division_id),
-                activo BOOLEAN DEFAULT TRUE,
-                fecha_ultimo_login TIMESTAMP
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS roles (
-                role_id SERIAL PRIMARY KEY,
-                nombre TEXT UNIQUE NOT NULL
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS user_roles (
-                user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
-                role_id INTEGER REFERENCES roles(role_id) ON DELETE CASCADE,
-                PRIMARY KEY (user_id, role_id)
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS proyectos (
-                id SERIAL PRIMARY KEY,
-                n_registro INTEGER,
-                es_prioridad VARCHAR(20),
-                area VARCHAR(150),
-                lineamiento_estrategico VARCHAR(300),
-                financiamiento_municipal VARCHAR(50),
-                financiamiento VARCHAR(100),
-                nombre TEXT,
-                monto NUMERIC,
-                estado VARCHAR(100),
-                observaciones TEXT,
-                fecha_creacion TIMESTAMP DEFAULT NOW()
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS documentos (
-                doc_id SERIAL PRIMARY KEY,
-                proyecto_id INTEGER REFERENCES proyectos(id) ON DELETE CASCADE,
-                nombre_archivo TEXT,
-                url_archivo TEXT,
-                fecha_subida TIMESTAMP DEFAULT NOW()
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS licitacion_pasos_maestro (
-                id_paso SERIAL PRIMARY KEY,
-                orden INT UNIQUE NOT NULL,
-                nombre VARCHAR(255) NOT NULL,
-                documento_requerido VARCHAR(255),
-                descripcion TEXT,
-                activo BOOLEAN DEFAULT TRUE
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS licitaciones (
-                id SERIAL PRIMARY KEY,
-                proyecto_id INT NOT NULL REFERENCES proyectos(id) ON DELETE CASCADE,
-                nombre_licitacion VARCHAR(255),
-                id_mercado_publico VARCHAR(50),
-                estado_actual_paso INT,
-                estado_licitacion VARCHAR(20) DEFAULT 'Abierta',
-                monto_estimado NUMERIC,
-                usuario_creador INT REFERENCES users(user_id),
-                fecha_creacion TIMESTAMP DEFAULT NOW(),
-                fecha_actualizacion TIMESTAMP DEFAULT NOW()
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS licitacion_workflow (
-                id SERIAL PRIMARY KEY,
-                licitacion_id INT NOT NULL REFERENCES licitaciones(id) ON DELETE CASCADE,
-                paso_id INT NOT NULL REFERENCES licitacion_pasos_maestro(id_paso),
-                estado VARCHAR(50) DEFAULT 'Pendiente',
-                fecha_planificada DATE,
-                fecha_real TIMESTAMP,
-                observaciones TEXT,
-                usuario_id INT REFERENCES users(user_id),
-                actualizado_en TIMESTAMP DEFAULT NOW(),
-                UNIQUE (licitacion_id, paso_id)
-            );
-            """,
-            """
-            CREATE TABLE IF NOT EXISTS licitaciones_documentos (
-                documento_id SERIAL PRIMARY KEY,
-                workflow_id INT NOT NULL REFERENCES licitacion_workflow(id) ON DELETE CASCADE,
-                tipo_documento VARCHAR(100),
-                nombre VARCHAR(255),
-                descripcion TEXT,
-                url TEXT,
-                archivo_nombre VARCHAR(255),
-                archivo_extension VARCHAR(20),
-                archivo_size BIGINT,
-                usuario_subida INT REFERENCES users(user_id),
-                fecha_subida TIMESTAMP DEFAULT NOW()
-            );
-            """
-        ]
-
-        with conn.cursor() as cur:
-            for s in ddl:
-                cur.execute(s)
-            
-            # Seeding pasos maestro
-            pasos = [
-                (1, 'Acuerdo de Concejo'),
-                (2, 'Decreto de Aprobación de convenio'),
-                (3, 'Elaboración de bases administrativas'),
-                (4, 'Elaboración de Decretos Alcaldicios'),
-                (5, '- Aprueba Bases'),
-                (6, '– Designa comisión de evaluación'),
-                (7, '- Designa unidad técnica'),
-                (8, 'Aprobación de Decretos Alcaldicios'),
-                (9, 'Publicación Licitación Mercado Publico'),
-                (10, 'Preguntas por Mercado Publico'),
-                (11, 'Elaborar decreto aprueba respuestas a preguntas de mercado publico'),
-                (12, 'Publicación de Decreto aprueba respuestas a preguntas de Mercado Publico'),
-                (13, 'Presentación de ofertas'),
-                (14, 'Recepción de Garantía Seriedad de la oferta (si procede)'),
-                (15, 'Apertura de ofertas'),
-                (16, 'Evaluación de oferta'),
-                (17, 'Elaboración de informe de evaluación'),
-                (18, 'Acuerdo de concejo que aprueba adjudicación'),
-                (19, 'Elaboración de Decreto de Adjudicación'),
-                (20, 'Publicación de Decreto de Adjudicación'),
-                (21, 'Adjudicación de Licitación'),
-                (22, 'Elaboración de Contrato'),
-                (23, 'Firma de Contrato'),
-                (24, 'Recepción de Garantía de fiel cumplimiento de contrato'),
-                (25, 'Acta de entrega de terreno'),
-                (26, 'Elaboración de decreto uso de bien nacional de uso publico'),
-                (27, 'Decreto que aprueba anexo de contrato'),
-                (28, 'Decreto de comisión de recepción provisoria'),
-                (29, 'Decreto que aprueba el acta de recepción provisoria'),
-                (30, 'Recepción de Garantía Correcta ejecución de las obras'),
-                (31, 'Decreto de comisión de recepción definitiva'),
-                (32, 'Decreto que aprueba el acta de recepción definitiva')
-            ]
-            for orden, nombre in pasos:
-                cur.execute("INSERT INTO licitacion_pasos_maestro (orden, nombre) VALUES (%s, %s) ON CONFLICT (orden) DO NOTHING", (orden, nombre))
-            
-        conn.commit()
-        logger.info("Tablas verificadas y pasos de licitación sembrados correctamente")
-    except Exception as e:
-        logger.error(f"Error creando tablas: {e}")
-        traceback.print_exc()
-        if conn:
-            conn.rollback()
-    finally:
-        if conn:
-            release_db_connection(conn)
-
-# Inicializar pool y crear tablas al inicio
-if init_connection_pool():
-    ensure_tables()
-    start_health_check()
-else:
+# Inicializar pool al inicio
+if not init_connection_pool():
     logger.error("No se pudo inicializar el pool de conexiones al inicio")
 
 # -----------------------
@@ -649,7 +281,7 @@ def session_required(f):
 # -----------------------
 @app.route("/")
 def home():
-    return jsonify({"message": "API Municipal funcionando (con manejo robusto de NeonDB)"})
+    return jsonify({"message": "API Municipal funcionando (Optimizado para Railway Postgres)"})
 
 @app.route("/health")
 def health_check():
@@ -697,7 +329,7 @@ def health_check():
             "connection_pool": pool_status,
             "active_sessions": sessions_count,
             "version": "2.0.0",
-            "neondb_optimized": True
+            "railway_optimized": True
         }), status_code
     except Exception as e:
         logger.error(f"Error en health check: {e}")
@@ -3619,11 +3251,8 @@ def close_connection(exception=None):
     pass  # Las conexiones se gestionan manualmente con release_db_connection
 
 def cleanup():
-    """Cierra el pool de conexiones y detiene el health check al terminar la aplicación"""
+    """Cierra el pool de conexiones al terminar la aplicación"""
     global connection_pool
-    
-    # Detener el health check worker
-    stop_health_check()
     
     # Cerrar el pool de conexiones
     try:
@@ -4300,7 +3929,7 @@ if __name__ == '__main__':
         key_path = os.path.abspath("private.key")
         logger.info("Iniciando servidor en https://0.0.0.0:8000")
         logger.info("Endpoint de health check disponible en: https://0.0.0.0:8000/health")
-        logger.info("Sistema optimizado para manejar desconexiones periódicas de NeonDB")
+        logger.info("Sistema optimizado para Railway (PostgreSQL)")
         app.run(host='0.0.0.0', port=8000, ssl_context=(cert_path, key_path))
     finally:
         cleanup()

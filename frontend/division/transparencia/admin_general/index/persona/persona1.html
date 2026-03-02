@@ -68,13 +68,17 @@
       padding: 0 2rem;
     }
 
+    /* Header Section - Premium Glassmorphism */
     .header {
-      background-color: var(--card-bg);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: 1.25rem 0;
       position: sticky;
       top: 0;
       z-index: 50;
+      transition: var(--transition);
     }
 
     .header-inner {
@@ -869,10 +873,102 @@
         max-width: 100%;
       }
     }
+  
+    /* Sidebar Layout Updates */
+    .layout-wrapper {
+      display: flex;
+      min-height: 100vh;
+      background-color: var(--bg-main);
+      width: 100%;
+    }
+    .sidebar {
+      width: 260px;
+      background-color: var(--card-bg);
+      border-right: 1px solid var(--border);
+      padding: 2rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    .sidebar-brand {
+      margin-bottom: 2.5rem;
+      padding: 0 0.5rem;
+    }
+    .sidebar-brand p {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.25rem;
+    }
+    .sidebar-brand h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .main-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .nav-tabs.vertical {
+      flex-direction: column;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0;
+      gap: 0.25rem;
+    }
+    .nav-tabs.vertical .nav-tab {
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+      width: 100%;
+      box-sizing: border-box;
+      justify-content: flex-start;
+    }
+    .nav-tabs.vertical .nav-tab:hover {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+    }
+    .nav-tabs.vertical .nav-tab.active {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
   </style>
 </head>
 
 <body>
+  <div class="layout-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <p>Módulo Especializado</p>
+        <h2>Transparencia</h2>
+      </div>
+      <nav class="nav-tabs vertical">
+        
+        <a href="../landing_transparencia.html" class="nav-tab">
+          <i data-lucide="home" style="width: 14px;"></i> Inicio
+        </a>
+        <a href="../remuneracion_bruta.html" class="nav-tab">
+          <i data-lucide="wallet" style="width: 14px;"></i> Remuneraciones
+        </a>
+        <a href="../rutUnico.html" class="nav-tab active">
+          <i data-lucide="users" style="width: 14px;"></i> Personas
+        </a>
+      
+      </nav>
+    </aside>
+    <div class="main-content">
   <header class="header">
     <div class="container">
       <div class="header-inner">
@@ -886,21 +982,6 @@
           </div>
         </div>
       </div>
-
-      <nav class="nav-tabs">
-        <a href="../landing_transparencia.html" class="nav-tab">
-          <i data-lucide="home" style="width: 14px;"></i> Inicio
-        </a>
-        <a href="../inicio.html" class="nav-tab">
-          <i data-lucide="credit-card" style="width: 14px;"></i> Pagos
-        </a>
-        <a href="../remuneracion_bruta.html" class="nav-tab">
-          <i data-lucide="wallet" style="width: 14px;"></i> Remuneraciones
-        </a>
-        <a href="../rutUnico.html" class="nav-tab">
-          <i data-lucide="users" style="width: 14px;"></i> Personas
-        </a>
-      </nav>
     </div>
   </header>
 
@@ -1887,6 +1968,11 @@
     });
   </script>
   <script src="dashboard-enhancements.js"></script>
+    </div>
+  </div>
+
+    <script src="../../../../../script/help.js"></script>
+    <script>if(typeof createHelpButton === 'function') createHelpButton('trans_persona');</script>
 </body>
 
 </html>

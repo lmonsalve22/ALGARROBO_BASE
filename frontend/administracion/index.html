@@ -18,17 +18,18 @@
 
     <style>
         :root {
-            --primary: #1565c0;
-            --primary-dark: #0d47a1;
-            --accent: #f57c00;
-            --accent-hover: #ef6c00;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --text-main: #1e293b;
+            --text-main: #0f172a;
             --text-light: #64748b;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --radius: 12px;
-            --transition: all 0.3s ease;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
@@ -189,8 +190,9 @@
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--primary-light);
         }
 
         .card-header {
@@ -278,7 +280,7 @@
         }
 
         .card-link:hover {
-            background-color: #f0f7ff;
+            background-color: var(--primary-light);
             border-color: var(--primary);
             color: var(--primary-dark);
         }
@@ -357,7 +359,7 @@
         <a href="../division/licitaciones/admin_proyectos/dashboard.html" class="btn-cta secondary">
             <i class="fa-solid fa-file-invoice-dollar"></i> Licitaciones
         </a>
-        <a href="../division/transparencia/admin_general/dashboard.html" class="btn-cta secondary">
+        <a href="../division/transparencia/admin_general/index/landing_transparencia.html" class="btn-cta secondary">
             <i class="fa-solid fa-scale-balanced"></i> Transparencia
         </a>
     </div>
@@ -451,14 +453,18 @@
                     <i class="fa-solid fa-scale-balanced"></i>
                 </div>
                 <div class="card-body">
-                    <a href="../division/transparencia/admin_general/dashboard.html" class="card-link">
-                        <i class="fa-solid fa-chart-pie"></i> Visualizador Consolidado
+                    <a href="../division/transparencia/admin_general/index/landing_transparencia.html"
+                        class="card-link">
+                        <i class="fa-solid fa-house"></i> Portal Principal
                     </a>
-                    <a href="#" class="card-link">
-                        <i class="fa-solid fa-file-invoice"></i> Remuneraciones
+                    <a href="../division/transparencia/admin_general/index/inicio.html" class="card-link">
+                        <i class="fa-solid fa-chart-pie"></i> Pagos por Organismo
                     </a>
-                    <a href="#" class="card-link">
-                        <i class="fa-solid fa-users"></i> Índice de Personal
+                    <a href="../division/transparencia/admin_general/index/remuneracion_bruta.html" class="card-link">
+                        <i class="fa-solid fa-file-invoice"></i> Remuneración Bruta
+                    </a>
+                    <a href="../division/transparencia/admin_general/index/rutUnico.html" class="card-link">
+                        <i class="fa-solid fa-users"></i> Fichas de Personal
                     </a>
                 </div>
             </article>

@@ -596,6 +596,42 @@ const helpContent = {
         description: '¿Qué debe saber el Alcalde hoy? Hallazgos principales y alertas críticas.',
         features: ['Resumen directivo semanal', 'Prioridades de inversión', 'Mensajes clave'],
         tips: ['Ideal para presentaciones breves y toma de decisiones', 'Foco exclusivo en el alto mando municipal']
+    },
+    // TRANSPARENCIA VISTAS
+    trans_inicio: {
+        title: 'Pagos por Organismos',
+        icon: 'fa-credit-card',
+        description: 'Monitoreo de registros de transparencia gubernamental centrados en la distribución global de pagos.',
+        features: ['Visualización de pagos y remuneraciones globales por organismo', 'Promedios generales de remuneraciones mensuales', 'Filtrado inteligente por tipo de organismo municipal (Municipalidades, Corporaciones)'],
+        tips: ['Utilice los filtros superiores de tipo de municipio para delimitar la información', 'Los gráficos y estadísticas reflejan el estado actual de los agrupamientos de la cartera transparente']
+    },
+    trans_remuneracion: {
+        title: 'Análisis de Remuneraciones Brutas',
+        icon: 'fa-wallet',
+        description: 'Análisis detallado de remuneraciones brutas mensuales de funcionarios a lo largo de las instituciones.',
+        features: ['Seguimiento exhaustivo de remuneraciones y pagos', 'Comparativas y segmentación por clase de planta, funciones, y grupos de edad', 'Dashboard que expone desviaciones y percentiles estadísticos (alto, medio, bajo)'],
+        tips: ['Revise las alertas y colores de desviación estadística en la parte inferior para detectar variaciones anómalas', 'Exporte los datos segmentados en la tabla de vista detallada']
+    },
+    trans_persona: {
+        title: 'Directorio de Personas (RUT Único)',
+        icon: 'fa-users',
+        description: 'Base de datos unificada de funcionarios según su RUT. Permite el cruce consolidado de pagos y antecedentes de la persona por meses u organismos.',
+        features: ['Búsqueda rápida y detallada por RUT y Nombre de individuo', 'Detalle paramétrico de roles, empleadores y antigüedad de las personas', 'Navegación subyacente para el perfil integral por sexo, profesión, etc.'],
+        tips: ['Navegue al detalle de RUT unificado usando el motor de búsqueda en tiempo real', 'Verifique el cruce interanual de los meses que la persona ejerció']
+    },
+    trans_registro: {
+        title: 'Monitoreo de Registros',
+        icon: 'fa-clipboard-list',
+        description: 'Monitoreo matricial y base de lectura plana de pagos emitidos según la ley de transparencia.',
+        features: ['Matriz de todos los eventos notificados', 'Desglose y segmentación detallada (planta temporal, honorarios, comisiones)', 'Total control en paginación y filtrado analítico con opciones de vista porcentual o número completo'],
+        tips: ['Aproveche los botones para mostrar porcentajes consolidados sobre agrupamientos (Ej: edad y sexo)']
+    },
+    trans_landing: {
+        title: 'Portal de Transparencia Activa',
+        icon: 'fa-landmark',
+        description: 'Entrada centralizada con la exposición principal e indicadores sintéticos de los presupuestos y remuneraciones.',
+        features: ['Pantalla general o landing page que resume la carga transparente activa', 'Búsqueda cruzada general', 'Acceso a tableros especializados de remuneraciones y personas'],
+        tips: ['Use los accesos de Atajos Funcionales para dirgirise a los menús concretos según la exploración que requiera hacer']
     }
 };
 
@@ -615,7 +651,7 @@ function showHelpModal(viewName) {
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur">
-                                    <i class="fas ${content.icon} text-xl"></i>
+                                    <i id="helpModalIcon" class="fas ${content.icon} text-xl"></i>
                                 </div>
                                 <div>
                                     <h2 class="text-2xl font-bold" id="helpModalTitle">${content.title}</h2>
@@ -643,7 +679,7 @@ function showHelpModal(viewName) {
 
     // Actualizar contenido
     document.getElementById('helpModalTitle').textContent = content.title;
-    document.querySelector('#helpModal .fa-robot, #helpModal .fa-chart-line, #helpModal .fa-folder-open, #helpModal .fa-file-chart-line, #helpModal .fa-calendar-alt, #helpModal .fa-map-marked-alt, #helpModal .fa-flag, #helpModal .fa-comment-alt, #helpModal .fa-file-alt, #helpModal .fa-draw-polygon, #helpModal .fa-users-cog, #helpModal .fa-analytics')?.classList.remove('fa-robot', 'fa-chart-line', 'fa-folder-open', 'fa-file-chart-line', 'fa-calendar-alt', 'fa-map-marked-alt', 'fa-flag', 'fa-comment-alt', 'fa-file-alt', 'fa-draw-polygon', 'fa-users-cog', 'fa-analytics');
+    document.getElementById('helpModalIcon').className = "fas " + content.icon + " text-xl";
 
     const contentHtml = `
         <div class="mb-6">
@@ -708,9 +744,9 @@ function createHelpButton(viewName) {
     btn.className = 'fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all z-[9998] flex items-center justify-center group';
     btn.innerHTML = `
         <i class="fas fa-question text-xl"></i>
-        <span class="absolute right-full mr-3 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Ayuda
-        </span>
+            <span class="absolute right-full mr-3 bg-gray-800 text-white text-sm px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                Ayuda
+            </span>
     `;
     btn.onclick = () => showHelpModal(viewName);
     document.body.appendChild(btn);

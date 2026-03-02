@@ -1,11 +1,11 @@
-﻿<!-- Vista 16: AuditorÃ­a de Datos y Calidad â€” STOP + CEAD + Conjunto -->
+﻿<!-- Vista 16: Auditoría de Datos y Calidad â€” STOP + CEAD + Conjunto -->
 <div class="card mb-lg">
     <div class="location-source-row"
         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
         <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
             <i class="fa-solid fa-database"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-            <span>AUDITORÃA DE INTEGRIDAD (STOP + CEAD)</span>
+            <span>AUDITORÍA DE INTEGRIDAD (STOP + CEAD)</span>
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
@@ -14,30 +14,30 @@
         style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
             border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            Â¿QuÃ© tan confiables son nuestros datos?
+            ¿Qué tan confiables son nuestros datos?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">AnÃ¡lisis de discrepancias
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Análisis de discrepancias
             entre STOP y CEAD.</p>
     </div>
 
     <!-- Veredicto General -->
     <div class="alert alert--info" style="margin-top: 1.5rem; margin-bottom: 2rem;">
-        <strong>ðŸ¤– DiagnÃ³stico General:</strong> <span id="v25_health_desc">Analizando integridad...</span>
+        <strong>ðŸ¤– Diagnóstico General:</strong> <span id="v25_health_desc">Analizando integridad...</span>
     </div>
 
-    <!-- â•â•â• PUNTUACIÃ“N GLOBAL â•â•â• -->
+    <!-- â•â•â• PUNTUACIÓN GLOBAL â•â•â• -->
     <div
         style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 2rem;">
         <div
             style="font-size: 0.85rem; font-weight: 700; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
-            PuntuaciÃ³n General de Salud de Datos</div>
+            Puntuación General de Salud de Datos</div>
         <div id="v25_health_score" style="font-size: 4.5rem; font-weight: 900; color: #1e293b; line-height: 1;">--%
         </div>
         <div id="v25_health_grade" style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; margin-top: 6px;">-
         </div>
     </div>
 
-    <!-- â•â•â• SECCIÃ“N: STOP (Semanal) â•â•â• -->
+    <!-- â•â•â• SECCIÓN: STOP (Semanal) â•â•â• -->
     <div style="margin-bottom: 2.5rem;">
         <div
             style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; border-bottom: 2px solid #3b82f6; padding-bottom: 8px;">
@@ -64,11 +64,11 @@
                     Semanas Cubiertas</div>
                 <div id="v25_stop_weeks" style="font-size: 1.6rem; font-weight: 900; color: #1e293b;">--</div>
             </div>
-            <!-- STOP: Delitos Ãšnicos -->
+            <!-- STOP: Delitos Únicos -->
             <div class="card" style="padding: 1.25rem; text-align: center; border-left: 3px solid #3b82f6;">
                 <div
                     style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
-                    Delitos Ãšnicos</div>
+                    Delitos Únicos</div>
                 <div id="v25_stop_crimes" style="font-size: 1.6rem; font-weight: 900; color: #1e293b;">--</div>
             </div>
             <!-- STOP: Completitud -->
@@ -95,7 +95,7 @@
         </div>
     </div>
 
-    <!-- â•â•â• SECCIÃ“N: CEAD (Mensual) â•â•â• -->
+    <!-- â•â•â• SECCIÓN: CEAD (Mensual) â•â•â• -->
     <div style="margin-bottom: 2.5rem;">
         <div
             style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; border-bottom: 2px solid #8b5cf6; padding-bottom: 8px;">
@@ -122,11 +122,11 @@
                     Periodos Cubiertos</div>
                 <div id="v25_cead_periods" style="font-size: 1.6rem; font-weight: 900; color: #1e293b;">--</div>
             </div>
-            <!-- CEAD: Delitos Ãšnicos -->
+            <!-- CEAD: Delitos Únicos -->
             <div class="card" style="padding: 1.25rem; text-align: center; border-left: 3px solid #8b5cf6;">
                 <div
                     style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
-                    Delitos Ãšnicos</div>
+                    Delitos Únicos</div>
                 <div id="v25_cead_crimes" style="font-size: 1.6rem; font-weight: 900; color: #1e293b;">--</div>
             </div>
             <!-- CEAD: Completitud -->
@@ -152,12 +152,12 @@
         </div>
     </div>
 
-    <!-- â•â•â• SECCIÃ“N: CONJUNTO â•â•â• -->
+    <!-- â•â•â• SECCIÓN: CONJUNTO â•â•â• -->
     <div style="margin-bottom: 2rem;">
         <div
             style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; border-bottom: 2px solid #0ea5e9; padding-bottom: 8px;">
             <div style="width: 10px; height: 10px; background: #0ea5e9; border-radius: 50%;"></div>
-            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #1e293b;">EvaluaciÃ³n del Conjunto</h3>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #1e293b;">Evaluación del Conjunto</h3>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
@@ -168,7 +168,7 @@
                 <div
                     style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
                     Latencia STOP</div>
-                <div id="v25_lat_stop" style="font-size: 1.4rem; font-weight: 900; color: #1e293b;">-- dÃ­as</div>
+                <div id="v25_lat_stop" style="font-size: 1.4rem; font-weight: 900; color: #1e293b;">-- días</div>
             </div>
             <!-- Latencia CEAD -->
             <div class="card" style="padding: 1.25rem; text-align: center;">
@@ -177,7 +177,7 @@
                 <div
                     style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
                     Latencia CEAD</div>
-                <div id="v25_lat_cead" style="font-size: 1.4rem; font-weight: 900; color: #1e293b;">-- dÃ­as</div>
+                <div id="v25_lat_cead" style="font-size: 1.4rem; font-weight: 900; color: #1e293b;">-- días</div>
             </div>
             <!-- Cobertura Cruzada -->
             <div class="card" style="padding: 1.25rem; text-align: center;">
@@ -194,7 +194,7 @@
             <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
                 <thead>
                     <tr style="border-bottom: 2px solid #e2e8f0;">
-                        <th style="text-align: left; padding: 8px 12px; color: #64748b; font-weight: 700;">MÃ©trica</th>
+                        <th style="text-align: left; padding: 8px 12px; color: #64748b; font-weight: 700;">Métrica</th>
                         <th style="text-align: center; padding: 8px 12px; color: #3b82f6; font-weight: 700;">STOP</th>
                         <th style="text-align: center; padding: 8px 12px; color: #8b5cf6; font-weight: 700;">CEAD</th>
                         <th style="text-align: center; padding: 8px 12px; color: #0ea5e9; font-weight: 700;">Veredicto
@@ -212,21 +212,21 @@
 
     <!-- Disclaimer -->
     <div style="padding: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-style: italic;">
-        Esta auditorÃ­a verifica que los datasets cargados en memoria presenten integridad suficiente para sustentar los
-        modelos de tendencia y las comparaciones estadÃ­sticas.
+        Esta auditoría verifica que los datasets cargados en memoria presenten integridad suficiente para sustentar los
+        modelos de tendencia y las comparaciones estadísticas.
         Puntuaciones menores al 70% invalidan las proyecciones de largo plazo.
     </div>
 </div>
 
 
-<!-- Nota MetodolÃ³gica -->
+<!-- Nota Metodológica -->
 <div class="row" style="margin-top: 2rem;">
     <div
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota MetodolÃ³gica:</strong> La <strong>completitud</strong> se calcula comparando los periodos cargados
-        vs. los esperados dentro del rango real del dataset (primera a Ãºltima fecha, no un valor fijo). Los
+        <strong>Nota Metodológica:</strong> La <strong>completitud</strong> se calcula comparando los periodos cargados
+        vs. los esperados dentro del rango real del dataset (primera a última fecha, no un valor fijo). Los
         <strong>outliers</strong> se detectan mediante Z-Score (|Z| > 5) sobre las series totales. La
-        <strong>latencia</strong> indica dÃ­as desde el Ãºltimo dato disponible. El <strong>score global</strong> pondera
+        <strong>latencia</strong> indica días desde el último dato disponible. El <strong>score global</strong> pondera
         35% completitud STOP, 30% completitud CEAD, 20% ausencia de outliers y 15% ausencia de gaps en ambas fuentes.
     </div>
 </div>
@@ -266,7 +266,7 @@
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = comuna);
 
         // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-        // AUDITORÃA STOP
+        // AUDITORÍA STOP
         // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         let stopScore = 0;
         let stopOutliers = 0;
@@ -294,7 +294,7 @@
             const numWeeks = weekSet.size;
             const numCrimes = crimeSet.size;
 
-            // Completitud dinÃ¡mica: rango real entre primera y Ãºltima semana
+            // Completitud dinámica: rango real entre primera y última semana
             const sortedW = [...weekSet].sort((a, b) => a - b);
             const expectedWeeks = sortedW.length > 1 ? (sortedW[sortedW.length - 1] - sortedW[0] + 1) : Math.max(numWeeks, 1);
             const completionStop = Math.min(100, (numWeeks / expectedWeeks) * 100);
@@ -324,7 +324,7 @@
                 const lastWeek = totalHist.reduce((max, r) => Math.max(max, r[idKey] || 0), 0);
                 const lastRow = totalHist.find(r => r[idKey] === lastWeek);
                 if (lastRow) {
-                    const yr = lastRow['aÃ±o'] || lastRow.anio;
+                    const yr = lastRow['año'] || lastRow.anio;
                     const wk = lastRow['semana_numero'];
                     if (yr && wk) {
                         // Approximate: week * 7 days from Jan 1
@@ -346,7 +346,7 @@
                 ? '<span style="color:#10b981; font-weight:700;">0 gaps â€” Serie continua âœ“</span>'
                 : `<span style="color:#f59e0b; font-weight:700;">${stopGaps} semanas faltantes</span><br><span style="font-size:0.75rem;color:#94a3b8;">${gaps.slice(0, 3).join(' Â· ')}${gaps.length > 3 ? ' â€¦' : ''}</span>`;
             document.getElementById('v25_stop_outliers').innerHTML = stopOutliers === 0
-                ? '<span style="color:#10b981; font-weight:700;">0 â€” Sin anomalÃ­as âœ“</span>'
+                ? '<span style="color:#10b981; font-weight:700;">0 â€” Sin anomalías âœ“</span>'
                 : `<span style="color:#f59e0b; font-weight:700;">${stopOutliers} valores extremos</span>`;
 
             const stopBadge = document.getElementById('v25_stop_badge');
@@ -367,7 +367,7 @@
         }
 
         // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-        // AUDITORÃA CEAD
+        // AUDITORÍA CEAD
         // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         let ceadScore = 0;
         let ceadOutliers = 0;
@@ -394,7 +394,7 @@
             const numPeriods = periodSet.size;
             const numCrimesC = crimeSetC.size;
 
-            // Completitud dinÃ¡mica: meses entre primer y Ãºltimo periodo real
+            // Completitud dinámica: meses entre primer y último periodo real
             const sortedP = [...periodSet].sort((a, b) => a - b);
             const firstP = sortedP[0], lastP = sortedP[sortedP.length - 1];
             const expectedPeriods = sortedP.length > 1
@@ -445,7 +445,7 @@
                 ? '<span style="color:#10b981; font-weight:700;">0 gaps â€” Serie continua âœ“</span>'
                 : `<span style="color:#f59e0b; font-weight:700;">${ceadGaps} meses faltantes</span><br><span style="font-size:0.75rem;color:#94a3b8;">${gaps.slice(0, 3).join(' Â· ')}${gaps.length > 3 ? ' â€¦' : ''}</span>`;
             document.getElementById('v25_cead_outliers').innerHTML = ceadOutliers === 0
-                ? '<span style="color:#10b981; font-weight:700;">0 â€” Sin anomalÃ­as âœ“</span>'
+                ? '<span style="color:#10b981; font-weight:700;">0 â€” Sin anomalías âœ“</span>'
                 : `<span style="color:#f59e0b; font-weight:700;">${ceadOutliers} valores extremos</span>`;
 
             const ceadBdg = document.getElementById('v25_cead_badge');
@@ -466,15 +466,15 @@
         }
 
         // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-        // EVALUACIÃ“N DEL CONJUNTO
+        // EVALUACIÓN DEL CONJUNTO
         // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
         const activeSources = (hasStop ? 1 : 0) + (hasCead ? 1 : 0);
         document.getElementById('v25_sources_active').textContent = `${activeSources}/2`;
         document.getElementById('v25_sources_active').style.color = activeSources === 2 ? '#10b981' : '#f59e0b';
 
-        document.getElementById('v25_lat_stop').textContent = hasStop ? `${stopLatDays} dÃ­as` : 'N/D';
+        document.getElementById('v25_lat_stop').textContent = hasStop ? `${stopLatDays} días` : 'N/D';
         document.getElementById('v25_lat_stop').style.color = (typeof stopLatDays === 'number' && stopLatDays < 15) ? '#10b981' : '#f59e0b';
-        document.getElementById('v25_lat_cead').textContent = hasCead ? `${ceadLatDays} dÃ­as` : 'N/D';
+        document.getElementById('v25_lat_cead').textContent = hasCead ? `${ceadLatDays} días` : 'N/D';
         document.getElementById('v25_lat_cead').style.color = (typeof ceadLatDays === 'number' && ceadLatDays < 45) ? '#10b981' : '#f59e0b';
 
         // Health Score: 35% STOP + 30% CEAD + 20% outlier penalty + 15% gap penalty
@@ -494,7 +494,7 @@
         else if (health > 80) gradeEl.textContent = 'GRADO B â€” Bueno';
         else if (health > 70) gradeEl.textContent = 'GRADO C â€” Aceptable';
         else if (health > 50) gradeEl.textContent = 'GRADO D â€” Deficiente';
-        else gradeEl.textContent = 'GRADO F â€” CrÃ­tico';
+        else gradeEl.textContent = 'GRADO F â€” Crítico';
         gradeEl.style.color = hEl.style.color;
 
         // Summary table
@@ -511,7 +511,7 @@
             ['Completitud', fmt(stopScore), fmt(ceadScore), verdict((stopScore + ceadScore) / 2, 85, 60)],
             ['Outliers', fmtN(stopOutliers), fmtN(ceadOutliers), verdict(100 - totalOutliers * 10, 90, 70)],
             ['Gaps (periodos sin datos)', fmtN(stopGaps), fmtN(ceadGaps), verdict(100 - (stopGaps + ceadGaps) * 2, 90, 70)],
-            ['Latencia (dÃ­as)', fmtN(stopLatDays), fmtN(ceadLatDays), verdict(typeof stopLatDays === 'number' ? 100 - stopLatDays : 0, 85, 50)],
+            ['Latencia (días)', fmtN(stopLatDays), fmtN(ceadLatDays), verdict(typeof stopLatDays === 'number' ? 100 - stopLatDays : 0, 85, 50)],
         ];
 
         document.getElementById('v25_summary_table').innerHTML = rows.map(([label, vStop, vCead, verd]) => `
@@ -526,13 +526,13 @@
         // Diagnostic text
         const desc = document.getElementById('v25_health_desc');
         if (health > 90) {
-            desc.textContent = `Ambas fuentes presentan integridad excepcional (${activeSources}/2 activas, ${totalOutliers} outliers). Los modelos predictivos operan con mÃ¡xima confianza estadÃ­stica.`;
+            desc.textContent = `Ambas fuentes presentan integridad excepcional (${activeSources}/2 activas, ${totalOutliers} outliers). Los modelos predictivos operan con máxima confianza estadística.`;
             desc.parentElement.className = 'alert alert--success';
         } else if (health > 70) {
-            desc.textContent = `Integridad aceptable (${activeSources}/2 fuentes, ${stopGaps + ceadGaps} gaps, ${totalOutliers} outliers). PrecisiÃ³n marginal reducida en proyecciones largas.`;
+            desc.textContent = `Integridad aceptable (${activeSources}/2 fuentes, ${stopGaps + ceadGaps} gaps, ${totalOutliers} outliers). Precisión marginal reducida en proyecciones largas.`;
             desc.parentElement.className = 'alert alert--warning';
         } else {
-            desc.textContent = `Integridad comprometida. ${!hasStop ? 'STOP no disponible. ' : ''}${!hasCead ? 'CEAD no disponible. ' : ''}${totalOutliers} outliers y ${stopGaps + ceadGaps} gaps detectados. Cautela en interpretaciÃ³n de modelos.`;
+            desc.textContent = `Integridad comprometida. ${!hasStop ? 'STOP no disponible. ' : ''}${!hasCead ? 'CEAD no disponible. ' : ''}${totalOutliers} outliers y ${stopGaps + ceadGaps} gaps detectados. Cautela en interpretación de modelos.`;
             desc.parentElement.className = 'alert alert--danger';
         }
 

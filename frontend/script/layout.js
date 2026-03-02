@@ -145,6 +145,46 @@ function renderSidebar(containerId = "sidebarContainer") {
     };
 
     const isLicitacionModule = window.location.pathname.includes('/licitaciones/');
+    const isTransparenciaModule = window.location.pathname.includes('/transparencia/');
+
+    if (isTransparenciaModule) {
+        const transBase = "/ALGARROBO_BASE/frontend/division/transparencia/admin_general/index/";
+        container.innerHTML = `
+        <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 h-screen sticky top-0 hidden lg:block overflow-y-auto font-['Outfit']">
+            <nav class="p-4">
+                <div class="mb-8 px-3">
+                    <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Módulo Especializado</p>
+                    <h2 class="text-xl font-bold text-gray-800">Transparencia</h2>
+                </div>
+
+                <ul class="space-y-1">
+                    <li>
+                        <a href="${transBase}landing_transparencia.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('landing_transparencia.html') || window.location.pathname.endsWith('landing_transparencia.html') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 hover:bg-gray-100'}">
+                            <i class="fas fa-home w-5 text-center"></i>
+                            <span class="font-medium">Inicio</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${transBase}remuneracion_bruta.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('remuneracion_bruta.html') || window.location.pathname.includes('/remuneracion/') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 hover:bg-gray-100'}">
+                            <i class="fas fa-wallet w-5 text-center"></i>
+                            <span class="font-medium">Remuneraciones</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${transBase}rutUnico.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('rutUnico.html') || window.location.pathname.includes('/persona/') || window.location.pathname.includes('/registro/') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-600 hover:bg-gray-100'}">
+                            <i class="fas fa-users w-5 text-center"></i>
+                            <span class="font-medium">Personas</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="mt-10 pt-6 border-t border-gray-100">
+                    <p class="px-3 text-[10px] font-medium text-gray-400 uppercase">Sistema de Transparencia v1.0</p>
+                </div>
+            </nav>
+        </aside>`;
+        return;
+    }
 
     if (isLicitacionModule) {
         const licBase = "/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/";

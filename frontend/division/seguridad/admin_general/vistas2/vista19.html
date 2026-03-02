@@ -78,7 +78,7 @@
         <div>
             <h4
                 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px;">
-                Alertas CrÃ­ticas</h4>
+                Alertas Críticas</h4>
             <div id="v24_critical_alerts" style="display: flex; flex-direction: column; gap: 10px;">
                 <!-- Filled by JS -->
             </div>
@@ -97,13 +97,13 @@
     <div
         style="margin-top: 4rem; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #e2e8f0; padding-top: 2rem;">
         <div style="font-size: 0.75rem; color: #94a3b8;">
-            Generado automÃ¡ticamente por el Sistema Integrado de Seguridad<br>
+            Generado automáticamente por el Sistema Integrado de Seguridad<br>
             Fuente: Carabineros de Chile (STOP) | Fecha Gen: <span id="v24_gen_date">--/--/--</span>
         </div>
         <div style="text-align: center;">
             <div style="width: 200px; border-bottom: 1px solid #1e293b; margin-bottom: 5px;"></div>
-            <div style="font-size: 0.85rem; font-weight: 800; color: #1e293b;">DIRECCIÃ“N DE SEGURIDAD</div>
-            <div style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;">AprobaciÃ³n de
+            <div style="font-size: 0.85rem; font-weight: 800; color: #1e293b;">DIRECCIÓN DE SEGURIDAD</div>
+            <div style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Aprobación de
                 Mando</div>
         </div>
     </div>
@@ -111,12 +111,12 @@
 </div>
 
 
-<!-- Nota MetodolÃ³gica -->
+<!-- Nota Metodológica -->
 <div class="row" style="margin-top: 2rem;">
     <div
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota MetodolÃ³gica:</strong> Esta vista presenta un anÃ¡lisis detallado de <strong>Reporte
-            Ejecutivo</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratÃ©gicas
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Reporte
+            Ejecutivo</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
         basadas en evidencia.
     </div>
 </div>
@@ -173,7 +173,7 @@
         const status = document.getElementById('v24_status_badge');
 
         if (delta > 15) {
-            status.textContent = 'STATUS: CRÃTICO';
+            status.textContent = 'STATUS: CRÍTICO';
             status.style.background = '#fef2f2';
             status.style.color = '#ef4444';
             status.style.border = '2px solid #ef4444';
@@ -201,8 +201,8 @@
 
         findingsList.innerHTML = [
             `El volumen total de delitos registra un comportamiento ${delta > 0 ? 'al alza' : 'a la baja'} respecto a la semana anterior.`,
-            `La tipologÃ­a con mayor impacto esta semana es <strong>${topCrimes[0]?.[C.DELITO] || '--'}</strong> con ${topCrimes[0]?.[C.CASOS_ACTUAL] || 0} casos.`,
-            `La comuna ocupa la posiciÃ³n <strong>${rank}</strong> en el ranking regional proyectado anual.`
+            `La tipología con mayor impacto esta semana es <strong>${topCrimes[0]?.[C.DELITO] || '--'}</strong> con ${topCrimes[0]?.[C.CASOS_ACTUAL] || 0} casos.`,
+            `La comuna ocupa la posición <strong>${rank}</strong> en el ranking regional proyectado anual.`
         ].map(txt => `<div style="display: flex; gap: 10px; align-items: baseline; font-size: 1rem; color: #1e293b;"><i class="fa-solid fa-circle-check" style="color:#3b82f6; font-size:0.8rem;"></i> <span>${txt}</span></div>`).join('');
 
         // Alerts
@@ -215,7 +215,7 @@
                 </div>
             `).join('');
         } else {
-            alertsContainer.innerHTML = '<div style="font-size:0.85rem; color:#64748b;">No se detectan anomalÃ­as crÃ­ticas especÃ­ficas.</div>';
+            alertsContainer.innerHTML = '<div style="font-size:0.85rem; color:#64748b;">No se detectan anomalías críticas específicas.</div>';
         }
 
         // Mini Trend Chart

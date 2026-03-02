@@ -109,8 +109,8 @@
         <main class="flex-1 p-6">
             <div class="mb-6 flex justify-between items-center">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Mapa 2: AnÃ¡lisis Territorial</h2>
-                    <p class="text-gray-600 text-sm">DistribuciÃ³n de proyectos y montos por sector</p>
+                    <h2 class="text-2xl font-bold text-gray-800">Mapa 2: Análisis Territorial</h2>
+                    <p class="text-gray-600 text-sm">Distribución de proyectos y montos por sector</p>
                 </div>
                 <div class="bg-indigo-100 px-4 py-2 rounded-lg">
                     <span class="text-indigo-700 font-bold" id="totalFilteredMonto">$0</span>
@@ -121,7 +121,7 @@
             <!-- Filtros en Cascada -->
             <div class="glass-panel rounded-xl p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">ÃREA</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">ÁREA</label>
                     <select id="filter-area" class="filter-select" onchange="handleFilterChange('area')">
                         <option value="all">Todas</option>
                     </select>
@@ -140,14 +140,14 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">AÃ‘O ELAB.</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">AÑO ELAB.</label>
                     <select id="filter-anno_elaboracion" class="filter-select"
                         onchange="handleFilterChange('anno_elaboracion')">
                         <option value="all">Todos</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">AÃ‘O EJEC.</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">AÑO EJEC.</label>
                     <select id="filter-anno_ejecucion" class="filter-select"
                         onchange="handleFilterChange('anno_ejecucion')">
                         <option value="all">Todos</option>
@@ -202,7 +202,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="sectorTableBody">
-                                    <!-- Se llenarÃ¡ dinÃ¡micamente -->
+                                    <!-- Se llenará dinámicamente -->
                                 </tbody>
                             </table>
                         </div>
@@ -256,7 +256,7 @@
 
         async function fetchProjects() {
             try {
-                // api.js ya gestiona la baseURL y el token de autenticaciÃ³n
+                // api.js ya gestiona la baseURL y el token de autenticación
                 allProjects = await api.get('/proyectos');
                 filteredProjects = [...allProjects];
             } catch (error) {
@@ -276,7 +276,7 @@
                 const select = document.getElementById(`filter-${filterKey}`);
                 const currentValue = select.value;
 
-                // Filtramos los proyectos usando TODOS LOS DEMÃS filtros para ver quÃ© opciones quedan disponibles para ESTE filtro
+                // Filtramos los proyectos usando TODOS LOS DEMÁS filtros para ver qué opciones quedan disponibles para ESTE filtro
                 const otherFiltersActive = { ...currentFilters };
                 delete otherFiltersActive[filterKey];
 
@@ -288,7 +288,7 @@
 
                 const options = [...new Set(availableProjects.map(p => p[dataKey]).filter(v => v))].sort();
 
-                // Preservar la opciÃ³n "Todos"
+                // Preservar la opción "Todos"
                 select.innerHTML = '<option value="all">Todos / Todas</option>';
                 options.forEach(opt => {
                     const el = document.createElement('option');
@@ -297,7 +297,7 @@
                     select.appendChild(el);
                 });
 
-                // Mantener selecciÃ³n si sigue siendo vÃ¡lida, si no, resetear a 'all'
+                // Mantener selección si sigue siendo válida, si no, resetear a 'all'
                 if (options.includes(currentValue)) {
                     select.value = currentValue;
                 } else {
@@ -362,7 +362,7 @@
         function updateTable() {
             const sectors = {};
             filteredProjects.forEach(p => {
-                // Normalizar sector para evitar duplicados por mayÃºsculas/minÃºsculas
+                // Normalizar sector para evitar duplicados por mayúsculas/minúsculas
                 let rawSector = p.sector_nombre || 'Sin Sector';
                 const sector = rawSector.charAt(0).toUpperCase() + rawSector.slice(1).toLowerCase();
 
