@@ -1,11 +1,11 @@
-<!-- Vista 10: Comparativo Regional (STOP) -->
+<!-- Vista 13: Clúster de Comunas Similares -->
 <div class="card mb-lg">
     <div class="location-source-row"
         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
         <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-            <i class="fa-solid fa-map"></i> <span class="comuna-fill">CARGANDO...</span>
+            <i class="fa-solid fa-users-rays"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-            <span class="region-fill">CONTEXTO REGIONAL</span>
+            <span>CLÚSTER SOCIO-DEMOGRÁFICO</span>
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
@@ -14,299 +14,387 @@
         style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
             border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            ¿Cómo nos posicionamos frente a nuestra región?
+            ¿Cómo estamos respecto de nuestros pares?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Comparación de tasas
-            delictuales ajustadas por población contra el promedio regional y análisis de posición en ranking.</p>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Comparativo directo con
+            comunas similares.</p>
     </div>
 
     <div class="alert alert--info" style="margin-top: 1.5rem;">
-        <strong>🤖 Análisis de Situación:</strong> <span id="v10_ia_analysis">Cargando análisis...</span>
+        <strong>🤖 Análisis de Situación:</strong> <span id="v13_ia_analysis">Cargando análisis...</span>
     </div>
 
-    <div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
-        <!-- Relative Position Gauge -->
-        <div class="card"
-            style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-            <h4
-                style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
-                Posición Relativa Regional</h4>
-            <div style="position: relative; width: 220px; height: 110px;">
-                <canvas id="v10_chart_gauge"></canvas>
-                <div id="v10_gauge_val"
-                    style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 2.2rem; font-weight: 950; color: #1e293b;">
-                    --%</div>
+    <!-- Cluster Performance KPIs -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">CLÚSTER POBLACIONAL
             </div>
-            <p style="margin: 1rem 0 0 0; font-size: 0.85rem; color: #475569; font-weight: 600;" id="v10_gauge_label">
-                Cargando ranking...</p>
+            <div id="v13_cluster_name" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">Rango: -- a -- hab.
+            </div>
         </div>
-
-        <!-- Regional Trend and KPIs -->
-        <div style="display: grid; grid-template-rows: auto 1fr auto; gap: 1rem;">
-            <div style="display: flex; gap: 1rem;">
-                <div class="card" style="flex: 1; padding: 1.25rem; border-left: 4px solid #3b82f6;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">RANKING
-                        REGIONAL</div>
-                    <div style="display: flex; align-items: baseline; gap: 8px;">
-                        <span id="v10_rank_val" style="font-size: 2rem; font-weight: 900; color: #1e293b;">--</span>
-                        <span id="v10_rank_total" style="font-size: 0.9rem; font-weight: 600; color: #94a3b8;">/
-                            --</span>
-                    </div>
-                </div>
-                <div class="card" style="flex: 1; padding: 1.25rem; border-left: 4px solid #10b981;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">TENDENCIA
-                        RANKING</div>
-                    <div id="v10_rank_trend"
-                        style="font-size: 1.2rem; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-minus"></i> ESTABLE
-                    </div>
-                </div>
+        <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">POSICIÓN EN CLÚSTER
             </div>
-
-            <div class="card" style="padding: 1.25rem; background: #f8fafc;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; font-weight: 800; color: #1e293b;">Comparativo de
-                        Tasas (x 100k)</h4>
-                    <i class="fa-solid fa-circle-info" style="color: #94a3b8; font-size: 0.8rem;"
-                        title="Tasa de casos por cada 100.000 habitantes. Permite comparar la violencia real independientemente del tamaño poblacional."></i>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">Tasa Comunal</div>
-                        <div style="font-weight: 900; color: #1e293b;" id="v10_tasa_com">--</div>
-                    </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
-                        <div id="v10_bar_com"
-                            style="height: 100%; width: 0%; background: #3b82f6; transition: width 1s;"></div>
-                    </div>
-
-                    <div
-                        style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top: 5px;">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">Promedio Regional</div>
-                        <div style="font-weight: 900; color: #64748b;" id="v10_tasa_reg">--</div>
-                    </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
-                        <div id="v10_bar_reg"
-                            style="height: 100%; width: 0%; background: #94a3b8; transition: width 1s;"></div>
-                    </div>
-                </div>
-                <div style="margin-top: 10px; font-size: 0.7rem; color: #64748b; font-style: italic;">
-                    * Normalizado por población residente (Ine)
-                </div>
+            <div id="v13_cluster_rank" style="font-size: 1.5rem; font-weight: 900; color: #1e293b;">-- de --
             </div>
-
-            <!-- Infografía Comunal -->
-            <div id="v10_infografia" class="card"
-                style="padding: 1rem; background: #fff; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
-                        Posición vs Regional</div>
-                    <div id="v10_info_status" style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">--</div>
-                </div>
-                <div id="v10_info_icon" style="font-size: 1.5rem; color: #cbd5e1;">
-                    <i class="fa-solid fa-scale-balanced"></i>
-                </div>
+        </div>
+        <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">ESTADO VS CLÚSTER
+            </div>
+            <div id="v13_cluster_status" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">
+                Calculando...
             </div>
         </div>
     </div>
-</div>
 
-
-<div class="row" style="margin-top: 2rem;">
+    <!-- Temporal Comparisons Title -->
     <div
-        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota Metodológica:</strong> Análisis de posición relativa (Ranking) basado en la semana policial actual
-        versus la semana anterior. Las tasas están ajustadas por cada 100.000 habitantes. Un ranking más bajo (cercano a
-        1) indica mayor criticidad.
+        style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px;">
+        <i class="fa-solid fa-clock-rotate-left"></i> Referencial Temporal en Clúster
     </div>
-</div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 2rem;">
+        <div id="v13_rank_prev_container" class="card" style="transition: all 0.3s ease;"></div>
+        <div id="v13_rank_lastyear_container" class="card" style="transition: all 0.3s ease;"></div>
+        <div id="v13_rank_acum_container" class="card" style="transition: all 0.3s ease;"></div>
+    </div>
 
-<script>
-    (async function initVista10_V2() {
-        const waitForData = () => {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
-                    else setTimeout(check, 100);
-                };
-                check();
-            });
-        };
+    <!-- Ranking Evolution Chart -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-arrow-trend-up" style="color: #4f46e5;"></i> Evolución de Posición en el
+                Clúster</span>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Histórico 12 Semanas (Rank 1 = Mayor
+                Tasa)</div>
+        </h3>
+        <div class="chart-wrapper" style="height: 380px;">
+            <canvas id="v13_chart_rank_history"></canvas>
+        </div>
+    </div>
 
-        await waitForData();
-        const S = window.STATE_DATA;
-        const C = window.COLS;
+    <!-- Cluster Historical Matrix -->
+    <div class="card atomic-block" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h4
+            style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
+            <span>Matriz de Riesgo Histórica (Ranking Clúster)</span>
+            <span style="font-size: 0.7rem; font-weight: 600; color: #64748b;">COLOR = POSICIÓN EN
+                CLÚSTER</span>
+        </h4>
+        <div id="v13_heatmap_years" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+            <!-- Filled by JS -->
+        </div>
+    </div>
 
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
-        document.querySelectorAll('.region-fill').forEach(el => el.textContent = S.regionName || 'Región Metropolitana');
+    <!-- Nota Metodológica Estandarizada -->
+    <div class="row" style="margin-top: 2rem;">
+        <div
+            style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1.25rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.6;">
+            <strong>Nota Metodológica:</strong> El análisis por <strong>Clúster</strong> constituye el estándar superior
+            de evaluación institucional, superando el sesgo poblacional de las comparativas regionales tradicionales. Al
+            agrupar las comunas según tramos de población similares, este modelo normaliza variables críticas como
+            presupuestos operativos, infraestructura urbana y desafíos estructurales compartidos. Estar en los últimos
+            lugares del clúster indica una brecha de gestión relativa que no puede atribuirse al contexto país, ya que
+            sus pares enfrentan desafíos similares. Esta vista permite evaluar si los patrones son estacionales o
+            sistémicos dentro de su grupo par.
+        </div>
+    </div>
 
-        // Data calculation - Fetch total communes in the region from official count JSON
-        let totalComunas = 52; // Fallback
-        try {
-            const conteoRes = await fetch('data/comunas/data_comuna_conteo.json');
-            if (conteoRes.ok) {
-                const conteoData = await conteoRes.json();
-                const miConteo = conteoData.find(c => c.codcom == S.codcom);
-                if (miConteo && miConteo.comunas) {
-                    totalComunas = miConteo.comunas;
-                    LOG.info(`📍 Vista 10: Total Regional detectado: ${totalComunas} comunas.`);
+    <script>
+        (async function initVista13_V2() {
+            const waitForData = () => {
+                return new Promise((resolve) => {
+                    const check = () => {
+                        if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                        else setTimeout(check, 100);
+                    };
+                    check();
+                });
+            };
+
+            await waitForData();
+            const S = window.STATE_DATA;
+            const C = window.COLS;
+
+            document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+            // Date Display
+            const dateEl = document.getElementById('v13_date_display');
+            if (dateEl) {
+                const d = S.semanaDetalle || `Semana ${S.currentSemana}`;
+                const y = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.ANIO] || new Date().getFullYear();
+                dateEl.textContent = `${d} (${y})`;
+            }
+
+            // Cluster and Population Logic
+            const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 2.5;
+            const poblacion = Math.round(factorPob * 100000);
+
+            // Define Cluster (User Request Step 835)
+            // Try to get from data, else calc
+            const currentRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+            let clusterText = currentRow[C.CLASE_POBLACION];
+
+            if (!clusterText) {
+                if (poblacion > 100000) clusterText = 'Más de 100.000';
+                else if (poblacion >= 50000) clusterText = 'Entre 50.000 y 100.000';
+                else if (poblacion >= 20000) clusterText = 'Entre 20.000 y 50.000';
+                else if (poblacion >= 5000) clusterText = 'Entre 5.000 y 20.000';
+                else if (poblacion >= 1000) clusterText = 'Entre 1.000 y 5.000';
+                else clusterText = 'Menos de 1.000';
+            }
+
+            document.getElementById('v13_cluster_name').textContent = clusterText;
+
+            // Map back to ranges for Chart Axis
+            let low = 0, high = 2000000;
+            switch (clusterText) {
+                case 'Más de 100.000': low = 100000; high = Math.max(2000000, poblacion * 1.5); break; // Santiago!
+                case 'Entre 50.000 y 100.000': low = 50000; high = 100000; break;
+                case 'Entre 20.000 y 50.000': low = 20000; high = 50000; break;
+                case 'Entre 5.000 y 20.000': low = 5000; high = 20000; break;
+                case 'Entre 1.000 y 5.000': low = 1000; high = 5000; break;
+                case 'Menos de 1.000': low = 0; high = 1000; break;
+                default: low = 0; high = 100000; // Fallback
+            }
+
+            // Mock Cluster Rank (Using RANK_CLUSTER_PROY if Available)
+            const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+
+            console.log("🛠️ [V13 Debug] Mapping C.RANK_CLUSTER_SEM:", C.RANK_CLUSTER_SEM);
+            console.log("🛠️ [V13 Debug] Valor en totalRow:", totalRow[C.RANK_CLUSTER_SEM]);
+
+            let rawRank = totalRow[C.RANK_CLUSTER_SEM];
+            let cRank = (rawRank === 999 || !rawRank) ? '--' : rawRank;
+
+            // Dynamic look-up for Cluster Total from Config
+            const clusterTotals = S.clusterConfig || {};
+            const cTotal = clusterTotals[clusterText] || 30; // Fallback to 30 if key missing
+
+            console.log("🛠️ [V13 Debug] Cluster:", clusterText, "| Total en Config:", cTotal);
+
+            document.getElementById('v13_cluster_rank').textContent = cRank === '--' ? '--' : `${cRank} de ${cTotal}`;
+
+            const statusEl = document.getElementById('v13_cluster_status');
+            if (cRank === '--') {
+                statusEl.textContent = 'SIN DATOS';
+                statusEl.style.color = '#94a3b8';
+            } else {
+                const cPct = cRank / cTotal;
+                if (cPct < 0.3) { statusEl.textContent = 'PEOR DEL CLÚSTER'; statusEl.style.color = '#ef4444'; }
+                else if (cPct > 0.7) { statusEl.textContent = 'LÍDER DE SEGURIDAD'; statusEl.style.color = '#10b981'; }
+                else { statusEl.textContent = 'DESEMPEÑO PROMEDIO'; statusEl.style.color = '#64748b'; }
+            }
+
+            // --- Temporal Logic Implementation ---
+            // Prev Week
+            const prevRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1));
+            const rawRankPrev = prevRow ? prevRow[C.RANK_CLUSTER_SEM] : null;
+            const rankPrev = (rawRankPrev === 999 || !rawRankPrev) ? '--' : rawRankPrev;
+
+            // Last Year
+            const currentYear = totalRow[C.ANIO];
+            const currentWeekNum = totalRow[C.SEMANA_ANO];
+            const lastYearRow = S.allDataHistory_total.find(r => r[C.ANIO] == (currentYear - 1) && r[C.SEMANA_ANO] == currentWeekNum);
+            const rawRankLY = lastYearRow ? lastYearRow[C.RANK_CLUSTER_SEM] : null;
+            const rankLastYear = (rawRankLY === 999 || !rawRankLY) ? '--' : rawRankLY;
+
+            // Acumulado
+            const rankAcum = totalRow[C.RANK_CLUSTER_ACUM] || '--';
+
+            const renderRefCardV13 = (id, label, pastRank, currentRank, icon, tooltip) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                const isDataReady = pastRank !== '--' && currentRank !== '--' && pastRank !== null;
+                const diff = isDataReady ? (currentRank - pastRank) : 0; // Rank 1 = Worst. 5 -> 10 = Improvement. 10 - 5 = +5.
+
+                let color = '#94a3b8';
+                let bg = '#f8fafc';
+                let labelStatus = 'ESTABLE';
+                let iconStatus = 'fa-minus';
+
+                if (!isDataReady) {
+                    labelStatus = 'SIN DATOS';
+                } else if (diff > 0) { // Moving away from Rank 1 (e.g. 5 to 10)
+                    color = '#10b981';
+                    bg = '#f0fdf4';
+                    labelStatus = `MEJORA +${diff}`;
+                    iconStatus = 'fa-arrow-up';
+                } else if (diff < 0) { // Moving towards Rank 1 (e.g. 10 to 5)
+                    color = '#ef4444';
+                    bg = '#fef2f2';
+                    labelStatus = `DETERIORO ${Math.abs(diff)}`;
+                    iconStatus = 'fa-arrow-down';
                 }
-            }
-        } catch (e) {
-            LOG.warn('⚠️ Vista 10: No se pudo cargar data_comuna_conteo, usando fallback 52.', e);
-        }
 
-        // Asumiendo que 1 = PEOR (Más delitos)
-        const currentRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.RANK_REG_PROY] || Math.round(totalComunas / 2);
-        const prevRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1))?.[C.RANK_REG_PROY] || currentRank;
+                el.title = tooltip;
+                el.style.borderTop = `4px solid ${color}`;
+                el.style.background = bg;
+                el.style.padding = '1rem';
+                el.style.display = 'flex';
+                el.style.flexDirection = 'column';
+                el.style.alignItems = 'center';
+                el.style.gap = '8px';
 
-        // Gauge mide "Gravedad Relativa": 100% = Rank 1 (Peor), 0% = Rank 52 (Mejor)
-        // Invertimos la lógica visual para que "Alto" sea "Malo"
-        const severityPct = totalComunas > 1
-            ? ((totalComunas - currentRank) / (totalComunas - 1) * 100)
-            : 50;
+                el.innerHTML = `
+                    <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <i class="fa-solid ${icon}"></i> ${label}
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2px 0;">
+                        <div style="text-align: center;">
+                            <span style="display: block; font-size: 0.55rem; color: #94a3b8; font-weight: 700;">ANTES</span>
+                            <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 600;">${pastRank}${isDataReady ? '°' : ''}</span>
+                        </div>
+                        <i class="fa-solid fa-right-long" style="color: #cbd5e1; font-size: 0.8rem; margin-top: 8px;"></i>
+                        <div style="text-align: center;">
+                            <span style="display: block; font-size: 0.55rem; color: var(--color-primary); font-weight: 700;">HOY</span>
+                            <span style="font-size: 1.4rem; color: #1e293b; font-weight: 900; line-height: 1;">${currentRank}°</span>
+                        </div>
+                    </div>
+                    <div style="background: ${color}; color: white;     font-size: 0.6rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.02em;">
+                        <i class="fa-solid ${iconStatus}"></i> ${labelStatus}
+                    </div>
+                `;
+            };
 
-        // STOP Ranking by Rate Integration (ranking_regional_tasa_sem)
-        const rankTasaSem = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.RANK_REG_TASA] || null;
-
-        document.getElementById('v10_rank_val').textContent = currentRank;
-        document.getElementById('v10_rank_total').textContent = `/ ${totalComunas}`;
-        document.getElementById('v10_gauge_val').textContent = `${currentRank}°`;
-
-        // Add STOP Rank by Rate indicator
-        if (rankTasaSem) {
-            const rankCard = document.getElementById('v10_rank_val').parentElement.parentElement;
-            rankCard.insertAdjacentHTML('beforeend', `
-                <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-                    <span title="Ranking calculado según Tasa por 100k hab. (Semanal - STOP)"><i class="fa-solid fa-users" style="color:#3b82f6; margin-right:4px;"></i> Rank Tasa Semanal:</span>
-                    <strong style="color: #1e293b; font-size: 0.9rem;">${rankTasaSem}</strong>
-                </div>
-             `);
-        }
-
-        const gLabel = document.getElementById('v10_gauge_label');
-        // Rank 1-10 (Top 20%) es Crítico
-        if (currentRank <= totalComunas * 0.2) {
-            gLabel.textContent = 'CRÍTICO: TOP 20% REGIONAL';
-            gLabel.style.color = '#ef4444'; // Rojo
-        } else if (currentRank <= totalComunas * 0.5) {
-            gLabel.textContent = 'SITUACIÓN MEDIA-ALTA';
-            gLabel.style.color = '#f97316'; // Naranja
-        } else if (currentRank <= totalComunas * 0.8) {
-            gLabel.textContent = 'MEJOR QUE PROMEDIO';
-            gLabel.style.color = '#eab308'; // Amarillo
-        } else {
-            gLabel.textContent = 'ZONA SEGURA (TOP 20% MEJOR)';
-            gLabel.style.color = '#10b981'; // Verde
-        }
-
-        const trendEl = document.getElementById('v10_rank_trend');
-        const diff = currentRank - prevRank;
-
-        // Si diff es negativo (ej. 8 - 10 = -2), bajamos hacia el 1 => EMPEORAMOS
-        if (diff < 0) {
-            trendEl.innerHTML = `<i class="fa-solid fa-arrow-up"></i> SUBIÓ ${Math.abs(diff)} PUESTOS (PEOR)`;
-            trendEl.style.color = '#ef4444'; // Rojo
-        } else if (diff > 0) {
-            // Si diff es positivo (ej. 12 - 10 = +2), subimos hacia el 52 => MEJORAMOS
-            trendEl.innerHTML = `<i class="fa-solid fa-arrow-down"></i> BAJÓ ${diff} PUESTOS (MEJOR)`;
-            trendEl.style.color = '#10b981'; // Verde
-        } else {
-            trendEl.innerHTML = `<i class="fa-solid fa-minus"></i> SIN CAMBIO`;
-            trendEl.style.color = '#64748b';
-        }
-
-        // Tasa comparison - Use pre-calculated rates from production pipeline
-        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-        const tasaCom = (totalRow[C.TASA_SEMANAL] || 0).toFixed(1);
-        const tasaReg = (totalRow[C.TASA_REGIONAL_SEMANAL] || totalRow[C.TASA_REGIONAL] || 0).toFixed(1);
-
-        document.getElementById('v10_tasa_com').textContent = tasaCom;
-        document.getElementById('v10_tasa_reg').textContent = tasaReg;
-
-        const maxTasa = Math.max(parseFloat(tasaCom), parseFloat(tasaReg)) * 1.2;
-
-        // Colores barras: Si tasa comunal > regional -> Rojo, sino Azul
-        const colorCom = parseFloat(tasaCom) > parseFloat(tasaReg) ? '#ef4444' : '#3b82f6';
-
-        // Update bars
-        setTimeout(() => {
-            const barCom = document.getElementById('v10_bar_com');
-            const barReg = document.getElementById('v10_bar_reg');
-            if (barCom) {
-                barCom.style.width = `${(tasaCom / maxTasa * 100)}%`;
-                barCom.style.backgroundColor = colorCom;
-            }
-            if (barReg) barReg.style.width = `${(tasaReg / maxTasa * 100)}%`;
-        }, 300);
-
-        // --- Infografía Logic (User Request) ---
-        // "comunal sobre/bajo 3-5"
-        // Calculate difference percentage relative to region
-        const tComVal = parseFloat(tasaCom);
-        const tRegVal = parseFloat(tasaReg);
-        const diffPct = tRegVal > 0 ? ((tComVal - tRegVal) / tRegVal * 100) : 0;
-
-        const infoStatus = document.getElementById('v10_info_status');
-        const infoIcon = document.getElementById('v10_info_icon');
-        const infoCard = document.getElementById('v10_infografia');
-
-        if (diffPct > 5) {
-            infoStatus.innerHTML = `<span style="color:#ef4444;">SOBRE REGIÓN (>5%)</span>`;
-            infoIcon.innerHTML = `<i class="fa-solid fa-arrow-trend-up" style="color:#ef4444;"></i>`;
-            infoCard.style.borderLeft = "4px solid #ef4444";
-        } else if (diffPct > 3) {
-            infoStatus.innerHTML = `<span style="color:#f97316;">SOBRE REGIÓN (3-5%)</span>`;
-            infoIcon.innerHTML = `<i class="fa-solid fa-angle-up" style="color:#f97316;"></i>`;
-            infoCard.style.borderLeft = "4px solid #f97316";
-        } else if (diffPct < -5) {
-            infoStatus.innerHTML = `<span style="color:#10b981;">BAJO REGIÓN (>5%)</span>`;
-            infoIcon.innerHTML = `<i class="fa-solid fa-arrow_trend-down" style="color:#10b981;"></i>`;
-            infoCard.style.borderLeft = "4px solid #10b981";
-        } else if (diffPct < -3) {
-            infoStatus.innerHTML = `<span style="color:#3b82f6;">BAJO REGIÓN (3-5%)</span>`;
-            infoIcon.innerHTML = `<i class="fa-solid fa-angle-down" style="color:#3b82f6;"></i>`;
-            infoCard.style.borderLeft = "4px solid #3b82f6";
-        } else {
-            infoStatus.innerHTML = `<span style="color:#64748b;">EN PROMEDIO (+/- 3%)</span>`;
-            infoIcon.innerHTML = `<i class="fa-solid fa-minus" style="color:#64748b;"></i>`;
-            infoCard.style.borderLeft = "4px solid #cbd5e1";
-        }
-
-        // --- Semi-Doughnut Gauge Chart ---
-        const gaugeCtx = document.getElementById('v10_chart_gauge').getContext('2d');
-        // Color Gauge: Rojo si es muy grave (High Severity %), Verde si es bajo
-        const gaugeColor = severityPct > 80 ? '#ef4444' : severityPct > 50 ? '#f97316' : '#10b981';
-
-        new Chart(gaugeCtx, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [severityPct, 100 - severityPct],
-                    backgroundColor: [gaugeColor, '#f1f5f9'],
-                    borderWidth: 0,
-                    circumference: 180,
-                    rotation: 270,
-                    borderRadius: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '80%',
-                plugins: { legend: { display: false }, tooltip: { enabled: false } }
-            }
-        });
+            renderRefCardV13('v13_rank_prev_container', 'Semana Anterior', rankPrev, cRank, 'fa-clock', 'Cambio respecto a la semana pasada en el clúster');
+            renderRefCardV13('v13_rank_lastyear_container', 'Misma Sem. Año Ant.', rankLastYear, cRank, 'fa-calendar-check', 'Comparación con el clúster en el mismo periodo del año anterior');
+            renderRefCardV13('v13_rank_acum_container', 'Posición Acumulada', rankAcum, cRank, 'fa-layer-group', 'Posición según total acumulado anual del clúster');
 
 
-        // IA Integration
-        if (typeof IAModule !== 'undefined') {
-            IAModule.getInterpretation('vista10').then(txt => {
-                const el = document.getElementById('v10_ia_analysis');
-                if (el) el.innerHTML = txt;
+            // --- Rank History Chart (User Request Change) ---
+            // Get last 12 weeks of ranking
+            const last12 = S.allDataHistory_total
+                .filter(r => r[C.ID_SEMANA] <= S.currentSemana && r[C.ID_SEMANA] > (S.currentSemana - 12))
+                .sort((a, b) => a[C.ID_SEMANA] - b[C.ID_SEMANA]);
+
+            const labels = last12.map(r => `Semana ${r[C.SEMANA]}/${r[C.ANIO]}`);
+            const dataRank = last12.map(r => {
+                const rVal = r[C.RANK_CLUSTER_SEM];
+                return (rVal === 999 || !rVal) ? null : rVal;
             });
-        }
 
-    })();
-</script>
+            const ctx = document.getElementById('v13_chart_rank_history').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Ranking (1 = Mayor Riesgo)',
+                            data: dataRank,
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderColor: '#4f46e5',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#4f46e5',
+                            pointRadius: 5,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                plugins: [ChartDataLabels], // Necessary for Chart.js v3+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 25, right: 10 } },
+                    scales: {
+                        y: {
+                            reverse: true, // Rank 1 at Top
+                            min: 1,
+                            max: cTotal,
+                            title: { display: true, text: 'Posición Ranking', font: { weight: 'bold' } },
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                stepSize: Math.ceil(cTotal / 10),
+                                callback: (v) => `${v}°`
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            display: true,
+                            align: 'top',
+                            offset: 4,
+                            backgroundColor: '#fff',
+                            borderRadius: 4,
+                            color: '#4f46e5',
+                            font: { size: 10, weight: 'bold' },
+                            formatter: (v) => v ? `${v}°` : '',
+                            padding: 2
+                        },
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (c) => `Posición: ${c.raw} de ${cTotal}`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- Historical Matrix (Cluster Trajectory) ---
+            const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
+            const heatmap = document.getElementById('v13_heatmap_years');
+
+            let lastAvg = null;
+            heatmap.innerHTML = years.map(yr => {
+                const rows = S.allDataHistory_total.filter(r => r[C.ANIO] === yr);
+                if (rows.length === 0) return '';
+
+                const values = rows.map(r => r[C.RANK_CLUSTER_SEM]).filter(v => v !== 999 && v > 0);
+                if (values.length === 0) return '';
+
+                const sum = values.reduce((a, b) => a + b, 0);
+                const avgRank = Math.round(sum / values.length);
+
+                // Delta Logic: Green if Improved (Rank Number Increases), Red if Deteriorated (Rank Number Decreases)
+                let color = '#94a3b8'; // Neutral gray for first year or no change
+                let trendIcon = '';
+
+                if (lastAvg !== null) {
+                    if (avgRank > lastAvg) {
+                        color = '#10b981'; // Improved (Green)
+                        trendIcon = '<i class="fa-solid fa-caret-up" style="position: absolute; top: -5px; right: -5px; color: #059669; font-size: 0.85rem; text-shadow: 0 0 4px white;"></i>';
+                    } else if (avgRank < lastAvg) {
+                        color = '#ef4444'; // Deteriorated (Red)
+                        trendIcon = '<i class="fa-solid fa-caret-down" style="position: absolute; bottom: -5px; right: -5px; color: #dc2626; font-size: 0.85rem; text-shadow: 0 0 4px white;"></i>';
+                    }
+                }
+
+                console.log(`%c[V13 Matrix] Año ${yr}`, "color: #4f46e5; font-weight: bold;", {
+                    avg: avgRank,
+                    lastAvg: lastAvg,
+                    status: avgRank > lastAvg ? 'Improved' : (avgRank < lastAvg ? 'Deteriorated' : 'Stable')
+                });
+
+                lastAvg = avgRank;
+
+                return `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                    <div style="position: relative; width: 38px; height: 38px; background: ${color}; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.2);">
+                        ${avgRank}
+                        ${trendIcon}
+                    </div>
+                    <span style="font-size: 0.65rem; font-weight: 700; color: #64748b;">'${yr.toString().slice(2)}</span>
+                </div>
+            `;
+            }).join('');
+
+
+            // IA Integration
+            if (typeof IAModule !== 'undefined') {
+                IAModule.getInterpretation('vista13').then(txt => {
+                    const el = document.getElementById('v13_ia_analysis');
+                    if (el) el.innerHTML = txt;
+                });
+            }
+
+        })();
+    </script>
+    <script src="../../../../script/help.js"></script>
+    <script>setTimeout(() => { if (typeof createHelpButton === 'function') createHelpButton('vista13'); }, 500);</script>

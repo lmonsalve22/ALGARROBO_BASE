@@ -373,6 +373,140 @@ const helpContent = {
             '💡 Marca como "Revisado" cuando hayas verificado en terreno',
             '💡 La descripción del ciudadano puede contener información importante para la gestión'
         ]
+    },
+    // SEGURIDAD VISTAS
+    vista1: {
+        title: 'Resumen Ejecutivo',
+        icon: 'fa-file-lines',
+        description: '¿Cómo fue la semana en términos de seguridad? Resumen inmediato de casos y riesgo país.',
+        features: ['Resumen ejecutivo semanal', 'KPIs principales de criminalidad', 'Identificación de riesgos'],
+        tips: ['Analice variaciones respecto al promedio histórico', 'Los colores indican desviaciones críticas']
+    },
+    vista2: {
+        title: 'Evolución Reciente',
+        icon: 'fa-arrow-trend-up',
+        description: '¿La tendencia es al alza o a la baja? Evolución delictual de las últimas 24 semanas.',
+        features: ['Gráfico de tendencia temporal', 'Detección de puntos de inflexión', 'Análisis de racha semanal'],
+        tips: ['Observe la pendiente de la línea de tendencia', 'Determine si el ciclo actual es ascendente']
+    },
+    vista3: {
+        title: 'Comparativo Temporal Múltiple',
+        icon: 'fa-code-compare',
+        description: '¿Cómo nos comparamos con el pasado? Triple comparación: semana anterior, año anterior y promedio histórico.',
+        features: ['Comparativa interanual y mensual', 'Deltas de variación absoluta', 'Análisis de crecimiento'],
+        tips: ['Un delta negativo en rojo indica aumento de casos', 'Use el promedio histórico para contextualizar la semana']
+    },
+    vista4: {
+        title: 'Estacionalidad Mensual Histórica',
+        icon: 'fa-calendar-days',
+        description: '¿Existe un patrón estacional? Histórico CEAD de los últimos 20 años por meses.',
+        features: ['Análisis de patrón mensual histórico', 'Identificación de picos estacionales', 'Probabilidad de ocurrencia'],
+        tips: ['Útil para anticipar alzas habituales en meses festivos', 'Planifique recursos preventivos según el patrón']
+    },
+    vista5: {
+        title: 'Distribución por Delito (Pareto)',
+        icon: 'fa-radiation',
+        description: '¿Qué delitos concentran la mayor parte del problema? Identificación del 80/20 delictual.',
+        features: ['Ranking de tipologías por volumen', 'Acumulación porcentual', 'Priorización delictual'],
+        tips: ['El 20% de los delitos suele explicar el 80% de los casos', 'Focalice los operativos en el top de la lista']
+    },
+    vista6: {
+        title: 'Evolución por Tipología',
+        icon: 'fa-chart-column',
+        description: '¿Cómo evolucionan los delitos clave? Seguimiento específico de las tipologías con mayor impacto.',
+        features: ['Histogramas por tipología', 'Comparativa cruzada de tipos', 'Evolución sectorizada'],
+        tips: ['Identifique si un alza es general o de un solo delito', 'Compare tipologías con modus operandi similares']
+    },
+    vista7: {
+        title: 'Evolución Estructural del Mix Delictual',
+        icon: 'fa-timeline',
+        description: '¿Ha cambiado la naturaleza del crimen? Proporción de delitos violentos vs propiedad.',
+        features: ['Composición histórica del mix', 'Cambios estructurales en 20 años', 'Análisis de la huella delictual'],
+        tips: ['Un incremento en delitos violentos indica mayor criticidad', 'Compare la estructura actual con la década pasada']
+    },
+    vista8: {
+        title: 'Correlaciones Delictuales',
+        icon: 'fa-diagram-project',
+        description: '¿Qué delitos se mueven juntos? Identifica si el alza de un delito predice el alza de otro.',
+        features: ['Matriz de correlación cruzada', 'Identificación de delitos disparadores', 'Vinculación estadística'],
+        tips: ['Correlación alta sugiere los mismos autores o causas raíz', 'Anticipe brotes usando indicadores líderes']
+    },
+    vista9: {
+        title: 'Tipologías Críticas por Comparativo',
+        icon: 'fa-triangle-exclamation',
+        description: '¿En qué somos peores que el resto? Identifica delitos con mayor desviación negativa.',
+        features: ['Benchmark vs promedio regional', 'Ranking de desviaciones críticas', 'Alertas por tipologías'],
+        tips: ['Priorice delitos donde la brecha regional sea mayor', 'Un desvío alto indica vulnerabilidad específica']
+    },
+    vista10: {
+        title: 'Vs. Comunas Similares',
+        icon: 'fa-map-location-dot',
+        description: '¿Cómo estamos respecto de nuestros pares? Comparativo directo con comunas similares.',
+        features: ['Análisis de desempeño relativo', 'Comparativa con comunas gemelas', 'Ranking por grupo de pares'],
+        tips: ['Útil para evaluar la efectividad de políticas locales', 'Compare con pares de similar presupuesto y población']
+    },
+    vista11: {
+        title: 'Clúster de Comunas Similares',
+        icon: 'fa-ranking-star',
+        description: '¿A qué grupo de seguridad pertenecemos? Análisis de clúster por performance.',
+        features: ['Identificación de clúster municipal', 'Análisis de proximidad estadística', 'Atributos compartidos'],
+        tips: ['Busque referentes dentro de su mismo clúster', 'Analice por qué otras comunas del grupo rinden mejor']
+    },
+    vista12: {
+        title: 'Evolución de Factores de Riesgo',
+        icon: 'fa-biohazard',
+        description: '¿Están aumentando los delitos violentos? Análisis de tendencia de violencia.',
+        features: ['Tendencia de violencia (VPR)', 'Análisis cualitativo del delito', 'Riesgo de escalada'],
+        tips: ['Un aumento en violencia precede a un aumento en volumen', 'Priorice la reducción del factor de fuerza']
+    },
+    vista13: {
+        title: 'Gravedad por Delito',
+        icon: 'fa-sitemap',
+        description: '¿Qué tan violentos son nuestros delitos? Clasificación por impacto y tipo de fuerza.',
+        features: ['Matriz de severidad', 'Impacto social estimado', 'Escala de violencia'],
+        tips: ['Diferencie entre delitos contra la propiedad y las personas', 'La gravedad es clave para la percepción de miedo']
+    },
+    vista14: {
+        title: 'Priorización Estratégica',
+        icon: 'fa-bullseye',
+        description: '¿Dónde debemos enfocar los recursos? Matriz de decisión basada en volumen y aceleración.',
+        features: ['Cuadrante de decisión táctica', 'Foco presupuestario', 'Detección de brotes'],
+        tips: ['Delitos en el cuadrante superior derecho son MANDATORIOS', 'Ignore delitos en el cuadrante de baja prioridad']
+    },
+    vista15: {
+        title: 'Categoría',
+        icon: 'fa-layer-group',
+        description: '¿Cuál es el perfil delictual dominante? Agrupación por naturaleza jurídica y operativa.',
+        features: ['Perfiles delictuales operativos', 'Agrupamiento jurídico', 'Familias de casos'],
+        tips: ['Agrupar por categorías facilita la respuesta coordinada', 'Determine si el foco es prevención social o disuasión']
+    },
+    vista16: {
+        title: 'Auditoría de Datos y Calidad',
+        icon: 'fa-database',
+        description: '¿Qué tan confiables son nuestros datos? Análisis de discrepancias (STOP vs CEAD).',
+        features: ['Índice de completitud de datos', 'Validación de fuentes oficiales', 'Análisis de subdenuncia'],
+        tips: ['Certifique la calidad de la información antes de actuar', 'Altas discrepancias sugieren problemas de registro']
+    },
+    vista17: {
+        title: 'Momentum y Rachas',
+        icon: 'fa-bolt',
+        description: '¿Estamos ante un brote delictual? Detección de aceleración estadística y rachas.',
+        features: ['Cálculo de momentum (CAGR)', 'Identificación de rachas negativas', 'Alertas de brotes'],
+        tips: ['Corte las rachas negativas antes de la 3ª semana', 'El momentum indica la velocidad de la crisis']
+    },
+    vista18: {
+        title: 'Diagnóstico de Delitos en Disipación',
+        icon: 'fa-chart-line',
+        description: '¿Qué delitos estamos logrando reducir? Identificación de éxitos operativos.',
+        features: ['Identificación de disipación', 'Tasa anual de reducción', 'Casos bajo la media'],
+        tips: ['Analice las tácticas aplicadas a estos delitos exitosos', 'Útil para rendición de cuentas positiva']
+    },
+    vista19: {
+        title: 'Resumen Ejecutivo para Autoridades',
+        icon: 'fa-file-invoice',
+        description: '¿Qué debe saber el Alcalde hoy? Hallazgos principales y alertas críticas.',
+        features: ['Resumen directivo semanal', 'Prioridades de inversión', 'Mensajes clave'],
+        tips: ['Ideal para presentaciones breves y toma de decisiones', 'Foco exclusivo en el alto mando municipal']
     }
 };
 

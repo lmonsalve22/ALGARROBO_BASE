@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <script>
-        // Función para verificar el estado de login
+        // FunciÃ³n para verificar el estado de login
         function checkLoginStatus() {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             console.log(isLoggedIn)
             
             if (!isLoggedIn || isLoggedIn !== 'true') {
-                // Redirigir a la página de login si no está logueado
+                // Redirigir a la pÃ¡gina de login si no estÃ¡ logueado
                 window.location.href = '../../index.html';
             }
             
@@ -71,11 +71,11 @@
                                 <i class="fas fa-users mr-2"></i> SECPLAC
                             </a>
                             <a href="#" onclick="changeRole('public')" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
-                                <i class="fas fa-eye mr-2"></i> Vista Pública
+                                <i class="fas fa-eye mr-2"></i> Vista PÃºblica
                             </a>
                             <hr class="my-1">
                             <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
-                                <i class="fas fa-cog mr-2"></i> Configuración
+                                <i class="fas fa-cog mr-2"></i> ConfiguraciÃ³n
                             </a>
                             <a href="#" onclick="logout()" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Salir
@@ -94,7 +94,7 @@
     
     
     <script>
-        // Verificar si el usuario está logueado al cargar la página
+        // Verificar si el usuario estÃ¡ logueado al cargar la pÃ¡gina
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
             initializeCharts();
@@ -102,13 +102,13 @@
 
         
 
-        // Función para logout
+        // FunciÃ³n para logout
         function logout() {
-            // Eliminar la sesión del usuario
+            // Eliminar la sesiÃ³n del usuario
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userRole');
             
-            // Redirigir a la página de login
+            // Redirigir a la pÃ¡gina de login
             window.location.href = '../../index.html';
         }
 
@@ -120,7 +120,7 @@
                 new Chart(areaCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Vialidad', 'Espacios Públicos', 'Saneamiento', 'Educación', 'Salud'],
+                        labels: ['Vialidad', 'Espacios PÃºblicos', 'Saneamiento', 'EducaciÃ³n', 'Salud'],
                         datasets: [{
                             data: [33, 38, 8, 8, 5],
                             backgroundColor: [
@@ -149,7 +149,7 @@
                 new Chart(statusCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['Diseño', 'Ejecución', 'Licitación', 'En preparación', 'Aprobado'],
+                        labels: ['DiseÃ±o', 'EjecuciÃ³n', 'LicitaciÃ³n', 'En preparaciÃ³n', 'Aprobado'],
                         datasets: [{
                             label: 'Proyectos',
                             data: [25, 12, 8, 30, 17],
@@ -170,8 +170,8 @@
 
         // View management
         function showView(viewName) {
-            // En esta versión simplificada, solo tenemos el dashboard
-            // Esta función se mantiene para futuras expansiones
+            // En esta versiÃ³n simplificada, solo tenemos el dashboard
+            // Esta funciÃ³n se mantiene para futuras expansiones
             console.log('Mostrando vista:', viewName);
         }
 
@@ -188,7 +188,7 @@
                 'admin': 'Administrador',
                 'alcalde': 'Alcalde',
                 'secplac': 'SECPLAC',
-                'public': 'Vista Pública'
+                'public': 'Vista PÃºblica'
             };
             document.getElementById('currentRole').textContent = roleNames[role];
             document.getElementById('userMenu').classList.add('hidden');
@@ -196,9 +196,9 @@
             // Guardar el rol en localStorage
             localStorage.setItem('userRole', role);
             
-            // Aquí se implementaría la lógica para cambiar la vista según el rol
+            // AquÃ­ se implementarÃ­a la lÃ³gica para cambiar la vista segÃºn el rol
             if (role === 'public') {
-                alert('Modo público activado - Se ocultará información sensible');
+                alert('Modo pÃºblico activado - Se ocultarÃ¡ informaciÃ³n sensible');
             }
         }
 
@@ -218,5 +218,8 @@
             }
         });
     </script>
+
+    <script src="../../../script/help.js"></script>
+    <script>if(typeof createHelpButton === 'function') createHelpButton('header');</script>
 </body>
 </html>

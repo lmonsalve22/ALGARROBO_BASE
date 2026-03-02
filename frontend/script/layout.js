@@ -22,8 +22,6 @@ function renderHeader(containerId = "headerRender") {
     const isLicitacion = window.location.pathname.includes('/licitaciones/');
     let dashLink = `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html`;
 
-    if (isLicitacion) dashLink = '/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html';
-
     if (user?.nivel_acceso == 10) dashLink = '/ALGARROBO_BASE/frontend/administracion/index.html';
 
     container.innerHTML = `

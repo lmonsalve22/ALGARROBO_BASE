@@ -291,12 +291,13 @@
             top: 50%;
             transform: translateY(-50%);
             font-size: 0.7rem;
-            opacity: 0.3;
+            opacity: 1;
+            color: #94a3b8;
         }
 
         th.sort-active .sort-icon {
-            opacity: 1;
             color: #6366f1;
+            opacity: 1;
         }
     </style>
 </head>
@@ -433,8 +434,11 @@
                         <select id="metricType" onchange="updateChart()" class="dimension-select">
                             <option value="sum_monto">Inversión Total ($)</option>
                             <option value="count">Cantidad de Proyectos (#)</option>
+                            <option value="avg_monto">Inversión Promedio ($)</option>
                             <option value="avg_avance">Avance Físico Promedio (%)</option>
                             <option value="sum_ejecutado">Inversión Ejecutada ($)</option>
+                            <option value="avg_antiguedad">Antigüedad Promedio (años)</option>
+                            <option value="avg_profesionales">Prof. por Proyecto (#)</option>
                         </select>
                     </div>
                     <div>
@@ -578,8 +582,13 @@
         function populateFilters() {
             for (const [filterKey, dataKey] of Object.entries(filterFieldMap)) {
                 const container = document.getElementById(`filter-${filterKey}`);
-                const pill = container.parentElement;
+                if (!container) continue;
+
                 const labelElement = document.getElementById(`label-${filterKey}`);
+                const pill = container.parentElement;
+
+                if (!labelElement || !pill) continue;
+
                 const currentVals = [...currentFilters[filterKey]];
 
                 // Actualizar etiqueta del Pill
@@ -598,12 +607,13 @@
                 const availableProjects = allProjects.filter(p => {
                     return Object.entries(otherFiltersActive).every(([fK, fV]) => {
                         if (fV.length === 0) return true;
-                        return fV.includes(p[filterFieldMap[fK]]);
+                        const projectVal = String(p[filterFieldMap[fK]] || '').trim(); // Add null check and trim
+                        return fV.includes(projectVal);
                     });
                 });
 
                 // Opciones basadas en el dataset completo para evitar bloqueos
-                const options = [...new Set(allProjects.map(p => p[dataKey]).filter(v => v))].sort();
+                const options = [...new Set(allProjects.map(p => String(p[dataKey] || '').trim()).filter(v => v))].sort();
 
                 const isAllSelected = currentVals.length === 0;
                 let html = `
@@ -618,12 +628,7 @@
                     const optStr = String(opt);
                     const isSelected = currentVals.map(String).includes(optStr);
 
-                    // Conteo cruzado: Ribbon + Chips Dimensión 1 + Chips Dimensión 2
-                    const dim1 = document.getElementById('groupBy1').value;
-                    const dim2 = document.getElementById('groupBy2').value;
-                    const selectedCats1 = Array.from(document.querySelectorAll('#categoryFilters1 .category-checkbox:checked')).map(cb => cb.value);
-                    const selectedCats2 = Array.from(document.querySelectorAll('#categoryFilters2 .category-checkbox:checked')).map(cb => cb.value);
-
+                    // Conteo cruzado: solo consideramos el ribbon para la visibilidad (hasData)
                     const hasData = allProjects.some(p => {
                         const val = String(p[dataKey] || '').trim();
                         if (val !== optStr) return false;
@@ -777,16 +782,30 @@
                 categories2.add(val2);
 
                 const key = `${val1}||${val2}`;
-                if (!dataMap.has(key)) dataMap.set(key, { count: 0, sum_monto: 0, sum_avance: 0 });
+                if (!dataMap.has(key)) {
+                    dataMap.set(key, {
+                        count: 0,
+                        sum_monto: 0,
+                        sum_avance: 0,
+                        sum_ejecutado: 0,
+                        sum_antiguedad: 0,
+                        sum_profesionales: 0
+                    });
+                }
 
                 const monto = parseFloat(p.monto) || 0;
                 const avance = parseFloat(p.avance_total_porcentaje) || 0;
+                const currentYear = new Date().getFullYear();
+                const elabYear = parseInt(p.anno_elaboracion) || currentYear;
+                const profCount = [p.profesional_1, p.profesional_2, p.profesional_3].filter(pf => pf && pf.trim()).length;
 
                 const d = dataMap.get(key);
                 d.count++;
                 d.sum_monto += monto;
                 d.sum_avance += avance;
-                d.sum_ejecutado = (d.sum_ejecutado || 0) + (monto * (avance / 100));
+                d.sum_ejecutado += (monto * (avance / 100));
+                d.sum_antiguedad += (currentYear - elabYear);
+                d.sum_profesionales += profCount;
             });
 
             renderMultiChart({
@@ -827,8 +846,11 @@
                     if (d && (d.sum_monto > 0 || d.count > 0)) {
                         if (metric === 'sum_monto') grandTotal += d.sum_monto;
                         else if (metric === 'count') grandTotal += d.count;
+                        else if (metric === 'avg_monto') grandTotal += (d.sum_monto / d.count);
                         else if (metric === 'avg_avance') grandTotal += (d.sum_avance / d.count);
                         else if (metric === 'sum_ejecutado') grandTotal += d.sum_ejecutado;
+                        else if (metric === 'avg_antiguedad') grandTotal += (d.sum_antiguedad / d.count);
+                        else if (metric === 'avg_profesionales') grandTotal += (d.sum_profesionales / d.count);
                     }
                 });
             });
@@ -842,8 +864,11 @@
                         let value = 0;
                         if (metric === 'sum_monto') value = d.sum_monto;
                         else if (metric === 'count') value = d.count;
+                        else if (metric === 'avg_monto') value = d.sum_monto / d.count;
                         else if (metric === 'avg_avance') value = d.sum_avance / d.count;
                         else if (metric === 'sum_ejecutado') value = d.sum_ejecutado;
+                        else if (metric === 'avg_antiguedad') value = d.sum_antiguedad / d.count;
+                        else if (metric === 'avg_profesionales') value = d.sum_profesionales / d.count;
 
                         const participation = grandTotal > 0 ? (value / grandTotal) * 100 : 0;
                         const row = document.createElement('tr');
@@ -985,8 +1010,11 @@
                 if (!d) return 0;
                 if (metric === 'sum_monto') return d.sum_monto;
                 if (metric === 'count') return d.count;
+                if (metric === 'avg_monto') return d.sum_monto / d.count;
                 if (metric === 'avg_avance') return d.sum_avance / d.count;
                 if (metric === 'sum_ejecutado') return d.sum_ejecutado;
+                if (metric === 'avg_antiguedad') return d.sum_antiguedad / d.count;
+                if (metric === 'avg_profesionales') return d.sum_profesionales / d.count;
                 return 0;
             };
 
@@ -1068,6 +1096,9 @@
             fetchProjects();
         });
     </script>
+
+    <script src="../../../script/help.js"></script>
+    <script>setTimeout(() => { if (typeof createHelpButton === 'function') createHelpButton('informe_dinamico2'); }, 500);</script>
 </body>
 
 </html>

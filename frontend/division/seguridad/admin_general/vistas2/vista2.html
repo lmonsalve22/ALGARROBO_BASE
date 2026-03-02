@@ -14,11 +14,10 @@
         style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
             border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            ¿Cómo ha evolucionado la delincuencia en los últimos meses?
+            ¿La tendencia es al alza o a la baja?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Tendencia de mediano plazo
-            (24 semanas)
-            con suavizado mediante media móvil de 4 semanas para eliminar ruido operacional.</p>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Evolución delictual de las
+            últimas 24 semanas.</p>
     </div>
 
     <div class="alert alert--info" style="margin-top: 1.5rem;">
@@ -287,7 +286,7 @@
             }
         });
 
-    
+
         // IA Integration
         if (typeof IAModule !== 'undefined') {
             IAModule.getInterpretation('vista2').then(txt => {
@@ -298,3 +297,6 @@
 
     })();
 </script>
+    <script src="../../../../script/help.js"></script>
+    <script>setTimeout(() => { if(typeof createHelpButton === 'function') createHelpButton('vista2'); }, 500);</script>
+

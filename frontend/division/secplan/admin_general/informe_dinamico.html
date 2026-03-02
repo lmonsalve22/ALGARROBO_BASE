@@ -280,12 +280,13 @@
             top: 50%;
             transform: translateY(-50%);
             font-size: 0.7rem;
-            opacity: 0.3;
+            opacity: 1;
+            color: #94a3b8;
         }
 
         th.sort-active .sort-icon {
-            opacity: 1;
             color: #6366f1;
+            opacity: 1;
         }
     </style>
 </head>
@@ -570,8 +571,8 @@
                 }
 
                 // Para las OPCIONES del dropdown, mostramos todo lo disponible en la DB
-                // para evitar que el usuario se quede "bloqueado" sin poder desmarcar.
-                const options = [...new Set(allProjects.map(p => p[dataKey]).filter(v => v))].sort();
+                // Trimmear opciones para evitar descalces por espacios
+                const options = [...new Set(allProjects.map(p => String(p[dataKey] || '').trim()).filter(v => v))].sort();
 
                 const isAllSelected = currentVals.length === 0;
                 let html = `
@@ -586,22 +587,17 @@
                     const optStr = String(opt);
                     const isSelected = currentVals.map(String).includes(optStr);
 
-                    // Conteo cruzado: ¿Hay datos con este valor considerando el ribbon Y los chips de abajo?
-                    const groupBy = document.getElementById('groupByField').value;
-                    const selectedCats = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
-
+                    // Conteo cruzado: ¿Hay datos con este valor considerando el ribbon?
+                    // Nota: Ignoramos los chips inferiores (selectedCats) aquí para evitar filtrado circular
                     const hasData = allProjects.some(p => {
                         const val = String(p[dataKey] || '').trim();
                         if (val !== optStr) return false;
 
-                        const ribbonPass = Object.entries(currentFilters).every(([fK, fV]) => {
+                        return Object.entries(currentFilters).every(([fK, fV]) => {
                             if (fK === filterKey || fV.length === 0) return true;
                             const projectVal = String(p[filterFieldMap[fK]] || '').trim();
                             return fV.includes(projectVal);
                         });
-
-                        const catPass = selectedCats.length === 0 || selectedCats.includes(String(p[groupBy] || 'Sin especificar'));
-                        return ribbonPass && catPass;
                     });
 
                     html += `
@@ -1055,6 +1051,9 @@
             fetchProjects();
         });
     </script>
+
+    <script src="../../../script/help.js"></script>
+    <script>setTimeout(() => { if (typeof createHelpButton === 'function') createHelpButton('informe_dinamico'); }, 500);</script>
 </body>
 
 </html>

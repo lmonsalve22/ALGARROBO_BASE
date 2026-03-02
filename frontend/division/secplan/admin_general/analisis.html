@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -7,7 +7,7 @@
     <script src="../../../script/utils.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geoportal - Análisis de Datos</title>
+    <title>Geoportal - AnÃ¡lisis de Datos</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -29,8 +29,8 @@
         <main class="flex-1 p-6 overflow-y-auto">
             <div class="max-w-7xl mx-auto">
                 <div class="mb-8">
-                    <h1 class="text-3xl font-bold">Análisis Estratégico</h1>
-                    <p class="text-gray-500">Visualización de métricas avanzadas y tendencias del Geoportal</p>
+                    <h1 class="text-3xl font-bold">AnÃ¡lisis EstratÃ©gico</h1>
+                    <p class="text-gray-500">VisualizaciÃ³n de mÃ©tricas avanzadas y tendencias del Geoportal</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -43,7 +43,7 @@
                     </div>
 
                     <div class="card-modern p-6 lg:col-span-2">
-                        <h3 class="text-lg font-semibold mb-6">Tendencia de Inversión Mensual</h3>
+                        <h3 class="text-lg font-semibold mb-6">Tendencia de InversiÃ³n Mensual</h3>
                         <div class="h-64">
                             <canvas id="investmentTrendChart"></canvas>
                         </div>
@@ -59,7 +59,7 @@
                     </div>
 
                     <div class="card-modern p-6">
-                        <h3 class="text-lg font-semibold mb-6">Eficiencia de Ejecución</h3>
+                        <h3 class="text-lg font-semibold mb-6">Eficiencia de EjecuciÃ³n</h3>
                         <div class="flex flex-col items-center justify-center h-full py-6">
                             <div class="relative w-48 h-48">
                                 <svg class="w-full h-full transform -rotate-90">
@@ -75,7 +75,7 @@
                                 </div>
                             </div>
                             <p class="mt-6 text-sm text-gray-500 text-center max-w-xs">
-                                Ratio de proyectos terminados vs. proyectos programados para el período actual.
+                                Ratio de proyectos terminados vs. proyectos programados para el perÃ­odo actual.
                             </p>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                 renderSectorProgress(projects);
                 updateEfficiency(projects);
             } catch (error) {
-                showToast('Error cargando análisis', 'error');
+                showToast('Error cargando anÃ¡lisis', 'error');
             }
         }
 
@@ -137,7 +137,7 @@
                 data: {
                     labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
                     datasets: [{
-                        label: 'Inversión Real (Millones $)',
+                        label: 'InversiÃ³n Real (Millones $)',
                         data: [65, 59, 80, 81, 56, 55, 40, 70, 75, 80, 95, 110],
                         borderColor: '#6366f1',
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -195,6 +195,9 @@
             }, 500);
         }
     </script>
+
+    <script src="../../../script/help.js"></script>
+    <script>if(typeof createHelpButton === 'function') createHelpButton('analisis');</script>
 </body>
 
 </html>
