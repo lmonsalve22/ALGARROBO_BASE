@@ -580,6 +580,17 @@
         });
 
         function populateFilters() {
+            const dim1El = document.getElementById('groupBy1');
+            const dim2El = document.getElementById('groupBy2');
+            const dim1 = dim1El ? dim1El.value : null;
+            const dim2 = dim2El ? dim2El.value : null;
+            const getSelectedCheckboxes = (containerId) => {
+                const checkboxes = document.querySelectorAll(`#${containerId} .category-checkbox:checked`);
+                return Array.from(checkboxes).map(checkbox => checkbox.value);
+            };
+            const selectedCats1 = document.getElementById('categoryFilters1') ? getSelectedCheckboxes('categoryFilters1') : [];
+            const selectedCats2 = document.getElementById('categoryFilters2') ? getSelectedCheckboxes('categoryFilters2') : [];
+
             for (const [filterKey, dataKey] of Object.entries(filterFieldMap)) {
                 const container = document.getElementById(`filter-${filterKey}`);
                 if (!container) continue;

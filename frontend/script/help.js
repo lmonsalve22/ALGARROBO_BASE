@@ -597,6 +597,69 @@ const helpContent = {
         features: ['Resumen directivo semanal', 'Prioridades de inversión', 'Mensajes clave'],
         tips: ['Ideal para presentaciones breves y toma de decisiones', 'Foco exclusivo en el alto mando municipal']
     },
+    // SEGURIDAD VISTAS
+    seguridad_dashboard: {
+        title: 'Módulo de Seguridad Pública',
+        icon: 'fa-shield-halved',
+        description: 'Plataforma integral para el monitoreo y análisis geoespacial del acontecer delictual y despliegue de seguridad ciudadana en la comuna.',
+        features: [
+            'Navegación entre 5 vistas estratégicas de inteligencia delictual',
+            'Resumen ejecutivo con indicadores de alta prioridad (Homicidios, Robos c/Violencia)',
+            'Reportes exportables PDF hoja por hoja o consolidados',
+            'Sincronización de datos con fuentes oficiales (CEAD, Carabineros)'
+        ],
+        tips: [
+            'Utilice las flechas "Anterior" y "Siguiente" en el encabezado superior para fluir entre el Resumen, Análisis de Gravedad y Mapas de priorización',
+            'Haga clic en el botón "Informe PDF" para descargar un resumen consolidado para autoridades'
+        ]
+    },
+    // SECPLAN VISTAS
+    mapa2: {
+        title: 'Mapa 2: Análisis Territorial',
+        icon: 'fa-map-location-dot',
+        description: 'Visor geográfico avanzado para el análisis espacial y distribución de la inversión de proyectos por sector territorial.',
+        features: [
+            'Distribución de marcadores interactivos georreferenciados en el territorio',
+            'Tabla resumen de cantidad y montos acumulados ordenados espacialmente (Sector)',
+            'Multi-filtros: Área, Línea Estratégica, Etapas, Años y Fuente de Financiamiento',
+            'Cruce de datos geo-espacial en tiempo real (mapa y tabla sincronizados)'
+        ],
+        tips: [
+            'Al hacer clic en un sector dentro de la tabla resumen de la derecha, el mapa hará zoom automático hacia todos los proyectos de esa zona',
+            'Haga clic sobre cualquier marcador (circulo morado) para inspeccionar el resumen ejecutivo',
+            'Los filtros actúan en cascada: al seleccionar una etapa, las áreas disponibles se limitarán solo a las válidas'
+        ]
+    },
+    informe_dinamico: {
+        title: 'Informe Dinámico 1 (Variables Unitarias)',
+        icon: 'fa-chart-pie',
+        description: 'Herramienta de Business Intelligence (BI) para analizar estadísticamente un solo factor o categoría principal de la cartera de iniciativas.',
+        features: [
+            'Agrupación primaria de información (Ej: Proyectos por Área o Proyectos por Fuente de Financiamiento)',
+            'Exportación integral a formatos CSV, EXCEL y reportes automatizados en PDF',
+            'Generación de 10 familias tipológicas de Gráficos (3D, Pastel, Barras, Línea, Embudo)',
+            'Resumen estadístico con el porcentaje participativo relativo al total filtrado'
+        ],
+        tips: [
+            'Habilite el botón "Generar Informe Detallado" para imprimir los datos pre-renderizados hacia la consola, ideal para logs interinstitucionales',
+            'Maneje el comportamiento de los filtros deseleccionando o seleccionando chips de cada categoría tras utilizar la agrupación central'
+        ]
+    },
+    informe_dinamico2: {
+        title: 'Informe Dimensional Cruzado',
+        icon: 'fa-layer-group',
+        description: 'Tablero de inteligencia de alto nivel (Multicuadrante) diseñado para cruzar DOS dimensiones o variables sobre la misma cartera, descubriendo intersecciones estratégicas.',
+        features: [
+            'Cruce simultáneo de variables (Dimensión 1 vs Dimensión 2) bajo métricas personalizadas (Suma de montos, Proyecciones, Años acumulados)',
+            'Visualizaciones multivariables pesadas (Heatmaps, Treemaps Jerárquicos, Barras Apiladas, Burbujas Cruzadas, Sunburst)',
+            'Tabla dinámica robusta mostrando participación global en la intersección',
+            'Filtrado individual local (check box por fila) además de barra de BI Ribbon generalizada'
+        ],
+        tips: [
+            'Utilice la modalidad "Mapa de Calor" para ver contrastes nítidos de concentración de montos entre variables extensas (Ej: Estado vs Tipo de Financiamiento)',
+            'Note que puede hacer click en las cabeceras de la tabla cruzada para re-ordenar por mayor peso porcentual'
+        ]
+    },
     // TRANSPARENCIA VISTAS
     trans_inicio: {
         title: 'Pagos por Organismos',
