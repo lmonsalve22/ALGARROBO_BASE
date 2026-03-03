@@ -822,7 +822,7 @@
         // Configuración de IA para Resumen Ejecutivo
         const API_KEY = getKey("gfhrsdfsdfseweretfghtddfdf");
         const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
-        const MODEL_NAME = "GLM-4.6V-Flash";
+        const MODEL_NAME = "GLM-4-Flash";
 
         async function fetchAIExecutiveSummary(projects, title) {
             // Calcular totales
@@ -2131,15 +2131,7 @@ Asegúrate de que el JSON sea válido. Usa un tono formal y técnico.`;
             XLSX.writeFile(wb, `informe_${type}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        function formatCurrency(value) {
-            if (!value && value !== 0) return '$0';
-            return new Intl.NumberFormat('es-CL', {
-                style: 'currency',
-                currency: 'CLP',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(value);
-        }
+        // Se utiliza la función de utils.js para evitar conflictos de declaración
 
         function formatCurrencyShort(value) {
             if (!value && value !== 0) return '$0';

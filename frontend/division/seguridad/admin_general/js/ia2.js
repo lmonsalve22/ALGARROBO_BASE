@@ -6,7 +6,7 @@
 window.IAModuleV2 = {
     // Configuration
     CACHE_KEY: 'ia_seg_v2_', // Unique key for Seguridad module
-    CACHE_TTL: 2,  //5 * 24 * 60 * 60 * 1000, // 5 days
+    CACHE_TTL: 2 * 60 * 60 * 1000,  // 2 Horas para evitar conclusiones obsoletas tras actualización de datos
     API_URL: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
     MODEL_NAME: "GLM-4.7-Flash",
 
