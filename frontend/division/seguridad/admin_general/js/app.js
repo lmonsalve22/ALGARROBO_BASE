@@ -8,7 +8,8 @@ window.switchSidebarTab = function (tabId) {
     // Hide all contents
     document.querySelectorAll('.sidebar-tab-content').forEach(el => el.style.display = 'none');
     // Show target
-    document.getElementById(tabId).style.display = 'block';
+    const target = document.getElementById(tabId);
+    if (target) target.style.display = 'block';
 
     // Update buttons
     document.querySelectorAll('.btn-tab').forEach(btn => {
@@ -74,7 +75,6 @@ const App = {
         await this.loadSidebar();
         this.bindEvents();
         this.loadView(this.config.defaultView);
-
     },
 
     /**
@@ -234,10 +234,10 @@ const App = {
             word.charAt(0).toUpperCase() + word.slice(1)
         ).join(' ');
 
-        // 2. Identify view type
-        const match = this.state.currentView.match(/^vista(\d+)$/);
+        // 2. Identify view type — null-safe optional chaining
+        const match = this.state.currentView?.match(/^vista(\d+)$/);
         const viewNum = match ? parseInt(match[1]) : 0;
-        const historicalViews = [4, 7, 12, 17, 18, 22]; // Views that analysis long-term patterns
+        const historicalViews = [4, 7, 12, 17, 18, 22];
 
         const isHistorical = historicalViews.includes(viewNum);
 
@@ -246,7 +246,6 @@ const App = {
         if (isHistorical) {
             detail = "HISTÓRICO 2005-2025";
         } else {
-            // Force "SEMANA" upper case
             if (detail.toLowerCase().startsWith('semana')) {
                 detail = 'SEMANA' + detail.substring(6);
             }
@@ -257,7 +256,6 @@ const App = {
         // 4. Update all location rows found
         const rows = document.querySelectorAll('.location-source-row');
         rows.forEach(row => {
-            // Find the first div that usually contains the location info
             const labelContainer = row.querySelector('div:first-child');
             if (labelContainer) {
                 const icon = labelContainer.querySelector('i');
@@ -287,7 +285,6 @@ const App = {
         const title = 'Reporte de Inteligencia Delictual';
         let icon = 'fa-shield-halved';
 
-        // Classification based on confirmed data source (Icons only)
         const ceadViews = [4, 7, 10, 11, 12, 15, 16, 19, 20, 21, 25];
         const hybridViews = [41, 42, 43, 44, 45];
 
@@ -308,8 +305,8 @@ const App = {
     },
 
     /**
-          * Generate source badge HTML based on view
-          */
+     * Generate source badge HTML based on view
+     */
     getSourceBadgeHtml(viewName) {
         const match = viewName.match(/^vista(\d+)$/);
         if (!match) return '';
@@ -317,11 +314,9 @@ const App = {
         const viewNum = parseInt(match[1]);
         const sources = [];
 
-        // Determine sources based on view number (STOP vs CEAD)
-        // Vistas 2 Strategic categorization
         const ceadViews = [7, 11, 15, 16, 17, 18, 19, 20];
         const stopViews = [1, 2, 3, 5, 6, 8, 9, 12, 13, 14, 21, 22, 23, 24];
-        const hybridViews = [4, 10, 25]; // Views that explicitly merge both worlds
+        const hybridViews = [4, 10, 25];
 
         if (stopViews.includes(viewNum) || hybridViews.includes(viewNum)) {
             sources.push({ name: 'STOP (Sistema Táctico de Operación Policial)', class: 'stop' });
@@ -330,7 +325,6 @@ const App = {
             sources.push({ name: 'CEAD (Centro de Análisis del Delito)', class: 'cead' });
         }
 
-        // Add INE for views that use population/rate data
         const ineViews = [1, 9, 10, 11, 12, 13, 17, 19];
         if (ineViews.includes(viewNum)) {
             sources.push({ name: 'INE (Instituto Nacional de Estadísticas)', class: 'ine' });
@@ -354,7 +348,6 @@ const App = {
      * Update source badge based on current view
      */
     updateSourceBadge(viewName) {
-        // Badge is now injected via getSourceBadgeHtml, this just ensures visibility
         const badge = document.getElementById('sourceBadge');
         if (badge) {
             badge.style.display = 'block';
@@ -382,7 +375,6 @@ const App = {
      * Prevents memory leaks and conflicts between views
      */
     destroyAllCharts() {
-        // Get all Chart.js instances and destroy them
         if (typeof Chart !== 'undefined') {
             const charts = Object.values(Chart.instances || {});
             charts.forEach(chart => {
@@ -416,13 +408,19 @@ const App = {
         const container = this.elements.viewContainer;
         const btn = this.elements.exportBtn;
 
-        // Update button state
         const originalBtnText = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exportando...';
         btn.disabled = true;
 
-        // Show professional overlay
         this.showExportOverlay();
+
+        // PERF-FIX: Deshabilitar animaciones de Chart.js durante la exportación.
+        // Elimina la race condition donde html2canvas capturaba gráficos incompletos.
+        // El delay total de espera se reduce de 8s a 2s, acortando el tiempo de export.
+        const animationDefault = typeof Chart !== 'undefined' ? Chart.defaults.animation : undefined;
+        if (typeof Chart !== 'undefined') {
+            Chart.defaults.animation = false;
+        }
 
         try {
             const { jsPDF } = window.jspdf;
@@ -434,20 +432,15 @@ const App = {
                 const viewName = this.config.views[i];
                 const progressText = `Procesando vista ${i + 1} de ${this.config.views.length}...`;
 
-                // Update button and overlay
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${i + 1}/${this.config.views.length}`;
                 this.updateExportOverlay(progressText);
 
-                // Destroy previous charts to prevent conflicts
                 this.destroyAllCharts();
-
-                // Load view
                 await this.loadView(viewName);
 
-                // Wait for charts to render (8 seconds)
-                await this.delay(8000);
+                // Delay reducido a 2s porque las animaciones están desactivadas
+                await this.delay(2000);
 
-                // Capture
                 const canvas = await html2canvas(container, {
                     scale: this.config.pdfScale,
                     useCORS: true,
@@ -458,10 +451,8 @@ const App = {
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-                // Add page if not first
                 if (i > 0) pdf.addPage();
 
-                // Handle multi-page content
                 let heightLeft = imgHeight;
                 let position = 0;
 
@@ -476,7 +467,6 @@ const App = {
                 }
             }
 
-            // Save PDF
             const date = new Date().toISOString().split('T')[0];
             pdf.save(`Reporte_RID_${date}.pdf`);
 
@@ -484,7 +474,10 @@ const App = {
             LOG.error('Error exporting PDF:', error);
             alert('Error al exportar PDF. Por favor intente nuevamente.');
         } finally {
-            // Restore state
+            // Restaurar animaciones al valor original
+            if (typeof Chart !== 'undefined' && animationDefault !== undefined) {
+                Chart.defaults.animation = animationDefault;
+            }
             this.hideExportOverlay();
             btn.innerHTML = originalBtnText;
             btn.disabled = false;
@@ -522,7 +515,6 @@ const App = {
                 </div>
                 <h3 style="margin: 0 0 0.5rem; color: #1e293b; font-size: 1.25rem; font-weight: 700;">Generando Reporte Oficial</h3>
                 <p id="exportStatus" style="margin: 0 0 1.5rem; color: #64748b; font-size: 0.95rem;">Preparando documentos...</p>
-                
                 <div style="padding: 1rem; background: #fff7ed; border: 1px solid #ffedd5; border-radius: 8px; text-align: left; display: flex; gap: 0.75rem;">
                     <i class="fa-solid fa-lightbulb" style="color: #f59e0b; margin-top: 3px;"></i>
                     <div>
@@ -534,14 +526,13 @@ const App = {
         `;
 
         document.body.appendChild(overlay);
-        // Trigger reflow for transition
-        overlay.offsetHeight;
+        overlay.offsetHeight; // Trigger reflow for transition
         overlay.style.opacity = '1';
     },
 
     /**
      * Update Export Status
-     * @param {string} text 
+     * @param {string} text
      */
     updateExportOverlay(text) {
         const el = document.getElementById('exportStatus');
@@ -559,10 +550,6 @@ const App = {
         }
     },
 
-    /**
-     * Utility: Delay promise
-     * @param {number} ms - Milliseconds to wait
-     */
     /**
      * Show Critical Error UI
      */
@@ -584,13 +571,21 @@ const App = {
         }
     },
 
+    /**
+     * Utility: Delay promise
+     * @param {number} ms - Milliseconds to wait
+     */
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 };
 
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => App.init());
+// Auto-init: solo si ningun HTML externo ya llamo App.init() manualmente.
+// (dashboard.html con overrides establece App._initCalled = true antes de llamar App.init())
+document.addEventListener('DOMContentLoaded', () => {
+    if (!App._initCalled) App.init();
+});
+
 
 // Expose for global access if needed
 window.App = App;

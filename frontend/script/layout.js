@@ -1,3 +1,16 @@
+// ─── Base Path Auto-Detection ────────────────────────────────────────────────
+// GitHub Pages: https://user.github.io/ALGARROBO_BASE/...  → BASE_PATH = '/ALGARROBO_BASE'
+// Localhost / file://                                        → BASE_PATH = ''
+const BASE_PATH = (() => {
+    const { hostname, pathname } = window.location;
+    const isGhPages = hostname.endsWith('github.io');
+    const isLocal = hostname === '' || hostname === 'localhost' || hostname === '127.0.0.1';
+    if (isGhPages || (!isLocal && pathname.startsWith('/ALGARROBO_BASE'))) {
+        return '/ALGARROBO_BASE';
+    }
+    return '';
+})();
+// ─────────────────────────────────────────────────────────────────────────────
 
 function renderHeader(containerId = "headerRender") {
     const container = document.getElementById(containerId);
@@ -20,9 +33,9 @@ function renderHeader(containerId = "headerRender") {
     const userRoles = user?.roles || [];
     const userRole = userRoles.length > 0 ? userRoles[0].nombre.toLowerCase() : 'admin_general';
     const isLicitacion = window.location.pathname.includes('/licitaciones/');
-    let dashLink = `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html`;
+    let dashLink = `${BASE_PATH}/frontend/division/${userDivision}/${userRole}/dashboard.html`;
 
-    if (user?.nivel_acceso == 10) dashLink = '/ALGARROBO_BASE/frontend/administracion/index.html';
+    if (user?.nivel_acceso == 10) dashLink = `${BASE_PATH}/frontend/administracion/index.html`;
 
     container.innerHTML = `
     <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 transition-all duration-300 font-['Outfit']">
@@ -116,7 +129,7 @@ function renderSidebar(containerId = "sidebarContainer") {
     const userDivision = user?.division?.nombre?.toLowerCase() || 'secplan';
     const userRoles = user?.roles || [];
     const userRole = userRoles.length > 0 ? userRoles[0].nombre.toLowerCase() : 'admin_general';
-    const baseDir = `/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/`;
+    const baseDir = `${BASE_PATH}/frontend/division/${userDivision}/${userRole}/`;
 
     const pages = {
         dashboard: baseDir + "dashboard.html",
@@ -133,7 +146,7 @@ function renderSidebar(containerId = "sidebarContainer") {
         informe_dinamico: baseDir + "informe_dinamico.html",
         informe_dinamico2: baseDir + "informe_dinamico2.html",
         mapa2: baseDir + "mapa2.html",
-        licitaciones: "/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/dashboard.html"
+        licitaciones: `${BASE_PATH}/frontend/division/licitaciones/admin_proyectos/dashboard.html`
     };
 
     const linkClasses = (file) => {
@@ -148,7 +161,7 @@ function renderSidebar(containerId = "sidebarContainer") {
     const isTransparenciaModule = window.location.pathname.includes('/transparencia/');
 
     if (isTransparenciaModule) {
-        const transBase = "/ALGARROBO_BASE/frontend/division/transparencia/admin_general/index/";
+        const transBase = `${BASE_PATH}/frontend/division/transparencia/admin_general/index/`;
         container.innerHTML = `
         <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 h-screen sticky top-0 hidden lg:block overflow-y-auto font-['Outfit']">
             <nav class="p-4">
@@ -187,7 +200,7 @@ function renderSidebar(containerId = "sidebarContainer") {
     }
 
     if (isLicitacionModule) {
-        const licBase = "/ALGARROBO_BASE/frontend/division/licitaciones/admin_proyectos/";
+        const licBase = `${BASE_PATH}/frontend/division/licitaciones/admin_proyectos/`;
         container.innerHTML = `
         <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 h-screen sticky top-0 hidden lg:block overflow-y-auto font-['Outfit']">
             <nav class="p-4">
@@ -263,7 +276,7 @@ function renderSidebar(containerId = "sidebarContainer") {
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-3 pt-2">Menu Principal</p>
             <ul class="space-y-1">
                 <li>
-                    <a href="/ALGARROBO_BASE/frontend/division/${userDivision}/${userRole}/dashboard.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('dashboard.html')}">
+                    <a href="${BASE_PATH}/frontend/division/${userDivision}/${userRole}/dashboard.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('dashboard.html')}">
                         <i class="fas fa-gauge-high w-5 text-center"></i>
                         <span class="font-medium">Dashboard</span>
                     </a>
@@ -335,7 +348,7 @@ function renderSidebar(containerId = "sidebarContainer") {
                     </a>
                 </li>
                 <li>
-                     <a href="/ALGARROBO_BASE/frontend/geoportal/index.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                     <a href="${BASE_PATH}/frontend/geoportal/index.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                          <i class="fas fa-globe-americas w-5 text-center"></i>
                          <span class="font-medium">Geoportal</span>
                      </a>
@@ -422,7 +435,7 @@ function logout() {
     localStorage.removeItem('user_data');
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    window.location.href = '/ALGARROBO_BASE/frontend/index.html';
+    window.location.href = `${BASE_PATH}/frontend/index.html`;
 }
 
 document.addEventListener('click', function (e) {

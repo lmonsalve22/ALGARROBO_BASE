@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seguridad - Geoportal Municipal</title>
 
+    <!-- Libraries (preload via crossorigin for SRI-readiness) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
@@ -23,7 +24,8 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        crossorigin="anonymous">
 
     <!-- Custom CSS for WebJS / Security Dashboard -->
     <link rel="stylesheet" href="cssweb/styles.css?v=3">
@@ -144,12 +146,14 @@
     <!-- Script de layout global -->
     <script src="../../../script/layout.js"></script>
 
-    <!-- Libraries (defer is OK for CDN libs) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <!-- Libraries (crossorigin for SRI-readiness) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2" defer crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3" defer crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer
+        crossorigin="anonymous"></script>
 
     <!-- Global Configuration (NO defer — must execute synchronously and in order) -->
     <script src="js/config/columns.js?v=2"></script>
@@ -197,7 +201,7 @@
             App.config.views = vistasSeguridad;
 
             // Monkey Patch: Ensure PDF button is always visible
-            const originalLoadView = App.loadView;
+            const originalLoadView = App.loadView.bind(App);
 
             function updateNavigationUI(currentViewName) {
                 const views = App.config.views;
@@ -234,10 +238,13 @@
             }
 
             App.loadView = async function (viewName) {
-                await originalLoadView.call(this, viewName);
-                if (this.elements.coverBtn) {
+                await originalLoadView(viewName);
+                // SEC-FIX: Null-check antes de manipular coverBtn
+                if (this.elements && this.elements.coverBtn) {
                     this.elements.coverBtn.style.display = 'inline-flex';
-                    this.elements.coverBtn.onclick = function () { window.PDFModuleV2.exportReport(); };
+                    this.elements.coverBtn.onclick = function () {
+                        if (window.PDFModuleV2) window.PDFModuleV2.exportReport();
+                    };
                 }
 
                 // Update Nav Arrows
@@ -245,23 +252,24 @@
 
                 // Update Sidebar Active Link
                 const sidebarLinks = document.querySelectorAll('.nav-link');
-                if (sidebarLinks.length > 0) {
-                    sidebarLinks.forEach(link => {
-                        link.classList.remove('active');
-                        if (link.dataset.view === viewName) {
-                            link.classList.add('active');
-                            link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        }
-                    });
-                }
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.dataset.view === viewName) {
+                        link.classList.add('active');
+                        link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
             };
 
             // Override sidebar to use v2
             App.loadSidebar = async function () {
                 try {
                     const response = await fetch('sidebar2.html');
+                    if (!response.ok) throw new Error(`sidebar2.html not found (${response.status})`);
                     const html = await response.text();
-                    this.elements.sidebar.innerHTML = html;
+                    if (this.elements && this.elements.sidebar) {
+                        this.elements.sidebar.innerHTML = html;
+                    }
                     this.initNavigation();
 
                     if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
@@ -284,7 +292,7 @@
 
             // Listener Global para actualizar headers cuando lleguen los datos
             window.addEventListener('dataManagerLoaded', (e) => {
-                updateGlobalUI(e.detail.meta.comuna);
+                if (e.detail && e.detail.meta) updateGlobalUI(e.detail.meta.comuna);
             });
 
             // Comprobar si YA están cargados
@@ -297,11 +305,22 @@
             if (originalAside) originalAside.style.display = 'none';
 
             console.log("🛡️ App Overridden: Mode Seguridad (5 Vistas Estratégicas) Active");
+
+            // Inicializar DESPUÉS de aplicar todos los overrides.
+            // Prevenimos el DOMContentLoaded auto-init de app.js con la bandera _initCalled.
+            App._initCalled = true;
+            App.init();
         }
     </script>
 
     <script src="../../../script/help.js"></script>
-    <script>setTimeout(() => { if (typeof createHelpButton === 'function') createHelpButton('seguridad_dashboard'); }, 500);</script>
+    <script>
+        // ERR-FIX: Llamada directa en lugar de setTimeout(500) frágil.
+        // Si el script está cargado síncronamente, la función ya existe.
+        if (typeof createHelpButton === 'function') {
+            createHelpButton('seguridad_dashboard');
+        }
+    </script>
 </body>
 
 </html>

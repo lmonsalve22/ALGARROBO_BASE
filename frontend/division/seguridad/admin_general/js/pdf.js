@@ -27,6 +27,20 @@ const PDFModule = {
         averageTimePerView: 0
     },
 
+    // CQ-C2-002 FIX: Cache de referencias DOM del overlay (evita re-query en cada iteración)
+    _domRefs: null,
+
+    /**
+     * ERR-C2-007 FIX: Helper null-safe para formatear nombre de comuna.
+     * Previene TypeError si comunaName es null, número u otro tipo no-string.
+     * @param {*} name
+     * @returns {string}
+     */
+    _formatComuna(name) {
+        const raw = String(name || 'Comuna');
+        return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    },
+
     /**
      * Adds an image to the PDF with smart slicing to avoid cutting cards/tables
      */
@@ -96,7 +110,7 @@ const PDFModule = {
     addHeader(pdf, pageNum, totalPages, sectionTitle = '') {
         const { pageWidth, margins, headerHeight } = this.config;
         const state = window.STATE_DATA || {};
-        const comuna = state.comunaName ? (state.comunaName.charAt(0).toUpperCase() + state.comunaName.slice(1).toLowerCase()) : 'Comuna';
+        const comuna = this._formatComuna(state.comunaName);
 
         // Header background bar
         pdf.setFillColor(248, 250, 252);
@@ -239,7 +253,7 @@ const PDFModule = {
     generateBackCover(pdf) {
         const { pageWidth, pageHeight } = this.config;
         const state = window.STATE_DATA || {};
-        const comuna = state.comunaName ? (state.comunaName.charAt(0).toUpperCase() + state.comunaName.slice(1).toLowerCase()) : 'Comuna';
+        const comuna = this._formatComuna(state.comunaName);
 
         // Dark background
         pdf.setFillColor(15, 23, 42);
@@ -405,7 +419,7 @@ const PDFModule = {
     generateExecutiveSummary(pdf) {
         const { pageWidth, pageHeight, margins } = this.config;
         const state = window.STATE_DATA || {};
-        const comuna = state.comunaName ? (state.comunaName.charAt(0).toUpperCase() + state.comunaName.slice(1).toLowerCase()) : 'Comuna';
+        const comuna = this._formatComuna(state.comunaName);
         const semana = state.semanaDetalle || 'Semana --';
         const warning = state.warningZ || 'Sin datos';
 
@@ -713,6 +727,18 @@ const PDFModule = {
 
         document.body.appendChild(overlay);
 
+        // CQ-C2-002 FIX: Cachear referencias DOM tras crear el overlay
+        // Evita 5 getElementById por iteración durante el export (hasta 45+ vistas)
+        this._domRefs = {
+            progressBar: document.getElementById('pdfProgressBar'),
+            progressPercent: document.getElementById('pdfProgressPercent'),
+            progressLabel: document.getElementById('pdfProgressLabel'),
+            currentStep: document.getElementById('pdfCurrentStep'),
+            phaseText: document.getElementById('pdfPhaseText'),
+            elapsedTime: document.getElementById('pdfElapsedTime'),
+            remainingTime: document.getElementById('pdfRemainingTime')
+        };
+
         // Start time update interval
         this.timeUpdateInterval = setInterval(() => this.updateTimeDisplay(), 1000);
     },
@@ -733,24 +759,21 @@ const PDFModule = {
             tracker.averageTimePerView = elapsed / current;
         }
 
-        // Update UI elements
-        const progressBar = document.getElementById('pdfProgressBar');
-        const progressPercent = document.getElementById('pdfProgressPercent');
-        const progressLabel = document.getElementById('pdfProgressLabel');
-        const currentStep = document.getElementById('pdfCurrentStep');
-        const phaseText = document.getElementById('pdfPhaseText');
+        // CQ-C2-002 FIX: Usar referencias DOM cacheadas en lugar de getElementById por iteración
+        const refs = this._domRefs;
+        if (!refs) return;
 
         const percent = Math.round((current / tracker.totalViews) * 100);
 
-        if (progressBar) progressBar.style.width = `${percent}%`;
-        if (progressPercent) progressPercent.textContent = `${percent}%`;
-        if (progressLabel) progressLabel.textContent = `Vista ${current} de ${tracker.totalViews}`;
-        if (currentStep) currentStep.textContent = step;
-        if (phaseText) {
-            if (percent < 30) phaseText.textContent = 'Capturando vistas iniciales...';
-            else if (percent < 70) phaseText.textContent = 'Procesando contenido...';
-            else if (percent < 100) phaseText.textContent = 'Finalizando capturas...';
-            else phaseText.textContent = 'Generando documento PDF...';
+        if (refs.progressBar) refs.progressBar.style.width = `${percent}%`;
+        if (refs.progressPercent) refs.progressPercent.textContent = `${percent}%`;
+        if (refs.progressLabel) refs.progressLabel.textContent = `Vista ${current} de ${tracker.totalViews}`;
+        if (refs.currentStep) refs.currentStep.textContent = step;
+        if (refs.phaseText) {
+            if (percent < 30) refs.phaseText.textContent = 'Capturando vistas iniciales...';
+            else if (percent < 70) refs.phaseText.textContent = 'Procesando contenido...';
+            else if (percent < 100) refs.phaseText.textContent = 'Finalizando capturas...';
+            else refs.phaseText.textContent = 'Generando documento PDF...';
         }
     },
 
@@ -759,26 +782,26 @@ const PDFModule = {
      */
     updateTimeDisplay() {
         const tracker = this.progressTracker;
+        const refs = this._domRefs;
+        if (!refs) return;
+
         const elapsed = Date.now() - tracker.startTime;
 
-        // Format elapsed time
-        const elapsedEl = document.getElementById('pdfElapsedTime');
-        if (elapsedEl) {
+        // CQ-C2-002 FIX: Usar refs cacheadas
+        if (refs.elapsedTime) {
             const mins = Math.floor(elapsed / 60000);
             const secs = Math.floor((elapsed % 60000) / 1000);
-            elapsedEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            refs.elapsedTime.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
-        // Calculate and format remaining time
-        const remainingEl = document.getElementById('pdfRemainingTime');
-        if (remainingEl && tracker.capturedViews > 0) {
+        if (refs.remainingTime && tracker.capturedViews > 0) {
             const remaining = tracker.averageTimePerView * (tracker.totalViews - tracker.capturedViews);
             if (remaining > 0) {
                 const mins = Math.floor(remaining / 60000);
                 const secs = Math.floor((remaining % 60000) / 1000);
-                remainingEl.textContent = `~${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                refs.remainingTime.textContent = `~${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             } else {
-                remainingEl.textContent = '< 00:10';
+                refs.remainingTime.textContent = '< 00:10';
             }
         }
     },
@@ -791,6 +814,8 @@ const PDFModule = {
             clearInterval(this.timeUpdateInterval);
             this.timeUpdateInterval = null;
         }
+        // Limpiar referencias DOM cacheadas
+        this._domRefs = null;
         const overlay = document.getElementById('pdfExportOverlay');
         if (overlay) {
             overlay.style.opacity = '0';
@@ -836,7 +861,7 @@ const PDFModule = {
             pdf.save(`Reporte_Individual_${viewName}.pdf`);
 
         } catch (error) {
-            console.error("Export Single Error:", error);
+            LOG.error("Export Single Error:", error);
             alert("Error exportando hoja actual.");
         } finally {
             if (btn) {
@@ -854,13 +879,13 @@ const PDFModule = {
     async exportWithCover() {
         // Check if we contain Vistas 2 module
         if (window.PDFModuleV2 && window.location.href.includes('vistas2')) {
-            console.log("Delegating to PDFModuleV2...");
+            LOG.info("Delegating to PDFModuleV2...");
             await window.PDFModuleV2.exportReport();
             return;
         }
 
         // Fallback or Standard Impl
-        console.warn("Standard exportWithCover not fully implemented in this context. Using V2 delegation.");
+        LOG.warn("Standard exportWithCover not fully implemented in this context. Using V2 delegation.");
         if (window.PDFModuleV2) {
             await window.PDFModuleV2.exportReport();
         } else {
@@ -1247,7 +1272,7 @@ const PDFModule = {
             pdf.save(`Informe_RID_${comunaName}_${date}.pdf`);
 
         } catch (error) {
-            console.error('Error exporting PDF with cover:', error);
+            LOG.error('Error exporting PDF with cover:', error);
             alert('Error al exportar PDF. Por favor intente nuevamente.');
         } finally {
             // Restaurar animaciones
@@ -1392,7 +1417,7 @@ const PDFModule = {
             pdf.save(`Informe_RID_Completo_${comunaName}_${date}.pdf`);
 
         } catch (error) {
-            console.error('Error exporting Full PDF:', error);
+            LOG.error('Error exporting Full PDF:', error);
             alert('Error al exportar PDF Completo. Por favor intente nuevamente.');
         } finally {
             // Restaurar animaciones

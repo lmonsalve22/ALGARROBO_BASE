@@ -271,7 +271,6 @@ const IAModule = {
             if (cached && Object.keys(cached).length > 0) {
                 this.interpretations = cached;
                 this.isLoaded = true;
-                this.isLoading = false;
                 LOG.info('[IA] ✅ Interpretaciones cargadas desde cache');
                 return this.interpretations;
             }
@@ -280,8 +279,8 @@ const IAModule = {
             const context = this.buildDataContext();
             if (!context) {
                 LOG.warn('[IA] No data available for AI interpretation');
-                this.isLoading = false;
-                return this.getDefaultInterpretations();
+                this.interpretations = this.getDefaultInterpretations();
+                return this.interpretations;
             }
 
             LOG.info('[IA] Cache vacío/expirado, consultando API...');
@@ -303,7 +302,6 @@ const IAModule = {
                 max_tokens: 4000
             };
 
-            // ERR-004: AbortController con timeout de 30s para la API
             const controller = new AbortController();
             const fetchTimeoutId = setTimeout(() => controller.abort(), 30000);
             let response;
@@ -330,20 +328,20 @@ const IAModule = {
             const result = await response.json();
             const content = result.choices?.[0]?.message?.content || '';
 
-            // Parse JSON response
             this.interpretations = this.parseAIResponse(content);
             this.isLoaded = true;
 
-            // 3. Guardar en cache para reutilizar durante la semana
             this.saveToCache(this.interpretations);
             LOG.info('[IA] ✅ Interpretaciones generadas y guardadas en cache');
 
         } catch (error) {
             LOG.error('[IA] Error generating AI interpretations:', error);
             this.interpretations = this.getDefaultInterpretations();
+        } finally {
+            // ERR-FIX: Garantizar reset de isLoading incluso si hay excepción inesperada
+            this.isLoading = false;
         }
 
-        this.isLoading = false;
         return this.interpretations;
     },
 

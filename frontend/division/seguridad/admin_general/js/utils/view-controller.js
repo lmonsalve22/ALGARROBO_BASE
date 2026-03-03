@@ -55,11 +55,11 @@
 
                     await callback(S, C);
                 } catch (err) {
-                    console.error('❌ RID.View.init error:', err);
+                    LOG.error('❌ RID.View.init error:', err);
                 }
             })();
         }
     };
 
-    console.log('✅ RID.View Controller loaded.');
+    LOG.info('✅ RID.View Controller loaded.');
 })();

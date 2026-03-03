@@ -181,12 +181,10 @@ window.COLS = {
     T32_CAGR_ANUAL: 't32_cagr_anual'
 };
 
-// Runtime Validation
-if (typeof console !== 'undefined') {
-    Object.keys(window.COLS).forEach(key => {
-        if (!window.COLS[key]) {
-            console.error(`❌ COLS Config Error: Key ${key} is empty!`);
-        }
-    });
-    console.log("✅ Main Column Config (STOP) Reloaded & Validated");
-}
+// Runtime Validation (suprimida en producción por LOG condicional)
+Object.keys(window.COLS).forEach(key => {
+    if (!window.COLS[key]) {
+        LOG.error(`❌ COLS Config Error: Key ${key} is empty!`);
+    }
+});
+LOG.info("✅ Main Column Config (STOP) Reloaded & Validated");

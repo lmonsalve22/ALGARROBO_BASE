@@ -21,6 +21,9 @@ window.DataManager = {
         isLoading: false,
         comunaId: null,
 
+        // ERR-FIX: AbortControllers centralizados para cancelar peticiones en re-init
+        _controllers: [],
+
         // Taxonomy Mapping (Union Data)
         union: {
             data: [],
@@ -64,7 +67,10 @@ window.DataManager = {
      * @param {number} codcom 
      */
     async init(codcom = null) {
-        if (this.state.isLoading) return;
+        if (this.state.isLoading) {
+            // ERR-FIX: Abortar cualquier petición previa en curso antes de re-iniciar
+            this._abortAllPending();
+        }
         this.state.isLoading = true;
 
         // Determine Comuna ID from URL or argument
@@ -127,6 +133,16 @@ window.DataManager = {
     },
 
     /**
+     * ERR-FIX: Cancela todas las peticiones HTTP pendientes y limpia la lista de controladores.
+     */
+    _abortAllPending() {
+        this.state._controllers.forEach(ctrl => {
+            try { ctrl.abort(); } catch (_) { /* ya abortado */ }
+        });
+        this.state._controllers = [];
+    },
+
+    /**
      * Load Union Taxonomy (STOP <-> CEAD Mapping)
      */
     async loadUnionData() {
@@ -162,6 +178,8 @@ window.DataManager = {
             LOG.warn("⚠️ DataManager: Failed to load Union taxonomy.", e);
         } finally {
             clearTimeout(timeoutId);
+            // Limpiar referencia del controlador completado
+            this.state._controllers = this.state._controllers.filter(c => c !== controller);
         }
     },
 
@@ -170,6 +188,7 @@ window.DataManager = {
      */
     async loadClusterConfig() {
         const controller = new AbortController();
+        this.state._controllers.push(controller);
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
             const res = await fetch(this.config.clusterPath, { signal: controller.signal });
@@ -181,6 +200,7 @@ window.DataManager = {
             LOG.warn("⚠️ DataManager: Failed to load Cluster config.", e);
         } finally {
             clearTimeout(timeoutId);
+            this.state._controllers = this.state._controllers.filter(c => c !== controller);
         }
     },
 
@@ -277,6 +297,7 @@ window.DataManager = {
      */
     async loadStopData(id) {
         const controller = new AbortController();
+        this.state._controllers.push(controller);
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
             const url = `${this.config.stopPath}/${id}`;
@@ -287,23 +308,16 @@ window.DataManager = {
             const ds = new DecompressionStream('gzip');
             const blob = await new Response(res.body.pipeThrough(ds)).json();
 
-            // Organize
-            // Apply Enrichment
             if (blob && blob.length) blob.forEach(r => this._enrichRow(r));
 
             this.state.stop.data = blob;
             this.state.stop.history = blob.filter(r => r.delito !== 'Total' && r.delito !== 'TOTAL');
             this.state.stop.totalHistory = blob.filter(r => r.delito === 'Total' || r.delito === 'TOTAL');
 
-            // Find latest week
-            // Find latest week
             if (this.state.stop.totalHistory.length > 0) {
-                // Determine max week ID
                 const maxWeek = this.state.stop.totalHistory.reduce((max, r) => Math.max(max, r.id_semana || 0), -Infinity);
                 this.state.stop.currentWeek = maxWeek;
 
-                // Set Metadata
-                // Search for Comuna name in ANY row if not found in latest
                 const rowWithComuna = this.state.stop.data.find(r => r.Comuna || r.COMUNA || r.comuna);
                 const comunaName = rowWithComuna ? (rowWithComuna.Comuna || rowWithComuna.COMUNA || rowWithComuna.comuna) : 'Comuna ' + this.state.comunaId;
 
@@ -328,9 +342,9 @@ window.DataManager = {
 
         } catch (e) {
             LOG.warn("   ⚠️ STOP Load Warning:", e);
-            // Default empty state is already set
         } finally {
             clearTimeout(timeoutId);
+            this.state._controllers = this.state._controllers.filter(c => c !== controller);
         }
     },
 
@@ -339,30 +353,26 @@ window.DataManager = {
      */
     async loadCeadData(id) {
         const controller = new AbortController();
+        this.state._controllers.push(controller);
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
             const url = `${this.config.ceadPath}/${id}`;
             const res = await fetch(url, { signal: controller.signal });
 
-            // CEAD might be missing for some communes
             if (!res.ok) {
                 if (res.status === 404) LOG.warn(`   ⚠️ CEAD Data not found for ${id}`);
                 return;
             }
 
-            // Decompress
             const ds = new DecompressionStream('gzip');
             const blob = await new Response(res.body.pipeThrough(ds)).json();
 
-            // Organize
-            // Apply Enrichment
             if (blob && blob.length) blob.forEach(r => this._enrichRow(r));
 
             this.state.cead.data = blob;
             this.state.cead.history = blob.filter(r => r.delito !== 'Total' && r.delito !== 'TOTAL');
             this.state.cead.totalHistory = blob.filter(r => r.delito === 'Total' || r.delito === 'TOTAL');
 
-            // Find latest period
             if (this.state.cead.totalHistory.length > 0) {
                 const maxPeriod = this.state.cead.totalHistory.reduce((max, r) => Math.max(max, r.id_periodo || 0), -Infinity);
                 this.state.cead.currentPeriod = maxPeriod;
@@ -370,7 +380,6 @@ window.DataManager = {
                 const latest = this.state.cead.totalHistory.find(r => r.id_periodo === maxPeriod);
                 if (latest) {
                     this.state.cead.periodDetail = latest.periodo_detalle;
-                    // Only update meta if STOP didn't (STOP usually more recent/granular)
                     if (this.state.meta.comuna === 'Cargando...') {
                         this.state.meta.comuna = latest.Comuna;
                         this.state.meta.region = latest.Región;
@@ -384,6 +393,7 @@ window.DataManager = {
             LOG.warn("   ⚠️ CEAD Load Warning:", e);
         } finally {
             clearTimeout(timeoutId);
+            this.state._controllers = this.state._controllers.filter(c => c !== controller);
         }
     },
 

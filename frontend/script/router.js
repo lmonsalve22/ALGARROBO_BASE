@@ -1,5 +1,14 @@
 
-const BASE = "/ALGARROBO_BASE";
+// Base Path Auto-Detection (consistente con layout.js)
+const BASE = (() => {
+    const { hostname, pathname } = window.location;
+    const isGhPages = hostname.endsWith('github.io');
+    const isLocal = hostname === '' || hostname === 'localhost' || hostname === '127.0.0.1';
+    if (isGhPages || (!isLocal && pathname.startsWith('/ALGARROBO_BASE'))) {
+        return '/ALGARROBO_BASE';
+    }
+    return '';
+})();
 
 const diccionarioRutas = {
     10: [

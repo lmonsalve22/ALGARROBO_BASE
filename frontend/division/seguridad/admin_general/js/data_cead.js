@@ -27,27 +27,9 @@ window.STATE_DATA_CEAD = {
  * Relies on window.COLS_CEAD defined in config/columns.js
  */
 
-// If COLS_CEAD is missing, recreate it (fallback), but prefer config/columns.js
-if (!window.COLS_CEAD) {
-    console.warn("⚠️ COLS_CEAD missing! Using fallback configuration.");
-    window.COLS_CEAD = {
-        ID_PERIODO: 'id_periodo',
-        DELITO: 'delito',
-        CASOS_ACTUAL: 'frecuencia',
-        CASOS_ANT: 'casos_mes_anterior',
-        DELTA: 'delta',
-        VAR_PCT: 'variacion_porcentual',
-        ANIO: 'anio',
-        MES: 'mes',
-        MES_NUM: 'mes_num',
-        COMUNA: 'comuna',
-        REGION: 'region',
-        PERIODO_DETALLE: 'periodo_detalle',
-        ALERTA: 'alerta_aumento_critico'
-    };
-} else {
-    console.log("✅ Using Centralized COLS_CEAD configuration.");
-}
+// CQ-C2-001 FIX: Bloque if/else anterior era Dead Code — COLS_CEAD se define
+// canónicamente a continuación. La definición en config/columns.js (si existe)
+// debe hacerlo DESPUÉS de este archivo en el orden de carga.
 window.COLS_CEAD = {
     // Identificadores Base
     CODCOM: 'codcom',
@@ -284,25 +266,28 @@ const dataLoaderCead = {
     async load() {
         // Guard: Avoid multiple loads
         if (this._loadingInProgress || this._hasLoaded) {
-            console.warn('⚠️ CEAD DataLoader: Load already in progress or completed');
+            LOG.warn('⚠️ CEAD DataLoader: Load already in progress or completed');
             return;
         }
         this._loadingInProgress = true;
 
         try {
-            console.log('📊 Loading CEAD data...');
+            LOG.info('📊 Loading CEAD data...');
 
-            const targetCod = codcom_url_cead ? parseInt(codcom_url_cead) : 5602;
+            // COMP-C2-004 FIX: Validar rango de codcom antes de usarlo como path
+            const rawCod = parseInt(codcom_url_cead, 10);
+            const targetCod = (Number.isInteger(rawCod) && rawCod > 1000 && rawCod < 99999)
+                ? rawCod : 5602;
             STATE_DATA_CEAD.codcom = targetCod;
 
-            console.log(`📊 Loading CEAD data for comuna ${targetCod}...`);
+            LOG.info(`📊 Loading CEAD data for comuna ${targetCod}...`);
 
             const fileUrl = `data/cead_split/${targetCod}`;
 
             const response = await fetch(fileUrl);
             if (!response.ok) {
                 if (response.status === 404) {
-                    console.warn(`CEAD data for ${targetCod} not found. Using empty dataset.`);
+                    LOG.warn(`CEAD data for ${targetCod} not found. Using empty dataset.`);
                     STATE_DATA_CEAD.allData = [];
                 } else {
                     throw new Error(`Failed to load ${fileUrl}: ${response.status} ${response.statusText}`);
@@ -313,12 +298,10 @@ const dataLoaderCead = {
                 const decompressed = new Response(response.body.pipeThrough(ds));
                 const rawData = await decompressed.json();
 
-                console.log('🔍 CEAD Raw Data Sample:', rawData[0]);
-                console.log('🔍 CEAD Total rows loaded:', rawData.length);
+                LOG.info(`🔍 CEAD Total rows loaded: ${rawData.length}`);
 
-                // Habilitar datos completos (incluyendo proyecciones 202510-202512)
+                // Habilitar datos completos (incluyendo proyecciones)
                 const filteredData = rawData;
-                console.log('📅 CEAD Data fully loaded (including projections). Total rows:', filteredData.length);
 
                 // Separate 'Total' from individual delitos
                 STATE_DATA_CEAD.allDataHistory = filteredData.filter(
@@ -326,18 +309,19 @@ const dataLoaderCead = {
                 STATE_DATA_CEAD.allDataHistory_total = filteredData.filter(
                     row => row[COLS_CEAD.DELITO] === 'Total' || row[COLS_CEAD.DELITO] === 'TOTAL');
 
-                console.log('📊 CEAD Delitos individuales:', STATE_DATA_CEAD.allDataHistory.length);
-                console.log('📊 CEAD Filas Total:', STATE_DATA_CEAD.allDataHistory_total.length);
+                LOG.info(`📊 CEAD Delitos individuales: ${STATE_DATA_CEAD.allDataHistory.length} | Filas Total: ${STATE_DATA_CEAD.allDataHistory_total.length}`);
 
                 STATE_DATA_CEAD.allData = STATE_DATA_CEAD.allDataHistory;
             }
 
             if (STATE_DATA_CEAD.allDataHistory_total.length > 0) {
-                // Get max ID_PERIODO
+                // ERR-C2-002 FIX: usar reduce en lugar de spread para evitar -Infinity
                 const allPeriodos = STATE_DATA_CEAD.allDataHistory_total
                     .map(row => row[COLS_CEAD.ID_PERIODO])
                     .filter(p => p != null);
-                const maxPeriodo = allPeriodos.length > 0 ? Math.max(...allPeriodos) : 0;
+                const maxPeriodo = allPeriodos.length > 0
+                    ? allPeriodos.reduce((a, b) => Math.max(a, b), 0)
+                    : 0;
 
                 STATE_DATA_CEAD.periodoId = maxPeriodo;
 
@@ -361,7 +345,7 @@ const dataLoaderCead = {
             window.dispatchEvent(new CustomEvent('dataCeadLoaded', { detail: STATE_DATA_CEAD }));
 
         } catch (error) {
-            console.error("❌ Critical Error loading CEAD data:", error);
+            LOG.error("❌ Critical Error loading CEAD data:", error);
             STATE_DATA_CEAD.isLoaded = false;
             this._loadingInProgress = false;
             this._hasLoaded = false;

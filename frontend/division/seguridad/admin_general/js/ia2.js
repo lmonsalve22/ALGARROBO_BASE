@@ -27,23 +27,30 @@ window.IAModuleV2 = {
     init() {
         console.log('🤖 IA [INIT]: Módulo Seguridad inicializado (5 vistas). Esperando datos...');
         this.cache = {};
+        this._analysisRequested = false;
 
+        // ERR-FIX: Usar evento en lugar de setTimeout arbitrario.
+        // El fetch se dispara UNA vez al recibir datos, y la UI se actualiza
+        // en cada carga de vista, garantizando sincronización correcta.
         window.addEventListener('dataManagerLoaded', () => {
-            console.log('🤖 IA [EVENT]: dataManagerLoaded detectado. Esperando 3s para sincronización de UI...');
-            setTimeout(() => {
-                this.cache = this.loadCache();
-                if (!this.cache.vista1) {
-                    console.log('🤖 IA [CACHE]: Vacío o incompleto. Solicitando análisis...');
-                    this.fetchAllAnalyses();
-                } else {
-                    console.log('🤖 IA [CACHE]: Cargado desde local con', Object.keys(this.cache).length, 'vistas.');
-                    this.updateAllViews();
-                }
-            }, 3000);
+            console.log('🤖 IA [EVENT]: dataManagerLoaded detectado. Iniciando análisis...');
+            this.cache = this.loadCache();
+            if (!this.cache.vista1) {
+                console.log('🤖 IA [CACHE]: Vacío o incompleto. Solicitando análisis...');
+                this._analysisRequested = true;
+                this.fetchAllAnalyses();
+            } else {
+                console.log('🤖 IA [CACHE]: Cargado con', Object.keys(this.cache).length, 'vistas.');
+                this._analysisRequested = true;
+            }
         });
 
+        // Actualizar la vista actual cada vez que el App cargue una nueva vista.
+        // Este evento reemplaza el setTimeout de 3s como mecanismo de sincronización.
         window.addEventListener('viewLoaded', () => {
-            this.updateAllViews();
+            if (this._analysisRequested) {
+                this.updateAllViews(!!this._lastError);
+            }
         });
     },
 
@@ -71,8 +78,17 @@ window.IAModuleV2 = {
     saveCache(data) {
         const codcom = window.STATE_DATA?.codcom || 'default';
         const key = this.CACHE_KEY + codcom;
+        const payload = JSON.stringify({ timestamp: Date.now(), data });
+
+        // ERR-FIX: Validar tamaño antes de guardar para anticipar QuotaExceededError.
+        // localStorage tiene un límite aprox. de 5MB por origen.
+        const estimatedKb = (payload.length * 2) / 1024;
+        if (estimatedKb > 200) {
+            LOG.warn(`[IA2] Payload grande (${estimatedKb.toFixed(0)}KB). Se intentará guardar tras limpiar caches antiguos.`);
+        }
+
         try {
-            localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
+            localStorage.setItem(key, payload);
         } catch (e) {
             // ERR-009: Handle QuotaExceededError
             if (e.name === 'QuotaExceededError' || e.code === 22) {
@@ -81,7 +97,12 @@ window.IAModuleV2 = {
                     const k = localStorage.key(i);
                     if (k && k.startsWith(this.CACHE_KEY) && k !== key) localStorage.removeItem(k);
                 }
-                try { localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data })); } catch (_) { }
+                // ERR-FIX: Envolver el re-intento final en try/catch para fallo silencioso seguro.
+                try {
+                    localStorage.setItem(key, payload);
+                } catch (finalErr) {
+                    LOG.warn('[IA2] No fue posible guardar en caché incluso tras limpieza. Operando sin caché local.');
+                }
             }
         }
     },
@@ -284,6 +305,7 @@ No agregues encabezados ni despedidas.`;
             }
 
             this.cache = analyses;
+            this._lastError = false;
             this.saveCache(analyses);
             this.updateAllViews();
 
@@ -292,6 +314,7 @@ No agregues encabezados ni despedidas.`;
             if (e.name === 'AbortError') {
                 console.error('🤖 IA [CRITICAL]: La petición fue cancelada por timeout.');
             }
+            this._lastError = true;
             this.updateAllViews(true);
         } finally {
             this.fetching = false;

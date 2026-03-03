@@ -65,10 +65,29 @@
             if (el) el.textContent = text;
         },
 
-        setHtml(id, html) {
+        /**
+         * Asigna innerHTML con HTML generado internamente (template literals).
+         * @param {string} id
+         * @param {string} html - SOLO usar con HTML generado internamente, nunca con datos de servidor.
+         */
+        setHtmlTrusted(id, html) {
             const el = document.getElementById(id);
             if (el) el.innerHTML = html;
         },
+
+        /**
+         * Asigna contenido de texto externo de forma segura usando textContent.
+         * Usar cuando el contenido proviene de STATE_DATA u otras fuentes externas.
+         * @param {string} id
+         * @param {string} text
+         */
+        setHtmlSafe(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        },
+
+        /** @deprecated Usar setHtmlTrusted() para HTML interno o setHtmlSafe() para datos externos */
+        setHtml(id, html) { this.setHtmlTrusted(id, html); },
 
         renderColoredPercent(id, pct, inverse = true) {
             const el = document.getElementById(id);

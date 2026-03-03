@@ -36,7 +36,8 @@ const api = {
                     logout();
                 } else {
                     localStorage.clear();
-                    window.location.href = '/ALGARROBO_BASE/frontend/index.html';
+                    const _base = window.location.hostname.endsWith('github.io') ? '/ALGARROBO_BASE' : '';
+                    window.location.href = _base + '/frontend/index.html';
                 }
                 return;
             }
