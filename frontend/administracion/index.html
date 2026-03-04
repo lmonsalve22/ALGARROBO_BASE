@@ -362,6 +362,10 @@
         <a href="../division/transparencia/admin_general/index/inicio.html" class="btn-cta secondary">
             <i class="fa-solid fa-scale-balanced"></i> Transparencia
         </a>
+        <a href="../division/control/dashboard.html" class="btn-cta"
+            style="background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%);">
+            <i class="fa-solid fa-shield-halved"></i> Control y Auditoría
+        </a>
     </div>
 
     <main>
@@ -536,6 +540,31 @@
                     <a href="#" class="card-link"><i class="fa-solid fa-file-invoice"></i> Informes</a>
                     <div style="height: 1px; background: #eee; margin: 5px 0;"></div>
                     <a href="#" class="card-link"><i class="fa-solid fa-robot"></i> Asistente Virtual</a>
+                </div>
+            </article>
+
+            <!-- Módulo de Control Transversal -->
+            <article class="card" data-type="Control">
+                <div class="card-header"
+                    style="background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%); color: white;">
+                    <h3>Control y Auditoría</h3>
+                    <i class="fa-solid fa-shield-check"></i>
+                </div>
+                <div class="card-body">
+                    <a href="../division/control/dashboard.html" class="card-link">
+                        <i class="fa-solid fa-gauge-high"></i> Dashboard Trazabilidad
+                    </a>
+                    <a href="../division/control/usuarios.html" class="card-link">
+                        <i class="fa-solid fa-user-shield"></i> Auditoría por Usuario
+                    </a>
+                    <a href="../division/control/proyectos.html" class="card-link">
+                        <i class="fa-solid fa-file-shield"></i> Auditoría por Proyecto
+                    </a>
+                    <div style="height: 1px; background: #f1f5f9; margin: 8px 0;"></div>
+                    <a href="#" class="card-link"
+                        onclick="window.open('/api/control/export_pdf?token='+localStorage.getItem('token'), '_blank')">
+                        <i class="fa-solid fa-file-pdf"></i> Reporte Ejecutivo (PDF)
+                    </a>
                 </div>
             </article>
 

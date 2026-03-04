@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="../../script/router.js"></script>
+    <script src="../../script/api.js"></script>
+    <script src="../../script/utils.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo de Control – Trazabilidad por Usuario</title>
+    <meta name="description" content="Auditoría detallada por usuario.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Outfit', 'sans-serif'] } } } }</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/admin-styles.css">
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%);
+            border-radius: 1.5rem;
+            padding: 1.75rem 2rem;
+            color: white;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 18px -6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.875rem;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #bbf7d0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-pill {
+            background: white;
+            border: 1px solid #d1fae5;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            text-align: center;
+        }
+
+        .stat-pill span {
+            display: block;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .user-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .user-list-item:hover {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .user-list-item.active {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.18rem 0.61rem;
+            border-radius: 9999px;
+            font-size: 0.68rem;
+            font-weight: 600;
+        }
+
+        .badge-ver {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-editar {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-crear {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .badge-eliminar {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 0.75rem;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 16px;
+            top: 32px;
+            bottom: 0;
+            width: 1px;
+            background: #e2e8f0;
+        }
+
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            background: white;
+            border: 2px solid #f1f5f9;
+        }
+
+        .filter-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.7rem;
+            font-size: 0.81rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .filter-input:focus {
+            border-color: #10b981;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="headerRender"></div>
+    <div class="flex">
+        <div id="asideRender"></div>
+        <main class="flex-1 p-6">
+            <div class="page-header">
+                <div class="flex items-center gap-3 mb-2">
+                    <a href="dashboard.html" class="text-white/70 hover:text-white text-sm"><i
+                            class="fas fa-arrow-left"></i> Volver</a>
+                    <span class="text-white/30">/</span>
+                    <span class="text-white/90 text-sm">Control de Actividad por Usuario</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold">Auditoría Individual de Funcionarios</h1>
+                    <button onclick="descargarTodo()"
+                        class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm"
+                        style="background:rgba(255,255,255,0.18);color:white;border:1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-file-pdf"></i> Descargar Todo
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- LISTA -->
+                <div class="section-card lg:col-span-1">
+                    <div class="section-title" style="justify-content:space-between">
+                        <span><i class="fas fa-users text-green-500"></i> Usuarios Registrados <span
+                                id="totalUsuariosLabel" class="text-xs font-normal text-gray-400"></span></span>
+                        <button onclick="recargarUsuarios()" title="Actualizar lista"
+                            class="text-gray-400 hover:text-green-600 transition text-sm">
+                            <i class="fas fa-sync-alt" id="iconReloadUsers"></i>
+                        </button>
+                    </div>
+                    <input id="searchUser" class="filter-input w-full mb-3" placeholder="🔍 Buscar…"
+                        oninput="filtrarUsuarios()">
+                    <div id="listaUsuarios"
+                        style="max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;"></div>
+                </div>
+
+                <!-- DETALLE -->
+                <div class="lg:col-span-2" id="detallePanel">
+                    <div class="section-card text-center py-10 text-gray-400">Seleccione un usuario de la izquierda para
+                        ver su trazabilidad.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../script/layout.js"></script>
+    <script>
+        let todosUsuarios = [];
+        let charts = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await recargarUsuarios();
+            const uid = new URLSearchParams(location.search).get('uid');
+            if (uid) cargarDetalleUsuario(parseInt(uid));
+        });
+
+        async function recargarUsuarios() {
+            const icon = document.getElementById('iconReloadUsers');
+            if (icon) icon.classList.add('fa-spin');
+            try {
+                const data = await api.get('/control/resumen_usuarios');
+                todosUsuarios = Array.isArray(data) ? data : [];
+                document.getElementById('totalUsuariosLabel').textContent = `(${todosUsuarios.length})`;
+                renderListaUsuarios(todosUsuarios);
+            } catch (e) {
+                console.error('Error cargando usuarios:', e);
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
+            }
+        }
+
+        function renderListaUsuarios(lista) {
+            const el = document.getElementById('listaUsuarios');
+            const colores = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+            el.innerHTML = lista.map((u, i) => `
+                <div class="user-list-item" id="uitem-${u.user_id}" onclick="cargarDetalleUsuario(${u.user_id})">
+                    <div class="user-avatar" style="background:${colores[i % 5]}15;color:${colores[i % 5]}">${(u.nombre_usuario || u.email).substring(0, 2).toUpperCase()}</div>
+                    <div class="flex-1 min-w-0"><p class="text-sm font-semibold truncate">${u.nombre_usuario || '—'}</p><p class="text-[10px] text-gray-400">${u.email}</p></div>
+                    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-100">${u.total_acciones}</span>
+                </div>
+            `).join('');
+        }
+
+        async function cargarDetalleUsuario(uid) {
+            document.querySelectorAll('.user-list-item').forEach(e => e.classList.remove('active'));
+            document.getElementById(`uitem-${uid}`)?.classList.add('active');
+
+            document.getElementById('detallePanel').innerHTML = `
+                <div class="section-card text-center py-8 text-gray-400">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2 block"></i><p>Cargando actividad\u2026</p>
+                </div>`;
+
+            try {
+                const res = await api.get(`/control/actividad/usuario/${uid}`);
+                const { actividad } = res;
+                const usuario = res.usuario || { nombre: `Usuario #${uid}`, email: '\u2014' };
+
+                const stats = {
+                    total: actividad.length,
+                    vistas: actividad.filter(a => a.accion?.includes('ver')).length,
+                    ediciones: actividad.filter(a => a.accion?.includes('editar')).length,
+                    fallas: actividad.filter(a => !a.exitoso).length
+                };
+
+                document.getElementById('detallePanel').innerHTML = `
+                    <div class="user-card">
+                        <div class="flex items-center justify-between mb-1">
+                            <h2 class="text-xl font-bold">${usuario.nombre || '\u2014'}</h2>
+                            <button onclick="descargarUsuarioPDF(${uid})" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 transition">
+                                <i class="fas fa-download"></i> Descargar Usuario
+                            </button>
+                        </div>
+                        <p class="text-gray-500 mb-4">${usuario.email || '\u2014'}</p>
+                        <div class="grid grid-cols-4 gap-3">
+                            <div class="stat-pill"><b>${stats.total}</b><span class="text-[10px] text-gray-500">Total</span></div>
+                            <div class="stat-pill"><b>${stats.vistas}</b><span class="text-[10px] text-gray-500">Vistas</span></div>
+                            <div class="stat-pill"><b>${stats.ediciones}</b><span class="text-[10px] text-gray-500">Edits</span></div>
+                            <div class="stat-pill"><b class="text-red-500">${stats.fallas}</b><span class="text-[10px] text-gray-500">Errores</span></div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-title">Timeline de Actividad</div>
+                        ${actividad.length === 0
+                        ? '<p class="text-sm text-gray-400 text-center py-6">Sin actividad registrada para este usuario.</p>'
+                        : `<div style="max-height:400px;overflow-y:auto">
+                                ${actividad.map(r => `
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot"><i class="fas ${r.accion?.includes('ver') ? 'fa-eye' : 'fa-edit'}"></i></div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="badge ${r.accion?.includes('ver') ? 'badge-ver' : 'badge-editar'}">${r.accion}</span>
+                                                <span class="text-[10px] text-gray-400">${new Date(r.fecha).toLocaleString('es-CL')}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">${r.detalle || r.entidad_nombre || 'Sin detalles'}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>`
+                    }
+                    </div>
+                `;
+            } catch (e) {
+                document.getElementById('detallePanel').innerHTML =
+                    `<div class="section-card text-center py-8 text-red-400">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2 block"></i>
+                        Error al cargar actividad del usuario.
+                    </div>`;
+                console.error('Error cargarDetalleUsuario:', e);
+            }
+        }
+
+        function filtrarUsuarios() {
+            const q = document.getElementById('searchUser').value.toLowerCase();
+            renderListaUsuarios(todosUsuarios.filter(u => u.nombre_usuario?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q)));
+        }
+
+        // ─── Generación de PDF ────────────────────────────────────────
+        // returnBlob=true devuelve Blob en lugar de disparar descarga
+        function generarPDFUsuario(usuario, actividad, returnBlob = false) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const hoy = new Date().toLocaleDateString('es-CL');
+
+            doc.setFillColor(5, 150, 105);
+            doc.rect(0, 0, 210, 28, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text(`Auditoria de Usuario: ${usuario.nombre || usuario.email}`, 14, 12);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text(`Email: ${usuario.email || '—'}  |  ID: ${usuario.user_id || '—'}  |  Generado: ${hoy}`, 14, 22);
+
+            const stats = {
+                total: actividad.length,
+                vistas: actividad.filter(a => a.accion?.includes('ver')).length,
+                ediciones: actividad.filter(a => a.accion?.includes('editar')).length,
+                fallas: actividad.filter(a => !a.exitoso).length
+            };
+            let y = 38;
+            const pills = [
+                ['Total Acciones', stats.total],
+                ['Vistas', stats.vistas],
+                ['Ediciones', stats.ediciones],
+                ['Errores', stats.fallas]
+            ];
+            pills.forEach(([label, val], i) => {
+                const x = 14 + i * 46;
+                doc.setFillColor(240, 253, 244);
+                doc.roundedRect(x, y, 42, 18, 3, 3, 'F');
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(5, 150, 105);
+                doc.setFontSize(13);
+                doc.text(String(val), x + 21, y + 10, null, null, 'center');
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(100, 116, 139);
+                doc.setFontSize(7);
+                doc.text(label, x + 21, y + 16, null, null, 'center');
+            });
+
+            y = 66;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(30, 41, 59);
+            doc.text('Timeline de Actividad', 14, y);
+            y += 6;
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+
+            actividad.forEach((r, i) => {
+                if (y > 270) { doc.addPage(); y = 16; }
+                doc.setFillColor(i % 2 === 0 ? 248 : 242, i % 2 === 0 ? 250 : 247, i % 2 === 0 ? 252 : 248);
+                doc.rect(14, y, 182, 12, 'F');
+                doc.setTextColor(71, 85, 105);
+                doc.text(new Date(r.fecha).toLocaleString('es-CL'), 16, y + 5);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(5, 150, 105);
+                doc.text(r.accion || '—', 72, y + 5);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(100, 116, 139);
+                doc.text((r.detalle || r.entidad_nombre || 'Sin detalles').substring(0, 55), 120, y + 5);
+                doc.setTextColor(r.exitoso ? 14 : 220, r.exitoso ? 165 : 38, r.exitoso ? 70 : 38);
+                doc.setFont('helvetica', 'bold');
+                doc.text(r.exitoso ? 'OK' : 'FAIL', 190, y + 5, null, null, 'right');
+                doc.setFont('helvetica', 'normal');
+                y += 13;
+            });
+
+            const pages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(7);
+                doc.setTextColor(148, 163, 184);
+                doc.text(`Pagina ${i} de ${pages}  |  Control y Auditoria - Municipalidad de Algarrobo`, 14, 290);
+            }
+
+            if (returnBlob) return doc.output('blob');
+            doc.save(`auditoria_usuario_${usuario.user_id || 'x'}.pdf`);
+        }
+
+        async function descargarUsuarioPDF(uid) {
+            try {
+                const res = await api.get(`/control/actividad/usuario/${uid}`);
+                const usuario = res.usuario || { nombre: `Usuario #${uid}`, email: `usuario_${uid}`, user_id: uid };
+                generarPDFUsuario(usuario, res.actividad || []);
+            } catch (e) {
+                alert('Error al generar PDF del usuario.');
+                console.error(e);
+            }
+        }
+
+        async function descargarTodo() {
+            if (!todosUsuarios.length) return alert('No hay usuarios cargados.');
+            const btn = event.currentTarget;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando ZIP...';
+
+            const zip = new JSZip();
+            let ok = 0;
+
+            for (const u of todosUsuarios) {
+                try {
+                    const res = await api.get(`/control/actividad/usuario/${u.user_id}`);
+                    const usuario = res.usuario || { ...u, user_id: u.user_id };
+                    const blob = generarPDFUsuario(usuario, res.actividad || [], true);
+                    zip.file(`${u.user_id}.pdf`, blob);
+                    ok++;
+                } catch (e) { console.error(`Error usuario ${u.user_id}:`, e); }
+            }
+
+            if (ok === 0) {
+                alert('No se pudo generar ningún PDF.');
+            } else {
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(zipBlob);
+                a.download = `auditoria_usuarios_${new Date().toLocaleDateString('es-CL').replace(/\//g, '-')}.zip`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-file-pdf"></i> Descargar Todo';
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="../../script/router.js"></script>
+    <script src="../../script/api.js"></script>
+    <script src="../../script/utils.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Control – Trazabilidad Global</title>
+    <meta name="description" content="Módulo de control y auditoría transversal del sistema municipal.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF para generación de PDF client-side -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#6366f1', secondary: '#10b981', accent: '#f59e0b' }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/admin-styles.css">
+
+    <style>
+        :root {
+            --ctrl-primary: #4f46e5;
+            --ctrl-green: #10b981;
+            --ctrl-amber: #f59e0b;
+            --ctrl-red: #ef4444;
+            --ctrl-purple: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f1f5f9;
+            background-image:
+                radial-gradient(at 0% 0%, hsla(240, 80%, 96%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(160, 60%, 95%, 1) 0, transparent 50%);
+            min-height: 100vh;
+        }
+
+        /* ── Header banner ── */
+        .ctrl-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 100%);
+            border-radius: 1.5rem;
+            padding: 2rem 2.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .ctrl-header::before {
+            content: '';
+            position: absolute;
+            top: -60%;
+            right: -10%;
+            width: 50%;
+            height: 220%;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 50%;
+            transform: rotate(-20deg);
+        }
+
+        .ctrl-header::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: 30%;
+            width: 40%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+        }
+
+        /* ── Badges de métricas en header ── */
+        .ctrl-badge {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(6px);
+            border-radius: 0.75rem;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* ── KPI Cards ── */
+        .kpi-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid #e8edf3;
+            box-shadow: 0 2px 12px -4px rgba(0, 0, 0, 0.06);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.375rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Section cards ── */
+        .section-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 18px -6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .section-title-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Charts ── */
+        .chart-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        @media(max-width: 900px) {
+            .chart-grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-box {
+            background: #fafbfc;
+            border: 1px solid #e8edf3;
+            border-radius: 0.875rem;
+            padding: 1.125rem;
+        }
+
+        .chart-box h5 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .chart-h {
+            position: relative;
+            height: 260px;
+        }
+
+        /* ── Activity Table ── */
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .activity-table thead th {
+            background: #f8fafc;
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            color: #64748b;
+            font-weight: 600;
+            border-bottom: 2px solid #e8edf3;
+            white-space: nowrap;
+        }
+
+        .activity-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s;
+        }
+
+        .activity-table tbody tr:hover {
+            background: #f8faff;
+        }
+
+        .activity-table td {
+            padding: 0.55rem 0.75rem;
+            vertical-align: middle;
+        }
+
+        /* ── Badges de acción ── */
+        .badge-accion {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-ver {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-editar {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-crear {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .badge-eliminar {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-login {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-export {
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .badge-otro {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .badge-ok {
+            background: #d1fae5;
+            color: #065f46;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+        }
+
+        .badge-fail {
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+        }
+
+        /* ── Heatmap horario ── */
+        .heat-grid {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 3px;
+        }
+
+        .heat-cell {
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: white;
+            cursor: default;
+            transition: transform 0.1s;
+        }
+
+        .heat-cell:hover {
+            transform: scale(1.25);
+            z-index: 10;
+            position: relative;
+        }
+
+        .heat-labels {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 3px;
+            margin-top: 3px;
+        }
+
+        .heat-label {
+            font-size: 0.55rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* ── Paginación ── */
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            min-width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .page-btn:hover {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .page-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ── Filtros ── */
+        .filter-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.82rem;
+            font-family: 'Outfit', sans-serif;
+            background: white;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .filter-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* ── Animaciones ── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-up {
+            animation: fadeUp 0.4s ease forwards;
+        }
+
+        /* ── Skeleton loader ── */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e8edf3 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 0.5rem;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0
+            }
+
+            100% {
+                background-position: -200% 0
+            }
+        }
+
+        /* ── Top N lists ── */
+        .rank-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .rank-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .rank-bar-wrap {
+            flex: 1;
+        }
+
+        .rank-bar-bg {
+            background: #f1f5f9;
+            border-radius: 9999px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .rank-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.8s cubic-bezier(.4, 0, .2, 1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="headerRender"></div>
+    <div class="flex">
+        <div id="asideRender"></div>
+
+        <main class="flex-1 p-6">
+
+            <!-- ── HEADER ── -->
+            <div class="ctrl-header fade-up">
+                <div class="relative z-10 flex items-start justify-between gap-6 flex-wrap">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center"
+                                style="background:rgba(255,255,255,0.15)">
+                                <i class="fas fa-shield-alt text-2xl text-white"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold text-white">Módulo de Control</h1>
+                                <p class="text-white/70 text-sm mt-0.5">Trazabilidad completa de actividad de usuarios ·
+                                    Módulo Transversal</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-3 mt-4">
+                            <div class="ctrl-badge"><i class="fas fa-bolt text-yellow-300"></i><span><span
+                                        id="hdr-hoy">—</span> acciones hoy</span></div>
+                            <div class="ctrl-badge"><i class="fas fa-users text-green-300"></i><span><span
+                                        id="hdr-usuarios">—</span> usuarios activos</span></div>
+                            <div class="ctrl-badge"><i class="fas fa-clock text-blue-200"></i><span>Actualizado: <span
+                                        id="hdr-ts">—</span></span></div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button id="btnExportPDF" onclick="exportarPDF()"
+                            class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                            style="background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.25);">
+                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                        </button>
+                        <button onclick="refreshStats()"
+                            class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                            style="background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2);">
+                            <i class="fas fa-sync-alt" id="iconRefresh"></i> Actualizar KPIs
+                        </button>
+                        <a href="usuarios.html"
+                            class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                            style="background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2);">
+                            <i class="fas fa-user-clock"></i> Por Usuario
+                        </a>
+                        <a href="proyectos.html"
+                            class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                            style="background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.2);">
+                            <i class="fas fa-project-diagram"></i> Por Proyecto
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── KPI ROW 1 ── -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 fade-up">
+                <div class="kpi-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Total Acciones</p>
+                            <p class="text-2xl font-bold text-gray-800" id="kpi-total">—</p>
+                            <p class="text-xs text-indigo-500 mt-1"><i class="fas fa-database mr-1"></i>Historial
+                                completo</p>
+                        </div>
+                        <div class="kpi-icon" style="background:linear-gradient(135deg,#e0e7ff,#c7d2fe);color:#4f46e5;">
+                            <i class="fas fa-history"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Usuarios Activos</p>
+                            <p class="text-2xl font-bold text-gray-800" id="kpi-usuarios">—</p>
+                            <p class="text-xs text-green-500 mt-1"><i class="fas fa-user-check mr-1"></i>Con actividad
+                            </p>
+                        </div>
+                        <div class="kpi-icon" style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#059669;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- ... Resto de KPIs ... -->
+                <div class="kpi-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Proyectos Accedidos</p>
+                            <p class="text-2xl font-bold text-gray-800" id="kpi-proyectos">—</p>
+                            <p class="text-xs text-amber-500 mt-1"><i class="fas fa-folder-open mr-1"></i>Distintos</p>
+                        </div>
+                        <div class="kpi-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706;">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Acciones Fallidas</p>
+                            <p class="text-2xl font-bold text-gray-800" id="kpi-fallidas">—</p>
+                            <p class="text-xs text-red-500 mt-1"><i class="fas fa-exclamation-triangle mr-1"></i>Con
+                                error</p>
+                        </div>
+                        <div class="kpi-icon" style="background:linear-gradient(135deg,#fee2e2,#fecaca);color:#dc2626;">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 fade-up">
+                <div class="kpi-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Acciones Hoy</p>
+                            <p class="text-2xl font-bold text-gray-800" id="kpi-hoy">—</p>
+                        </div>
+                        <div class="kpi-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#7c3aed;">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Tasa de Error</p>
+                            <p class="text-2xl font-bold text-gray-800" id="kpi-tasa-error">—</p>
+                        </div>
+                        <div class="kpi-icon" style="background:linear-gradient(135deg,#ffe4e6,#fecdd3);color:#e11d48;">
+                            <i class="fas fa-shield-exclamation"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS -->
+            <div class="section-card fade-up">
+                <div class="section-title">
+                    <div class="section-title-icon" style="background:linear-gradient(135deg,#4f46e5,#7c3aed)">
+                        <i class="fas fa-chart-area"></i>
+                    </div>
+                    <span>Actividad Temporal y Distribución</span>
+                </div>
+                <div class="chart-grid-2">
+                    <div class="chart-box">
+                        <h5>Acciones por Día</h5>
+                        <div class="chart-h"><canvas id="chartDiario"></canvas></div>
+                    </div>
+                    <div class="chart-box">
+                        <h5>Distribución por Módulo</h5>
+                        <div class="chart-h"><canvas id="chartModulo"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HEATMAP -->
+            <div class="section-card fade-up">
+                <div class="section-title">
+                    <div class="section-title-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <span>Patrón de Uso por Hora del Día</span>
+                </div>
+                <div class="heat-grid" id="heatmapHoras"></div>
+                <div class="heat-labels" id="heatmapLabels"></div>
+            </div>
+
+            <!-- TOP LISTS -->
+            <div class="chart-grid-2 mb-8 fade-up">
+                <div class="section-card mb-0">
+                    <div class="section-title">Top 10 Usuarios Activos</div>
+                    <div id="listTopUsuarios"></div>
+                </div>
+                <div class="section-card mb-0">
+                    <div class="section-title">Top 10 Proyectos Visitados</div>
+                    <div id="listTopProyectos"></div>
+                </div>
+            </div>
+
+            <!-- TABLA -->
+            <div class="section-card fade-up">
+                <div class="section-title">Historial Completo</div>
+                <div class="flex flex-wrap gap-3 mb-4">
+                    <input id="fq" class="filter-input" placeholder="🔍 Buscar usuario, proyecto, detalle…">
+                    <button onclick="buscarActividad(1)" class="px-4 py-2 rounded-xl text-white text-sm font-semibold"
+                        style="background:#4f46e5">Filtrar</button>
+                    <button onclick="limpiarFiltros()"
+                        class="px-4 py-2 rounded-xl bg-gray-100 text-sm font-semibold">Limpiar</button>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Usuario</th>
+                                <th>Acción</th>
+                                <th>Módulo</th>
+                                <th>Entidad</th>
+                                <th>Estado</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaActividad"></tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <p class="text-xs text-gray-400" id="pagInfo">Mostrando 0 de 0 registros</p>
+                    <div class="pagination" id="paginacion"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../../script/layout.js"></script>
+    <script>
+        let charts = {};
+        let kpiData = null;
+        const state = { page: 1, perPage: 50, total: 0 };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Iniciar sesión requerida ya se maneja por el middleware global si existe
+            init();
+        });
+
+        async function init() {
+            await Promise.all([cargarKPIs(), buscarActividad(1)]);
+            document.getElementById('hdr-ts').textContent = new Date().toLocaleTimeString();
+        }
+
+        async function cargarKPIs() {
+            try {
+                const kpi = await api.get('/control/kpi');
+                kpiData = kpi;
+                renderKPI(kpi.totales);
+                renderCharts(kpi);
+                renderHeatmap(kpi.por_hora || []);
+                renderRanks(kpi.top_usuarios, kpi.top_proyectos);
+            } catch (e) {
+                console.error("Error KPIs:", e);
+            }
+        }
+
+        function renderKPI(t) {
+            if (!t) return;
+            document.getElementById('kpi-total').textContent = fmtNum(t.total_acciones);
+            document.getElementById('kpi-usuarios').textContent = fmtNum(t.usuarios_activos);
+            document.getElementById('kpi-proyectos').textContent = fmtNum(t.proyectos_accedidos);
+            document.getElementById('kpi-fallidas').textContent = fmtNum(t.acciones_fallidas);
+            document.getElementById('kpi-hoy').textContent = fmtNum(t.acciones_hoy);
+            const rate = t.total_acciones > 0 ? (t.acciones_fallidas * 100 / t.total_acciones).toFixed(1) : 0;
+            document.getElementById('kpi-tasa-error').textContent = rate + '%';
+            document.getElementById('hdr-hoy').textContent = fmtNum(t.acciones_hoy);
+            document.getElementById('hdr-usuarios').textContent = fmtNum(t.usuarios_activos);
+        }
+
+        function renderCharts(k) {
+            // Diario
+            const dCtx = document.getElementById('chartDiario').getContext('2d');
+            if (charts.diario) charts.diario.destroy();
+            charts.diario = new Chart(dCtx, {
+                type: 'line',
+                data: {
+                    labels: (k.actividad_diaria || []).map(d => fmtDia(d.dia)),
+                    datasets: [{
+                        label: 'Acciones',
+                        data: (k.actividad_diaria || []).map(d => d.total),
+                        borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true, tension: 0.4, borderWeight: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Modulo
+            const mCtx = document.getElementById('chartModulo').getContext('2d');
+            if (charts.modulo) charts.modulo.destroy();
+            charts.modulo = new Chart(mCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: (k.por_modulo || []).map(m => m.modulo),
+                    datasets: [{
+                        data: (k.por_modulo || []).map(m => m.total),
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+            });
+        }
+
+        function renderHeatmap(data) {
+            const el = document.getElementById('heatmapHoras');
+            const labels = document.getElementById('heatmapLabels');
+            el.innerHTML = ''; labels.innerHTML = '';
+            const max = Math.max(...data.map(d => d.total), 1);
+
+            for (let h = 0; h < 24; h++) {
+                const item = data.find(d => d.hora === h);
+                const count = item ? item.total : 0;
+                const opacity = count > 0 ? (0.2 + (count / max) * 0.8) : 0;
+                const color = count > 0 ? `rgba(79, 70, 229, ${opacity})` : '#f1f5f9';
+
+                el.innerHTML += `<div class="heat-cell" style="background:${color}" title="${h}:00 - ${count} acciones">${count > 0 ? count : ''}</div>`;
+                labels.innerHTML += `<div class="heat-label">${h}</div>`;
+            }
+        }
+
+        function renderRanks(users, projs) {
+            const uEl = document.getElementById('listTopUsuarios');
+            const pEl = document.getElementById('listTopProyectos');
+            const maxU = users[0]?.total_acciones || 1;
+            const maxP = projs[0]?.total_accesos || 1;
+
+            uEl.innerHTML = users.slice(0, 10).map((u, i) => `
+                <div class="rank-item">
+                    <div class="rank-num" style="background:#e0e7ff;color:#4f46e5">${i + 1}</div>
+                    <div class="rank-bar-wrap">
+                        <div class="flex justify-between text-[0.7rem] mb-1">
+                            <a href="usuarios.html?uid=${u.user_id}" class="font-bold hover:underline">${u.nombre || u.email}</a>
+                            <span class="text-gray-400">${u.total_acciones}</span>
+                        </div>
+                        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${(u.total_acciones * 100 / maxU).toFixed(0)}%;background:#6366f1"></div></div>
+                    </div>
+                </div>
+            `).join('');
+
+            pEl.innerHTML = projs.slice(0, 10).map((p, i) => `
+                <div class="rank-item">
+                    <div class="rank-num" style="background:#fef3c7;color:#d97706">${i + 1}</div>
+                    <div class="rank-bar-wrap">
+                        <div class="flex justify-between text-[0.7rem] mb-1">
+                            <a href="proyectos.html?pid=${p.proyecto_id}" class="font-bold hover:underline truncate w-40">${p.nombre_proyecto || p.proyecto_id}</a>
+                            <span class="text-gray-400">${p.total_accesos}</span>
+                        </div>
+                        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${(p.total_accesos * 100 / maxP).toFixed(0)}%;background:#f59e0b"></div></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function buscarActividad(page = 1) {
+            state.page = page;
+            const q = document.getElementById('fq').value;
+            try {
+                const res = await api.get(`/control/actividad?page=${page}&q=${encodeURIComponent(q)}`);
+                renderTabla(res.data);
+                renderPaginacion(res);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderTabla(data) {
+            const tbody = document.getElementById('listaActividad');
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td class="whitespace-nowrap">${fmtFecha(r.fecha)}</td>
+                    <td><a href="usuarios.html?uid=${r.user_id}" class="text-indigo-600 font-medium">${r.nombre_usuario || '—'}</a></td>
+                    <td><span class="badge-accion ${getBadge(r.accion)}">${r.accion}</span></td>
+                    <td class="text-gray-400 capitalize">${r.modulo}</td>
+                    <td class="max-w-[150px] truncate" title="${r.entidad_nombre || ''}">
+                        ${r.entidad_tipo ? `<b>${r.entidad_tipo}:</b> ` : ''}${r.entidad_nombre || '—'}
+                    </td>
+                    <td><span class="${r.exitoso ? 'badge-ok' : 'badge-fail'}">${r.exitoso ? 'EXITO' : 'FALLO'}</span></td>
+                    <td class="font-mono text-[10px] text-gray-300">${r.ip_origen || '—'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPaginacion(res) {
+            const pag = document.getElementById('paginacion');
+            const info = document.getElementById('pagInfo');
+            info.textContent = `Mostrando ${(res.page - 1) * res.per_page + 1} a ${Math.min(res.total, res.page * res.per_page)} de ${res.total} registros`;
+
+            let html = `<button class="page-btn" ${res.page === 1 ? 'disabled' : ''} onclick="buscarActividad(${res.page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+            for (let i = 1; i <= res.pages; i++) {
+                if (i === 1 || i === res.pages || (i >= res.page - 2 && i <= res.page + 2)) {
+                    html += `<button class="page-btn ${i === res.page ? 'active' : ''}" onclick="buscarActividad(${i})">${i}</button>`;
+                } else if (i === res.page - 3 || i === res.page + 3) {
+                    html += `<span class="px-1">...</span>`;
+                }
+            }
+            html += `<button class="page-btn" ${res.page === res.pages ? 'disabled' : ''} onclick="buscarActividad(${res.page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+            pag.innerHTML = html;
+        }
+
+        // Helpers
+        function fmtNum(n) { return Number(n || 0).toLocaleString('es-CL'); }
+        function fmtFecha(ts) { return new Date(ts).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+        function fmtDia(d) { return new Date(d).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' }); }
+        function getBadge(a) { if (a.includes('ver')) return 'badge-ver'; if (a.includes('edit')) return 'badge-editar'; if (a.includes('crear')) return 'badge-crear'; if (a.includes('eliminar')) return 'badge-eliminar'; if (a.includes('login')) return 'badge-login'; return 'badge-otro'; }
+
+        async function refreshStats() {
+            const btn = document.getElementById('iconRefresh');
+            btn.classList.add('fa-spin');
+            await api.post('/control/refresh_stats');
+            await init();
+            btn.classList.remove('fa-spin');
+        }
+
+        async function exportarPDF() {
+            if (!kpiData) return alert('Espere a que carguen los datos.');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const t = kpiData.totales || {};
+            const hoy = new Date().toLocaleDateString('es-CL');
+
+            // --- Encabezado ---
+            doc.setFillColor(99, 102, 241);
+            doc.rect(0, 0, 210, 28, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text('Reporte Ejecutivo de Control y Auditoria', 14, 12);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Municipalidad de Algarrobo  |  Generado: ${hoy}`, 14, 22);
+
+            // --- KPIs principales ---
+            doc.setTextColor(30, 41, 59);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('KPIs Globales del Sistema', 14, 40);
+
+            const kpis = [
+                ['Total de Acciones Registradas', Number(t.total_acciones || 0).toLocaleString('es-CL')],
+                ['Usuarios Activos (historico)', Number(t.usuarios_activos || 0).toLocaleString('es-CL')],
+                ['Proyectos con Actividad', Number(t.proyectos_accedidos || 0).toLocaleString('es-CL')],
+                ['Acciones Hoy', Number(t.acciones_hoy || 0).toLocaleString('es-CL')],
+                ['Acciones Esta Semana', Number(t.acciones_semana || 0).toLocaleString('es-CL')],
+                ['Acciones Fallidas', Number(t.acciones_fallidas || 0).toLocaleString('es-CL')],
+            ];
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            let y = 50;
+            kpis.forEach(([label, val]) => {
+                doc.setFillColor(248, 250, 252);
+                doc.roundedRect(14, y - 4, 182, 10, 2, 2, 'F');
+                doc.setTextColor(71, 85, 105);
+                doc.text(label, 18, y + 3);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(99, 102, 241);
+                doc.text(val, 170, y + 3, null, null, 'right');
+                doc.setFont('helvetica', 'normal');
+                y += 13;
+            });
+
+            // --- Top usuarios ---
+            y += 6;
+            doc.setTextColor(30, 41, 59);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('Top Usuarios por Actividad', 14, y);
+            y += 8;
+
+            const topU = (kpiData.top_usuarios || []).slice(0, 8);
+            doc.setFontSize(9);
+            if (topU.length === 0) {
+                doc.setFont('helvetica', 'italic');
+                doc.setTextColor(148, 163, 184);
+                doc.text('Sin datos disponibles', 18, y);
+                y += 8;
+            } else {
+                topU.forEach((u, i) => {
+                    doc.setFillColor(i % 2 === 0 ? 241 : 248, i % 2 === 0 ? 245 : 250, i % 2 === 0 ? 251 : 252);
+                    doc.rect(14, y - 4, 182, 9, 'F');
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`${i + 1}. ${u.nombre || u.email || '-'}`, 18, y + 2);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(16, 185, 129);
+                    doc.text(`${Number(u.total_acciones).toLocaleString('es-CL')} acciones`, 180, y + 2, null, null, 'right');
+                    y += 10;
+                });
+            }
+
+            // --- Top proyectos ---
+            y += 6;
+            if (y > 240) { doc.addPage(); y = 20; }
+            doc.setTextColor(30, 41, 59);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('Top Proyectos Accedidos', 14, y);
+            y += 8;
+
+            const topP = (kpiData.top_proyectos || []).slice(0, 8);
+            doc.setFontSize(9);
+            if (topP.length === 0) {
+                doc.setFont('helvetica', 'italic');
+                doc.setTextColor(148, 163, 184);
+                doc.text('Sin datos disponibles aun', 18, y);
+            } else {
+                topP.forEach((p, i) => {
+                    doc.setFillColor(i % 2 === 0 ? 255 : 251, i % 2 === 0 ? 251 : 248, i % 2 === 0 ? 235 : 230);
+                    doc.rect(14, y - 4, 182, 9, 'F');
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`${i + 1}. ${(p.nombre_proyecto || 'Proyecto ' + p.proyecto_id).substring(0, 55)}`, 18, y + 2);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(245, 158, 11);
+                    doc.text(`${Number(p.total_accesos).toLocaleString('es-CL')} accesos`, 180, y + 2, null, null, 'right');
+                    y += 10;
+                });
+            }
+
+            // --- Pie de pagina ---
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(148, 163, 184);
+                doc.text(`Pagina ${i} de ${pageCount}  |  Control y Auditoria - Municipalidad de Algarrobo`, 14, 290);
+            }
+
+            doc.save(`control_auditoria_${hoy.replace(/\//g, '-')}.pdf`);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('fq').value = '';
+            buscarActividad(1);
+        }
+    </script>
+</body>
+
+</html>

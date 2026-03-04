@@ -1235,6 +1235,16 @@
                 return;
             }
 
+            // Registrar actividad ver_proyecto (fire-and-forget)
+            api.post('/control/registrar', {
+                accion: 'ver_proyecto',
+                modulo: 'proyectos',
+                entidad_tipo: 'proyecto',
+                entidad_id: id,
+                entidad_nombre: proyecto.nombre || `Proyecto #${id}`,
+                exitoso: true
+            }).catch(() => { }); // silencioso — no interrumpe la UI
+
             let projectDocs = [];
             try {
                 // Fetch documents for the project

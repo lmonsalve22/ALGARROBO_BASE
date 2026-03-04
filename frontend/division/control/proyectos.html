@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script src="../../script/router.js"></script>
+    <script src="../../script/api.js"></script>
+    <script src="../../script/utils.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo de Control – Auditoría por Entidad</title>
+    <meta name="description" content="Historial de acciones por proyecto.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Outfit', 'sans-serif'] } } } }</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/admin-styles.css">
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #fafbff;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #f59e0b 100%);
+            border-radius: 1.5rem;
+            padding: 1.75rem 2rem;
+            color: white;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 18px -6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.875rem;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .proj-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .proj-list-item:hover {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .proj-list-item.active {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.81rem;
+        }
+
+        .activity-table thead th {
+            background: #fffbeb;
+            padding: 0.55rem 0.75rem;
+            text-align: left;
+            color: #92400e;
+            font-weight: 600;
+            border-bottom: 2px solid #fde68a;
+        }
+
+        .activity-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.18rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.68rem;
+            font-weight: 600;
+        }
+
+        .badge-ver {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-editar {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .filter-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.81rem;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="headerRender"></div>
+    <div class="flex">
+        <div id="asideRender"></div>
+        <main class="flex-1 p-6">
+            <div class="page-header">
+                <div class="flex items-center gap-3 mb-2">
+                    <a href="dashboard.html" class="text-white/70 hover:text-white text-sm"><i
+                            class="fas fa-arrow-left"></i> Volver</a>
+                    <span class="text-white/30">/</span>
+                    <span class="text-white/90 text-sm">Control por Proyecto</span>
+                </div>
+                <h1 class="text-2xl font-bold">Auditoría de Acciones por Proyecto</h1>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- LISTA -->
+                <div class="section-card lg:col-span-1">
+                    <div class="section-title"><i class="fas fa-list text-amber-500"></i> Proyectos <span
+                            id="totalProyectos" class="text-xs font-normal text-gray-400 ml-1"></span></div>
+                    <input id="searchProj" class="filter-input w-full mb-3" placeholder="🔍 Filtrar por nombre o ID…"
+                        oninput="filtrarProyectos()">
+                    <div id="listaProyectos"
+                        style="max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;"></div>
+                </div>
+
+                <!-- DETALLE -->
+                <div class="lg:col-span-2" id="detalleProyecto">
+                    <div class="section-card text-center py-10 text-gray-400">Seleccione un proyecto para visualizar su
+                        historial de cambios y accesos.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../script/layout.js"></script>
+    <script>
+        let todosProyectos = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarTodosProyectos();
+            const pid = new URLSearchParams(location.search).get('pid');
+            if (pid) cargarDetalleProyecto(parseInt(pid));
+        });
+
+        async function cargarTodosProyectos() {
+            try {
+                const res = await api.get('/proyectos');
+                todosProyectos = Array.isArray(res) ? res : [];
+                document.getElementById('totalProyectos').textContent = `(${todosProyectos.length})`;
+                renderListaProyectos(todosProyectos);
+            } catch (e) {
+                console.error('Error cargando proyectos:', e);
+            }
+        }
+
+        function filtrarProyectos() {
+            const q = document.getElementById('searchProj').value.toLowerCase();
+            const filtrados = q.length < 2
+                ? todosProyectos
+                : todosProyectos.filter(p =>
+                    (p.nombre || '').toLowerCase().includes(q) ||
+                    String(p.id).includes(q)
+                );
+            renderListaProyectos(filtrados);
+        }
+
+        function renderListaProyectos(lista) {
+            const el = document.getElementById('listaProyectos');
+            if (!lista.length) {
+                el.innerHTML = '<p class="text-xs text-gray-400 px-2 py-2">Sin resultados</p>';
+                return;
+            }
+            el.innerHTML = lista.map(p => `
+                <div class="proj-list-item" id="pitem-${p.id}" onclick="cargarDetalleProyecto(${p.id})">
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold truncate">${p.nombre || '—'}</p>
+                        <p class="text-[10px] text-gray-400">ID: ${p.id} · ${p.estado_nombre || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function cargarDetalleProyecto(pid) {
+            document.querySelectorAll('.proj-list-item').forEach(e => e.classList.remove('active'));
+            document.getElementById(`pitem-${pid}`)?.classList.add('active');
+
+            document.getElementById('detalleProyecto').innerHTML = `
+                <div class="section-card text-center py-8 text-gray-400">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2 block"></i><p>Cargando historial…</p>
+                </div>`;
+
+            try {
+                const res = await api.get(`/control/actividad/proyecto/${pid}`);
+                const { proyecto, actividad } = res;
+
+                document.getElementById('detalleProyecto').innerHTML = `
+                    <div class="section-card">
+                        <h2 class="text-xl font-bold">${proyecto?.nombre || 'Proyecto #' + pid}</h2>
+                        <p class="text-gray-400 text-xs mb-4">Total de acciones registradas: ${actividad.length}</p>
+                        ${actividad.length === 0
+                        ? '<p class="text-sm text-gray-400 text-center py-6">Sin actividad registrada aún para este proyecto.</p>'
+                        : `<div style="overflow-x:auto">
+                                <table class="activity-table">
+                                    <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Estado</th></tr></thead>
+                                    <tbody>
+                                        ${actividad.slice(0, 100).map(r => `
+                                            <tr>
+                                                <td class="text-gray-400 text-xs whitespace-nowrap">${new Date(r.fecha).toLocaleString('es-CL')}</td>
+                                                <td><a href="usuarios.html?uid=${r.user_id}" class="text-indigo-600 font-medium">${r.nombre_usuario || r.user_id}</a></td>
+                                                <td><span class="badge ${r.accion.includes('ver') ? 'badge-ver' : 'badge-editar'}">${r.accion}</span></td>
+                                                <td><span class="text-[10px] font-bold ${r.exitoso ? 'text-green-600' : 'text-red-600'}">${r.exitoso ? 'OK' : 'FAIL'}</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>`
+                    }
+                    </div>
+                `;
+            } catch (e) {
+                document.getElementById('detalleProyecto').innerHTML =
+                    `<div class="section-card text-center py-8 text-red-400">Error cargando historial del proyecto.</div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>

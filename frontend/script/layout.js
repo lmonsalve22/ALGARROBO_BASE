@@ -159,6 +159,50 @@ function renderSidebar(containerId = "sidebarContainer") {
 
     const isLicitacionModule = window.location.pathname.includes('/licitaciones/');
     const isTransparenciaModule = window.location.pathname.includes('/transparencia/');
+    const isControlModule = window.location.pathname.includes('/control/');
+
+    // --- Sidebar Módulo de Control (Transversal) ---
+    if (isControlModule) {
+        const ctrlBase = `${BASE_PATH}/frontend/division/control/`;
+        container.innerHTML = `
+        <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 h-screen sticky top-0 hidden lg:block overflow-y-auto font-['Outfit']">
+            <nav class="p-4">
+                <div class="mb-8 px-3">
+                    <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Módulo Transversal</p>
+                    <h2 class="text-xl font-bold text-gray-800">Control y Auditoría</h2>
+                </div>
+
+                <ul class="space-y-1">
+                    <li>
+                        <a href="${ctrlBase}dashboard.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('dashboard.html')}">
+                            <i class="fas fa-gauge-high w-5 text-center"></i>
+                            <span class="font-medium">Dashboard Global</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${ctrlBase}usuarios.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('usuarios.html')}">
+                            <i class="fas fa-user-shield w-5 text-center"></i>
+                            <span class="font-medium">Auditoría Usuarios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${ctrlBase}proyectos.html" class="flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${linkClasses('proyectos.html')}">
+                            <i class="fas fa-file-shield w-5 text-center"></i>
+                            <span class="font-medium">Auditoría Proyectos</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="mt-10 pt-6 border-t border-gray-100 px-3">
+                    <p class="text-[10px] font-medium text-gray-400 uppercase">Seguridad y Trazabilidad</p>
+                    <button onclick="logout()" class="mt-4 flex items-center gap-2 text-sm text-red-500 hover:text-red-700 font-semibold transition-colors">
+                        <i class="fas fa-sign-out-alt"></i> Salir del Sistema
+                    </button>
+                </div>
+            </nav>
+        </aside>`;
+        return;
+    }
 
     if (isTransparenciaModule) {
         const transBase = `${BASE_PATH}/frontend/division/transparencia/admin_general/index/`;
