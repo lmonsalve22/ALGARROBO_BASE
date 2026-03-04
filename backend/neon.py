@@ -1414,6 +1414,7 @@ def get_proyectos(current_user_id):
                                 'fecha', h.fecha,
                                 'observacion', h.observacion,
                                 'creado_por', h.creado_por,
+                                'nombre_creador', hu.nombre,
                                 'creado_en', h.creado_en
                             )
                         ) FILTER (WHERE h.id IS NOT NULL),
@@ -1428,6 +1429,7 @@ def get_proyectos(current_user_id):
                                 'fecha', o.fecha,
                                 'observacion', o.observacion,
                                 'creado_por', o.creado_por,
+                                'nombre_creador', ou.nombre,
                                 'creado_en', o.creado_en
                             )
                         ) FILTER (WHERE o.id IS NOT NULL),
@@ -1447,7 +1449,9 @@ def get_proyectos(current_user_id):
                 LEFT JOIN sectores s ON s.id = p.sector_id
 
                 LEFT JOIN proyectos_hitos h ON h.proyecto_id = p.id
+                LEFT JOIN users hu ON hu.user_id = h.creado_por
                 LEFT JOIN proyectos_observaciones o ON o.proyecto_id = p.id
+                LEFT JOIN users ou ON ou.user_id = o.creado_por
 
                 GROUP BY
                     p.id,

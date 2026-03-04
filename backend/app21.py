@@ -1101,6 +1101,7 @@ def get_proyectos(current_user_id):
                                 'fecha', h.fecha,
                                 'observacion', h.observacion,
                                 'creado_por', h.creado_por,
+                                'nombre_creador', hu.nombre,
                                 'creado_en', h.creado_en
                             )
                         ) FILTER (WHERE h.id IS NOT NULL),
@@ -1115,6 +1116,7 @@ def get_proyectos(current_user_id):
                                 'fecha', o.fecha,
                                 'observacion', o.observacion,
                                 'creado_por', o.creado_por,
+                                'nombre_creador', ou.nombre,
                                 'creado_en', o.creado_en
                             )
                         ) FILTER (WHERE o.id IS NOT NULL),
@@ -1134,7 +1136,9 @@ def get_proyectos(current_user_id):
                 LEFT JOIN sectores s ON s.id = p.sector_id
 
                 LEFT JOIN proyectos_hitos h ON h.proyecto_id = p.id
+                LEFT JOIN users hu ON hu.user_id = h.creado_por
                 LEFT JOIN proyectos_observaciones o ON o.proyecto_id = p.id
+                LEFT JOIN users ou ON ou.user_id = o.creado_por
 
                 GROUP BY
                     p.id,
@@ -2786,9 +2790,11 @@ def get_proyecto_hitos(current_user_id, pid):
         cur.execute("""
             SELECT
                 h.*,
-                hc.nombre AS categoria_nombre
+                hc.nombre AS categoria_nombre,
+                u.nombre  AS nombre_creador
             FROM proyectos_hitos h
             LEFT JOIN hitoscalendario hc ON hc.id = h.categoria_hito
+            LEFT JOIN users u ON u.user_id = h.creado_por
             WHERE h.proyecto_id = %s
             ORDER BY h.fecha
         """, (pid,))
@@ -2937,17 +2943,18 @@ def listar_observaciones_proyecto(pid):
             return jsonify({"message": "Error conexión BD"}), 500
 
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            #ORDER BY fecha ASC, creado_en ASC
             cur.execute("""
                 SELECT
-                    id,
-                    proyecto_id,
-                    fecha,
-                    observacion,
-                    creado_por,
-                    creado_en
-                FROM proyectos_observaciones
-                WHERE proyecto_id = %s                
+                    o.id,
+                    o.proyecto_id,
+                    o.fecha,
+                    o.observacion,
+                    o.creado_por,
+                    u.nombre AS nombre_creador,
+                    o.creado_en
+                FROM proyectos_observaciones o
+                LEFT JOIN users u ON u.user_id = o.creado_por
+                WHERE o.proyecto_id = %s
             """, (pid,))
 
             observaciones = cur.fetchall()
